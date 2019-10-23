@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 setup(
   name = 'ofsc',         # How you named your package folder (MyLib)
   packages = ['ofsc'],   # Chose the same as "name"
