@@ -8,7 +8,7 @@ setup(
   author = 'Borja Toron',                   # Type in your name
   author_email = 'borja.toron@gmail.com',      # Type in your E-Mail
   url = 'https://github.com/btoron/pyOFSC',   # Provide either the link to your github or to your website
-  download_url = 'https://github.com/btoron/pyOFSC/archive/v1.3.2.tar.gz',    # I explain this later on
+  download_url = 'https://github.com/btoron/pyOFSC/archive/v1.3.3.tar.gz',    # I explain this later on
   keywords = ['OFSC', 'Python', 'ORACLE FIELD SERVICE CLOUD'],   # Keywords that define your package best
   install_requires=[            # I get to this in a second
           'requests',
