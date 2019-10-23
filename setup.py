@@ -1,7 +1,7 @@
 from distutils.core import setup
 setup(
-  name = 'pyOFSC',         # How you named your package folder (MyLib)
-  packages = ['pyOFSC'],   # Chose the same as "name"
+  name = 'ofsc',         # How you named your package folder (MyLib)
+  packages = ['ofsc'],   # Chose the same as "name"
   version = 'v1.2',      # Start with a small number and increase it with every change you make
   license='MIT',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
   description = 'Python Wrapper for Oracle Field Service Cloud API',   # Give a short description about your library
