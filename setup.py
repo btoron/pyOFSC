@@ -2,7 +2,7 @@ from setuptools import setup
 setup(
   name = 'ofsc',         # How you named your package folder (MyLib)
   packages = ['ofsc'],   # Chose the same as "name"
-  version = 'v1.3.3',      # Start with a small number and increase it with every change you make
+  version = 'v1.4.0',      # Start with a small number and increase it with every change you make
   license='MIT',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
   description = 'Python Wrapper for Oracle Field Service Cloud API',   # Give a short description about your library
   author = 'Borja Toron',                   # Type in your name
