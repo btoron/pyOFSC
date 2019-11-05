@@ -1,5 +1,10 @@
 import requests
 import base64
+import json
+
+TEXT_RESPONSE=1
+FULL_RESPONSE=2
+JSON_RESPONSE=3
 
 class OFSC:
 
@@ -15,37 +20,77 @@ class OFSC:
 
 
     # OFSC Function Library
-    def get_activities (self, params):
+    def get_activities (self, params, response_type=TEXT_RESPONSE):
         response = requests.get('https://api.etadirect.com/rest/ofscCore/v1/activities', headers=self.headers, params=params)
-        return response.text
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
 
-    def get_activity (self, activity_id):
+    def get_activity (self, activity_id, response_type=TEXT_RESPONSE):
         response = requests.get('https://api.etadirect.com/rest/ofscCore/v1/activities/' + str(activity_id), headers=self.headers)
         #print (response.status_code)
-        return response.text
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
 
-    def update_activity (self, activity_id, data):
+    def update_activity (self, activity_id, data, response_type=TEXT_RESPONSE):
         response = requests.patch('https://api.etadirect.com/rest/ofscCore/v1/activities/' + str(activity_id), headers=self.headers, data=data)
         #print (response.status_code)
-        return response.text
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
 
-    def move_activity (self, activity_id, data):
+    def move_activity (self, activity_id, data, response_type=TEXT_RESPONSE):
         response = requests.post('https://api.etadirect.com/rest/ofscCore/v1/activities/' + str(activity_id) + '/custom-actions/move', headers=self.headers, data=data)
         #print (response.status_code)
-        return response.text
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
 
-    def get_subscriptions(self):
+    def get_subscriptions(self, response_type=TEXT_RESPONSE):
         response = requests.get('https://api.etadirect.com/rest/ofscCore/v1/events/subscriptions', headers=self.headers)
-        return response.text
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
 
-    def create_subscription(self, data):
+    def create_subscription(self, data, response_type=TEXT_RESPONSE):
         response = requests.post('https://api.etadirect.com/rest/ofscCore/v1/events/subscriptions', headers=self.headers, data = data)
-        return response.text
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
 
-    def get_subscription_details(self, subscription_id):
+    def get_subscription_details(self, subscription_id, response_type=TEXT_RESPONSE):
         response = requests.get('https://api.etadirect.com/rest/ofscCore/v1/events/subscriptions/{}'.format(str(subscription_id)), headers=self.headers)
-        return response.text
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
 
-    def get_events(self, params):
+    def get_events(self, params, response_type=TEXT_RESPONSE):
         response = requests.get('https://api.etadirect.com/rest/ofscCore/v1/events', headers=self.headers, params=params)
-        return response.text
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
