@@ -94,3 +94,48 @@ class OFSC:
             return response.json()
         else:
             return response.text
+
+    def get_resource(self, resource_id, inventories=False, workSkills=False, workZones=False, workSchedules=False , response_type=TEXT_RESPONSE):
+        data = {}
+        expand = ""
+        if inventories:
+            expand = "inventories"
+        if workSkills:
+            if len(expand) > 0:
+                expand = "{},workSkills".format(expand)
+            else:
+                expand = "workSkills"
+        if workZones:
+            if len(expand) > 0:
+                expand = "{},workZones".format(expand)
+            else:
+                expand = "workZones"
+        if workSchedules:
+            if len(expand) > 0:
+                expand = "{},workSchedules".format(expand)
+            else:
+                expand = "workSchedules"
+
+        if len(expand) > 0:
+            data['expand'] = expand
+
+        response = requests.get('https://api.etadirect.com/rest/ofscCore/v1/resources/{}'.format(str(resource_id)), params=data, headers=self.headers)
+
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
+
+    def get_position_history(self, resource_id,date,response_type=TEXT_RESPONSE):
+        params = {}
+        params['date'] = date
+        response = requests.get('https://api.etadirect.com/rest/ofscCore/v1/resources/{}/positionHistory'.format(str(resource_id)), params=params, headers=self.headers)
+
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
