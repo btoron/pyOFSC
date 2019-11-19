@@ -131,6 +131,20 @@ class ofscTest(unittest.TestCase):
         response = json.loads(raw_response)
         self.assertEqual(response['totalResults'], 222)
 
+    def test_204_get_resource_route_nofields(self):
+        instance = self.instance
+        logger = self.logger
+        raw_response = instance.get_resource_route(33001, date="2019-11-19")
+        response = json.loads(raw_response)
+        self.assertEqual(response['totalResults'], 13)
+
+    def test_205_get_resource_route_twofields(self):
+        instance = self.instance
+        logger = self.logger
+        raw_response = instance.get_resource_route(33001, date="2019-11-19", activityFields="activityId,activityType")
+        response = json.loads(raw_response)
+        print(response)
+        self.assertEqual(response['totalResults'], 13)
 
 
 
