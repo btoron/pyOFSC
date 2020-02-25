@@ -143,10 +143,24 @@ class ofscTest(unittest.TestCase):
         logger = self.logger
         raw_response = instance.get_resource_route(33001, date="2019-11-19", activityFields="activityId,activityType")
         response = json.loads(raw_response)
-        print(response)
+        #print(response)
         self.assertEqual(response['totalResults'], 13)
 
+    def test_206_get_resource_descendants_noexpand(self):
+        instance = self.instance
+        logger = self.logger
+        raw_response = instance.get_resource_descendants(55100)
+        response = json.loads(raw_response)
+        #print(response)
+        self.assertEqual(response['totalResults'], 10)
 
+    def test_207_get_resource_descendants_expand(self):
+        instance = self.instance
+        logger = self.logger
+        raw_response = instance.get_resource_descendants(55100, workSchedules=True, workZones=True, workSkills=True)
+        response = json.loads(raw_response)
+        #print(response)
+        self.assertEqual(response['totalResults'], 10)
 
 
 if __name__ == '__main__':

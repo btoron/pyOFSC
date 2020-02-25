@@ -152,3 +152,42 @@ class OFSC:
             return response.json()
         else:
             return response.text
+
+    def get_resource_descendants(self, resource_id,  resourceFields=None, offset=0, limit=100, inventories=False, workSkills=False, workZones=False, workSchedules=False , response_type=TEXT_RESPONSE):
+        # Calculate expand
+        params = {}
+        expand = ""
+        if inventories:
+            expand = "inventories"
+        if workSkills:
+            if len(expand) > 0:
+                expand = "{},workSkills".format(expand)
+            else:
+                expand = "workSkills"
+        if workZones:
+            if len(expand) > 0:
+                expand = "{},workZones".format(expand)
+            else:
+                expand = "workZones"
+        if workSchedules:
+            if len(expand) > 0:
+                expand = "{},workSchedules".format(expand)
+            else:
+                expand = "workSchedules"
+
+        if len(expand) > 0:
+            params['expand'] = expand
+
+        if resourceFields is not None:
+            params['resourceFields'] = activityFields
+        params['limit'] = limit
+        params['offset']= offset
+
+        response = requests.get('https://api.etadirect.com/rest/ofscCore/v1/resources/{}/descendants'.format(str(resource_id)), params=params, headers=self.headers)
+
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
