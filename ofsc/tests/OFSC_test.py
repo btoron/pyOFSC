@@ -3,7 +3,7 @@ import unittest
 
 import sys, os
 sys.path.append(os.path.abspath('.'))
-from ofsc.core import OFSC
+from ofsc.core import OFSC, FULL_RESPONSE
 import logging
 import json
 import argparse
@@ -160,6 +160,15 @@ class ofscTest(unittest.TestCase):
         raw_response = instance.get_resource_descendants(55100, workSchedules=True, workZones=True, workSkills=True)
         response = json.loads(raw_response)
         #print(response)
+        self.assertEqual(response['totalResults'], 10)
+
+    def test_208_get_resource_descendants_noexpand_fields(self):
+        instance = self.instance
+        logger = self.logger
+        raw_response = instance.get_resource_descendants(55100, resourceFields="resourceId,phone", response_type=FULL_RESPONSE)
+        # logging.debug(self.pp.pformat(raw_response.json()))
+        response = raw_response.json()
+        logger.info(self.pp.pformat(response))
         self.assertEqual(response['totalResults'], 10)
 
 
