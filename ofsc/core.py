@@ -179,7 +179,7 @@ class OFSC:
             params['expand'] = expand
 
         if resourceFields is not None:
-            params['resourceFields'] = activityFields
+            params['resourceFields'] = resourceFields
         params['limit'] = limit
         params['offset']= offset
 
