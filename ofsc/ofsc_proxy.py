@@ -1,6 +1,7 @@
 import requests
 import base64
 import json
+import urllib
 
 TEXT_RESPONSE=1
 FULL_RESPONSE=2
@@ -185,6 +186,34 @@ class OFSC:
 
         response = requests.get('https://api.etadirect.com/rest/ofscCore/v1/resources/{}/descendants'.format(str(resource_id)), params=params, headers=self.headers)
 
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
+
+    capacityAreasFields= "label,name,type,status,parent.name,parent.label"
+    additionalCapacityFields = ['parentLabel', 'configuration.isTimeSlotBase',"configuration.byCapacityCategory", "configuration.byDay", 'configuration.byTimeSlot', 'configuration.isAllowCloseOnWorkzoneLevel', 'configuration.definitionLevel.day', 'configuration.definitionLevel.timeSlot', 'configuration.definitionLevel.capacityCategory']
+    capacityHeaders = capacityAreasFields.split(",")+additionalCapacityFields
+
+    def get_capacity_areas (self, expand="parent", fields=capacityAreasFields, status="active", queryType="area", response_type=FULL_RESPONSE):
+        params = {}
+        params["expand"] = expand
+        params["fields"] = fields
+        params["status"] = status
+        params["type"] = queryType
+        response = requests.get('https://api.etadirect.com/rest/ofscMetadata/v1/capacityAreas', params = params, headers=self.headers)
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
+
+    def get_capacity_area (self,label, response_type=FULL_RESPONSE):
+        encoded_label = urllib.parse.quote_plus(label)
+        response = requests.get('https://api.etadirect.com/rest/ofscMetadata/v1/capacityAreas/{}'.format(encoded_label), headers=self.headers)
         if response_type==FULL_RESPONSE:
             return response
         elif response_type==JSON_RESPONSE:
