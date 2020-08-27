@@ -3,7 +3,7 @@ import unittest
 
 import sys, os
 sys.path.append(os.path.abspath('.'))
-from ofsc.core import OFSC, FULL_RESPONSE
+from ofsc import OFSC, FULL_RESPONSE
 import logging
 import json
 import argparse
@@ -19,7 +19,9 @@ class ofscTest(unittest.TestCase):
         self.pp = pprint.PrettyPrinter(indent=4)
         self.logger.setLevel(logging.DEBUG)
         #todo add credentials to test run
+        logging.warning("Here {}".format(os.environ.get('OFSC_CLIENT_ID')))
         self.instance = OFSC(clientID=os.environ.get('OFSC_CLIENT_ID'), secret=os.environ.get('OFSC_CLIENT_SECRET'), companyName=os.environ.get('OFSC_COMPANY'))
+        self.date = os.environ.get('OFSC_TEST_DATE')
 
     # Test 1.01 Get Activity Info (activity exists)
     def test_get_activity_101(self):
@@ -127,21 +129,22 @@ class ofscTest(unittest.TestCase):
     def test_203_get_position_history(self):
         instance = self.instance
         logger = self.logger
-        raw_response = instance.get_position_history(33001, date="2019-11-19")
+        raw_response = instance.get_position_history(33001, date=self.date)
         response = json.loads(raw_response)
-        self.assertEqual(response['totalResults'], 222)
+        self.assertIsNotNone(response['totalResults'])
+        self.assertTrue(response['totalResults']>200)
 
     def test_204_get_resource_route_nofields(self):
         instance = self.instance
         logger = self.logger
-        raw_response = instance.get_resource_route(33001, date="2019-11-19")
+        raw_response = instance.get_resource_route(33001, date=self.date)
         response = json.loads(raw_response)
         self.assertEqual(response['totalResults'], 13)
 
     def test_205_get_resource_route_twofields(self):
         instance = self.instance
         logger = self.logger
-        raw_response = instance.get_resource_route(33001, date="2019-11-19", activityFields="activityId,activityType")
+        raw_response = instance.get_resource_route(33001, date=self.date, activityFields="activityId,activityType")
         response = json.loads(raw_response)
         #print(response)
         self.assertEqual(response['totalResults'], 13)
@@ -149,28 +152,52 @@ class ofscTest(unittest.TestCase):
     def test_206_get_resource_descendants_noexpand(self):
         instance = self.instance
         logger = self.logger
-        raw_response = instance.get_resource_descendants(55100)
+        raw_response = instance.get_resource_descendants("FLUSA")
         response = json.loads(raw_response)
         #print(response)
-        self.assertEqual(response['totalResults'], 10)
+        self.assertEqual(response['totalResults'], 37)
 
     def test_207_get_resource_descendants_expand(self):
         instance = self.instance
         logger = self.logger
-        raw_response = instance.get_resource_descendants(55100, workSchedules=True, workZones=True, workSkills=True)
+        raw_response = instance.get_resource_descendants("FLUSA", workSchedules=True, workZones=True, workSkills=True)
         response = json.loads(raw_response)
         #print(response)
-        self.assertEqual(response['totalResults'], 10)
+        self.assertEqual(response['totalResults'], 37)
 
     def test_208_get_resource_descendants_noexpand_fields(self):
         instance = self.instance
         logger = self.logger
-        raw_response = instance.get_resource_descendants(55100, resourceFields="resourceId,phone", response_type=FULL_RESPONSE)
+        raw_response = instance.get_resource_descendants("FLUSA", resourceFields="resourceId,phone", response_type=FULL_RESPONSE)
         # logging.debug(self.pp.pformat(raw_response.json()))
         response = raw_response.json()
         logger.info(self.pp.pformat(response))
-        self.assertEqual(response['totalResults'], 10)
+        self.assertEqual(response['totalResults'], 37)
 
+    # Capacity tests
+    def test_301_get_capacity_areas_simple(self):
+        instance = self.instance
+        logger = self.logger
+        raw_response = instance.get_capacity_areas(response_type=FULL_RESPONSE)
+        logging.debug(self.pp.pformat(raw_response.json()))
+        response = raw_response.json()
+        logger.info(self.pp.pformat(response))
+        self.assertIsNotNone(response['items'])
+        self.assertEqual(len(response['items']), 2)
+        self.assertEqual(response['items'][0]['label'], 'CAUSA')
+
+    def test_311_get_capacity_area(self):
+        instance = self.instance
+        logger = self.logger
+        raw_response = instance.get_capacity_area("FLUSA", response_type=FULL_RESPONSE)
+        logging.debug(self.pp.pformat(raw_response.json()))
+        response = raw_response.json()
+        logger.info(self.pp.pformat(response))
+        self.assertIsNotNone(response['label'])
+        self.assertEqual(response['label'], "FLUSA")
+        self.assertIsNotNone(response['configuration'])
+        self.assertIsNotNone(response['parentLabel'])
+        self.assertEqual(response['parentLabel'], "SUNRISE")
 
 if __name__ == '__main__':
     unittest.main()

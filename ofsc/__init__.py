@@ -1,1 +1,1 @@
-from .core import *
+from .ofsc_proxy import *
