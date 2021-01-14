@@ -2,18 +2,20 @@ import requests
 import base64
 import json
 import urllib
-
+from urllib.parse import urljoin
 TEXT_RESPONSE=1
 FULL_RESPONSE=2
 JSON_RESPONSE=3
 
 class OFSC:
 
+    API_PORTAL = "https://api.etadirect.com"
 
-    def __init__    (self, clientID, companyName, secret):
+    def __init__    (self, clientID, companyName, secret, baseUrl=API_PORTAL):
         self.headers ={}
         self.clientID = clientID
         self.companyName = companyName
+        self.baseUrl = baseUrl
         # Calculate Authorization
         mypass = base64.b64encode(bytes(clientID+"@"+companyName+":"+secret, 'utf-8'))
         self.headers["Authorization"] = "Basic "+mypass.decode('utf-8')
@@ -22,7 +24,8 @@ class OFSC:
 
     # OFSC Function Library
     def get_activities (self, params, response_type=TEXT_RESPONSE):
-        response = requests.get('https://api.etadirect.com/rest/ofscCore/v1/activities', headers=self.headers, params=params)
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/activities")
+        response = requests.get(url, headers=self.headers, params=params)
         if response_type==FULL_RESPONSE:
             return response
         elif response_type==JSON_RESPONSE:
@@ -31,7 +34,8 @@ class OFSC:
             return response.text
 
     def get_activity (self, activity_id, response_type=TEXT_RESPONSE):
-        response = requests.get('https://api.etadirect.com/rest/ofscCore/v1/activities/' + str(activity_id), headers=self.headers)
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/activities/{}".format(activity_id))
+        response = requests.get(url, headers=self.headers)
         #print (response.status_code)
         if response_type==FULL_RESPONSE:
             return response
@@ -41,7 +45,8 @@ class OFSC:
             return response.text
 
     def update_activity (self, activity_id, data, response_type=TEXT_RESPONSE):
-        response = requests.patch('https://api.etadirect.com/rest/ofscCore/v1/activities/' + str(activity_id), headers=self.headers, data=data)
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/activities/{}".format(activity_id))
+        response = requests.patch(url, headers=self.headers, data=data)
         #print (response.status_code)
         if response_type==FULL_RESPONSE:
             return response
@@ -51,7 +56,8 @@ class OFSC:
             return response.text
 
     def move_activity (self, activity_id, data, response_type=TEXT_RESPONSE):
-        response = requests.post('https://api.etadirect.com/rest/ofscCore/v1/activities/' + str(activity_id) + '/custom-actions/move', headers=self.headers, data=data)
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/activities/{}/custom-actions/move".format(activity_id))
+        response = requests.post(url, headers=self.headers, data=data)
         #print (response.status_code)
         if response_type==FULL_RESPONSE:
             return response
@@ -61,7 +67,8 @@ class OFSC:
             return response.text
 
     def get_subscriptions(self, response_type=TEXT_RESPONSE):
-        response = requests.get('https://api.etadirect.com/rest/ofscCore/v1/events/subscriptions', headers=self.headers)
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/events/subscriptions")
+        response = requests.get(url, headers=self.headers)
         if response_type==FULL_RESPONSE:
             return response
         elif response_type==JSON_RESPONSE:
@@ -70,7 +77,8 @@ class OFSC:
             return response.text
 
     def create_subscription(self, data, response_type=TEXT_RESPONSE):
-        response = requests.post('https://api.etadirect.com/rest/ofscCore/v1/events/subscriptions', headers=self.headers, data = data)
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/events/subscriptions")
+        response = requests.post(url, headers=self.headers, data = data)
         if response_type==FULL_RESPONSE:
             return response
         elif response_type==JSON_RESPONSE:
@@ -79,7 +87,8 @@ class OFSC:
             return response.text
 
     def get_subscription_details(self, subscription_id, response_type=TEXT_RESPONSE):
-        response = requests.get('https://api.etadirect.com/rest/ofscCore/v1/events/subscriptions/{}'.format(str(subscription_id)), headers=self.headers)
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/events/subscriptions/{}".format(str(subscription_id)))
+        response = requests.get(url, headers=self.headers)
         if response_type==FULL_RESPONSE:
             return response
         elif response_type==JSON_RESPONSE:
@@ -88,6 +97,7 @@ class OFSC:
             return response.text
 
     def get_events(self, params, response_type=TEXT_RESPONSE):
+        url = urljoin(self.baseUrl, "rest/ofscCore/v1/events")
         response = requests.get('https://api.etadirect.com/rest/ofscCore/v1/events', headers=self.headers, params=params)
         if response_type==FULL_RESPONSE:
             return response
@@ -97,6 +107,7 @@ class OFSC:
             return response.text
 
     def get_resource(self, resource_id, inventories=False, workSkills=False, workZones=False, workSchedules=False , response_type=TEXT_RESPONSE):
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/resources/{}".format(str(resource_id)))
         data = {}
         expand = ""
         if inventories:
@@ -120,7 +131,7 @@ class OFSC:
         if len(expand) > 0:
             data['expand'] = expand
 
-        response = requests.get('https://api.etadirect.com/rest/ofscCore/v1/resources/{}'.format(str(resource_id)), params=data, headers=self.headers)
+        response = requests.get(url, params=data, headers=self.headers)
 
         if response_type==FULL_RESPONSE:
             return response
@@ -130,9 +141,10 @@ class OFSC:
             return response.text
 
     def get_position_history(self, resource_id,date,response_type=TEXT_RESPONSE):
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/resources/{}/positionHistory".format(str(resource_id)))
         params = {}
         params['date'] = date
-        response = requests.get('https://api.etadirect.com/rest/ofscCore/v1/resources/{}/positionHistory'.format(str(resource_id)), params=params, headers=self.headers)
+        response = requests.get(url, params=params, headers=self.headers)
 
         if response_type==FULL_RESPONSE:
             return response
@@ -142,10 +154,11 @@ class OFSC:
             return response.text
 
     def get_resource_route(self, resource_id, date, activityFields = None, offset=0, limit=100, response_type=TEXT_RESPONSE):
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/resources/{}/routes/{}".format(str(resource_id), date))
         params = {}
         if activityFields is not None:
             params['activityFields'] = activityFields
-        response = requests.get('https://api.etadirect.com/rest/ofscCore/v1/resources/{}/routes/{}'.format(str(resource_id),date), params=params, headers=self.headers)
+        response = requests.get(url, params=params, headers=self.headers)
 
         if response_type==FULL_RESPONSE:
             return response
@@ -155,6 +168,7 @@ class OFSC:
             return response.text
 
     def get_resource_descendants(self, resource_id,  resourceFields=None, offset=0, limit=100, inventories=False, workSkills=False, workZones=False, workSchedules=False , response_type=TEXT_RESPONSE):
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/resources/{}/descendants".format(str(resource_id)))
         # Calculate expand
         params = {}
         expand = ""
@@ -184,7 +198,7 @@ class OFSC:
         params['limit'] = limit
         params['offset']= offset
 
-        response = requests.get('https://api.etadirect.com/rest/ofscCore/v1/resources/{}/descendants'.format(str(resource_id)), params=params, headers=self.headers)
+        response = requests.get(url, params=params, headers=self.headers)
 
         if response_type==FULL_RESPONSE:
             return response
@@ -198,12 +212,13 @@ class OFSC:
     capacityHeaders = capacityAreasFields.split(",")+additionalCapacityFields
 
     def get_capacity_areas (self, expand="parent", fields=capacityAreasFields, status="active", queryType="area", response_type=FULL_RESPONSE):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/capacityAreas")
         params = {}
         params["expand"] = expand
         params["fields"] = fields
         params["status"] = status
         params["type"] = queryType
-        response = requests.get('https://api.etadirect.com/rest/ofscMetadata/v1/capacityAreas', params = params, headers=self.headers)
+        response = requests.get(url, params = params, headers=self.headers)
         if response_type==FULL_RESPONSE:
             return response
         elif response_type==JSON_RESPONSE:
@@ -213,7 +228,8 @@ class OFSC:
 
     def get_capacity_area (self,label, response_type=FULL_RESPONSE):
         encoded_label = urllib.parse.quote_plus(label)
-        response = requests.get('https://api.etadirect.com/rest/ofscMetadata/v1/capacityAreas/{}'.format(encoded_label), headers=self.headers)
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/capacityAreas/{}".format(encoded_label))
+        response = requests.get(url, headers=self.headers)
         if response_type==FULL_RESPONSE:
             return response
         elif response_type==JSON_RESPONSE:
