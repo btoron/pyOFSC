@@ -29,6 +29,8 @@ A simple Python wrapper for Oracle OFS REST API
     get_capacity_areas (self, expand="parent", fields=capacityAreasFields, status="active", queryType="area", response_type=FULL_RESPONSE):
     get_capacity_area (self,label, response_type=FULL_RESPONSE)
 
+    get_activity_groups (self, expand="parent", offset=0, limit=100, response_type=FULL_RESPONSE):
+    get_activity_group (self,label, response_type=FULL_RESPONSE)
 
 ## Test History
 

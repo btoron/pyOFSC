@@ -236,3 +236,24 @@ class OFSC:
             return response.json()
         else:
             return response.text
+    
+    def get_activity_type_groups(self, offset=0, limit=100, response_type=FULL_RESPONSE):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/activityTypeGroups")
+        response = requests.get(url, headers=self.headers)
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
+
+    def get_activity_type_group(self, label, response_type=FULL_RESPONSE):
+        encoded_label = urllib.parse.quote_plus(label)
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/activityTypeGroups/{}".format(encoded_label))
+        response = requests.get(url, headers=self.headers)
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
