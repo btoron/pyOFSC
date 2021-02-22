@@ -137,8 +137,9 @@ class ofscTest(unittest.TestCase):
     def test_204_get_resource_route_nofields(self):
         instance = self.instance
         logger = self.logger
-        raw_response = instance.get_resource_route(33001, date=self.date)
-        response = json.loads(raw_response)
+        raw_response = instance.get_resource_route(33001, date=self.date, response_type=FULL_RESPONSE)
+        logging.debug(self.pp.pformat(raw_response.json()))
+        response = raw_response.json()
         self.assertEqual(response['totalResults'], 13)
 
     def test_205_get_resource_route_twofields(self):
@@ -186,7 +187,7 @@ class ofscTest(unittest.TestCase):
         self.assertEqual(len(response['items']), 2)
         self.assertEqual(response['items'][0]['label'], 'CAUSA')
 
-    def test_311_get_capacity_area(self):
+    def test_302_get_capacity_area(self):
         instance = self.instance
         logger = self.logger
         raw_response = instance.get_capacity_area("FLUSA", response_type=FULL_RESPONSE)
@@ -198,6 +199,31 @@ class ofscTest(unittest.TestCase):
         self.assertIsNotNone(response['configuration'])
         self.assertIsNotNone(response['parentLabel'])
         self.assertEqual(response['parentLabel'], "SUNRISE")
+
+    def test_311_get_activity_type_groups(self):
+        instance = self.instance
+        logger = self.logger
+        raw_response = instance.get_activity_type_groups(response_type=FULL_RESPONSE)
+        logging.debug(self.pp.pformat(raw_response.json()))
+        response = raw_response.json()
+        logger.info(self.pp.pformat(response))
+        self.assertIsNotNone(response['items'])
+        self.assertEqual(len(response['items']), 5)
+        self.assertEqual(response['totalResults'], 5)
+        self.assertEqual(response['items'][0]['label'], 'customer')
+
+    def test_312_get_activity_type_group(self):
+        instance = self.instance
+        logger = self.logger
+        raw_response = instance.get_activity_type_group("customer", response_type=FULL_RESPONSE)
+        logging.debug(self.pp.pformat(raw_response.json()))
+        response = raw_response.json()
+        logger.info(self.pp.pformat(response))
+        self.assertIsNotNone(response['label'])
+        self.assertEqual(response['label'], "customer")
+        self.assertIsNotNone(response['activityTypes'])
+        self.assertEqual(len(response['activityTypes']), 24)
+        self.assertEqual(response['activityTypes'][20]['label'], 'hvac_emergency')    
 
 if __name__ == '__main__':
     unittest.main()
