@@ -42,5 +42,5 @@ A simple Python wrapper for Oracle OFS REST API
 OFS REST API Version | PyOFSC
 ------------ | -------------
 20C| 1.7
-21A| 1.8.1
+21A| 1.8, 1.8,1, 1.9
 
