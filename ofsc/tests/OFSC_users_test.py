@@ -51,7 +51,7 @@ class ofscTest(unittest.TestCase):
 
 
     def test_update_user(self):
-        self.logger.info("...C.U.03 Get Specific User")
+        self.logger.info("...C.U.03 Update Specific User")
         instance = self.instance
         logger = self.logger
         raw_response = instance.get_user(login="chris", response_type=FULL_RESPONSE)
@@ -78,6 +78,32 @@ class ofscTest(unittest.TestCase):
         self.assertIsNotNone(response['name'])
         self.assertEqual(response['name'], 'Chris')
 
+    def test_create_user(self):
+        self.logger.info("...C.U.04  Create User (not existent)")
+        instance = self.instance
+        logger = self.logger
+        new_data = {
+            "name": "Test Name",
+            "mainResourceId": "44042",
+            "language": "en",
+            "timeZone": "Arizona",
+            "userType": "technician",
+            "password": "123123123",
+            "resources": ["44008", "44035", "44042"]
+        }
+        raw_response = instance.create_user(login="test_user", data=json.dumps(new_data), response_type=FULL_RESPONSE)
+        logging.debug(self.pp.pformat(raw_response.json()))
+        response = raw_response.json()
+        logger.info(self.pp.pformat(response))
+        self.assertEqual(raw_response.status_code, 200)
+        self.assertIsNotNone(response['name'])
+        self.assertEqual(response['name'], 'Test Name')
 
+        raw_response = instance.delete_user(login="test_user", response_type=FULL_RESPONSE)
+        logging.debug(self.pp.pformat(raw_response.json()))
+        response = raw_response.json()
+        logger.info(self.pp.pformat(response))
+        self.assertEqual(raw_response.status_code, 200)
+        
 if __name__ == '__main__':
     unittest.main()

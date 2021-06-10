@@ -218,7 +218,7 @@ class ofscTest(unittest.TestCase):
         raw_response = instance.get_activity_type_group("customer", response_type=FULL_RESPONSE)
         logging.debug(self.pp.pformat(raw_response.json()))
         response = raw_response.json()
-        self.assertEqual(raw_response.status_code, 400)
+        self.assertEqual(raw_response.status_code, 200)
         logger.info(self.pp.pformat(response))
         self.assertIsNotNone(response['label'])
         self.assertEqual(response['label'], "customer")

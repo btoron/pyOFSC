@@ -282,7 +282,7 @@ class OFSC:
         else:
             return response.text
 
-    def update_user (self, login, data, response_type=TEXT_RESPONSE):
+    def update_user (self, login, data, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/users/{}".format(login))
         response = requests.patch(url, headers=self.headers, data=data)
         #print (response.status_code)
@@ -292,4 +292,59 @@ class OFSC:
             return response.json()
         else:
             return response.text
-    
+
+    ##202106
+    def create_user (self, login, data, response_type=FULL_RESPONSE):
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/users/{login}")
+        response = requests.put(url, headers=self.headers, data=data)
+        #print (response.status_code)
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
+
+    ##202106 
+    def delete_user(self, login, response_type=FULL_RESPONSE):
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/users/{login}")
+        response = requests.delete(url, headers=self.headers)
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
+
+    ##202105 Daily Extract - NOT TESTED
+    def get_daily_extract_dates(self, response_type=FULL_RESPONSE):
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/folders/dailyExtract/folders/")
+        response = requests.get(url, headers=self.headers)
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text   
+
+    ##202105 Daily Extract - NOT TESTED   
+    def get_daily_extract_files(self, date, response_type=FULL_RESPONSE):
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/folders/dailyExtract/folders/{}/files".format(date))
+        response = requests.get(url, headers=self.headers)
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text       
+            
+    ##202105 Daily Extract - NOT TESTED
+    def get_daily_extract_file(self, date, filename, response_type=FULL_RESPONSE):
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/folders/dailyExtract/folders/{}/files/{}".format(date, filename))
+        response = requests.get(url, headers=self.headers)
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
