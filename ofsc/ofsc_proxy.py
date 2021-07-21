@@ -3,6 +3,7 @@ import base64
 import json
 import urllib
 from urllib.parse import urljoin
+import logging
 TEXT_RESPONSE=1
 FULL_RESPONSE=2
 JSON_RESPONSE=3
@@ -106,6 +107,10 @@ class OFSC:
         else:
             return response.text
 
+    #####
+    # RESOURCE MANAGEMENT
+    ####
+
     def get_resource(self, resource_id, inventories=False, workSkills=False, workZones=False, workSchedules=False , response_type=TEXT_RESPONSE):
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/resources/{}".format(str(resource_id)))
         data = {}
@@ -139,6 +144,19 @@ class OFSC:
             return response.json()
         else:
             return response.text
+
+    # 202107
+    def create_resource (self, resourceId, data, response_type=TEXT_RESPONSE):
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resourceId}")
+        response = requests.put(url, headers=self.headers, data=data)
+        #print (response.status_code)
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
+
 
     def get_position_history(self, resource_id,date,response_type=TEXT_RESPONSE):
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/resources/{}/positionHistory".format(str(resource_id)))
@@ -197,6 +215,7 @@ class OFSC:
             params['fields'] = resourceFields
         params['limit'] = limit
         params['offset']= offset
+        logging.debug(json.dumps(params, indent=2))
 
         response = requests.get(url, params=params, headers=self.headers)
 
