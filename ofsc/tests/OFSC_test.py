@@ -134,47 +134,6 @@ class ofscTest(unittest.TestCase):
         self.assertIsNotNone(response['totalResults'])
         self.assertTrue(response['totalResults']>200)
 
-    def test_204_get_resource_route_nofields(self):
-        instance = self.instance
-        logger = self.logger
-        raw_response = instance.get_resource_route(33001, date=self.date, response_type=FULL_RESPONSE)
-        logging.debug(self.pp.pformat(raw_response.json()))
-        response = raw_response.json()
-        self.assertEqual(response['totalResults'], 13)
-
-    def test_205_get_resource_route_twofields(self):
-        instance = self.instance
-        logger = self.logger
-        raw_response = instance.get_resource_route(33001, date=self.date, activityFields="activityId,activityType")
-        response = json.loads(raw_response)
-        #print(response)
-        self.assertEqual(response['totalResults'], 13)
-
-    def test_206_get_resource_descendants_noexpand(self):
-        instance = self.instance
-        logger = self.logger
-        raw_response = instance.get_resource_descendants("FLUSA")
-        response = json.loads(raw_response)
-        #print(response)
-        self.assertEqual(response['totalResults'], 37)
-
-    def test_207_get_resource_descendants_expand(self):
-        instance = self.instance
-        logger = self.logger
-        raw_response = instance.get_resource_descendants("FLUSA", workSchedules=True, workZones=True, workSkills=True)
-        response = json.loads(raw_response)
-        #print(response)
-        self.assertEqual(response['totalResults'], 37)
-
-    def test_208_get_resource_descendants_noexpand_fields(self):
-        instance = self.instance
-        logger = self.logger
-        raw_response = instance.get_resource_descendants("FLUSA", resourceFields="resourceId,phone", response_type=FULL_RESPONSE)
-        # logging.debug(self.pp.pformat(raw_response.json()))
-        response = raw_response.json()
-        logger.info(self.pp.pformat(response))
-        self.assertEqual(response['totalResults'], 37)
-
     # Capacity tests
     def test_301_get_capacity_areas_simple(self):
         instance = self.instance

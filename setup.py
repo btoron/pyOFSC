@@ -2,7 +2,7 @@ from setuptools import setup
 setup(
   name = 'ofsc',         
   packages = ['ofsc'],   
-  version = 'v1.10',      
+  version = 'v1.11',      
   license='MIT',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
   description = 'Python Wrapper for Oracle Field Service API',   
   author = 'Borja Toron',                
