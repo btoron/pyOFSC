@@ -2,13 +2,13 @@ from setuptools import setup
 setup(
   name = 'ofsc',         
   packages = ['ofsc'],   
-  version = 'v1.11',      
+  version = 'v1.12',      
   license='MIT',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
   description = 'Python Wrapper for Oracle Field Service API',   
   author = 'Borja Toron',                
   author_email = 'borja.toron@gmail.com',   
   url = 'https://github.com/btoron/pyOFSC',   
-  download_url = 'https://github.com/btoron/pyOFSC/archive/v1.10.tar.gz',    
+  download_url = 'https://github.com/btoron/pyOFSC/archive/v1.12.tar.gz',    
   keywords = ['OFSC', 'Python', 'ORACLE FIELD SERVICE CLOUD', 'OFS', 'ORACLE FIELD SERVICE'],   # Keywords that define your package best
   install_requires=[            
           'requests',
