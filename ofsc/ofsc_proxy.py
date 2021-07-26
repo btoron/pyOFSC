@@ -56,8 +56,20 @@ class OFSC:
         else:
             return response.text
 
+    # 202107 Added ssearch
+    def search_activities (self, params, response_type=TEXT_RESPONSE):
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/activities/custom-actions/search")
+        response = requests.get(url, headers=self.headers, params = params)
+        #print (response.status_code)
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
+
     def move_activity (self, activity_id, data, response_type=TEXT_RESPONSE):
-        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/activities/{}/custom-actions/move".format(activity_id))
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/activities/{activity_id}/custom-actions/move")
         response = requests.post(url, headers=self.headers, data=data)
         #print (response.status_code)
         if response_type==FULL_RESPONSE:

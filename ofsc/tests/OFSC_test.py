@@ -23,25 +23,6 @@ class ofscTest(unittest.TestCase):
         self.instance = OFSC(clientID=os.environ.get('OFSC_CLIENT_ID'), secret=os.environ.get('OFSC_CLIENT_SECRET'), companyName=os.environ.get('OFSC_COMPANY'))
         self.date = os.environ.get('OFSC_TEST_DATE')
 
-    # Test 1.01 Get Activity Info (activity exists)
-    def test_get_activity_101(self):
-        self.logger.info("...101: Get Activity Info (activity does exist)")
-        raw_response = self.instance.get_activity(3951935)
-        response = json.loads(raw_response)
-        self.logger.debug(response)
-        self.assertEqual(response['customerNumber'],'019895700')
-
-    # Test 1.02 Get Activity Info (activity does not exist)
-    def test_get_activity_102(self):
-        instance = self.instance
-        logger = self.logger
-        logger.info("...102: Get Activity Info (activity does not exist)")
-        raw_response = instance.get_activity(99999)
-        response = json.loads(raw_response)
-
-        logger.debug(response)
-        self.assertEqual(response['status'],'404')
-
     # Test 2.01 Create subsciption (simple)
     def test_001_create_subscription(self):
         instance = self.instance
