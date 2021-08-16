@@ -11,8 +11,8 @@ else:
         long_description = f.read()
 
 version = {}
-with open(os.path.join('numerov', 'version.py')) as f:
-    exec(f.read(), version)
+#with open(os.path.join('numerov', 'version.py')) as f:
+#    exec(f.read(), version)
     
 setup(
   name = 'ofsc',         
