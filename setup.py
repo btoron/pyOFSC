@@ -1,10 +1,27 @@
 from setuptools import setup
+
+import os
+import sys
+
+if sys.version_info[0] < 3:
+    with open('README.rst') as f:
+        long_description = f.read()
+else:
+    with open('README.md', encoding='utf-8') as f:
+        long_description = f.read()
+
+version = {}
+with open(os.path.join('numerov', 'version.py')) as f:
+    exec(f.read(), version)
+    
 setup(
   name = 'ofsc',         
   packages = ['ofsc'],   
-  version = 'v1.13',      
+  version = 'v1.13.1',      
   license='MIT',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
-  description = 'Python Wrapper for Oracle Field Service API',   
+  description = 'Python Wrapper for Oracle Field Service API',
+  long_description=long_description,
+  long_description_content_type='text/markdown',
   author = 'Borja Toron',                
   author_email = 'borja.toron@gmail.com',   
   url = 'https://github.com/btoron/pyOFSC',   
