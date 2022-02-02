@@ -379,3 +379,84 @@ class OFSC:
             return response.json()
         else:
             return response.text
+
+    ## 202202 Properties and file properties
+    
+    def get_properties (self, offset=0, limit=100, response_type=FULL_RESPONSE):
+        params = {
+            "offset" : offset,
+            "limit": limit
+        }
+        response = requests.get('https://api.etadirect.com/rest/ofscMetadata/v1/properties', headers=self.headers, params=params)
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
+
+
+    def get_file_property(self, activityId, label, mediaType="application/octet-stream", response_type=FULL_RESPONSE):
+        headers = self.headers;
+        headers["Accept"] = mediaType
+        response = requests.get('https://api.etadirect.com/rest/ofscCore/v1/activities/{}/{}'.format(activityId,label), headers=headers)
+        if response_type==FULL_RESPONSE:
+            return response
+        elif response_type==JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
+            
+    ## 202202 Helper functions
+    def get_all_activities(self, root, date_from, date_to, activity_fields, initial_offset=0, limit=5000):
+        items = []
+        hasMore = True
+        offset = initial_offset
+        while hasMore:
+            request_params = {
+                "dateFrom": date_from,
+                "dateTo": date_to,
+                "resources": root,
+                "includeChildren": "all",
+                #"includeNonScheduled": "true",
+                #"q":"status=='notdone'",
+                "fields": activity_fields,
+                "offset" : offset,
+                "limit": limit}
+            logging.info(request_params)
+            response = self.get_activities(response_type=FULL_RESPONSE, params=request_params)
+            response_body = response.json()
+            if 'items' in response_body.keys():
+                response_count = len(response_body['items'])
+                items.extend(response_body['items'])
+            else:
+                response_count = 0
+            if 'hasMore' in response_body.keys():
+                hasMore = response_body['hasMore']
+                logging.info ("{},{},{}".format(offset, response_count, response.elapsed))
+            else:
+                hasMore = False
+                logging.info ("{},{},{}".format(offset, response_count, response.elapsed))
+            offset = offset + response_count
+        return items
+
+    def get_all_properties(self, initial_offset=0, limit=100):
+        items = []
+        hasMore = True
+        offset = initial_offset
+        while hasMore:
+            response = self.get_properties(offset= offset, limit=limit, response_type=FULL_RESPONSE)
+            response_body = response.json()
+            if 'items' in response_body.keys():
+                response_count = len(response_body['items'])
+                items.extend(response_body['items'])
+            else:
+                response_count = 0
+            if 'hasMore' in response_body.keys():
+                hasMore = response_body['hasMore']
+                logging.info("{},{},{}".format(offset, response_count, response.elapsed))
+            else:
+                hasMore = False
+                logging.info ("{},{},{}".format(offset, response_count, response.elapsed))
+            offset = offset + response_count
+        return items
