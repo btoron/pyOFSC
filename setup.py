@@ -17,7 +17,7 @@ version = {}
 setup(
   name = 'ofsc',         
   packages = ['ofsc'],   
-  version = 'v1.14',      
+  version = 'v1.15',      
   license='MIT',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
   description = 'Python Wrapper for Oracle Field Service API',
   long_description=long_description,
