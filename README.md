@@ -14,7 +14,8 @@ A simple Python wrapper for Oracle OFS REST API
 
 ### Core / Events
     get_subscriptions(self, response_type=TEXT_RESPONSE)
-    create_subscription(self, data, response_type=TEXT_RESPONSE):
+    create_subscription(self, data, response_type=TEXT_RESPONSE)
+    delete_subscription(self, subscription_id, response_type=FULL_RESPONSE)
     get_subscription_details(self, subscription_id, response_type=TEXT_RESPONSE)
     get_events(self, params, response_type=TEXT_RESPONSE)
 
@@ -35,6 +36,9 @@ A simple Python wrapper for Oracle OFS REST API
 
     get_activity_groups (self, expand="parent", offset=0, limit=100, response_type=FULL_RESPONSE):
     get_activity_group (self,label, response_type=FULL_RESPONSE)
+    
+    get_activity_types(self, offset=0, limit=100, response_type=FULL_RESPONSE):
+    get_activity_type (self, label, response_type=FULL_RESPONSE)
 
 ### Metadata / properties
     get_properties (self, offset=0, limit=100, response_type=FULL_RESPONSE):
@@ -46,4 +50,5 @@ OFS REST API Version | PyOFSC
 20C| 1.7
 21A| 1.8, 1.8,1, 1.9
 21D| 1.15
+22B| 1.16
 
