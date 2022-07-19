@@ -27,9 +27,9 @@ A simple Python wrapper for Oracle OFS REST API
     get_resource_descendants(self, resource_id,  resourceFields=None, offset=0, limit=100, inventories=False, workSkills=False, workZones=False, workSchedules=False, response_type=TEXT_RESPONSE)
 
 ### Core / Users
-    get_users(self, offset=0, limit=100, response_type=FULL_RESPONSE):
+    get_users(self, offset=0, limit=100, response_type=FULL_RESPONSE)
     get_user(self, login, response_type=FULL_RESPONSE):
-    update_user (self, login, data, response_type=TEXT_RESPONSE):
+    update_user (self, login, data, response_type=TEXT_RESPONSE)
 
 ### Metadata / Capacity
     get_capacity_areas (self, expand="parent", fields=capacityAreasFields, status="active", queryType="area", response_type=FULL_RESPONSE)
