@@ -20,6 +20,7 @@ A simple Python wrapper for Oracle OFS REST API
     get_events(self, params, response_type=TEXT_RESPONSE)
 
 ### Core / Resources
+    create_resource(self, resourceId, data, response_type=TEXT_RESPONSE):
     get_resource(self, resource_id, inventories=False, workSkills=False, workZones=False, workSchedules=False , response_type=TEXT_RESPONSE)
     get_position_history(self, resource_id,date,response_type=TEXT_RESPONSE)
     get_resource_route(self, resource_id, date, activityFields = None, offset=0, limit=100, response_type=TEXT_RESPONSE)
