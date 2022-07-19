@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 name: Python package published via poetry
+=======
+name: Python package
+>>>>>>> Stashed changes
 on:
   push:
     tags:
@@ -8,9 +12,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+<<<<<<< Updated upstream
       - name: Build and publish to testpypi
+=======
+      - name: Build and publish to pypi
+>>>>>>> Stashed changes
         uses: JRubics/poetry-publish@v1.12
         with:
           pypi_token: ${{ secrets.PYPI_TOKEN }}
           repository_name: "ofsc_test"
+<<<<<<< Updated upstream
           repository_url: "https://test.pypi.org/legacy/"
+=======
+          repository_url: "https://test.pypi.org/legacy/"
+>>>>>>> Stashed changes
