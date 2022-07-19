@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pyofsc"
+name = "ofsc"
 version = "2.0"
 description = "Python interface for Oracle Field Service API"
 authors = ["Borja Toron <borja.toron@gmail.com>"]
