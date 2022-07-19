@@ -20,7 +20,7 @@ A simple Python wrapper for Oracle OFS REST API
     get_events(self, params, response_type=TEXT_RESPONSE)
 
 ### Core / Resources
-    create_resource(self, resourceId, data, response_type=TEXT_RESPONSE):
+    create_resource(self, resourceId, data, response_type=TEXT_RESPONSE)
     get_resource(self, resource_id, inventories=False, workSkills=False, workZones=False, workSchedules=False , response_type=TEXT_RESPONSE)
     get_position_history(self, resource_id,date,response_type=TEXT_RESPONSE)
     get_resource_route(self, resource_id, date, activityFields = None, offset=0, limit=100, response_type=TEXT_RESPONSE)
@@ -32,17 +32,17 @@ A simple Python wrapper for Oracle OFS REST API
     update_user (self, login, data, response_type=TEXT_RESPONSE):
 
 ### Metadata / Capacity
-    get_capacity_areas (self, expand="parent", fields=capacityAreasFields, status="active", queryType="area", response_type=FULL_RESPONSE):
+    get_capacity_areas (self, expand="parent", fields=capacityAreasFields, status="active", queryType="area", response_type=FULL_RESPONSE)
     get_capacity_area (self,label, response_type=FULL_RESPONSE)
 
-    get_activity_groups (self, expand="parent", offset=0, limit=100, response_type=FULL_RESPONSE):
+    get_activity_groups (self, expand="parent", offset=0, limit=100, response_type=FULL_RESPONSE)
     get_activity_group (self,label, response_type=FULL_RESPONSE)
     
-    get_activity_types(self, offset=0, limit=100, response_type=FULL_RESPONSE):
+    get_activity_types(self, offset=0, limit=100, response_type=FULL_RESPONSE)
     get_activity_type (self, label, response_type=FULL_RESPONSE)
 
 ### Metadata / properties
-    get_properties (self, offset=0, limit=100, response_type=FULL_RESPONSE):
+    get_properties (self, offset=0, limit=100, response_type=FULL_RESPONSE)
 
 ## Test History
 
