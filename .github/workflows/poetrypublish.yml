@@ -1,4 +1,4 @@
-name: Python package published via poetry
+name: Python package (POETRY)
 on:
   push:
     tags:
