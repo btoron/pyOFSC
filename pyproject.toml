@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ofsc"
-version = "1.16.2"
+version = "1.16.5"
 description = "Python wrapper for Oracle Field Service API"
 authors = ["Borja Toron <borja.toron@gmail.com>"]
 readme = 'README.md'
