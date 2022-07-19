@@ -1,8 +1,11 @@
 [tool.poetry]
 name = "ofsc"
 version = "2.0"
-description = "Python interface for Oracle Field Service API"
+description = "Python wrapper for Oracle Field Service API"
 authors = ["Borja Toron <borja.toron@gmail.com>"]
+readme = 'README.md'
+repository = 'https://github.com/btoron/pyOFSC'
+
 
 [tool.poetry.dependencies]
 python = "^3.10"
