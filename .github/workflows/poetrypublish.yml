@@ -1,8 +1,7 @@
-name: Python package (POETRY)
+name: Publish Python package (POETRY)
 on:
-  push:
-    tags:
-      - "v*.*.*"
+  release:
+    types: [created]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,5 +11,3 @@ jobs:
         uses: JRubics/poetry-publish@v1.12
         with:
           pypi_token: ${{ secrets.PYPI_TOKEN }}
-          repository_name: "ofsc_test"
-          repository_url: "https://test.pypi.org/legacy/"
