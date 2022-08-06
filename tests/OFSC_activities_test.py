@@ -49,24 +49,6 @@ class ofscActivitiesTest(unittest.TestCase):
         logger.debug(response)
         self.assertEqual(response["status"], "404")
 
-    # Test A.03 Search Activities (activity exists)
-    def test_A03_search_activities(self):
-        instance = self.instance
-        logger = self.logger
-        logger.info("...103: Search Activities (activity exists)")
-        params = {
-            "searchInField": "customerNumber",
-            "searchForValue": "019895700",
-            "dateFrom": "2021-01-01",
-            "dateTo": "2099-01-01",
-        }
-        response = instance.search_activities(params, response_type=FULL_RESPONSE)
-        logger.debug(response.json())
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.json()["totalResults"], 6
-        )  # 202206 Modified in demo 22B
-
     # Test A.04 Move activity (between buckets, no error)
     def test_A04_move_activity_between_buckets_no_error(self):
         instance = self.instance
