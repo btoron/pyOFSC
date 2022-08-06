@@ -4,7 +4,7 @@ A simple Python wrapper for Oracle OFS REST API
 
 ## Models
 
-Starting with OFS 1.18 we are adding models for the most common entities. All models should be imported from `ofsc.models`
+Starting with OFS 1.17 we are adding models for the most common entities. All models should be imported from `ofsc.models`
 
 Currently implemented
 - Workskill
@@ -68,7 +68,7 @@ Currently implemented
     get_workskills (self, offset=0, limit=100, response_type=FULL_RESPONSE)
     get_workskill(self, label: str, response_type=FULL_RESPONSE)
     create_or_update_workskill(self, skill: Workskill, response_type=FULL_RESPONSE)
-
+    delete_workskill(self, label: str, response_type=FULL_RESPONSE)
 
 ## Test History
 
