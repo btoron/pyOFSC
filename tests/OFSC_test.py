@@ -2,7 +2,7 @@ import os
 import sys
 import unittest
 
-from ofsc.ofsc_proxy import JSON_RESPONSE
+from ofsc.core import JSON_RESPONSE
 
 sys.path.append(os.path.abspath("."))
 import argparse

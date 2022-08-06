@@ -2,6 +2,8 @@ import os
 import sys
 import unittest
 
+from ofsc.models import SharingEnum, Workskill
+
 sys.path.append(os.path.abspath("."))
 import argparse
 import json

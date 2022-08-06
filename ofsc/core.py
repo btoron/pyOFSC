@@ -6,25 +6,11 @@ from urllib.parse import urljoin
 
 import requests
 
-TEXT_RESPONSE = 1
-FULL_RESPONSE = 2
-JSON_RESPONSE = 3
+from .common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE
+from .models import OFSApi, OFSConfig
 
 
-class OFSC:
-
-    API_PORTAL = "https://api.etadirect.com"
-
-    def __init__(self, clientID, companyName, secret, baseUrl=API_PORTAL):
-        self.headers = {}
-        self.clientID = clientID
-        self.companyName = companyName
-        self.baseUrl = baseUrl
-        # Calculate Authorization
-        mypass = base64.b64encode(
-            bytes(clientID + "@" + companyName + ":" + secret, "utf-8")
-        )
-        self.headers["Authorization"] = "Basic " + mypass.decode("utf-8")
+class OFSCore(OFSApi):
 
     # OFSC Function Library
     def get_activities(self, params, response_type=TEXT_RESPONSE):
@@ -306,105 +292,6 @@ class OFSC:
         else:
             return response.text
 
-    capacityAreasFields = "label,name,type,status,parent.name,parent.label"
-    additionalCapacityFields = [
-        "parentLabel",
-        "configuration.isTimeSlotBase",
-        "configuration.byCapacityCategory",
-        "configuration.byDay",
-        "configuration.byTimeSlot",
-        "configuration.isAllowCloseOnWorkzoneLevel",
-        "configuration.definitionLevel.day",
-        "configuration.definitionLevel.timeSlot",
-        "configuration.definitionLevel.capacityCategory",
-    ]
-    capacityHeaders = capacityAreasFields.split(",") + additionalCapacityFields
-
-    def get_capacity_areas(
-        self,
-        expand="parent",
-        fields=capacityAreasFields,
-        status="active",
-        queryType="area",
-        response_type=FULL_RESPONSE,
-    ):
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/capacityAreas")
-        params = {}
-        params["expand"] = expand
-        params["fields"] = fields
-        params["status"] = status
-        params["type"] = queryType
-        response = requests.get(url, params=params, headers=self.headers)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
-
-    def get_capacity_area(self, label, response_type=FULL_RESPONSE):
-        encoded_label = urllib.parse.quote_plus(label)
-        url = urljoin(
-            self.baseUrl, "/rest/ofscMetadata/v1/capacityAreas/{}".format(encoded_label)
-        )
-        response = requests.get(url, headers=self.headers)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
-
-    def get_activity_type_groups(
-        self, offset=0, limit=100, response_type=FULL_RESPONSE
-    ):
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/activityTypeGroups")
-        response = requests.get(url, headers=self.headers)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
-
-    def get_activity_type_group(self, label, response_type=FULL_RESPONSE):
-        encoded_label = urllib.parse.quote_plus(label)
-        url = urljoin(
-            self.baseUrl,
-            "/rest/ofscMetadata/v1/activityTypeGroups/{}".format(encoded_label),
-        )
-        response = requests.get(url, headers=self.headers)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
-
-    ## 202205 Activity Type
-    def get_activity_types(self, offset=0, limit=100, response_type=FULL_RESPONSE):
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/activityTypes")
-        response = requests.get(url, headers=self.headers)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
-
-    def get_activity_type(self, label, response_type=FULL_RESPONSE):
-        encoded_label = urllib.parse.quote_plus(label)
-        url = urljoin(
-            self.baseUrl, "/rest/ofscMetadata/v1/activityTypes/{}".format(encoded_label)
-        )
-        response = requests.get(url, headers=self.headers)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
-
     ## 202104 User Management
     def get_users(self, offset=0, limit=100, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/users")
@@ -497,22 +384,6 @@ class OFSC:
             ),
         )
         response = requests.get(url, headers=self.headers)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
-
-    ## 202202 Properties and file properties
-
-    def get_properties(self, offset=0, limit=100, response_type=FULL_RESPONSE):
-        params = {"offset": offset, "limit": limit}
-        response = requests.get(
-            "https://api.etadirect.com/rest/ofscMetadata/v1/properties",
-            headers=self.headers,
-            params=params,
-        )
         if response_type == FULL_RESPONSE:
             return response
         elif response_type == JSON_RESPONSE:
