@@ -1,7 +1,8 @@
 import base64
+import typing
 from enum import Enum
 from functools import lru_cache
-from typing import List
+from typing import Any, List
 
 from pydantic import BaseModel, validator
 
@@ -64,3 +65,19 @@ class Workskill(BaseModel):
     @validator("translations", always=True)
     def set_default(cls, field_value, values):
         return field_value or [Translation(name=values["name"])]
+
+
+class Condition(BaseModel):
+    label: str
+    function: str
+    value: typing.Optional[Any] = None
+    valueList: typing.Optional[list] = []
+
+
+class WorkskillCondition(BaseModel):
+    internalId: int
+    label: str
+    requiredLevel: int
+    preferableLevel: int
+    conditions: List[Condition]
+    dependencies: Any

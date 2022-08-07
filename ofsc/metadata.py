@@ -176,3 +176,17 @@ class OFSMetadata(OFSApi):
             return response.json()
         else:
             return response.text
+
+    # Workskill conditions
+    def get_workskill_conditions(self, response_type=FULL_RESPONSE):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillConditions")
+        response = requests.get(
+            url,
+            headers=self.headers,
+        )
+        if response_type == FULL_RESPONSE:
+            return response
+        elif response_type == JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text

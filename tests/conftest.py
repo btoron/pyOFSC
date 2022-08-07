@@ -1,5 +1,6 @@
 import logging
 import os
+import pprint
 
 import pytest
 from ofsc import OFSC
@@ -20,3 +21,9 @@ def instance():
 @pytest.fixture
 def current_date():
     return os.environ.get("OFSC_TEST_DATE")
+
+
+@pytest.fixture
+def pp():
+    pp = pprint.PrettyPrinter(indent=4)
+    return pp
