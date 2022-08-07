@@ -2,12 +2,19 @@ import base64
 import json
 import logging
 import urllib
+from typing import List
 from urllib.parse import urljoin
 
 import requests
 
 from .common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE
-from .models import OFSApi, OFSConfig, Workskill
+from .models import (
+    OFSApi,
+    OFSConfig,
+    Workskill,
+    WorkskillCondition,
+    WorskillConditionList,
+)
 
 
 class OFSMetadata(OFSApi):
@@ -184,6 +191,21 @@ class OFSMetadata(OFSApi):
             url,
             headers=self.headers,
         )
+        if response_type == FULL_RESPONSE:
+            return response
+        elif response_type == JSON_RESPONSE:
+            return response.json()
+        else:
+            return response.text
+
+    def replace_workskill_conditions(
+        self, data=WorskillConditionList, response_type=FULL_RESPONSE
+    ):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillConditions")
+        content = '{"items":' + data.json(exclude_none=True) + "}"
+        headers = self.headers
+        headers["Content-Type"] = "application/json"
+        response = requests.put(url, headers=headers, data=content)
         if response_type == FULL_RESPONSE:
             return response
         elif response_type == JSON_RESPONSE:

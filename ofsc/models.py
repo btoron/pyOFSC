@@ -70,8 +70,8 @@ class Workskill(BaseModel):
 class Condition(BaseModel):
     label: str
     function: str
-    value: typing.Optional[Any] = None
-    valueList: typing.Optional[list] = []
+    value: Any = None
+    valueList: list = []
 
 
 class WorkskillCondition(BaseModel):
@@ -81,3 +81,7 @@ class WorkskillCondition(BaseModel):
     preferableLevel: int
     conditions: List[Condition]
     dependencies: Any
+
+
+class WorskillConditionList(BaseModel):
+    __root__: List[WorkskillCondition]

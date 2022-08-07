@@ -2,7 +2,7 @@
 import argparse
 import pprint
 from logging import basicConfig, debug, info, warning
-from typing import List
+from typing import AnyStr, List
 
 import ofsc
 from ofsc import FULL_RESPONSE, JSON_RESPONSE, OFSC
@@ -50,8 +50,22 @@ def get_workskill_list():
 
 
 def write_xls(filename: str, wsc_list: List[WorkskillCondition]):
+    def convert(data):
+        match data:
+            case None:
+                return data
+            case str():
+                return data
+            case bool():
+                return data
+            case int():
+                return data
+            case _:
+                return str(data)
+
     wb = Workbook()
-    ws_conditions = wb.create_sheet("Workskill Conditions")
+    ws_conditions = wb.active
+    ws_conditions.title = "Workskill Conditions"
     ws_rules = wb.create_sheet("Workskill Conditions Rules")
     condition_field_names = None
     rules_field_names = ["condition_id"]
@@ -70,7 +84,7 @@ def write_xls(filename: str, wsc_list: List[WorkskillCondition]):
                 print(f"Rules Fields: {rules_field_names}")
                 ws_rules.append(rules_field_names)
             data = [condition.internalId] + [
-                str(field) for field in rule.dict().values()
+                convert(field) for field in rule.dict().values()
             ]
             ws_rules.append(data)
 
