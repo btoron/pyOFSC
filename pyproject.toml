@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ofsc"
-version = "1.17.1"
+version = "1.17.2"
 license = "MIT"
 description = "Python wrapper for Oracle Field Service API"
 authors = ["Borja Toron <borja.toron@gmail.com>"]
@@ -15,6 +15,7 @@ pytest = "^7.1.2"
 pydantic = "^1.9.1"
 
 [tool.poetry.dev-dependencies]
+openpyxl = "^3.0.10"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
