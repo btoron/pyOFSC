@@ -50,6 +50,7 @@ class TranslationEnum(str, Enum):
     pt: "pt"
 
 
+# Work skills
 class Translation(BaseModel):
     language: TranslationEnum = "en"
     name: str
@@ -85,3 +86,22 @@ class WorkskillCondition(BaseModel):
 
 class WorskillConditionList(BaseModel):
     __root__: List[WorkskillCondition]
+
+
+# Workzones
+class Workzone(BaseModel):
+    workZoneLabel: str
+    workZoneName: str
+    status: str
+    travelArea: str
+    keys: List[Any]
+
+
+class WorkzoneList(BaseModel):
+    __root__: List[Workzone]
+
+    def __iter__(self):
+        return iter(self.__root__)
+
+    def __getitem__(self, item):
+        return self.__root__[item]

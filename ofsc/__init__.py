@@ -1,10 +1,11 @@
 import base64
 import logging
+from functools import wraps
 from http import client
 from urllib import response
 from warnings import warn
 
-from .common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE
+from .common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE, wrap_return
 from .core import OFSCore
 from .metadata import OFSMetadata
 from .models import OFSConfig
