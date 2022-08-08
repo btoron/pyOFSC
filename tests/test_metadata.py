@@ -102,6 +102,6 @@ def test_get_workzones(instance, request_logging):
     )
     response = metadata_response.json()
     assert response["totalResults"] is not None
-    assert response["totalResults"] == 6  # 22.B
-    assert response["items"][0]["label"] == "EST"
-    assert response["items"][1]["name"] == "Residential"
+    assert response["totalResults"] == 18  # 22.B
+    assert response["items"][0]["workZoneLabel"] == "ALTAMONTE SPRINGS"
+    assert response["items"][1]["workZoneName"] == "CASSELBERRY"
