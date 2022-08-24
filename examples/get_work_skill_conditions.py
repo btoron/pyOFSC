@@ -6,7 +6,7 @@ from typing import AnyStr, List
 
 import ofsc
 from ofsc import FULL_RESPONSE, JSON_RESPONSE, OFSC
-from ofsc.models import WorkskillCondition
+from ofsc.models import WorkskillCondition, WorskillConditionList
 from openpyxl import Workbook
 
 from config import Config
@@ -45,11 +45,11 @@ def init_script():
 
 def get_workskill_list():
     response = instance.metadata.get_workskill_conditions(response_type=JSON_RESPONSE)
-    ws_list = [WorkskillCondition.parse_obj(item) for item in response["items"]]
+    ws_list = WorskillConditionList.parse_obj(response["items"])
     return ws_list
 
 
-def write_xls(filename: str, wsc_list: List[WorkskillCondition]):
+def write_xls(filename: str, wsc_list: WorskillConditionList):
     def convert(data):
         match data:
             case None:
