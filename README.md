@@ -62,14 +62,18 @@ Currently implemented
 
 ### Metadata / properties
     get_properties (self, offset=0, limit=100, response_type=FULL_RESPONSE)
-     get_all_properties(self, initial_offset=0, limit=100)
+    get_all_properties(self, initial_offset=0, limit=100)
 
 ### Metadata / workskills
     get_workskills (self, offset=0, limit=100, response_type=FULL_RESPONSE)
     get_workskill(self, label: str, response_type=FULL_RESPONSE)
     create_or_update_workskill(self, skill: Workskill, response_type=FULL_RESPONSE)
     delete_workskill(self, label: str, response_type=FULL_RESPONSE)
+    get_workskill_conditions(self, response_type=FULL_RESPONSE):
+    replace_workskill_conditions(self, data: WorskillConditionList, response_type=FULL_RESPONSE
 
+### Metadata / workzones
+    get_workzones(self, response_type=FULL_RESPONSE)
 ## Test History
 
 OFS REST API Version | PyOFSC

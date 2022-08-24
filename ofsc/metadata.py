@@ -7,7 +7,7 @@ from urllib.parse import urljoin
 
 import requests
 
-from .common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE
+from .common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE, wrap_return
 from .models import (
     OFSApi,
     OFSConfig,
@@ -199,7 +199,7 @@ class OFSMetadata(OFSApi):
             return response.text
 
     def replace_workskill_conditions(
-        self, data=WorskillConditionList, response_type=FULL_RESPONSE
+        self, data: WorskillConditionList, response_type=FULL_RESPONSE
     ):
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillConditions")
         content = '{"items":' + data.json(exclude_none=True) + "}"
@@ -212,3 +212,19 @@ class OFSMetadata(OFSApi):
             return response.json()
         else:
             return response.text
+
+    # 202208 Workzones
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def get_workzones(
+        self,
+        offset=0,
+        limit=100,
+    ):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workZones")
+        params = {"offset": offset, "limit": limit}
+        response = requests.get(
+            url,
+            headers=self.headers,
+            params=params,
+        )
+        return response
