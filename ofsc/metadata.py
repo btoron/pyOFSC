@@ -199,7 +199,7 @@ class OFSMetadata(OFSApi):
             return response.text
 
     def replace_workskill_conditions(
-        self, data=WorskillConditionList, response_type=FULL_RESPONSE
+        self, data: WorskillConditionList, response_type=FULL_RESPONSE
     ):
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillConditions")
         content = '{"items":' + data.json(exclude_none=True) + "}"
