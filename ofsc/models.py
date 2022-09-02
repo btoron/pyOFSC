@@ -44,7 +44,6 @@ class SharingEnum(str, Enum):
     minimal = "minimal"
     summary = "summary"
 
-
 class EntityEnum(str, Enum):
     activity = "activity"
     inventory = "inventory"
@@ -61,7 +60,6 @@ class EntityEnum(str, Enum):
 #     br = "br"
 #     el = "el"
 #     cs = "cs"
-
 
 # Work skills
 class Translation(BaseModel):
@@ -145,7 +143,6 @@ class WorkzoneList(BaseModel):
 
     def __getitem__(self, item):
         return self.__root__[item]
-
 
 class Property(BaseModel):
     label: str
@@ -239,3 +236,4 @@ class ResourceTypeList(BaseModel):
 
     def __getitem__(self, item):
         return self.__root__[item]
+        

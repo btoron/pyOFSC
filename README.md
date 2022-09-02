@@ -72,7 +72,8 @@ Experimental:
 ### Metadata / Properties
     get_properties (self, offset=0, limit=100, response_type=FULL_RESPONSE)
     get_property(self, label: str, response_type=JSON_RESPONSE):
-    create_or_replace_property(self, property: Property, response_type=JSON_RESPONSE):
+    create_or_replace_property(self, property: Property, response_type=JSON_RESPONSE)
+
 ### Metadata / Workskills
     get_workskills (self, offset=0, limit=100, response_type=FULL_RESPONSE)
     get_workskill(self, label: str, response_type=FULL_RESPONSE)
@@ -86,6 +87,7 @@ Experimental:
 
 ### Metadata / workzones
     get_workzones(self, response_type=FULL_RESPONSE)
+    
 ## Test History
 
 OFS REST API Version | PyOFSC

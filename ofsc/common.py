@@ -23,6 +23,7 @@ def wrap_return(*a, **kw):
             response = func(*args, **kwargs)
             # post:
             logging.debug(response)
+
             if response_type == FULL_RESPONSE:
                 return response
             elif response_type == JSON_RESPONSE:
