@@ -11,6 +11,7 @@ from .common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE, wrap_return
 from .models import (
     OFSApi,
     OFSConfig,
+    Property,
     Workskill,
     WorkskillCondition,
     WorskillConditionList,
@@ -135,6 +136,22 @@ class OFSMetadata(OFSApi):
         else:
             return response.text
 
+    # 202209 Get Property
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def get_property(self, label: str):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/properties/{label}")
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    # 202209 Create Property
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def create_or_replace_property(self, property: Property):
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/properties/{property.label}"
+        )
+        response = requests.put(url, headers=self.headers, data=property.json())
+        return response
+
     # 202208 Skill management
     def get_workskills(self, offset=0, limit=100, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkills")
@@ -227,4 +244,11 @@ class OFSMetadata(OFSApi):
             headers=self.headers,
             params=params,
         )
+        return response
+
+    # 202209 Resource Types
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def get_resource_types(self):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/resourceTypes")
+        response = requests.get(url, headers=self.headers)
         return response

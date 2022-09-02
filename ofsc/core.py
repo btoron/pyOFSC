@@ -6,7 +6,7 @@ from urllib.parse import urljoin
 
 import requests
 
-from .common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE
+from .common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE, wrap_return
 from .models import OFSApi, OFSConfig
 
 
@@ -185,8 +185,9 @@ class OFSCore(OFSApi):
             return response.text
 
     # 202107
-    def create_resource(self, resourceId, data, response_type=TEXT_RESPONSE):
+    def create_resource_old(self, resourceId, data, response_type=TEXT_RESPONSE):
         url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resourceId}")
+
         response = requests.put(url, headers=self.headers, data=data)
         # print (response.status_code)
         if response_type == FULL_RESPONSE:
@@ -195,6 +196,21 @@ class OFSCore(OFSApi):
             return response.json()
         else:
             return response.text
+
+    # 202209 Resource Types
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def create_resource(self, resourceId, data):
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resourceId}")
+        logging.debug(f"OFSC.Create_Resource: {data} {type(data)}")
+        response = requests.put(url, headers=self.headers, data=data)
+        return response
+
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def create_resource_from_obj(self, resourceId, data):
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resourceId}")
+        logging.debug(f"OFSC.Create_Resource: {data} {type(data)}")
+        response = requests.put(url, headers=self.headers, data=json.dumps(data))
+        return response
 
     def get_position_history(self, resource_id, date, response_type=TEXT_RESPONSE):
         url = urljoin(
