@@ -5,6 +5,7 @@ from http.client import HTTPConnection  # py3
 
 import pytest
 import requests
+from faker import Faker
 from ofsc import OFSC
 
 

@@ -4,11 +4,20 @@ A simple Python wrapper for Oracle OFS REST API
 
 ## Models
 
-Starting with OFS 1.17 we are adding models for the most common entities. All models should be imported from `ofsc.models`
+Starting with OFS 1.17 we are adding models for the most common entities. All models should be imported from `ofsc.models`. All existing create functions will be transitioned to models. In OFS 2.0 all functions will use models
 
-Currently implemented
+The models are based on the Pydantic BaseModel, so it is possible to build an entity using the `parse_obj` or `parse_file` static methods.
+
+Currently implemented:
 - Workskill
+- WorkSkillCondition
+- Workzone
+- Property
 
+Experimental:
+- Resource
+- ResourceType
+- User
 
 ## Functions implemented
 
@@ -60,11 +69,12 @@ Currently implemented
     get_activity_types(self, offset=0, limit=100, response_type=FULL_RESPONSE)
     get_activity_type (self, label, response_type=FULL_RESPONSE)
 
-### Metadata / properties
+### Metadata / Properties
     get_properties (self, offset=0, limit=100, response_type=FULL_RESPONSE)
-    get_all_properties(self, initial_offset=0, limit=100)
+    get_property(self, label: str, response_type=JSON_RESPONSE):
+    create_or_replace_property(self, property: Property, response_type=JSON_RESPONSE)
 
-### Metadata / workskills
+### Metadata / Workskills
     get_workskills (self, offset=0, limit=100, response_type=FULL_RESPONSE)
     get_workskill(self, label: str, response_type=FULL_RESPONSE)
     create_or_update_workskill(self, skill: Workskill, response_type=FULL_RESPONSE)
@@ -72,8 +82,12 @@ Currently implemented
     get_workskill_conditions(self, response_type=FULL_RESPONSE):
     replace_workskill_conditions(self, data: WorskillConditionList, response_type=FULL_RESPONSE
 
+### Metadata / Resource Types
+    get_resource_types(self, response_type=JSON_RESPONSE):
+
 ### Metadata / workzones
     get_workzones(self, response_type=FULL_RESPONSE)
+    
 ## Test History
 
 OFS REST API Version | PyOFSC

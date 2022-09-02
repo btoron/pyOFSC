@@ -4,7 +4,7 @@ from enum import Enum
 from functools import lru_cache
 from typing import Any, List, Optional
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, Extra, validator
 
 
 class OFSConfig(BaseModel):
@@ -12,6 +12,7 @@ class OFSConfig(BaseModel):
     clientID: str
     secret: str
     companyName: str
+    root: str
 
     @property
     def authString(self):
@@ -43,19 +44,26 @@ class SharingEnum(str, Enum):
     minimal = "minimal"
     summary = "summary"
 
+class EntityEnum(str, Enum):
+    activity = "activity"
+    inventory = "inventory"
+    resource = "resource"
+    service_request = "service request"
+    user = "user"
 
-class TranslationEnum(str, Enum):
-    en = "en"
-    es = "es"
-    pt = "pt"
-    fr = "fr"
-    br = "br"
-    el = "el"
 
+# class TranslationEnum(str, Enum):
+#     en = "en"
+#     es = "es"
+#     pt = "pt"
+#     fr = "fr"
+#     br = "br"
+#     el = "el"
+#     cs = "cs"
 
 # Work skills
 class Translation(BaseModel):
-    language: TranslationEnum = "en"
+    language: str = "en"
     name: str
     languageISO: Optional[str]
 
@@ -135,3 +143,97 @@ class WorkzoneList(BaseModel):
 
     def __getitem__(self, item):
         return self.__root__[item]
+
+class Property(BaseModel):
+    label: str
+    name: str
+    type: str
+    entity: Optional[EntityEnum]
+    gui: Optional[str]
+    translations: TranslationList = []
+
+    @validator("translations", always=True)
+    def set_default(cls, field_value, values):
+        return field_value or [Translation(name=values["name"])]
+
+    @validator("gui")
+    def gui_match(cls, v):
+        if v not in [
+            "text",
+            "checkbox",
+            "combobox",
+            "radiogroup",
+            "file",
+            "signature",
+            "image",
+            "url",
+            "phone",
+            "email",
+            "capture",
+            "geo",
+        ]:
+            raise ValueError(f"{v} is not a valid GUI value")
+        return v
+
+    class Config:
+        extra = Extra.allow  # or 'allow' str
+
+
+class PropertyList(BaseModel):
+    __root__: List[Property]
+
+    def __iter__(self):
+        return iter(self.__root__)
+
+    def __getitem__(self, item):
+        return self.__root__[item]
+
+
+class Resource(BaseModel):
+    resourceId: Optional[str]
+    parentResourceId: Optional[str]
+    resourceType: str
+    name: str
+    status: str = "active"
+    organization: str = "default"
+    language: str
+    languageISO: Optional[str]
+    timeZone: str
+    timeFormat: str = "24-hour"
+    dateFormat: str = "mm/dd/yy"
+    email: Optional[str]
+    phone: Optional[str]
+
+    class Config:
+        extra = Extra.allow  # or 'allow' str
+
+
+class ResourceList(BaseModel):
+    __root__: List[Resource]
+
+    def __iter__(self):
+        return iter(self.__root__)
+
+    def __getitem__(self, item):
+        return self.__root__[item]
+
+
+class ResourceType(BaseModel):
+    label: str
+    name: str
+    active: bool
+    role: str  # TODO: change to enum
+
+    class Config:
+        extra = Extra.allow  # or 'allow' str
+
+
+class ResourceTypeList(BaseModel):
+    __root__: List[ResourceType]
+
+    def __iter__(self):
+        return iter(self.__root__)
+
+    def __getitem__(self, item):
+        return self.__root__[item]
+        
