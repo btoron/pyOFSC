@@ -1,5 +1,8 @@
 import json
 import logging
+from pathlib import Path
+
+from requests import Response
 
 from ofsc import OFSC
 from ofsc.common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE
@@ -13,7 +16,6 @@ from ofsc.models import (
     WorkskillCondition,
     WorskillConditionList,
 )
-from requests import Response
 
 
 def test_get_workskills(instance):
@@ -36,14 +38,16 @@ def test_get_workskill(instance):
     assert response["name"] == "Residential"
 
 
-def test_create_workskill(instance):
+def test_create_workskill(instance, pp):
     logging.info("...create one skill")
     skill = Workskill(label="TEST", name="test", sharing=SharingEnum.maximal)
-    logging.warning(skill.json())
+    logging.warning(f"TEST.Create WorkSkill: IN: {skill.json()}")
     metadata_response = instance.metadata.create_or_update_workskill(
         skill=skill, response_type=FULL_RESPONSE
     )
     response = metadata_response.json()
+    logging.info(pp.pformat(response))
+    assert metadata_response.status_code < 299, response
     assert response["label"] == skill.label
     assert response["name"] == skill.name
     # Cleaning up
@@ -117,9 +121,8 @@ def test_get_resource_types(instance):
         response_type=FULL_RESPONSE
     )
     response = metadata_response.json()
-    logging.warning(response["items"])
     assert response["totalResults"] is not None
-    assert response["totalResults"] == 10  # 22.B
+    assert response["totalResults"] == 9  # 22.D
 
 
 def test_get_property(instance):
@@ -134,6 +137,16 @@ def test_get_property(instance):
     assert response["type"] == "string"
     assert response["entity"] == "activity"
     property = Property.parse_obj(response)
+
+
+def test_get_properties(instance):
+    logging.info("...Get properties")
+    metadata_response = instance.metadata.get_properties(response_type=FULL_RESPONSE)
+    assert metadata_response.status_code == 200
+    response = metadata_response.json()
+    assert response["totalResults"]
+    assert response["totalResults"] == 454  # 22.D
+    assert response["items"][0]["label"] == "ITEM_NUMBER"
 
 
 def test_create_replace_property(instance: OFSC, request_logging, faker):
@@ -164,3 +177,17 @@ def test_create_replace_property(instance: OFSC, request_logging, faker):
     assert response["type"] == property.type
     assert response["entity"] == property.entity
     property = Property.parse_obj(response)
+
+
+def test_import_plugin_file(instance: OFSC):
+    logging.info("... Import plugin via file")
+    metadata_response = instance.metadata.import_plugin_file(Path("tests/test.xml"))
+    assert metadata_response.status_code == 204
+
+
+def test_import_plugin(instance: OFSC):
+    logging.info("... Import plugin")
+    metadata_response = instance.metadata.import_plugin(
+        Path("tests/test.xml").read_text()
+    )
+    assert metadata_response.status_code == 204

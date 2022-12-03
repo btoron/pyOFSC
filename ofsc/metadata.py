@@ -2,6 +2,7 @@ import base64
 import json
 import logging
 import urllib
+from pathlib import Path
 from typing import List
 from urllib.parse import urljoin
 
@@ -251,4 +252,25 @@ class OFSMetadata(OFSApi):
     def get_resource_types(self):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/resourceTypes")
         response = requests.get(url, headers=self.headers)
+        return response
+
+    # 202212 Import plugin
+    @wrap_return(response_type=FULL_RESPONSE, expected=[204])
+    def import_plugin_file(self, plugin: Path):
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/plugins/custom-actions/import"
+        )
+        headers = self.headers
+        files = [("pluginFile", (plugin.name, plugin.read_text(), "text/xml"))]
+        response = requests.post(url, headers=self.headers, files=files)
+        return response
+
+    # 202212 Import plugin
+    @wrap_return(response_type=FULL_RESPONSE, expected=[204])
+    def import_plugin(self, plugin: str):
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/plugins/custom-actions/import"
+        )
+        files = [("pluginFile", ("noname.xml", plugin, "text/xml"))]
+        response = requests.post(url, headers=self.headers, files=files)
         return response
