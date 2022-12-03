@@ -21,11 +21,12 @@ class ofscTest(unittest.TestCase):
         self.pp = pprint.PrettyPrinter(indent=4)
         self.logger.setLevel(logging.DEBUG)
         # todo add credentials to test run
-        logging.warning("Here {}".format(os.environ.get("OFSC_CLIENT_ID")))
+        logging.info("ClientID {}".format(os.environ.get("OFSC_CLIENT_ID")))
         self.instance = OFSC(
             clientID=os.environ.get("OFSC_CLIENT_ID"),
             secret=os.environ.get("OFSC_CLIENT_SECRET"),
             companyName=os.environ.get("OFSC_COMPANY"),
+            root=os.environ.get("OFSC_ROOT"),
         )
         self.date = os.environ.get("OFSC_TEST_DATE")
 

@@ -12,7 +12,7 @@ class OFSConfig(BaseModel):
     clientID: str
     secret: str
     companyName: str
-    root: str
+    root: Optional[str]
 
     @property
     def authString(self):
@@ -43,6 +43,7 @@ class SharingEnum(str, Enum):
     maximal = "maximal"
     minimal = "minimal"
     summary = "summary"
+
 
 class EntityEnum(str, Enum):
     activity = "activity"
@@ -83,7 +84,7 @@ class Workskill(BaseModel):
     active: bool = True
     name: str = ""
     sharing: SharingEnum
-    translations: TranslationList = []
+    translations: Optional[TranslationList]
 
     @validator("translations", always=True)
     def set_default(cls, field_value, values):
@@ -143,6 +144,7 @@ class WorkzoneList(BaseModel):
 
     def __getitem__(self, item):
         return self.__root__[item]
+
 
 class Property(BaseModel):
     label: str
@@ -236,4 +238,3 @@ class ResourceTypeList(BaseModel):
 
     def __getitem__(self, item):
         return self.__root__[item]
-        

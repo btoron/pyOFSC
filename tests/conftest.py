@@ -17,6 +17,7 @@ def instance():
         clientID=os.environ.get("OFSC_CLIENT_ID"),
         secret=os.environ.get("OFSC_CLIENT_SECRET"),
         companyName=os.environ.get("OFSC_COMPANY"),
+        root=os.environ.get("OFSC_ROOT"),
     )
     return instance
 

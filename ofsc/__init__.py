@@ -15,9 +15,12 @@ class OFSC:
 
     API_PORTAL = "https://api.etadirect.com"
 
-    def __init__(self, clientID, companyName, secret, baseUrl=API_PORTAL):
+    def __init__(self, clientID, companyName, secret, root=None, baseUrl=API_PORTAL):
         self._config = OFSConfig(
-            baseURL=baseUrl, clientID=clientID, secret=secret, companyName=companyName
+            baseURL=baseUrl,
+            clientID=clientID,
+            secret=secret,
+            companyName=companyName,
         )
         self.headers = {}
         self.headers["Authorization"] = "Basic " + self._config.authString.decode(

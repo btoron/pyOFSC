@@ -1,6 +1,6 @@
-
 dist/
 .env
 *.pyc
 .DS_Store
 *.xslx
+tests/test.xml
