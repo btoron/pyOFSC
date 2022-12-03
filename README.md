@@ -71,7 +71,7 @@ Experimental:
 
 ### Metadata / Properties
     get_properties (self, offset=0, limit=100, response_type=FULL_RESPONSE)
-    get_property(self, label: str, response_type=JSON_RESPONSE):
+    get_property(self, label: str, response_type=JSON_RESPONSE)
     create_or_replace_property(self, property: Property, response_type=JSON_RESPONSE)
 
 ### Metadata / Workskills
@@ -79,8 +79,12 @@ Experimental:
     get_workskill(self, label: str, response_type=FULL_RESPONSE)
     create_or_update_workskill(self, skill: Workskill, response_type=FULL_RESPONSE)
     delete_workskill(self, label: str, response_type=FULL_RESPONSE)
-    get_workskill_conditions(self, response_type=FULL_RESPONSE):
+    get_workskill_conditions(self, response_type=FULL_RESPONSE)
     replace_workskill_conditions(self, data: WorskillConditionList, response_type=FULL_RESPONSE
+
+### Metadata / Plugins
+    import_plugin(self, plugin: str)
+    import_plugin_file(self, plugin: Path)
 
 ### Metadata / Resource Types
     get_resource_types(self, response_type=JSON_RESPONSE):
@@ -96,6 +100,7 @@ OFS REST API Version | PyOFSC
 21A| 1.8, 1.8,1, 1.9
 21D| 1.15
 22B| 1.16, 1.17
+22D| 1.18
 
 ## Deprecation Warning
 

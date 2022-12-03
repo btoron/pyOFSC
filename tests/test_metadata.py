@@ -121,9 +121,8 @@ def test_get_resource_types(instance):
         response_type=FULL_RESPONSE
     )
     response = metadata_response.json()
-    logging.warning(response["items"])
     assert response["totalResults"] is not None
-    assert response["totalResults"] == 10  # 22.B
+    assert response["totalResults"] == 9  # 22.D
 
 
 def test_get_property(instance):
@@ -138,6 +137,16 @@ def test_get_property(instance):
     assert response["type"] == "string"
     assert response["entity"] == "activity"
     property = Property.parse_obj(response)
+
+
+def test_get_properties(instance):
+    logging.info("...Get properties")
+    metadata_response = instance.metadata.get_properties(response_type=FULL_RESPONSE)
+    assert metadata_response.status_code == 200
+    response = metadata_response.json()
+    assert response["totalResults"]
+    assert response["totalResults"] == 454  # 22.D
+    assert response["items"][0]["label"] == "ITEM_NUMBER"
 
 
 def test_create_replace_property(instance: OFSC, request_logging, faker):
