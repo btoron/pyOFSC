@@ -6,6 +6,7 @@ from http.client import HTTPConnection  # py3
 import pytest
 import requests
 from faker import Faker
+
 from ofsc import OFSC
 
 
@@ -18,6 +19,20 @@ def instance():
         secret=os.environ.get("OFSC_CLIENT_SECRET"),
         companyName=os.environ.get("OFSC_COMPANY"),
         root=os.environ.get("OFSC_ROOT"),
+    )
+    return instance
+
+
+@pytest.fixture(scope="module")
+def instance_with_token():
+    # todo add credentials to test run
+    logging.warning("Here {}".format(os.environ.get("OFSC_CLIENT_ID")))
+    instance = OFSC(
+        clientID=os.environ.get("OFSC_CLIENT_ID"),
+        secret=os.environ.get("OFSC_CLIENT_SECRET"),
+        companyName=os.environ.get("OFSC_COMPANY"),
+        root=os.environ.get("OFSC_ROOT"),
+        useToken=True,
     )
     return instance
 

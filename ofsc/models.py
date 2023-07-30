@@ -11,11 +11,12 @@ class OFSConfig(BaseModel):
     clientID: str
     secret: str
     companyName: str
+    useToken: bool = False
     root: Optional[str]
     baseURL: Optional[str]
 
     @property
-    def authString(self):
+    def basicAuthString(self):
         return base64.b64encode(
             bytes(self.clientID + "@" + self.companyName + ":" + self.secret, "utf-8")
         )
@@ -32,10 +33,6 @@ class OFSConfig(BaseModel):
 class OFSApi:
     def __init__(self, config: OFSConfig) -> None:
         self._config = config
-        self.headers = {}
-        self.headers["Authorization"] = "Basic " + self._config.authString.decode(
-            "utf-8"
-        )
 
     @property
     def config(self):
@@ -44,6 +41,17 @@ class OFSApi:
     @property
     def baseUrl(self):
         return self._config.baseURL
+
+    @property
+    def headers(self):
+        self._headers = {}
+        if not self._config.useToken:
+            self._headers[
+                "Authorization"
+            ] = "Basic " + self._config.basicAuthString.decode("utf-8")
+        else:
+            print("Not implemented")
+        return self._headers
 
 
 class SharingEnum(str, Enum):
@@ -247,3 +255,9 @@ class ResourceTypeList(BaseModel):
 
     def __getitem__(self, item):
         return self.__root__[item]
+
+
+class OFSOAuthRequest(BaseModel):
+    assertion: Optional[str]
+    grant_type: str = "client_credentials"
+    ofs_dynamic_scope: Optional[str]

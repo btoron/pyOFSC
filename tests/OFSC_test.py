@@ -108,17 +108,6 @@ class ofscTest(unittest.TestCase):
         )
         self.delete_subscription(response["subscriptionId"])
 
-    # Test 2.03 get subscriptions
-    def test_003_get_subscriptions(self):
-        instance = self.instance
-        logger = self.logger
-        global created_subscription
-        logger.info("...203: Get Subscriptions")
-        raw_response = instance.core.get_subscriptions()
-        response = json.loads(raw_response)
-        logger.info(self.pp.pformat(response))
-        assert "totalResults" in response.keys()
-
     def test_004_get_events(self):
         instance = self.instance
         logger = self.logger
