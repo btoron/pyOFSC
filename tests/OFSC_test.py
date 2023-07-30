@@ -28,6 +28,7 @@ class ofscTest(unittest.TestCase):
             companyName=os.environ.get("OFSC_COMPANY"),
             root=os.environ.get("OFSC_ROOT"),
         )
+        self.logger.info(self.instance)
         self.date = os.environ.get("OFSC_TEST_DATE")
 
     def create_subscription(self):
@@ -35,7 +36,7 @@ class ofscTest(unittest.TestCase):
         logger = self.logger
         data = {"events": ["activityMoved"], "title": "Simple Subscription"}
         logger.info("...201: Create Subscription")
-        raw_response = instance.create_subscription(
+        raw_response = instance.core.create_subscription(
             json.dumps(data), response_type=FULL_RESPONSE
         )
         self.assertEqual(raw_response.status_code, 200)
@@ -113,13 +114,12 @@ class ofscTest(unittest.TestCase):
         logger = self.logger
         global created_subscription
         logger.info("...203: Get Subscriptions")
-        raw_response = instance.get_subscriptions()
+        raw_response = instance.core.get_subscriptions()
         response = json.loads(raw_response)
         logger.info(self.pp.pformat(response))
         assert "totalResults" in response.keys()
 
     def test_004_get_events(self):
-
         instance = self.instance
         logger = self.logger
         global pp, created_time

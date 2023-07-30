@@ -8,17 +8,25 @@ from pydantic import BaseModel, Extra, validator
 
 
 class OFSConfig(BaseModel):
-    baseURL: str
     clientID: str
     secret: str
     companyName: str
     root: Optional[str]
+    baseURL: Optional[str]
 
     @property
     def authString(self):
         return base64.b64encode(
             bytes(self.clientID + "@" + self.companyName + ":" + self.secret, "utf-8")
         )
+
+    class Config:
+        validate_assignment = True
+
+    @validator("baseURL")
+    def set_base_URL(cls, url, values):
+        print(values)
+        return url or f"https://{values['companyName']}.fs.ocs.oraclecloud.com"
 
 
 class OFSApi:
@@ -61,6 +69,7 @@ class EntityEnum(str, Enum):
 #     br = "br"
 #     el = "el"
 #     cs = "cs"
+
 
 # Work skills
 class Translation(BaseModel):

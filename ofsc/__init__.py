@@ -12,10 +12,9 @@ from .models import OFSConfig
 
 
 class OFSC:
+    # 202308 The API portal was deprecated, so the default URL becomes {companyname}.fs.ocs.oraclecloud.com
 
-    API_PORTAL = "https://api.etadirect.com"
-
-    def __init__(self, clientID, companyName, secret, root=None, baseUrl=API_PORTAL):
+    def __init__(self, clientID, companyName, secret, root=None, baseUrl=None):
         self._config = OFSConfig(
             baseURL=baseUrl,
             clientID=clientID,
@@ -54,6 +53,9 @@ class OFSC:
         if not self._metadata:
             self._metadata = OFSMetadata(config=self._config)
         return self._metadata
+
+    def __str__(self) -> str:
+        return f"baseURL={self._config.baseURL}"
 
     def __getattr__(self, method_name):
         """Function to wrap calls to methods directly withoud invoking the right API
