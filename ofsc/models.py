@@ -3,8 +3,12 @@ import typing
 from enum import Enum
 from functools import lru_cache
 from typing import Any, List, Optional
+from urllib.parse import urljoin
 
+import requests
 from pydantic import BaseModel, Extra, validator
+
+from ofsc.common import FULL_RESPONSE, JSON_RESPONSE, wrap_return
 
 
 class OFSConfig(BaseModel):
@@ -30,6 +34,12 @@ class OFSConfig(BaseModel):
         return url or f"https://{values['companyName']}.fs.ocs.oraclecloud.com"
 
 
+class OFSOAuthRequest(BaseModel):
+    assertion: Optional[str]
+    grant_type: str = "client_credentials"
+    ofs_dynamic_scope: Optional[str]
+
+
 class OFSApi:
     def __init__(self, config: OFSConfig) -> None:
         self._config = config
@@ -42,6 +52,24 @@ class OFSApi:
     def baseUrl(self):
         return self._config.baseURL
 
+    @wrap_return(response_type=FULL_RESPONSE, expected=[200])
+    def token(self, auth: OFSOAuthRequest = OFSOAuthRequest()) -> requests.Response:
+        headers = {}
+        if auth.grant_type == "client_credentials":
+            headers["Authorization"] = "Basic " + self._config.basicAuthString.decode(
+                "utf-8"
+            )
+        else:
+            raise NotImplementedError(
+                f"grant_type {auth.grant_type} not implemented yet"
+            )
+        headers["Content-Type"] = "application/x-www-form-urlencoded"
+        url = urljoin(self.baseUrl, "/rest/oauthTokenService/v2/token")
+        response = requests.post(
+            url, data=auth.dict(exclude_none=True), headers=headers
+        )
+        return response
+
     @property
     def headers(self):
         self._headers = {}
@@ -50,7 +78,9 @@ class OFSApi:
                 "Authorization"
             ] = "Basic " + self._config.basicAuthString.decode("utf-8")
         else:
-            print("Not implemented")
+            self._token = self.token().json()["access_token"]
+            self._headers["Authorization"] = f"Bearer {self._token}"
+            print(f"Not implemented {self._token}")
         return self._headers
 
 
@@ -255,9 +285,3 @@ class ResourceTypeList(BaseModel):
 
     def __getitem__(self, item):
         return self.__root__[item]
-
-
-class OFSOAuthRequest(BaseModel):
-    assertion: Optional[str]
-    grant_type: str = "client_credentials"
-    ofs_dynamic_scope: Optional[str]

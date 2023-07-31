@@ -15,10 +15,4 @@ class OFSOauth2(OFSApi):
     def get_token(
         self, params: OFSOAuthRequest = OFSOAuthRequest()
     ) -> requests.Response:
-        headers = self.headers
-        headers["Content-Type"] = "application/x-www-form-urlencoded"
-        url = urljoin(self.baseUrl, "/rest/oauthTokenService/v2/token")
-        response = requests.post(
-            url, data=params.dict(exclude_none=True), headers=headers
-        )
-        return response
+        return self.token()
