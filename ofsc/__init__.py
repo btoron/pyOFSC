@@ -44,19 +44,19 @@ class OFSC:
         ]
 
     @property
-    def core(self):
+    def core(self) -> OFSCore:
         if not self._core:
             self._core = OFSCore(config=self._config)
         return self._core
 
     @property
-    def metadata(self):
+    def metadata(self) -> OFSMetadata:
         if not self._metadata:
             self._metadata = OFSMetadata(config=self._config)
         return self._metadata
 
     @property
-    def oauth2(self):
+    def oauth2(self) -> OFSOauth2:
         if not self._oauth:
             self._oauth = OFSOauth2(config=self._config)
         return self._oauth

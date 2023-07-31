@@ -9,7 +9,7 @@ repository = 'https://github.com/btoron/pyOFSC'
 
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.11"
 requests = "^2.28.1"
 pytest = "^7.1.2"
 pydantic = "^1.9.1"

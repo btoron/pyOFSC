@@ -13,7 +13,6 @@ from ofsc import OFSC
 @pytest.fixture(scope="module")
 def instance():
     # todo add credentials to test run
-    logging.warning("Here {}".format(os.environ.get("OFSC_CLIENT_ID")))
     instance = OFSC(
         clientID=os.environ.get("OFSC_CLIENT_ID"),
         secret=os.environ.get("OFSC_CLIENT_SECRET"),
@@ -26,7 +25,6 @@ def instance():
 @pytest.fixture(scope="module")
 def instance_with_token():
     # todo add credentials to test run
-    logging.warning("Here {}".format(os.environ.get("OFSC_CLIENT_ID")))
     instance = OFSC(
         clientID=os.environ.get("OFSC_CLIENT_ID"),
         secret=os.environ.get("OFSC_CLIENT_SECRET"),

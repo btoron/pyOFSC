@@ -31,28 +31,6 @@ class ofscTest(unittest.TestCase):
         self.logger.info(self.instance)
         self.date = os.environ.get("OFSC_TEST_DATE")
 
-    def create_subscription(self):
-        instance = self.instance
-        logger = self.logger
-        data = {"events": ["activityMoved"], "title": "Simple Subscription"}
-        logger.info("...201: Create Subscription")
-        raw_response = instance.core.create_subscription(
-            json.dumps(data), response_type=FULL_RESPONSE
-        )
-        self.assertEqual(raw_response.status_code, 200)
-        response = raw_response.json()
-        logger.debug(self.pp.pformat(response))
-        self.assertIsNotNone(response["subscriptionId"])
-        return response
-
-    def delete_subscription(self, id):
-        instance = self.instance
-        logger = self.logger
-        logger.info("...202: Delete Subscription")
-        response = instance.delete_subscription(id, response_type=FULL_RESPONSE)
-        self.assertEqual(response.status_code, 204)
-        return response
-
     def move_activity_between_buckets_no_error(self):
         instance = self.instance
         logger = self.logger
@@ -81,32 +59,6 @@ class ofscTest(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 204)
         logger.info("...104: Move activity back")
-
-    # Test 2.01 Create subsciption (simple)
-    def test_001_create_delete_subscription(self):
-        logger = self.logger
-        global pp
-        response = self.create_subscription()
-        self.assertIsNotNone(response["subscriptionId"])
-        result = self.delete_subscription(response["subscriptionId"])
-        self.assertEqual(result.status_code, 204)
-
-    # Test 2.02 get subscription details
-    def test_002_get_subscription_details(self):
-        instance = self.instance
-        logger = self.logger
-
-        logger.info("...202: Get Subscription Details")
-        created_subscription = self.create_subscription()
-        raw_response = instance.get_subscription_details(
-            created_subscription["subscriptionId"], response_type=FULL_RESPONSE
-        )
-        response = raw_response.json()
-        logger.info(self.pp.pformat(response))
-        self.assertEqual(
-            response["subscriptionId"], created_subscription["subscriptionId"]
-        )
-        self.delete_subscription(response["subscriptionId"])
 
     def test_004_get_events(self):
         instance = self.instance

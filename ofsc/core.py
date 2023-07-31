@@ -11,7 +11,6 @@ from .models import OFSApi, OFSConfig
 
 
 class OFSCore(OFSApi):
-
     # OFSC Function Library
     def get_activities(self, params, response_type=TEXT_RESPONSE):
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/activities")
@@ -70,51 +69,6 @@ class OFSCore(OFSApi):
         )
         response = requests.post(url, headers=self.headers, data=data)
         # print (response.status_code)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
-
-    def get_subscriptions(self, response_type=TEXT_RESPONSE):
-        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/events/subscriptions")
-        response = requests.get(url, headers=self.headers)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
-
-    def create_subscription(self, data, response_type=TEXT_RESPONSE):
-        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/events/subscriptions")
-        response = requests.post(url, headers=self.headers, data=data)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
-
-    def delete_subscription(self, subscription_id, response_type=FULL_RESPONSE):
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/events/subscriptions/{subscription_id}"
-        )
-        response = requests.delete(url, headers=self.headers)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
-
-    def get_subscription_details(self, subscription_id, response_type=TEXT_RESPONSE):
-        url = urljoin(
-            self.baseUrl,
-            "/rest/ofscCore/v1/events/subscriptions/{}".format(str(subscription_id)),
-        )
-        response = requests.get(url, headers=self.headers)
         if response_type == FULL_RESPONSE:
             return response
         elif response_type == JSON_RESPONSE:
@@ -497,3 +451,35 @@ class OFSCore(OFSApi):
                 )
             offset = offset + response_count
         return items
+
+    ###
+    # 1. Subscriptions Management. Using wrapper
+    ###
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def get_subscriptions(self):
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/events/subscriptions")
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def create_subscription(self, data):
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/events/subscriptions")
+        response = requests.post(url, headers=self.headers, data=data)
+        return response
+
+    @wrap_return(response_type=JSON_RESPONSE, expected=[204])
+    def delete_subscription(self, subscription_id):
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscCore/v1/events/subscriptions/{subscription_id}"
+        )
+        response = requests.delete(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def get_subscription_details(self, subscription_id):
+        url = urljoin(
+            self.baseUrl,
+            "/rest/ofscCore/v1/events/subscriptions/{}".format(str(subscription_id)),
+        )
+        response = requests.get(url, headers=self.headers)
+        return response

@@ -96,7 +96,7 @@ class ofscActivitiesTest(unittest.TestCase):
             "offset": 0,
             "limit": 100,
         }
-        response = instance.get_activities(params, response_type=FULL_RESPONSE)
+        response = instance.core.get_activities(params, response_type=FULL_RESPONSE)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         logger.debug(data.keys())
