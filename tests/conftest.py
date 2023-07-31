@@ -58,3 +58,19 @@ def request_logging():
 
     # print statements from `http.client.HTTPConnection` to console/stdout
     HTTPConnection.debuglevel = 1
+
+
+@pytest.fixture
+def demo_data():
+    # TODO: find a better way to change based on demo date
+    demo_data = {
+        "23B Service Update 1": {
+            "get_all_activities": {
+                "bucket_id": "CAUSA",
+                "expected_id": 3960470,
+                "expected_items": 758,
+                "expected_postalcode": "55001",
+            }
+        }
+    }
+    return demo_data["23B Service Update 1"]
