@@ -1,12 +1,6 @@
-import json
 import logging
-from pathlib import Path
 
-import pytest
-from requests import Response
-
-from ofsc import OFSC
-from ofsc.common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE
+from ofsc.common import FULL_RESPONSE
 
 
 def test_get_token(instance_with_token, request_logging):
