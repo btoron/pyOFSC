@@ -1,11 +1,11 @@
 import base64
 import typing
 from enum import Enum
-from functools import lru_cache
 from typing import Any, List, Optional
 from urllib.parse import urljoin
 
 import requests
+from cachetools import TTLCache, cached
 from pydantic import BaseModel, Extra, validator
 
 from ofsc.common import FULL_RESPONSE, JSON_RESPONSE, wrap_return
@@ -52,6 +52,9 @@ class OFSApi:
     def baseUrl(self):
         return self._config.baseURL
 
+    @cached(
+        cache=TTLCache(maxsize=1, ttl=3000)
+    )  # Cache of token results for 50 minutes
     @wrap_return(response_type=FULL_RESPONSE, expected=[200])
     def token(self, auth: OFSOAuthRequest = OFSOAuthRequest()) -> requests.Response:
         headers = {}
