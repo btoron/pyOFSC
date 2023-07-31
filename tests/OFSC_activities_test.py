@@ -80,65 +80,6 @@ class ofscActivitiesTest(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 204)
 
-    # test A.05 Get Activities
-    def test_A05_get_all_activities_with_offset(self):
-        instance = self.instance
-        logger = self.logger
-        start = date.fromisoformat(self.date) - timedelta(days=5)
-        end = start + timedelta(days=20)
-        logger.info(f"{start} {end}")
-        params = {
-            "dateFrom": start.strftime("%Y-%m-%d"),
-            "dateTo": end.strftime("%Y-%m-%d"),
-            "resources": "SUNRISE",
-            "includeChildren": "all",
-            "fields": "activityId,resourceId",
-            "offset": 0,
-            "limit": 100,
-        }
-        response = instance.get_activities(params, response_type=FULL_RESPONSE)
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        logger.debug(data.keys())
-        self.assertTrue(data["hasMore"])
-        self.assertIsNotNone(data["items"])
-        self.assertEqual(len(data["items"]), 100)
-        self.assertEqual(
-            # TODO: Due to the nature of the get_activities this assert may fail
-            data["items"][10],
-            {"activityId": 3966778, "resourceId": "11104"},
-        )
-
-    # test A.06 Get Activities
-    def test_A06_get_all_activities_no_offset(self):
-        instance = self.instance
-        logger = self.logger
-        start = date.fromisoformat(self.date) - timedelta(days=5)
-        end = start + timedelta(days=20)
-        logger.info(f"{start} {end}")
-        params = {
-            "dateFrom": start.strftime("%Y-%m-%d"),
-            "dateTo": end.strftime("%Y-%m-%d"),
-            "resources": "FLUSA",
-            "includeChildren": "all",
-            "fields": "activityId,resourceId",
-            "offset": 0,
-            "limit": 5000,
-        }
-        response = instance.get_activities(params, response_type=FULL_RESPONSE)
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        logger.info(data.keys())
-        self.assertNotIn("hasMore", data.keys())
-        self.assertIsNotNone(data["items"])
-        self.assertEqual(len(data["items"]), 3890)
-
-        self.assertEqual(
-            # TODO: Due to the nature of the get_activities this assert may fail
-            data["items"][10],
-            {"activityId": 3962118, "resourceId": "33001"},
-        )
-
 
 if __name__ == "__main__":
     unittest.main()

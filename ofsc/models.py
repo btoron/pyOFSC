@@ -1,33 +1,48 @@
 import base64
 import typing
 from enum import Enum
-from functools import lru_cache
 from typing import Any, List, Optional
+from urllib.parse import urljoin
 
+import requests
+from cachetools import TTLCache, cached
 from pydantic import BaseModel, Extra, validator
+
+from ofsc.common import FULL_RESPONSE, JSON_RESPONSE, wrap_return
 
 
 class OFSConfig(BaseModel):
-    baseURL: str
     clientID: str
     secret: str
     companyName: str
+    useToken: bool = False
     root: Optional[str]
+    baseURL: Optional[str]
 
     @property
-    def authString(self):
+    def basicAuthString(self):
         return base64.b64encode(
             bytes(self.clientID + "@" + self.companyName + ":" + self.secret, "utf-8")
         )
+
+    class Config:
+        validate_assignment = True
+
+    @validator("baseURL")
+    def set_base_URL(cls, url, values):
+        print(values)
+        return url or f"https://{values['companyName']}.fs.ocs.oraclecloud.com"
+
+
+class OFSOAuthRequest(BaseModel):
+    assertion: Optional[str]
+    grant_type: str = "client_credentials"
+    ofs_dynamic_scope: Optional[str]
 
 
 class OFSApi:
     def __init__(self, config: OFSConfig) -> None:
         self._config = config
-        self.headers = {}
-        self.headers["Authorization"] = "Basic " + self._config.authString.decode(
-            "utf-8"
-        )
 
     @property
     def config(self):
@@ -36,6 +51,40 @@ class OFSApi:
     @property
     def baseUrl(self):
         return self._config.baseURL
+
+    @cached(
+        cache=TTLCache(maxsize=1, ttl=3000)
+    )  # Cache of token results for 50 minutes
+    @wrap_return(response_type=FULL_RESPONSE, expected=[200])
+    def token(self, auth: OFSOAuthRequest = OFSOAuthRequest()) -> requests.Response:
+        headers = {}
+        if auth.grant_type == "client_credentials":
+            headers["Authorization"] = "Basic " + self._config.basicAuthString.decode(
+                "utf-8"
+            )
+        else:
+            raise NotImplementedError(
+                f"grant_type {auth.grant_type} not implemented yet"
+            )
+        headers["Content-Type"] = "application/x-www-form-urlencoded"
+        url = urljoin(self.baseUrl, "/rest/oauthTokenService/v2/token")
+        response = requests.post(
+            url, data=auth.dict(exclude_none=True), headers=headers
+        )
+        return response
+
+    @property
+    def headers(self):
+        self._headers = {}
+        if not self._config.useToken:
+            self._headers[
+                "Authorization"
+            ] = "Basic " + self._config.basicAuthString.decode("utf-8")
+        else:
+            self._token = self.token().json()["access_token"]
+            self._headers["Authorization"] = f"Bearer {self._token}"
+            print(f"Not implemented {self._token}")
+        return self._headers
 
 
 class SharingEnum(str, Enum):
@@ -61,6 +110,7 @@ class EntityEnum(str, Enum):
 #     br = "br"
 #     el = "el"
 #     cs = "cs"
+
 
 # Work skills
 class Translation(BaseModel):

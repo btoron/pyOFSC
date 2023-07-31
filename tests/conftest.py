@@ -6,18 +6,31 @@ from http.client import HTTPConnection  # py3
 import pytest
 import requests
 from faker import Faker
+
 from ofsc import OFSC
 
 
 @pytest.fixture(scope="module")
 def instance():
     # todo add credentials to test run
-    logging.warning("Here {}".format(os.environ.get("OFSC_CLIENT_ID")))
     instance = OFSC(
         clientID=os.environ.get("OFSC_CLIENT_ID"),
         secret=os.environ.get("OFSC_CLIENT_SECRET"),
         companyName=os.environ.get("OFSC_COMPANY"),
         root=os.environ.get("OFSC_ROOT"),
+    )
+    return instance
+
+
+@pytest.fixture(scope="module")
+def instance_with_token():
+    # todo add credentials to test run
+    instance = OFSC(
+        clientID=os.environ.get("OFSC_CLIENT_ID"),
+        secret=os.environ.get("OFSC_CLIENT_SECRET"),
+        companyName=os.environ.get("OFSC_COMPANY"),
+        root=os.environ.get("OFSC_ROOT"),
+        useToken=True,
     )
     return instance
 
@@ -45,3 +58,19 @@ def request_logging():
 
     # print statements from `http.client.HTTPConnection` to console/stdout
     HTTPConnection.debuglevel = 1
+
+
+@pytest.fixture
+def demo_data():
+    # TODO: find a better way to change based on demo date
+    demo_data = {
+        "23B Service Update 1": {
+            "get_all_activities": {
+                "bucket_id": "CAUSA",
+                "expected_id": 3960470,
+                "expected_items": 758,
+                "expected_postalcode": "55001",
+            }
+        }
+    }
+    return demo_data["23B Service Update 1"]
