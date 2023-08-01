@@ -31,6 +31,7 @@ Experimental:
     get_file_property(self, activityId, label, mediaType="application/octet-stream", response_type=FULL_RESPONSE)
     get_all_activities( self, root, date_from, date_to, activity_fields, initial_offset=0, limit=5000)
     search_activities(self, params, response_type=TEXT_RESPONSE)
+    bulk_update(self, data:BulkUpdateRequest, response_type=JSON_RESPONSE)
 
 
 ### Core / Events
