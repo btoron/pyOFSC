@@ -8,6 +8,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build and publish to testpypi
-        uses: JRubics/poetry-publish@v1.12
+        uses: JRubics/poetry-publish@v1.17
         with:
           pypi_token: ${{ secrets.PYPI_TOKEN }}
