@@ -288,3 +288,57 @@ class ResourceTypeList(BaseModel):
 
     def __getitem__(self, item):
         return self.__root__[item]
+
+
+# Core / Activities
+class BulkUpdateActivityItem(BaseModel):
+    activityId: Optional[int]
+    activityType: Optional[str]
+    date: Optional[str]
+
+    class Config:
+        extra = Extra.allow  # or 'allow' str
+
+
+# CORE / BulkUpdaterequest
+
+
+class BulkUpdateParameters(BaseModel):
+    fallbackResource: Optional[str]
+    identifyActivityBy: Optional[str]
+    ifExistsThenDoNotUpdateFields: Optional[List[str]]
+    ifInFinalStatusThen: Optional[str]
+    inventoryPropertiesUpdateMode: Optional[str]
+
+
+class BulkUpdateRequest(BaseModel):
+    activities: List[BulkUpdateActivityItem]
+    updateParameters: BulkUpdateParameters
+
+
+class ActivityKeys(BaseModel):
+    activityId: Optional[int]
+    apptNumber: Optional[str]
+    customerNumber: Optional[str]
+
+
+class BulkUpdateError(BaseModel):
+    errorDetail: Optional[str]
+    operation: Optional[str]
+
+
+class BulkUpdateWarning(BaseModel):
+    code: Optional[int]
+    message: Optional[int]
+
+
+class BulkUpdateResult(BaseModel):
+    activityKeys: Optional[ActivityKeys]
+    errors: Optional[List[BulkUpdateError]]
+    operationsFailed: Optional[List[str]]
+    operationsPerformed: Optional[List[str]]
+    warnings: Optional[List[BulkUpdateWarning]]
+
+
+class BulkUpdateResponse(BaseModel):
+    results: Optional[List[BulkUpdateResult]]
