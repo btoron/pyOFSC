@@ -7,7 +7,7 @@ from urllib.parse import urljoin
 import requests
 
 from .common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE, wrap_return
-from .models import OFSApi, OFSConfig
+from .models import BulkUpdateRequest, OFSApi, OFSConfig
 
 
 class OFSCore(OFSApi):
@@ -482,4 +482,17 @@ class OFSCore(OFSApi):
             "/rest/ofscCore/v1/events/subscriptions/{}".format(str(subscription_id)),
         )
         response = requests.get(url, headers=self.headers)
+        return response
+
+    ###
+    # 2. Core / Activities
+    ###
+
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def bulk_update(self, data: BulkUpdateRequest):
+        url = urljoin(
+            self.baseUrl,
+            "/rest/ofscCore/v1/activities/custom-actions/bulkUpdate",
+        )
+        response = requests.post(url, headers=self.headers, data=data.json())
         return response

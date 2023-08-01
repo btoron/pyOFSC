@@ -4,6 +4,7 @@ from datetime import date, timedelta
 import pytest
 
 from ofsc.common import FULL_RESPONSE
+from ofsc.models import BulkUpdateRequest, BulkUpdateResponse
 
 
 def test_search_activities_001(instance):
@@ -82,3 +83,76 @@ def test_get_activities_offset(instance, current_date, demo_data, request_loggin
         "activityId": expected_id,
         "resourceId": expected_postalcode,
     }
+
+
+def test_model_bulk_update_simple(instance, request_logging):
+    logging.info("...104. Bulk Update")
+    data = {
+        "updateParameters": {
+            "identifyActivityBy": "apptNumber",
+            "ifInFinalStatusThen": "doNothing",
+        },
+        "activities": [
+            {
+                "apptNumber": "XS3453456",
+                "resourceId": "CAUSA",
+                "date": "2023-08-09",
+                "activityType": "09",
+                "timeZone": "America/New_York",
+                "language": "en-US",
+                "inventories": {
+                    "items": [
+                        {
+                            "inventoryType": "RG6BLK",
+                            "inventory_model": "Z222",
+                            "quantity": 10,
+                        },
+                        {
+                            "inventoryType": "RG6BLK",
+                            "inventory_model": "X333",
+                            "quantity": 5,
+                        },
+                    ]
+                },
+                "requiredInventories": {
+                    "items": [
+                        {"inventoryType": "NS", "model": "A22", "quantity": 10},
+                        {"inventoryType": "NS", "model": "B22", "quantity": 10},
+                    ]
+                },
+                "linkedActivities": {
+                    "items": [
+                        {
+                            "fromActivity": {
+                                "apptNumber": "A0001",
+                                "linkType": "start-after",
+                            }
+                        },
+                        {
+                            "toActivity": {
+                                "apptNumber": "B0002",
+                                "linkType": "start-after",
+                            }
+                        },
+                    ]
+                },
+                "resourcePreferences": {
+                    "items": [
+                        {
+                            "resourceId": "testActivityCustomAcQYNWZCUYYP",
+                            "preferenceType": "preferred",
+                        },
+                        {
+                            "resourceId": "testActivityCustomAcCKIVJZFSSB",
+                            "preferenceType": "preferred",
+                        },
+                    ]
+                },
+            }
+        ],
+    }
+    input = BulkUpdateRequest.parse_obj(data)
+    raw_response = instance.core.bulk_update(input, response_type=FULL_RESPONSE)
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    output = BulkUpdateResponse.parse_obj(response)
