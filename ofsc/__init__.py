@@ -23,6 +23,7 @@ class OFSC:
             clientID=clientID,
             secret=secret,
             companyName=companyName,
+            root=root,
             useToken=useToken,
         )
         self._core = OFSCore(config=self._config)
