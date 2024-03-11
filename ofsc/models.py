@@ -1,12 +1,20 @@
 import base64
-import typing
 from enum import Enum
 from typing import Any, List, Optional
 from urllib.parse import urljoin
 
 import requests
 from cachetools import TTLCache, cached
-from pydantic import BaseModel, Extra, validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    RootModel,
+    ValidationInfo,
+    field_validator,
+)
+from pydantic_settings import BaseSettings
+from typing_extensions import Annotated
 
 from ofsc.common import FULL_RESPONSE, JSON_RESPONSE, wrap_return
 
@@ -16,8 +24,8 @@ class OFSConfig(BaseModel):
     secret: str
     companyName: str
     useToken: bool = False
-    root: Optional[str]
-    baseURL: Optional[str]
+    root: Optional[str] = None
+    baseURL: Optional[str] = None
 
     @property
     def basicAuthString(self):
@@ -25,19 +33,17 @@ class OFSConfig(BaseModel):
             bytes(self.clientID + "@" + self.companyName + ":" + self.secret, "utf-8")
         )
 
-    class Config:
-        validate_assignment = True
+    model_config = ConfigDict(validate_assignment=True)
 
-    @validator("baseURL")
-    def set_base_URL(cls, url, values):
-        print(values)
-        return url or f"https://{values['companyName']}.fs.ocs.oraclecloud.com"
+    @field_validator("baseURL")
+    def set_base_URL(cls, url, info: ValidationInfo):
+        return url or f"https://{info.data['companyName']}.fs.ocs.oraclecloud.com"
 
 
 class OFSOAuthRequest(BaseModel):
-    assertion: Optional[str]
+    assertion: Optional[str] = None
     grant_type: str = "client_credentials"
-    ofs_dynamic_scope: Optional[str]
+    ofs_dynamic_scope: Optional[str] = None
 
 
 class OFSApi:
@@ -69,7 +75,7 @@ class OFSApi:
         headers["Content-Type"] = "application/x-www-form-urlencoded"
         url = urljoin(self.baseUrl, "/rest/oauthTokenService/v2/token")
         response = requests.post(
-            url, data=auth.dict(exclude_none=True), headers=headers
+            url, data=auth.model_dump(exclude_none=True), headers=headers
         )
         return response
 
@@ -77,9 +83,9 @@ class OFSApi:
     def headers(self):
         self._headers = {}
         if not self._config.useToken:
-            self._headers[
-                "Authorization"
-            ] = "Basic " + self._config.basicAuthString.decode("utf-8")
+            self._headers["Authorization"] = (
+                "Basic " + self._config.basicAuthString.decode("utf-8")
+            )
         else:
             self._token = self.token().json()["access_token"]
             self._headers["Authorization"] = f"Bearer {self._token}"
@@ -116,17 +122,15 @@ class EntityEnum(str, Enum):
 class Translation(BaseModel):
     language: str = "en"
     name: str
-    languageISO: Optional[str]
+    languageISO: Optional[str] = None
 
 
-class TranslationList(BaseModel):
-    __root__: List[Translation]
-
+class TranslationList(RootModel[List[Translation]]):
     def __iter__(self):
-        return iter(self.__root__)
+        return iter(self.root)
 
     def __getitem__(self, item):
-        return self.__root__[item]
+        return self.root[item]
 
 
 class Workskill(BaseModel):
@@ -134,21 +138,18 @@ class Workskill(BaseModel):
     active: bool = True
     name: str = ""
     sharing: SharingEnum
-    translations: Optional[TranslationList]
+    translations: Annotated[Optional[TranslationList], Field(validate_default=True)] = (
+        None
+    )
 
-    @validator("translations", always=True)
+    @field_validator("translations")
     def set_default(cls, field_value, values):
-        return field_value or [Translation(name=values["name"])]
+        return field_value or TranslationList(
+            [Translation(name=values.data.get("name"))]
+        )
 
 
-class WorkskillList(BaseModel):
-    __root__: List[Workskill]
-
-    def __iter__(self):
-        return iter(self.__root__)
-
-    def __getitem__(self, item):
-        return self.__root__[item]
+WorkskillList = RootModel[List[Workskill]]
 
 
 class Condition(BaseModel):
@@ -164,17 +165,10 @@ class WorkskillCondition(BaseModel):
     requiredLevel: int
     preferableLevel: int
     conditions: List[Condition]
-    dependencies: Any
+    dependencies: Any = None
 
 
-class WorskillConditionList(BaseModel):
-    __root__: List[WorkskillCondition]
-
-    def __iter__(self):
-        return iter(self.__root__)
-
-    def __getitem__(self, item):
-        return self.__root__[item]
+WorskillConditionList = RootModel[List[WorkskillCondition]]
 
 
 # Workzones
@@ -186,29 +180,23 @@ class Workzone(BaseModel):
     keys: List[Any]
 
 
-class WorkzoneList(BaseModel):
-    __root__: List[Workzone]
-
-    def __iter__(self):
-        return iter(self.__root__)
-
-    def __getitem__(self, item):
-        return self.__root__[item]
+WorkzoneList = RootModel[List[Workzone]]
 
 
 class Property(BaseModel):
     label: str
     name: str
     type: str
-    entity: Optional[EntityEnum]
-    gui: Optional[str]
-    translations: TranslationList = []
+    entity: Optional[EntityEnum] = None
+    gui: Optional[str] = None
+    translations: Annotated[TranslationList, Field(validate_default=True)] = []
 
-    @validator("translations", always=True)
+    @field_validator("translations")
     def set_default(cls, field_value, values):
-        return field_value or [Translation(name=values["name"])]
+        return field_value or [Translation(name=values.name)]
 
-    @validator("gui")
+    @field_validator("gui")
+    @classmethod
     def gui_match(cls, v):
         if v not in [
             "text",
@@ -227,47 +215,30 @@ class Property(BaseModel):
             raise ValueError(f"{v} is not a valid GUI value")
         return v
 
-    class Config:
-        extra = Extra.allow  # or 'allow' str
+    model_config = ConfigDict(extra="allow")
 
 
-class PropertyList(BaseModel):
-    __root__: List[Property]
-
-    def __iter__(self):
-        return iter(self.__root__)
-
-    def __getitem__(self, item):
-        return self.__root__[item]
+PropertyList = RootModel[List[Property]]
 
 
 class Resource(BaseModel):
-    resourceId: Optional[str]
-    parentResourceId: Optional[str]
+    resourceId: Optional[str] = None
+    parentResourceId: Optional[str] = None
     resourceType: str
     name: str
     status: str = "active"
     organization: str = "default"
     language: str
-    languageISO: Optional[str]
+    languageISO: Optional[str] = None
     timeZone: str
     timeFormat: str = "24-hour"
     dateFormat: str = "mm/dd/yy"
-    email: Optional[str]
-    phone: Optional[str]
-
-    class Config:
-        extra = Extra.allow  # or 'allow' str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
 
 
-class ResourceList(BaseModel):
-    __root__: List[Resource]
-
-    def __iter__(self):
-        return iter(self.__root__)
-
-    def __getitem__(self, item):
-        return self.__root__[item]
+ResourceList = RootModel[List[Resource]]
 
 
 class ResourceType(BaseModel):
@@ -275,40 +246,29 @@ class ResourceType(BaseModel):
     name: str
     active: bool
     role: str  # TODO: change to enum
-
-    class Config:
-        extra = Extra.allow  # or 'allow' str
+    model_config = ConfigDict(extra="allow")
 
 
-class ResourceTypeList(BaseModel):
-    __root__: List[ResourceType]
-
-    def __iter__(self):
-        return iter(self.__root__)
-
-    def __getitem__(self, item):
-        return self.__root__[item]
+ResourceTypeList = RootModel[List[ResourceType]]
 
 
 # Core / Activities
 class BulkUpdateActivityItem(BaseModel):
-    activityId: Optional[int]
-    activityType: Optional[str]
-    date: Optional[str]
-
-    class Config:
-        extra = Extra.allow  # or 'allow' str
+    activityId: Optional[int] = None
+    activityType: Optional[str] = None
+    date: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
 
 
 # CORE / BulkUpdaterequest
 
 
 class BulkUpdateParameters(BaseModel):
-    fallbackResource: Optional[str]
-    identifyActivityBy: Optional[str]
-    ifExistsThenDoNotUpdateFields: Optional[List[str]]
-    ifInFinalStatusThen: Optional[str]
-    inventoryPropertiesUpdateMode: Optional[str]
+    fallbackResource: Optional[str] = None
+    identifyActivityBy: Optional[str] = None
+    ifExistsThenDoNotUpdateFields: Optional[List[str]] = None
+    ifInFinalStatusThen: Optional[str] = None
+    inventoryPropertiesUpdateMode: Optional[str] = None
 
 
 class BulkUpdateRequest(BaseModel):
@@ -317,28 +277,28 @@ class BulkUpdateRequest(BaseModel):
 
 
 class ActivityKeys(BaseModel):
-    activityId: Optional[int]
-    apptNumber: Optional[str]
-    customerNumber: Optional[str]
+    activityId: Optional[int] = None
+    apptNumber: Optional[str] = None
+    customerNumber: Optional[str] = None
 
 
 class BulkUpdateError(BaseModel):
-    errorDetail: Optional[str]
-    operation: Optional[str]
+    errorDetail: Optional[str] = None
+    operation: Optional[str] = None
 
 
 class BulkUpdateWarning(BaseModel):
-    code: Optional[int]
-    message: Optional[int]
+    code: Optional[int] = None
+    message: Optional[int] = None
 
 
 class BulkUpdateResult(BaseModel):
-    activityKeys: Optional[ActivityKeys]
-    errors: Optional[List[BulkUpdateError]]
-    operationsFailed: Optional[List[str]]
-    operationsPerformed: Optional[List[str]]
-    warnings: Optional[List[BulkUpdateWarning]]
+    activityKeys: Optional[ActivityKeys] = None
+    errors: Optional[List[BulkUpdateError]] = None
+    operationsFailed: Optional[List[str]] = None
+    operationsPerformed: Optional[List[str]] = None
+    warnings: Optional[List[BulkUpdateWarning]] = None
 
 
 class BulkUpdateResponse(BaseModel):
-    results: Optional[List[BulkUpdateResult]]
+    results: Optional[List[BulkUpdateResult]] = None

@@ -18,12 +18,13 @@ from ofsc.models import (
 )
 
 
-def test_get_workskills(instance):
+def test_get_workskills(instance, demo_data):
     logging.info("...Get all skills")
     metadata_response = instance.metadata.get_workskills(response_type=FULL_RESPONSE)
     response = metadata_response.json()
+    expected_workskills = demo_data.get("metadata").get("expected_workskills")
     assert response["totalResults"] is not None
-    assert response["totalResults"] == 6  # 22.B
+    assert response["totalResults"] == expected_workskills  # 22.B
     assert response["items"][0]["label"] == "EST"
     assert response["items"][1]["name"] == "Residential"
 
@@ -41,7 +42,7 @@ def test_get_workskill(instance):
 def test_create_workskill(instance, pp):
     logging.info("...create one skill")
     skill = Workskill(label="TEST", name="test", sharing=SharingEnum.maximal)
-    logging.warning(f"TEST.Create WorkSkill: IN: {skill.json()}")
+    logging.warning(f"TEST.Create WorkSkill: IN: {skill.model_dump_json()}")
     metadata_response = instance.metadata.create_or_update_workskill(
         skill=skill, response_type=FULL_RESPONSE
     )
@@ -55,9 +56,7 @@ def test_create_workskill(instance, pp):
 
 
 def test_delete_workskill(instance):
-    logging.info("...delete one skill")
     skill = Workskill(label="TEST", name="test", sharing=SharingEnum.maximal)
-    logging.warning(skill.json())
     metadata_response = instance.metadata.create_or_update_workskill(
         skill=skill, response_type=FULL_RESPONSE
     )
@@ -71,36 +70,42 @@ def test_delete_workskill(instance):
     assert metadata_response.status_code == 204
 
 
-def test_get_workskill_conditions(instance, pp):
+def test_get_workskill_conditions(instance, pp, demo_data):
     logging.info("... get workskill conditions")
     metadata_response = instance.metadata.get_workskill_conditions(
         response_type=FULL_RESPONSE
+    )
+    expected_workskill_conditions = demo_data.get("metadata").get(
+        "expected_workskill_conditions"
     )
     response = metadata_response.json()
     assert metadata_response.status_code == 200
     logging.debug(pp.pformat(response))
     assert response["totalResults"] is not None
-    assert response["totalResults"] == 7
+    assert response["totalResults"] == expected_workskill_conditions
     for item in response["items"]:
         logging.debug(pp.pformat(item))
-        ws_item = WorkskillCondition.parse_obj(item)
+        ws_item = WorkskillCondition.model_validate(item)
         logging.debug(pp.pformat(ws_item))
         assert ws_item.label == item["label"]
         for condition in ws_item.conditions:
             assert type(condition) == Condition
 
 
-def test_replace_workskill_conditions(instance, pp):
+def test_replace_workskill_conditions(instance, pp, demo_data):
     logging.info("... replace workskill conditions")
     response = instance.metadata.get_workskill_conditions(response_type=JSON_RESPONSE)
+    expected_workskill_conditions = demo_data.get("metadata").get(
+        "expected_workskill_conditions"
+    )
     assert response["totalResults"] is not None
-    assert response["totalResults"] == 7
-    ws_list = WorskillConditionList.parse_obj(response["items"])
+    assert response["totalResults"] == expected_workskill_conditions
+    ws_list = WorskillConditionList.model_validate(response["items"])
     metadata_response = instance.metadata.replace_workskill_conditions(ws_list)
     logging.debug(pp.pformat(metadata_response.text))
     assert metadata_response.status_code == 200
     assert response["totalResults"] is not None
-    assert response["totalResults"] == 7
+    assert response["totalResults"] == expected_workskill_conditions
 
 
 def test_get_workzones(instance):
@@ -111,18 +116,20 @@ def test_get_workzones(instance):
     response = metadata_response.json()
     assert response["totalResults"] is not None
     assert response["totalResults"] == 18  # 22.B
-    assert response["items"][0]["workZoneLabel"] == "ALTAMONTE SPRINGS"
+    assert response["items"][0]["workZoneLabel"] == "ALTAMONTE_SPRINGS"
     assert response["items"][1]["workZoneName"] == "CASSELBERRY"
 
 
-def test_get_resource_types(instance):
+def test_get_resource_types(instance, demo_data):
     logging.info("...Get all Resource Types")
     metadata_response = instance.metadata.get_resource_types(
         response_type=FULL_RESPONSE
     )
     response = metadata_response.json()
     assert response["totalResults"] is not None
-    assert response["totalResults"] == 9  # 22.D
+    assert response["totalResults"] == demo_data.get("metadata").get(
+        "expected_resource_types"
+    )
 
 
 def test_get_property(instance):
@@ -139,19 +146,20 @@ def test_get_property(instance):
     property = Property.parse_obj(response)
 
 
-def test_get_properties(instance):
+def test_get_properties(instance, demo_data):
     logging.info("...Get properties")
     metadata_response = instance.metadata.get_properties(response_type=FULL_RESPONSE)
+    expected_properties = demo_data.get("metadata").get("expected_properties")
     assert metadata_response.status_code == 200
     response = metadata_response.json()
     assert response["totalResults"]
-    assert response["totalResults"] == 454  # 22.D
+    assert response["totalResults"] == expected_properties  # 22.D
     assert response["items"][0]["label"] == "ITEM_NUMBER"
 
 
 def test_create_replace_property(instance: OFSC, request_logging, faker):
     logging.info("... Create property")
-    property = Property.parse_obj(
+    property = Property.model_validate(
         {
             "label": faker.pystr(),
             "type": "string",
@@ -176,7 +184,7 @@ def test_create_replace_property(instance: OFSC, request_logging, faker):
     assert response["name"] == property.name
     assert response["type"] == property.type
     assert response["entity"] == property.entity
-    property = Property.parse_obj(response)
+    property = Property.model_validate(response)
 
 
 def test_import_plugin_file(instance: OFSC):

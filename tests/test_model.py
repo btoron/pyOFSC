@@ -3,6 +3,9 @@ import logging
 from dbm import dumb
 
 import pytest
+from pydantic import ValidationError
+from requests import Response
+
 from ofsc.common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE
 from ofsc.models import (
     Condition,
@@ -14,21 +17,19 @@ from ofsc.models import (
     WorkskillList,
     WorskillConditionList,
 )
-from pydantic import ValidationError
-from requests import Response
 
 
 def test_translation_model_base():
     base = {"language": "en", "name": "Estimate", "languageISO": "en-US"}
-    obj = Translation.parse_obj(base)
+    obj = Translation.model_validate(base)
     assert obj.language == base["language"]
     assert obj.name == base["name"]
 
 
 def test_translation_model_base_invalid():
-    base = {"language": "xx", "name": "Estimate", "languageISO": "en-US"}
+    base = {"language": "xx", "Noname": "NoEstimate", "languageISO": "en-US"}
     with pytest.raises(ValidationError) as validation:
-        obj = Translation.parse_obj(base)
+        obj = Translation.model_validate(base)
 
 
 def test_translationlist_model_base():
@@ -36,10 +37,21 @@ def test_translationlist_model_base():
         {"language": "en", "name": "Estimate", "languageISO": "en-US"},
         {"language": "es", "name": "Estimación"},
     ]
-    objList = TranslationList.parse_obj(base)
+    objList = TranslationList.model_validate(base)
     for idx, obj in enumerate(objList):
+        assert type(obj) == Translation
         assert obj.language == base[idx]["language"]
         assert obj.name == base[idx]["name"]
+
+
+def test_translationlist_model_json():
+    base = [
+        {"language": "en", "name": "Estimate", "languageISO": "en-US"},
+        {"language": "es", "name": "Estimar"},
+    ]
+    objList = TranslationList.model_validate(base)
+    assert json.loads(objList.model_dump_json())[0]["language"] == base[0]["language"]
+    assert json.loads(objList.model_dump_json())[1]["name"] == base[1]["name"]
 
 
 def test_workskill_model_base():
@@ -62,15 +74,16 @@ def test_workskill_model_base():
             },
         ],
     }
-    obj = Workskill.parse_obj(base)
+    obj = Workskill.model_validate(base)
     assert obj.label == base["label"]
     assert obj.active == base["active"]
     assert obj.name == base["name"]
     assert obj.sharing == base["sharing"]
-    assert obj.translations == TranslationList.parse_obj(base["translations"])
+    assert obj.translations == TranslationList.model_validate(base["translations"])
+    assert json.loads(obj.model_dump_json())["label"] == base["label"]
 
 
 def test_workskilllist_connected(instance):
     metadata_response = instance.metadata.get_workskills(response_type=JSON_RESPONSE)
     logging.warning(json.dumps(metadata_response, indent=4))
-    objList = WorkskillList.parse_obj(metadata_response["items"])
+    objList = WorkskillList.model_validate(metadata_response["items"])

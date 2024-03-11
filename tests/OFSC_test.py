@@ -36,25 +36,25 @@ class ofscTest(unittest.TestCase):
         logger = self.logger
 
         # Do a get resource to verify that the activity is in the right place
-        response = instance.get_activity(self.aid, response_type=FULL_RESPONSE)
+        response = instance.core.get_activity(self.aid, response_type=FULL_RESPONSE)
         self.assertEqual(response.status_code, 200)
         original_resource = response.json()["resourceId"]
 
         logger.info("...104: Move activity (activity exists)")
         data = {"setResource": {"resourceId": "FLUSA"}}
-        response = instance.move_activity(
+        response = instance.core.move_activity(
             4224010, json.dumps(data), response_type=FULL_RESPONSE
         )
         self.assertEqual(response.status_code, 204)
 
         # Do a get resource to verify that the activity is in the right place
-        response = instance.get_activity(self.aid, response_type=FULL_RESPONSE)
+        response = instance.core.get_activity(self.aid, response_type=FULL_RESPONSE)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["resourceId"], "FLUSA")
 
         # Return it to the previous place
         data["setResource"]["resourceId"] = original_resource
-        response = instance.move_activity(
+        response = instance.core.move_activity(
             4224010, json.dumps(data), response_type=FULL_RESPONSE
         )
         self.assertEqual(response.status_code, 204)
@@ -65,7 +65,7 @@ class ofscTest(unittest.TestCase):
         logger = self.logger
         global pp, created_time
         created_subscription = self.create_subscription()
-        details = instance.get_subscription_details(
+        details = instance.core.get_subscription_details(
             created_subscription["subscriptionId"], response_type=JSON_RESPONSE
         )
         # Moving activity
@@ -76,7 +76,7 @@ class ofscTest(unittest.TestCase):
         }
         logger.info("...210: Get Events")
         current_page = ""
-        raw_response = instance.get_events(params)
+        raw_response = instance.core.get_events(params)
         response = json.loads(raw_response)
         logger.info(self.pp.pformat(response))
         self.assertTrue(response["found"])
@@ -85,7 +85,9 @@ class ofscTest(unittest.TestCase):
         while next_page != current_page:
             current_page = next_page
             params2 = {"subscriptionId": details["subscriptionId"], "page": next_page}
-            raw_response = instance.get_events(params2, response_type=FULL_RESPONSE)
+            raw_response = instance.core.get_events(
+                params2, response_type=FULL_RESPONSE
+            )
             response = raw_response.json()
             if response["items"]:
                 events.extend(response["items"])
@@ -100,21 +102,23 @@ class ofscTest(unittest.TestCase):
     def test_201_get_resource_no_expand(self):
         instance = self.instance
         logger = self.logger
-        raw_response = instance.get_resource(55001)
+        raw_response = instance.core.get_resource(55001)
         response = json.loads(raw_response)
         self.assertEqual(response["resourceInternalId"], 5000001)
 
     def test_202_get_resource_expand(self):
         instance = self.instance
         logger = self.logger
-        raw_response = instance.get_resource(55001, workSkills=True, workZones=True)
+        raw_response = instance.core.get_resource(
+            55001, workSkills=True, workZones=True
+        )
         response = json.loads(raw_response)
         self.assertEqual(response["resourceInternalId"], 5000001)
 
     def test_203_get_position_history(self):
         instance = self.instance
         logger = self.logger
-        raw_response = instance.get_position_history(33001, date=self.date)
+        raw_response = instance.core.get_position_history(33001, date=self.date)
         response = json.loads(raw_response)
         self.assertIsNotNone(response["totalResults"])
         self.assertTrue(response["totalResults"] > 200)
@@ -123,7 +127,7 @@ class ofscTest(unittest.TestCase):
     def test_301_get_capacity_areas_simple(self):
         instance = self.instance
         logger = self.logger
-        raw_response = instance.get_capacity_areas(response_type=FULL_RESPONSE)
+        raw_response = instance.metadata.get_capacity_areas(response_type=FULL_RESPONSE)
         logging.debug(self.pp.pformat(raw_response.json()))
         response = raw_response.json()
         logger.info(self.pp.pformat(response))
@@ -134,7 +138,9 @@ class ofscTest(unittest.TestCase):
     def test_302_get_capacity_area(self):
         instance = self.instance
         logger = self.logger
-        raw_response = instance.get_capacity_area("FLUSA", response_type=FULL_RESPONSE)
+        raw_response = instance.metadata.get_capacity_area(
+            "FLUSA", response_type=FULL_RESPONSE
+        )
         logging.debug(self.pp.pformat(raw_response.json()))
         response = raw_response.json()
         logger.info(self.pp.pformat(response))
@@ -147,7 +153,9 @@ class ofscTest(unittest.TestCase):
     def test_311_get_activity_type_groups(self):
         instance = self.instance
         logger = self.logger
-        raw_response = instance.get_activity_type_groups(response_type=FULL_RESPONSE)
+        raw_response = instance.metadata.get_activity_type_groups(
+            response_type=FULL_RESPONSE
+        )
         logging.debug(self.pp.pformat(raw_response.json()))
         response = raw_response.json()
         logger.info(self.pp.pformat(response))
@@ -159,7 +167,7 @@ class ofscTest(unittest.TestCase):
     def test_312_get_activity_type_group(self):
         instance = self.instance
         logger = self.logger
-        raw_response = instance.get_activity_type_group(
+        raw_response = instance.metadata.get_activity_type_group(
             "customer", response_type=FULL_RESPONSE
         )
         logging.debug(self.pp.pformat(raw_response.json()))
@@ -175,7 +183,7 @@ class ofscTest(unittest.TestCase):
     def test_313_get_activity_types(self):
         instance = self.instance
         logger = self.logger
-        raw_response = instance.get_activity_types(response_type=FULL_RESPONSE)
+        raw_response = instance.metadata.get_activity_types(response_type=FULL_RESPONSE)
         logging.debug(self.pp.pformat(raw_response.json()))
         response = raw_response.json()
         self.assertEqual(raw_response.status_code, 200)
@@ -193,7 +201,7 @@ class ofscTest(unittest.TestCase):
     def test_313_get_activity_type(self):
         instance = self.instance
         logger = self.logger
-        raw_response = instance.get_activity_type(
+        raw_response = instance.metadata.get_activity_type(
             "ac_installation", response_type=FULL_RESPONSE
         )
         logging.debug(self.pp.pformat(raw_response.json()))

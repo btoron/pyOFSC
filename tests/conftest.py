@@ -71,6 +71,28 @@ def demo_data():
                 "expected_items": 758,
                 "expected_postalcode": "55001",
             }
-        }
+        },
+        "24A WMP 02 Demo_Services.E360.Supremo.Chapter8.ESM . 2024-03-01 22:20": {
+            "get_all_activities": {
+                "bucket_id": "CAUSA",
+                "expected_id": 3960470,
+                "expected_items": 698,
+                "expected_postalcode": "55001",
+            },
+            "metadata": {
+                "expected_workskills": 7,
+                "expected_workskill_conditions": 8,
+                "expected_resource_types": 10,
+                "expected_properties": 463,
+            },
+            "get_file_property": {
+                "activity_id": 3954799,  # Note: manual addition
+            },
+            "get_users": {
+                "totalResults": 322,
+            },
+        },
     }
-    return demo_data["23B Service Update 1"]
+    return demo_data[
+        "24A WMP 02 Demo_Services.E360.Supremo.Chapter8.ESM . 2024-03-01 22:20"
+    ]

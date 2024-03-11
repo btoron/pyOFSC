@@ -154,82 +154,6 @@ class OFSMetadata(OFSApi):
         return response
 
     # 202208 Skill management
-    def get_workskills(self, offset=0, limit=100, response_type=FULL_RESPONSE):
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkills")
-        params = {"offset": offset, "limit": limit}
-        response = requests.get(
-            url,
-            headers=self.headers,
-            params=params,
-        )
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
-
-    def get_workskill(self, label: str, response_type=FULL_RESPONSE):
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{label}")
-        response = requests.get(
-            url,
-            headers=self.headers,
-        )
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
-
-    def create_or_update_workskill(self, skill: Workskill, response_type=FULL_RESPONSE):
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{skill.label}")
-        response = requests.put(url, headers=self.headers, data=skill.json())
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
-
-    def delete_workskill(self, label: str, response_type=FULL_RESPONSE):
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{label}")
-        response = requests.delete(url, headers=self.headers)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
-
-    # Workskill conditions
-    def get_workskill_conditions(self, response_type=FULL_RESPONSE):
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillConditions")
-        response = requests.get(
-            url,
-            headers=self.headers,
-        )
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
-
-    def replace_workskill_conditions(
-        self, data: WorskillConditionList, response_type=FULL_RESPONSE
-    ):
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillConditions")
-        content = '{"items":' + data.json(exclude_none=True) + "}"
-        headers = self.headers
-        headers["Content-Type"] = "application/json"
-        response = requests.put(url, headers=headers, data=content)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
 
     # 202208 Workzones
     @wrap_return(response_type=JSON_RESPONSE, expected=[200])
@@ -273,4 +197,57 @@ class OFSMetadata(OFSApi):
         )
         files = [("pluginFile", ("noname.xml", plugin, "text/xml"))]
         response = requests.post(url, headers=self.headers, files=files)
+        return response
+
+    @wrap_return(response_type=FULL_RESPONSE, expected=[200])
+    def get_workskills(self, offset=0, limit=100, response_type=FULL_RESPONSE):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkills")
+        params = {"offset": offset, "limit": limit}
+        response = requests.get(
+            url,
+            headers=self.headers,
+            params=params,
+        )
+        return response
+
+    @wrap_return(response_type=FULL_RESPONSE, expected=[200])
+    def get_workskill(self, label: str, response_type=FULL_RESPONSE):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{label}")
+        response = requests.get(
+            url,
+            headers=self.headers,
+        )
+        return response
+
+    @wrap_return(response_type=FULL_RESPONSE, expected=[200])
+    def create_or_update_workskill(self, skill: Workskill, response_type=FULL_RESPONSE):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{skill.label}")
+        response = requests.put(url, headers=self.headers, data=skill.model_dump_json())
+        return response
+
+    @wrap_return(response_type=FULL_RESPONSE, expected=[204])
+    def delete_workskill(self, label: str, response_type=FULL_RESPONSE):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{label}")
+        response = requests.delete(url, headers=self.headers)
+        return response
+
+    # Workskill conditions
+    @wrap_return(response_type=FULL_RESPONSE, expected=[200])
+    def get_workskill_conditions(self, response_type=FULL_RESPONSE):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillConditions")
+        response = requests.get(
+            url,
+            headers=self.headers,
+        )
+        return response
+
+    @wrap_return(response_type=FULL_RESPONSE, expected=[200])
+    def replace_workskill_conditions(
+        self, data: WorskillConditionList, response_type=FULL_RESPONSE
+    ):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillConditions")
+        content = '{"items":' + data.model_dump_json(exclude_none=True) + "}"
+        headers = self.headers
+        headers["Content-Type"] = "application/json"
+        response = requests.put(url, headers=headers, data=content)
         return response

@@ -361,28 +361,6 @@ class OFSCore(OFSApi):
         else:
             return response.text
 
-    def get_file_property(
-        self,
-        activityId,
-        label,
-        mediaType="application/octet-stream",
-        response_type=FULL_RESPONSE,
-    ):
-        headers = self.headers
-        headers["Accept"] = mediaType
-        response = requests.get(
-            "https://api.etadirect.com/rest/ofscCore/v1/activities/{}/{}".format(
-                activityId, label
-            ),
-            headers=headers,
-        )
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
-
     ## 202202 Helper functions
     def get_all_activities(
         self, root, date_from, date_to, activity_fields, initial_offset=0, limit=5000
@@ -494,5 +472,24 @@ class OFSCore(OFSApi):
             self.baseUrl,
             "/rest/ofscCore/v1/activities/custom-actions/bulkUpdate",
         )
-        response = requests.post(url, headers=self.headers, data=data.json())
+        response = requests.post(url, headers=self.headers, data=data.model_dump_json())
+        return response
+
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def get_file_property(
+        self,
+        activityId,
+        label,
+        mediaType="application/octet-stream",
+    ):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/activities/{activityId}/{label}",
+        )
+        headers = self.headers
+        headers["Accept"] = mediaType
+        response = requests.get(
+            url,
+            headers=headers,
+        )
         return response

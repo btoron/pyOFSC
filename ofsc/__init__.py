@@ -75,18 +75,14 @@ class OFSC:
 
         def wrapper(*args, **kwargs):
             if method_name in self._core_methods:
-                warn(
-                    f"{method_name} was called without the API name (Core). This will be deprecated in OFSC 2.0",
-                    DeprecationWarning,
+                raise NotImplementedError(
+                    f"{method_name} was called without the API name (Core). This was deprecated in OFSC 2.0"
                 )
-                return getattr(self.core, method_name)(*args, **kwargs)
 
             if method_name in self._metadata_methods:
-                warn(
-                    f"{method_name} was called without the API name (Metadata). This will be deprecated in OFSC 2.0",
-                    DeprecationWarning,
+                raise NotImplementedError(
+                    f"{method_name} was called without the API name (Metadata). This was deprecated in OFSC 2.0"
                 )
-                return getattr(self.metadata, method_name)(*args, **kwargs)
             raise Exception("method not found")
 
         return wrapper
