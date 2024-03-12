@@ -35,13 +35,13 @@ class OFSMetadata(OFSApi):
     ]
     capacityHeaders = capacityAreasFields.split(",") + additionalCapacityFields
 
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
     def get_capacity_areas(
         self,
         expand="parent",
         fields=capacityAreasFields,
         status="active",
         queryType="area",
-        response_type=FULL_RESPONSE,
     ):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/capacityAreas")
         params = {}
@@ -50,79 +50,53 @@ class OFSMetadata(OFSApi):
         params["status"] = status
         params["type"] = queryType
         response = requests.get(url, params=params, headers=self.headers)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
+        return response
 
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
     def get_capacity_area(self, label, response_type=FULL_RESPONSE):
         encoded_label = urllib.parse.quote_plus(label)
         url = urljoin(
             self.baseUrl, "/rest/ofscMetadata/v1/capacityAreas/{}".format(encoded_label)
         )
         response = requests.get(url, headers=self.headers)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
+        return response
 
-    def get_activity_type_groups(
-        self, offset=0, limit=100, response_type=FULL_RESPONSE
-    ):
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def get_activity_type_groups(self, offset=0, limit=100):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/activityTypeGroups")
         response = requests.get(url, headers=self.headers)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
+        return response
 
-    def get_activity_type_group(self, label, response_type=FULL_RESPONSE):
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def get_activity_type_group(self, label):
         encoded_label = urllib.parse.quote_plus(label)
         url = urljoin(
             self.baseUrl,
             "/rest/ofscMetadata/v1/activityTypeGroups/{}".format(encoded_label),
         )
         response = requests.get(url, headers=self.headers)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
+        return response
 
     ## 202205 Activity Type
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
     def get_activity_types(self, offset=0, limit=100, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/activityTypes")
         response = requests.get(url, headers=self.headers)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
+        return response
 
-    def get_activity_type(self, label, response_type=FULL_RESPONSE):
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def get_activity_type(self, label):
         encoded_label = urllib.parse.quote_plus(label)
         url = urljoin(
             self.baseUrl, "/rest/ofscMetadata/v1/activityTypes/{}".format(encoded_label)
         )
         response = requests.get(url, headers=self.headers)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
+        return response
 
     ## 202202 Properties and file properties
 
-    def get_properties(self, offset=0, limit=100, response_type=FULL_RESPONSE):
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def get_properties(self, offset=0, limit=100):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/properties")
         params = {"offset": offset, "limit": limit}
         response = requests.get(
@@ -130,12 +104,7 @@ class OFSMetadata(OFSApi):
             headers=self.headers,
             params=params,
         )
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
+        return response
 
     # 202209 Get Property
     @wrap_return(response_type=JSON_RESPONSE, expected=[200])
@@ -179,18 +148,17 @@ class OFSMetadata(OFSApi):
         return response
 
     # 202212 Import plugin
-    @wrap_return(response_type=FULL_RESPONSE, expected=[204])
+    @wrap_return(response_type=JSON_RESPONSE, expected=[204])
     def import_plugin_file(self, plugin: Path):
         url = urljoin(
             self.baseUrl, f"/rest/ofscMetadata/v1/plugins/custom-actions/import"
         )
-        headers = self.headers
         files = [("pluginFile", (plugin.name, plugin.read_text(), "text/xml"))]
         response = requests.post(url, headers=self.headers, files=files)
         return response
 
     # 202212 Import plugin
-    @wrap_return(response_type=FULL_RESPONSE, expected=[204])
+    @wrap_return(response_type=JSON_RESPONSE, expected=[204])
     def import_plugin(self, plugin: str):
         url = urljoin(
             self.baseUrl, f"/rest/ofscMetadata/v1/plugins/custom-actions/import"
@@ -199,7 +167,7 @@ class OFSMetadata(OFSApi):
         response = requests.post(url, headers=self.headers, files=files)
         return response
 
-    @wrap_return(response_type=FULL_RESPONSE, expected=[200])
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
     def get_workskills(self, offset=0, limit=100, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkills")
         params = {"offset": offset, "limit": limit}
@@ -210,7 +178,7 @@ class OFSMetadata(OFSApi):
         )
         return response
 
-    @wrap_return(response_type=FULL_RESPONSE, expected=[200])
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
     def get_workskill(self, label: str, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{label}")
         response = requests.get(
@@ -219,20 +187,20 @@ class OFSMetadata(OFSApi):
         )
         return response
 
-    @wrap_return(response_type=FULL_RESPONSE, expected=[200])
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
     def create_or_update_workskill(self, skill: Workskill, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{skill.label}")
         response = requests.put(url, headers=self.headers, data=skill.model_dump_json())
         return response
 
-    @wrap_return(response_type=FULL_RESPONSE, expected=[204])
+    @wrap_return(response_type=JSON_RESPONSE, expected=[204])
     def delete_workskill(self, label: str, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{label}")
         response = requests.delete(url, headers=self.headers)
         return response
 
     # Workskill conditions
-    @wrap_return(response_type=FULL_RESPONSE, expected=[200])
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
     def get_workskill_conditions(self, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillConditions")
         response = requests.get(
@@ -241,7 +209,7 @@ class OFSMetadata(OFSApi):
         )
         return response
 
-    @wrap_return(response_type=FULL_RESPONSE, expected=[200])
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
     def replace_workskill_conditions(
         self, data: WorskillConditionList, response_type=FULL_RESPONSE
     ):

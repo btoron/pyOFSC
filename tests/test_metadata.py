@@ -95,7 +95,9 @@ def test_replace_workskill_conditions(instance, pp, demo_data):
     assert response["totalResults"] is not None
     assert response["totalResults"] == expected_workskill_conditions
     ws_list = WorskillConditionList.model_validate(response["items"])
-    metadata_response = instance.metadata.replace_workskill_conditions(ws_list)
+    metadata_response = instance.metadata.replace_workskill_conditions(
+        ws_list, response_type=FULL_RESPONSE
+    )
     logging.debug(pp.pformat(metadata_response.text))
     assert metadata_response.status_code == 200
     assert response["totalResults"] is not None
@@ -125,12 +127,14 @@ def test_get_resource_types(instance, demo_data):
 
 
 def test_import_plugin_file(instance: OFSC):
-    metadata_response = instance.metadata.import_plugin_file(Path("tests/test.xml"))
+    metadata_response = instance.metadata.import_plugin_file(
+        Path("tests/test.xml"), response_type=FULL_RESPONSE
+    )
     assert metadata_response.status_code == 204
 
 
 def test_import_plugin(instance: OFSC):
     metadata_response = instance.metadata.import_plugin(
-        Path("tests/test.xml").read_text()
+        Path("tests/test.xml").read_text(), response_type=FULL_RESPONSE
     )
     assert metadata_response.status_code == 204
