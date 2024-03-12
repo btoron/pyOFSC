@@ -79,7 +79,7 @@ class OFSCore(OFSApi):
     def get_events(self, params, response_type=TEXT_RESPONSE):
         url = urljoin(self.baseUrl, "rest/ofscCore/v1/events")
         response = requests.get(
-            "https://api.etadirect.com/rest/ofscCore/v1/events",
+            url,
             headers=self.headers,
             params=params,
         )
@@ -94,6 +94,7 @@ class OFSCore(OFSApi):
     # RESOURCE MANAGEMENT
     ####
 
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
     def get_resource(
         self,
         resource_id,
@@ -101,7 +102,6 @@ class OFSCore(OFSApi):
         workSkills=False,
         workZones=False,
         workSchedules=False,
-        response_type=TEXT_RESPONSE,
     ):
         url = urljoin(
             self.baseUrl, "/rest/ofscCore/v1/resources/{}".format(str(resource_id))
@@ -130,13 +130,7 @@ class OFSCore(OFSApi):
             data["expand"] = expand
 
         response = requests.get(url, params=data, headers=self.headers)
-
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
+        return response
 
     # 202107
     def create_resource_old(self, resourceId, data, response_type=TEXT_RESPONSE):

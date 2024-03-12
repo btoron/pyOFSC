@@ -7,7 +7,7 @@ import pytest
 import requests
 from faker import Faker
 
-from ofsc import OFSC
+from ofsc import FULL_RESPONSE, OFSC
 
 
 @pytest.fixture(scope="module")
@@ -33,6 +33,20 @@ def instance_with_token():
         useToken=True,
     )
     return instance
+
+
+@pytest.fixture(scope="module")
+def clear_subscriptions(instance):
+    response = instance.core.get_subscriptions(response_type=FULL_RESPONSE)
+    if response.status_code == 200 and response.json()["totalResults"] > 0:
+        for subscription in response.json()["items"]:
+            logging.info(subscription)
+            instance.core.delete_subscription(subscription["subscriptionId"])
+    yield
+    response = instance.core.get_subscriptions(response_type=FULL_RESPONSE)
+    if response.status_code == 200 and response.json()["totalResults"] > 0:
+        for subscription in response.json()["items"]:
+            instance.core.delete_subscription(subscription["subscriptionId"])
 
 
 @pytest.fixture
@@ -84,6 +98,10 @@ def demo_data():
                 "expected_workskill_conditions": 8,
                 "expected_resource_types": 10,
                 "expected_properties": 463,
+                "expected_activity_type_groups": 5,
+                "expected_activity_types": 35,
+                "expected_activity_types_customer": 25,
+                "expected_capacity_areas": ["CAUSA", "FLUSA", "South Florida"],
             },
             "get_file_property": {
                 "activity_id": 3954799,  # Note: manual addition
@@ -91,6 +109,7 @@ def demo_data():
             "get_users": {
                 "totalResults": 322,
             },
+            "events": {"move_from": "FLUSA", "move_to": "CAUSA", "move_id": 4224268},
         },
     }
     return demo_data[
