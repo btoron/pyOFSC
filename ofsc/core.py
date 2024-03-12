@@ -12,15 +12,11 @@ from .models import BulkUpdateRequest, OFSApi, OFSConfig
 
 class OFSCore(OFSApi):
     # OFSC Function Library
-    def get_activities(self, params, response_type=TEXT_RESPONSE):
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def get_activities(self, params):
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/activities")
         response = requests.get(url, headers=self.headers, params=params)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
+        return response
 
     @wrap_return(response_type=JSON_RESPONSE, expected=[200])
     def get_activity(self, activity_id):
@@ -30,60 +26,41 @@ class OFSCore(OFSApi):
         response = requests.get(url, headers=self.headers)
         return response
 
-    def update_activity(self, activity_id, data, response_type=TEXT_RESPONSE):
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def update_activity(self, activity_id, data):
         url = urljoin(
             self.baseUrl, "/rest/ofscCore/v1/activities/{}".format(activity_id)
         )
         response = requests.patch(url, headers=self.headers, data=data)
-        # print (response.status_code)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
+        return response
 
     # 202107 Added ssearch
-    def search_activities(self, params, response_type=TEXT_RESPONSE):
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def search_activities(self, params):
         url = urljoin(
             self.baseUrl, "/rest/ofscCore/v1/activities/custom-actions/search"
         )
         response = requests.get(url, headers=self.headers, params=params)
-        # print (response.status_code)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
+        return response
 
-    def move_activity(self, activity_id, data, response_type=TEXT_RESPONSE):
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def move_activity(self, activity_id, data):
         url = urljoin(
             self.baseUrl,
             f"/rest/ofscCore/v1/activities/{activity_id}/custom-actions/move",
         )
         response = requests.post(url, headers=self.headers, data=data)
-        # print (response.status_code)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
+        return response
 
-    def get_events(self, params, response_type=TEXT_RESPONSE):
-        url = urljoin(self.baseUrl, "rest/ofscCore/v1/events")
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def get_events(self, params):
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/events")
         response = requests.get(
             url,
             headers=self.headers,
             params=params,
         )
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
+        return response
 
     #####
     # RESOURCE MANAGEMENT
@@ -127,19 +104,6 @@ class OFSCore(OFSApi):
         response = requests.get(url, params=data, headers=self.headers)
         return response
 
-    # 202107
-    def create_resource_old(self, resourceId, data, response_type=TEXT_RESPONSE):
-        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resourceId}")
-
-        response = requests.put(url, headers=self.headers, data=data)
-        # print (response.status_code)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
-
     # 202209 Resource Types
     @wrap_return(response_type=JSON_RESPONSE, expected=[200])
     def create_resource(self, resourceId, data):
@@ -155,7 +119,8 @@ class OFSCore(OFSApi):
         response = requests.put(url, headers=self.headers, data=json.dumps(data))
         return response
 
-    def get_position_history(self, resource_id, date, response_type=TEXT_RESPONSE):
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def get_position_history(self, resource_id, date):
         url = urljoin(
             self.baseUrl,
             "/rest/ofscCore/v1/resources/{}/positionHistory".format(str(resource_id)),
@@ -163,13 +128,7 @@ class OFSCore(OFSApi):
         params = {}
         params["date"] = date
         response = requests.get(url, params=params, headers=self.headers)
-
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
+        return response
 
     @wrap_return(response_type=JSON_RESPONSE, expected=[200])
     def get_resource_route(
@@ -258,50 +217,39 @@ class OFSCore(OFSApi):
 
     ##202106
     @wrap_return(response_type=JSON_RESPONSE, expected=[200])
-    def create_user(self, login, data, response_type=FULL_RESPONSE):
+    def create_user(self, login, data):
         url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/users/{login}")
         response = requests.put(url, headers=self.headers, data=data)
         return response
 
     ##202106
 
-    def delete_user(self, login, response_type=FULL_RESPONSE):
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def delete_user(self, login):
         url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/users/{login}")
         response = requests.delete(url, headers=self.headers)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
+        return response
 
     ##202105 Daily Extract - NOT TESTED
-    def get_daily_extract_dates(self, response_type=FULL_RESPONSE):
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def get_daily_extract_dates(self):
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/folders/dailyExtract/folders/")
         response = requests.get(url, headers=self.headers)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
+        return response
 
     ##202105 Daily Extract - NOT TESTED
-    def get_daily_extract_files(self, date, response_type=FULL_RESPONSE):
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def get_daily_extract_files(self, date):
         url = urljoin(
             self.baseUrl,
             "/rest/ofscCore/v1/folders/dailyExtract/folders/{}/files".format(date),
         )
         response = requests.get(url, headers=self.headers)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
+        return response
 
     ##202105 Daily Extract - NOT TESTED
-    def get_daily_extract_file(self, date, filename, response_type=FULL_RESPONSE):
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def get_daily_extract_file(self, date, filename):
         url = urljoin(
             self.baseUrl,
             "/rest/ofscCore/v1/folders/dailyExtract/folders/{}/files/{}".format(
@@ -309,12 +257,7 @@ class OFSCore(OFSApi):
             ),
         )
         response = requests.get(url, headers=self.headers)
-        if response_type == FULL_RESPONSE:
-            return response
-        elif response_type == JSON_RESPONSE:
-            return response.json()
-        else:
-            return response.text
+        return response
 
     ## 202202 Helper functions
     def get_all_activities(

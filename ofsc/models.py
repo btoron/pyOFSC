@@ -149,7 +149,12 @@ class Workskill(BaseModel):
         )
 
 
-WorkskillList = RootModel[List[Workskill]]
+class WorkskillList(RootModel[List[Workskill]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
 
 
 class Condition(BaseModel):
@@ -168,7 +173,12 @@ class WorkskillCondition(BaseModel):
     dependencies: Any = None
 
 
-WorskillConditionList = RootModel[List[WorkskillCondition]]
+class WorskillConditionList(RootModel[List[WorkskillCondition]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
 
 
 # Workzones
@@ -180,7 +190,12 @@ class Workzone(BaseModel):
     keys: List[Any]
 
 
-WorkzoneList = RootModel[List[Workzone]]
+class WorkzoneList(RootModel[List[Workzone]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
 
 
 class Property(BaseModel):
@@ -218,7 +233,12 @@ class Property(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
-PropertyList = RootModel[List[Property]]
+class PropertyList(RootModel[List[Property]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
 
 
 class Resource(BaseModel):
@@ -238,7 +258,12 @@ class Resource(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
-ResourceList = RootModel[List[Resource]]
+class ResourceList(RootModel[List[Resource]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
 
 
 class ResourceType(BaseModel):
@@ -249,7 +274,12 @@ class ResourceType(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
-ResourceTypeList = RootModel[List[ResourceType]]
+class ResourceTypeList(RootModel[List[ResourceType]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
 
 
 # Core / Activities
