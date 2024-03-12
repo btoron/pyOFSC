@@ -19,7 +19,6 @@ from ofsc.models import (
 
 
 def test_get_workskills(instance, demo_data):
-    logging.info("...Get all skills")
     metadata_response = instance.metadata.get_workskills(response_type=FULL_RESPONSE)
     response = metadata_response.json()
     expected_workskills = demo_data.get("metadata").get("expected_workskills")
@@ -30,7 +29,6 @@ def test_get_workskills(instance, demo_data):
 
 
 def test_get_workskill(instance):
-    logging.info("...Get one skill")
     metadata_response = instance.metadata.get_workskill(
         label="RES", response_type=FULL_RESPONSE
     )
@@ -40,14 +38,12 @@ def test_get_workskill(instance):
 
 
 def test_create_workskill(instance, pp):
-    logging.info("...create one skill")
     skill = Workskill(label="TEST", name="test", sharing=SharingEnum.maximal)
-    logging.warning(f"TEST.Create WorkSkill: IN: {skill.model_dump_json()}")
     metadata_response = instance.metadata.create_or_update_workskill(
         skill=skill, response_type=FULL_RESPONSE
     )
     response = metadata_response.json()
-    logging.info(pp.pformat(response))
+    logging.debug(pp.pformat(response))
     assert metadata_response.status_code < 299, response
     assert response["label"] == skill.label
     assert response["name"] == skill.name
@@ -71,7 +67,6 @@ def test_delete_workskill(instance):
 
 
 def test_get_workskill_conditions(instance, pp, demo_data):
-    logging.info("... get workskill conditions")
     metadata_response = instance.metadata.get_workskill_conditions(
         response_type=FULL_RESPONSE
     )
@@ -93,7 +88,6 @@ def test_get_workskill_conditions(instance, pp, demo_data):
 
 
 def test_replace_workskill_conditions(instance, pp, demo_data):
-    logging.info("... replace workskill conditions")
     response = instance.metadata.get_workskill_conditions(response_type=JSON_RESPONSE)
     expected_workskill_conditions = demo_data.get("metadata").get(
         "expected_workskill_conditions"
@@ -109,7 +103,6 @@ def test_replace_workskill_conditions(instance, pp, demo_data):
 
 
 def test_get_workzones(instance):
-    logging.info("...Get all workzones")
     metadata_response = instance.metadata.get_workzones(
         offset=0, limit=1000, response_type=FULL_RESPONSE
     )
@@ -121,7 +114,6 @@ def test_get_workzones(instance):
 
 
 def test_get_resource_types(instance, demo_data):
-    logging.info("...Get all Resource Types")
     metadata_response = instance.metadata.get_resource_types(
         response_type=FULL_RESPONSE
     )
@@ -133,13 +125,11 @@ def test_get_resource_types(instance, demo_data):
 
 
 def test_import_plugin_file(instance: OFSC):
-    logging.info("... Import plugin via file")
     metadata_response = instance.metadata.import_plugin_file(Path("tests/test.xml"))
     assert metadata_response.status_code == 204
 
 
 def test_import_plugin(instance: OFSC):
-    logging.info("... Import plugin")
     metadata_response = instance.metadata.import_plugin(
         Path("tests/test.xml").read_text()
     )

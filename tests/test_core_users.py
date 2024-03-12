@@ -75,7 +75,7 @@ def test_create_user(instance, demo_data, pp):
     assert raw_response.status_code == 200, raw_response.json()
     logging.debug(pp.pformat(raw_response.json()))
     response = raw_response.json()
-    logging.info(pp.pformat(response))
+    logging.debug(pp.pformat(response))
 
     assert response["name"] is not None
     assert response["name"] == "Test Name"

@@ -28,7 +28,7 @@ def test_get_activity_type_groups(instance, pp, demo_data):
     assert raw_response.status_code == 200
     logging.debug(pp.pformat(raw_response.json()))
     response = raw_response.json()
-    logging.info(pp.pformat(response))
+    logging.debug(pp.pformat(response))
     assert response["items"] is not None
     assert len(response["items"]) == expected_activity_type_groups
     assert response["totalResults"] == expected_activity_type_groups
@@ -45,7 +45,7 @@ def test_get_activity_type_group(instance, demo_data, pp):
     logging.debug(pp.pformat(raw_response.json()))
     response = raw_response.json()
     assert raw_response.status_code == 200
-    logging.info(pp.pformat(response))
+    logging.debug(pp.pformat(response))
     assert response["label"] is not None
     assert response["label"] == "customer"
     assert response["activityTypes"] is not None
@@ -59,7 +59,7 @@ def test_get_activity_types(instance, demo_data, pp):
     logging.debug(pp.pformat(raw_response.json()))
     response = raw_response.json()
     assert raw_response.status_code == 200
-    logging.info(pp.pformat(response))
+    logging.debug(pp.pformat(response))
     assert response["items"] is not None
     assert len(response["items"]) == expected_activity_types
     assert response["totalResults"] == expected_activity_types
@@ -78,7 +78,7 @@ def test_get_activity_type(instance, demo_data, pp):
     logging.debug(pp.pformat(raw_response.json()))
     response = raw_response.json()
     assert raw_response.status_code == 200
-    logging.info(pp.pformat(response))
+    logging.debug(pp.pformat(response))
     assert response["label"] is not None
     assert response["label"] == "fitness_emergency"
     assert response["features"] is not None

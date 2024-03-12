@@ -8,8 +8,21 @@ from ofsc.common import FULL_RESPONSE
 from ofsc.models import BulkUpdateRequest, BulkUpdateResponse
 
 
+# Test A.01 Get Activity Info (activity exists)
+def test_get_activity(instance):
+    raw_response = instance.core.get_activity(3951935, response_type=FULL_RESPONSE)
+    response = raw_response.json()
+    logging.debug(response)
+    assert response["customerNumber"] == "019895700"
+
+
+# Test A.02 Get Activity Info (activity does not exist)
+def test_get_activity_error(instance):
+    raw_response = instance.core.get_activity(99999, response_type=FULL_RESPONSE)
+    assert raw_response.status_code == 404
+
+
 def test_search_activities_001(instance):
-    logging.info("...101: Search Activities (activity exists)")
     params = {
         "searchInField": "customerPhone",
         "searchForValue": "555760757294",
@@ -17,17 +30,16 @@ def test_search_activities_001(instance):
         "dateTo": "2099-01-01",
     }
     response = instance.core.search_activities(params, response_type=FULL_RESPONSE)
-    logging.info(response.json())
+    logging.debug(response.json())
     assert response.status_code == 200
     assert response.json()["totalResults"] == 2  # 202206 Modified in demo 22B
 
 
 # test A.06 Get Activities
 def test_get_activities_no_offset(instance, current_date, demo_data, request_logging):
-    logging.info("...102: Get activities (no offset)")
     start = date.fromisoformat(current_date) - timedelta(days=5)
     end = start + timedelta(days=20)
-    logging.info(f"{start} {end}")
+    logging.debug(f"{start} {end}")
     params = {
         "dateFrom": start.strftime("%Y-%m-%d"),
         "dateTo": end.strftime("%Y-%m-%d"),
@@ -56,10 +68,9 @@ def test_get_activities_no_offset(instance, current_date, demo_data, request_log
 
 
 def test_get_activities_offset(instance, current_date, demo_data, request_logging):
-    logging.info("...103: Get activities (offset)")
     start = date.fromisoformat(current_date) - timedelta(days=5)
     end = start + timedelta(days=20)
-    logging.info(f"{start} {end}")
+    logging.debug(f"{start} {end}")
     params = {
         "dateFrom": start.strftime("%Y-%m-%d"),
         "dateTo": end.strftime("%Y-%m-%d"),

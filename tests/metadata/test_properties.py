@@ -6,13 +6,12 @@ from ofsc.models import Property, Translation
 
 
 def test_get_property(instance):
-    logging.info("...Get property info")
     metadata_response = instance.metadata.get_property(
         "XA_CASE_ACCOUNT", response_type=FULL_RESPONSE
     )
     assert metadata_response.status_code == 200
     response = metadata_response.json()
-    logging.info(response)
+    logging.debug(response)
     assert response["label"] == "XA_CASE_ACCOUNT"
     assert response["type"] == "string"
     assert response["entity"] == "activity"
@@ -20,7 +19,6 @@ def test_get_property(instance):
 
 
 def test_get_properties(instance, demo_data):
-    logging.info("...Get properties")
     metadata_response = instance.metadata.get_properties(response_type=FULL_RESPONSE)
     expected_properties = demo_data.get("metadata").get("expected_properties")
     assert metadata_response.status_code == 200
@@ -31,7 +29,6 @@ def test_get_properties(instance, demo_data):
 
 
 def test_create_replace_property(instance: OFSC, request_logging, faker):
-    logging.info("... Create property")
     property = Property.model_validate(
         {
             "label": faker.pystr(),
@@ -46,7 +43,7 @@ def test_create_replace_property(instance: OFSC, request_logging, faker):
     metadata_response = instance.metadata.create_or_replace_property(
         property, response_type=FULL_RESPONSE
     )
-    logging.warning(metadata_response.json())
+    logging.debug(metadata_response.json())
     assert metadata_response.status_code < 299, metadata_response.json()
 
     metadata_response = instance.metadata.get_property(

@@ -85,5 +85,5 @@ def test_workskill_model_base():
 
 def test_workskilllist_connected(instance):
     metadata_response = instance.metadata.get_workskills(response_type=JSON_RESPONSE)
-    logging.warning(json.dumps(metadata_response, indent=4))
+    logging.debug(json.dumps(metadata_response, indent=4))
     objList = WorkskillList.model_validate(metadata_response["items"])
