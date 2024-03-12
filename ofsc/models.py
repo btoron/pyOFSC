@@ -354,3 +354,71 @@ class ActivityTypeGroupList(RootModel[List[ActivityTypeGroup]]):
 
     def __getitem__(self, item):
         return self.root[item]
+
+
+class ActivityTypeColors(BaseModel):
+    cancelled: Annotated[Optional[str], Field(alias="cancelled")]
+    completed: Annotated[Optional[str], Field(alias="completed")]
+    notdone: Annotated[Optional[str], Field(alias="notdone")]
+    notOrdered: Annotated[Optional[str], Field(alias="notOrdered")]
+    pending: Annotated[Optional[str], Field(alias="pending")]
+    started: Annotated[Optional[str], Field(alias="started")]
+    suspended: Annotated[Optional[str], Field(alias="suspended")]
+    warning: Annotated[Optional[str], Field(alias="warning")]
+
+
+class ActivityTypeFeatures(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    allowCreationInBuckets: Optional[bool] = False
+    allowMassActivities: Optional[bool] = False
+    allowMoveBetweenResources: Optional[bool] = False
+    allowNonScheduled: Optional[bool] = False
+    allowRepeatingActivities: Optional[bool] = False
+    allowReschedule: Optional[bool] = False
+    allowToCreateFromIncomingInterface: Optional[bool] = False
+    allowToSearch: Optional[bool] = False
+    calculateActivityDurationUsingStatistics: Optional[bool] = False
+    calculateDeliveryWindow: Optional[bool] = False
+    calculateTravel: Optional[bool] = False
+    disableLocationTracking: Optional[bool] = False
+    enableDayBeforeTrigger: Optional[bool] = False
+    enableNotStartedTrigger: Optional[bool] = False
+    enableReminderAndChangeTriggers: Optional[bool] = False
+    enableSwWarningTrigger: Optional[bool] = False
+    isSegmentingEnabled: Optional[bool] = False
+    isTeamworkAvailable: Optional[bool] = False
+    slaAndServiceWindowUseCustomerTimeZone: Optional[bool] = False
+    supportOfInventory: Optional[bool] = False
+    supportOfLinks: Optional[bool] = False
+    supportOfNotOrderedActivities: Optional[bool] = False
+    supportOfPreferredResources: Optional[bool] = False
+    supportOfRequiredInventory: Optional[bool] = False
+    supportOfTimeSlots: Optional[bool] = False
+    supportOfWorkSkills: Optional[bool] = False
+    supportOfWorkZones: Optional[bool] = False
+
+
+class ActivityTypeTimeSlots(BaseModel):
+    label: str
+
+
+class ActivityType(BaseModel):
+    active: bool
+    colors: Optional[ActivityTypeColors]
+    defaultDuration: int
+    features: Optional[ActivityTypeFeatures]
+    groupLabel: Optional[str]
+    label: str
+    name: str
+    segmentMaxDuration: Optional[int] = None
+    segmentMinDuration: Optional[int] = None
+    timeSlots: Optional[List[ActivityTypeTimeSlots]] = None
+    translations: TranslationList
+
+
+class ActivityTypeList(RootModel[List[ActivityType]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]

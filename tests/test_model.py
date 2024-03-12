@@ -8,8 +8,10 @@ from requests import Response
 
 from ofsc.common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE
 from ofsc.models import (
+    ActivityType,
     ActivityTypeGroup,
     ActivityTypeGroupList,
+    ActivityTypeList,
     Condition,
     SharingEnum,
     Translation,
@@ -109,3 +111,35 @@ def test_activity_type_group_model(instance):
         )
         assert new_obj.label == obj.label
         assert new_obj.translations == obj.translations
+
+
+def test_activity_type_model_list(instance):
+    instance.core.config.auto_model = False
+    metadata_response = instance.metadata.get_activity_types(
+        response_type=JSON_RESPONSE
+    )
+    logging.debug(json.dumps(metadata_response, indent=4))
+    objList = ActivityTypeList.model_validate(metadata_response["items"])
+    ## Iterate through the list and validate each item
+    for idx, obj in enumerate(objList):
+        assert type(obj) == ActivityType
+        assert obj.label == metadata_response["items"][idx]["label"]
+        new_obj = ActivityType.model_validate(
+            instance.metadata.get_activity_type(
+                label=obj.label, response_type=JSON_RESPONSE
+            )
+        )
+        assert new_obj.label == obj.label
+
+
+def test_activity_type_model_simple(instance):
+    instance.core.config.auto_model = False
+    metadata_response = instance.metadata.get_activity_type(
+        label="01", response_type=JSON_RESPONSE
+    )
+    logging.debug(json.dumps(metadata_response, indent=4))
+    obj = ActivityType.model_validate(metadata_response)
+    assert obj.label == metadata_response["label"]
+    assert obj.translations == TranslationList.model_validate(
+        metadata_response["translations"]
+    )

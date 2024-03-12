@@ -61,16 +61,18 @@ Experimental:
     get_daily_extract_dates(self, response_type=JSON_RESPONSE)
     get_daily_extract_files(self, date, response_type=JSON_RESPONSE)
     get_daily_extract_file(self, date, filename, response_type=JSON_RESPONSE)
+\
+### Metadata / Activity Type Groups
+    get_activity_type_groups (self, expand="parent", offset=0, limit=100, response_type=JSON_RESPONSE)
+    get_activity_type_group (self,label, response_type=JSON_RESPONSE)   
+
+### Metadata / Activity Types
+    get_activity_types(self, offset=0, limit=100, response_type=JSON_RESPONSE)
+    get_activity_type (self, label, response_type=JSON_RESPONSE)
 
 ### Metadata / Capacity
     get_capacity_areas (self, expand="parent", fields=capacityAreasFields, status="active", queryType="area", response_type=JSON_RESPONSE)
     get_capacity_area (self,label, response_type=JSON_RESPONSE)
-
-### Metadata / Activity Types
-    get_activity_type_groups (self, expand="parent", offset=0, limit=100, response_type=JSON_RESPONSE)
-    get_activity_type_group (self,label, response_type=JSON_RESPONSE)   
-    get_activity_types(self, offset=0, limit=100, response_type=JSON_RESPONSE)
-    get_activity_type (self, label, response_type=JSON_RESPONSE)
 
 ### Metadata / Properties
     get_properties (self, offset=0, limit=100, response_type=JSON_RESPONSE)
