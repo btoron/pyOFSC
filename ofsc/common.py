@@ -10,7 +10,7 @@ FULL_RESPONSE = 2
 JSON_RESPONSE = 3
 
 
-def wrap_return(*a, **kw):
+def wrap_return(*decorator_args, **decorator_kwargs):
     """
     Decorator @wrap_return wraps the function
     and decides the return type and if we launch an exception
@@ -18,23 +18,43 @@ def wrap_return(*a, **kw):
 
     def decorator(func):
         @wraps(func)
-        def wrapper(*args, **kwargs):
-            config = args[0].config
-            # Pre:
-            response_type = kwargs.get(
-                "response_type", kw.get("response_type", FULL_RESPONSE)
+        def wrapper(*func_args, **func_kwargs):
+            logging.debug(
+                f"{func_args=}, {func_kwargs=}, {decorator_args=}, {decorator_kwargs=}"
             )
-            expected_codes = kw.get("expected_codes", [200])
-            kwargs.pop("response_type", None)
-            response = func(*args, **kwargs)
+            config = func_args[0].config
+            # Pre:
+            response_type = func_kwargs.get(
+                "response_type", decorator_kwargs.get("response_type", FULL_RESPONSE)
+            )
+            func_kwargs.pop("response_type", None)
+            expected_codes = decorator_kwargs.get("expected_codes", [200])
+            model = func_kwargs.get("model", decorator_kwargs.get("model", None))
+            func_kwargs.pop("model", None)
+
+            response = func(*func_args, **func_kwargs)
             # post:
             logging.debug(response)
 
             if response_type == FULL_RESPONSE:
                 return response
             elif response_type == JSON_RESPONSE:
+                logging.debug(
+                    f"{response_type=}, {config.auto_model=}, {model=} {func_args= } {func_kwargs=}"
+                )
                 if response.status_code in expected_codes:
-                    return response.json()
+                    match response.status_code:
+                        case 204:
+                            return response.text
+                        case _:
+                            data_response = response.json()
+                            if config.auto_model and model is not None:
+                                if data_response.get("items"):
+                                    return model.model_validate(data_response["items"])
+                                else:
+                                    return model.model_validate(data_response)
+                            else:
+                                return data_response
                 else:
                     if not config.auto_raise:
                         return response.json()

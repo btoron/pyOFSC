@@ -15,7 +15,7 @@ def test_get_property(instance):
     assert response["label"] == "XA_CASE_ACCOUNT"
     assert response["type"] == "string"
     assert response["entity"] == "activity"
-    property = Property.parse_obj(response)
+    property = Property.model_validate(response)
 
 
 def test_get_properties(instance, demo_data):

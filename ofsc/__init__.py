@@ -1,3 +1,5 @@
+import logging
+
 from .common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE
 from .core import OFSCore
 from .metadata import OFSMetadata
@@ -16,9 +18,10 @@ class OFSC:
         root=None,
         baseUrl=None,
         useToken=False,
-        auto_raise=True,
-        auto_model=True,
+        enable_auto_raise=True,
+        enable_auto_model=True,
     ):
+
         self._config = OFSConfig(
             baseURL=baseUrl,
             clientID=clientID,
@@ -26,8 +29,8 @@ class OFSC:
             companyName=companyName,
             root=root,
             useToken=useToken,
-            auto_raise=auto_raise,  # 20240401: This is a new feature that will raise an exception if the API returns an error
-            auto_model=auto_model,  # 20240401: This is a new feature that will return a pydantic model if the API returns a 200
+            auto_raise=enable_auto_raise,  # 20240401: This is a new feature that will raise an exception if the API returns an error
+            auto_model=enable_auto_model,  # 20240401: This is a new feature that will return a pydantic model if the API returns a 200
         )
         self._core = OFSCore(config=self._config)
         self._metadata = OFSMetadata(config=self._config)
@@ -64,6 +67,17 @@ class OFSC:
         if not self._oauth:
             self._oauth = OFSOauth2(config=self._config)
         return self._oauth
+
+    @property
+    def auto_model(self):
+        return self._config.auto_model
+
+    @auto_model.setter
+    def auto_model(self, value):
+        self._config.auto_model = value
+        self._core.config.auto_model = value
+        self._metadata.config.auto_model = value
+        self._oauth.config.auto_model = value
 
     def __str__(self) -> str:
         return f"baseURL={self._config.baseURL}"

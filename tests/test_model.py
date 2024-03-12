@@ -92,6 +92,7 @@ def test_workskilllist_connected(instance):
 
 
 def test_activity_type_group_model(instance):
+    instance.core.config.auto_model = False
     metadata_response = instance.metadata.get_activity_type_groups(
         response_type=JSON_RESPONSE
     )

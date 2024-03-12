@@ -4,6 +4,7 @@ import requests
 
 from ofsc.common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE
 from ofsc.exceptions import OFSAPIException
+from ofsc.models import ActivityTypeGroup, ActivityTypeGroupList
 
 
 def test_wrapper_generic(instance):
@@ -43,8 +44,27 @@ def test_wrapper_with_error(instance, pp):
         assert e.status_code == 404
 
 
-def test_wrapper_with_model(instance, demo_data):
-    raw_response = instance.metadata.get_workskills(response_type=FULL_RESPONSE)
+def test_wrapper_with_model_list(instance, demo_data):
+    instance.core.config.auto_model = True
+    raw_response = instance.metadata.get_activity_type_groups(
+        response_type=FULL_RESPONSE
+    )
     assert isinstance(raw_response, requests.Response)
-    response = raw_response.json()
-    assert "totalResults" in response.keys()
+    assert raw_response.status_code == 200
+
+    json_response = instance.metadata.get_activity_type_groups()
+    assert isinstance(json_response, ActivityTypeGroupList)
+
+
+def test_wrapper_with_model_single(instance):
+    instance.core.config.auto_model = True
+    raw_response = instance.metadata.get_activity_type_group("customer")
+    assert isinstance(raw_response, ActivityTypeGroup)
+
+
+def test_wrapper_without_model(instance):
+    instance.auto_model = False
+    raw_response = instance.metadata.get_activity_type_group("customer")
+    assert isinstance(raw_response, dict)
+    assert "label" in raw_response.keys()
+    assert "name" in raw_response.keys()

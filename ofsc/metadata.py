@@ -63,24 +63,6 @@ class OFSMetadata(OFSApi):
         response = requests.get(url, headers=self.headers)
         return response
 
-    @wrap_return(
-        response_type=JSON_RESPONSE, expected=[200], model=ActivityTypeGroupList
-    )
-    def get_activity_type_groups(self, offset=0, limit=100):
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/activityTypeGroups")
-        response = requests.get(url, headers=self.headers)
-        return response
-
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200], model=ActivityTypeGroup)
-    def get_activity_type_group(self, label):
-        encoded_label = urllib.parse.quote_plus(label)
-        url = urljoin(
-            self.baseUrl,
-            "/rest/ofscMetadata/v1/activityTypeGroups/{}".format(encoded_label),
-        )
-        response = requests.get(url, headers=self.headers)
-        return response
-
     ## 202205 Activity Type
     @wrap_return(response_type=JSON_RESPONSE, expected=[200])
     def get_activity_types(self, offset=0, limit=100, response_type=FULL_RESPONSE):
@@ -222,4 +204,26 @@ class OFSMetadata(OFSApi):
         headers = self.headers
         headers["Content-Type"] = "application/json"
         response = requests.put(url, headers=headers, data=content)
+        return response
+
+    #####
+    # Migration to OFS 2.0 model format
+
+    # 202402 Metadata - Activity Type Groups
+    @wrap_return(
+        response_type=JSON_RESPONSE, expected=[200], model=ActivityTypeGroupList
+    )
+    def get_activity_type_groups(self, offset=0, limit=100):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/activityTypeGroups")
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200], model=ActivityTypeGroup)
+    def get_activity_type_group(self, label):
+        encoded_label = urllib.parse.quote_plus(label)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/activityTypeGroups/{encoded_label}",
+        )
+        response = requests.get(url, headers=self.headers)
         return response
