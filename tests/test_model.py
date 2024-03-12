@@ -8,6 +8,8 @@ from requests import Response
 
 from ofsc.common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE
 from ofsc.models import (
+    ActivityTypeGroup,
+    ActivityTypeGroupList,
     Condition,
     SharingEnum,
     Translation,
@@ -87,3 +89,22 @@ def test_workskilllist_connected(instance):
     metadata_response = instance.metadata.get_workskills(response_type=JSON_RESPONSE)
     logging.debug(json.dumps(metadata_response, indent=4))
     objList = WorkskillList.model_validate(metadata_response["items"])
+
+
+def test_activity_type_group_model(instance):
+    metadata_response = instance.metadata.get_activity_type_groups(
+        response_type=JSON_RESPONSE
+    )
+    logging.debug(json.dumps(metadata_response, indent=4))
+    objList = ActivityTypeGroupList.model_validate(metadata_response["items"])
+    ## Iterate through the list and validate each item
+    for idx, obj in enumerate(objList):
+        assert type(obj) == ActivityTypeGroup
+        assert obj.label == metadata_response["items"][idx]["label"]
+        new_obj = ActivityTypeGroup.model_validate(
+            instance.metadata.get_activity_type_group(
+                label=obj.label, response_type=JSON_RESPONSE
+            )
+        )
+        assert new_obj.label == obj.label
+        assert new_obj.translations == obj.translations

@@ -26,6 +26,8 @@ class OFSConfig(BaseModel):
     useToken: bool = False
     root: Optional[str] = None
     baseURL: Optional[str] = None
+    auto_raise: bool = True
+    auto_model: bool = True
 
     @property
     def basicAuthString(self):
@@ -44,6 +46,13 @@ class OFSOAuthRequest(BaseModel):
     assertion: Optional[str] = None
     grant_type: str = "client_credentials"
     ofs_dynamic_scope: Optional[str] = None
+
+
+class OFSAPIError(BaseModel):
+    type: str
+    title: str
+    status: int
+    detail: str
 
 
 class OFSApi:
@@ -332,3 +341,16 @@ class BulkUpdateResult(BaseModel):
 
 class BulkUpdateResponse(BaseModel):
     results: Optional[List[BulkUpdateResult]] = None
+
+
+class ActivityTypeGroup(BaseModel):
+    label: str
+    translations: TranslationList
+
+
+class ActivityTypeGroupList(RootModel[List[ActivityTypeGroup]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]

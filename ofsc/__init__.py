@@ -1,11 +1,4 @@
-import base64
-import logging
-from functools import wraps
-from http import client
-from urllib import response
-from warnings import warn
-
-from .common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE, wrap_return
+from .common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE
 from .core import OFSCore
 from .metadata import OFSMetadata
 from .models import OFSConfig
@@ -13,10 +6,18 @@ from .oauth import OFSOauth2
 
 
 class OFSC:
-    # 202308 The API portal was deprecated, so the default URL becomes {companyname}.fs.ocs.oraclecloud.com
 
+    # the default URL becomes {companyname}.fs.ocs.oraclecloud.com
     def __init__(
-        self, clientID, companyName, secret, root=None, baseUrl=None, useToken=False
+        self,
+        clientID,
+        companyName,
+        secret,
+        root=None,
+        baseUrl=None,
+        useToken=False,
+        auto_raise=True,
+        auto_model=True,
     ):
         self._config = OFSConfig(
             baseURL=baseUrl,
@@ -25,6 +26,8 @@ class OFSC:
             companyName=companyName,
             root=root,
             useToken=useToken,
+            auto_raise=auto_raise,  # 20240401: This is a new feature that will raise an exception if the API returns an error
+            auto_model=auto_model,  # 20240401: This is a new feature that will return a pydantic model if the API returns a 200
         )
         self._core = OFSCore(config=self._config)
         self._metadata = OFSMetadata(config=self._config)

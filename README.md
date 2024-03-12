@@ -6,7 +6,7 @@ A simple Python wrapper for Oracle OFS REST API
 
 Starting with OFS 1.17 we are adding models for the most common entities. All models should be imported from `ofsc.models`. All existing create functions will be transitioned to models. In OFS 2.0 all functions will use models
 
-The models are based on the Pydantic BaseModel, so it is possible to build an entity using the `parse_obj` or `parse_file` static methods.
+The models are based on the Pydantic BaseModel, so it is possible to build an entity using the `model_validate` static methods.
 
 Currently implemented:
 - Workskill
@@ -102,10 +102,11 @@ OFS REST API Version | PyOFSC
 21D| 1.15
 22B| 1.16, 1.17
 22D| 1.18
+24A| 2.0
 
 ## Deprecation Warning
 
-Starting in OFSC 2.0  (estimated for December 2022) all functions will have to be called using the API name (Core or Metadata). See the examples.
+Starting in OFSC 2.0  all functions will have to be called using the API name (Core or Metadata). See the examples.
 
 Instead of
 
@@ -118,3 +119,10 @@ It will be required to use the right API module:
     list_of_activites = instance.core.get_activities(...)
 
 During the transition period a DeprecationWarning will be raised if the functions are used in the old way
+
+## What's new in OFSC 2.0
+
+- All metadata functions now use models, when available
+- All functions are now using the API name (Core or Metadata)
+- All functions return a python object by default. If there is an available model it will be used, otherwise a dict will be returned (see `response_type` parameter and `auto_model` parameter)
+- Errors during API calls can raise exceptions and will by default when returning an object (see `auto_raise` parameter)
