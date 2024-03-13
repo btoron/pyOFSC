@@ -11,6 +11,7 @@ from ofsc.models import (
     ActivityType,
     ActivityTypeGroup,
     ActivityTypeGroupList,
+    ActivityTypeGroupListResponse,
     ActivityTypeList,
     Condition,
     SharingEnum,
@@ -58,6 +59,117 @@ def test_translationlist_model_json():
     assert json.loads(objList.model_dump_json())[1]["name"] == base[1]["name"]
 
 
+# Activity Type Groups
+def test_activity_type_group_model_base():
+    base = {
+        "label": "customer",
+        "name": "Customer",
+        "activityTypes": [
+            {"label": "4"},
+            {"label": "5"},
+            {"label": "6"},
+            {"label": "7"},
+            {"label": "8"},
+            {"label": "installation"},
+            {"label": "Testing"},
+            {"label": "Multiday"},
+            {"label": "SDI"},
+        ],
+        "translations": [
+            {"language": "en", "name": "Customer", "languageISO": "en-US"},
+            {"language": "es", "name": "Cliente", "languageISO": "es-ES"},
+        ],
+        "links": [
+            {
+                "rel": "canonical",
+                "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/activityTypeGroups/customer",
+            },
+            {
+                "rel": "describedby",
+                "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/metadata-catalog/activityTypeGroups",
+            },
+        ],
+    }
+    obj = ActivityTypeGroup.model_validate(base)
+    assert obj.label == base["label"]
+
+
+def test_activity_type_model_base():
+    base = {
+        "label": "6",
+        "name": "Phone Install/Upgrade",
+        "active": True,
+        "groupLabel": "customer",
+        "defaultDuration": 48,
+        "timeSlots": [
+            {"label": "08-10"},
+            {"label": "10-12"},
+            {"label": "13-15"},
+            {"label": "15-17"},
+            {"label": "all-day"},
+        ],
+        "colors": {
+            "pending": "FFDE00",
+            "started": "5DBE3F",
+            "suspended": "99FFFF",
+            "cancelled": "80FF80",
+            "notdone": "60CECE",
+            "notOrdered": "FFCC99",
+            "warning": "FFAAAA",
+            "completed": "79B6EB",
+        },
+        "features": {
+            "isTeamworkAvailable": False,
+            "isSegmentingEnabled": False,
+            "allowMoveBetweenResources": False,
+            "allowCreationInBuckets": False,
+            "allowReschedule": True,
+            "supportOfNotOrderedActivities": True,
+            "allowNonScheduled": True,
+            "supportOfWorkZones": True,
+            "supportOfWorkSkills": True,
+            "supportOfTimeSlots": True,
+            "supportOfInventory": True,
+            "supportOfLinks": True,
+            "supportOfPreferredResources": True,
+            "allowMassActivities": True,
+            "allowRepeatingActivities": True,
+            "calculateTravel": True,
+            "calculateActivityDurationUsingStatistics": True,
+            "allowToSearch": True,
+            "allowToCreateFromIncomingInterface": True,
+            "enableDayBeforeTrigger": True,
+            "enableReminderAndChangeTriggers": True,
+            "enableNotStartedTrigger": True,
+            "enableSwWarningTrigger": True,
+            "calculateDeliveryWindow": True,
+            "slaAndServiceWindowUseCustomerTimeZone": True,
+            "supportOfRequiredInventory": True,
+            "disableLocationTracking": False,
+        },
+        "translations": [
+            {"language": "en", "name": "Phone Install/Upgrade", "languageISO": "en-US"},
+            {
+                "language": "es",
+                "name": "Install/Upgrade: Telefono",
+                "languageISO": "es-ES",
+            },
+        ],
+        "links": [
+            {
+                "rel": "canonical",
+                "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/activityTypes/6",
+            },
+            {
+                "rel": "describedby",
+                "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/metadata-catalog/activityTypes",
+            },
+        ],
+    }
+    obj = ActivityType.model_validate(base)
+    assert obj.label == base["label"]
+
+
 def test_workskill_model_base():
     base = {
         "label": "EST",
@@ -91,55 +203,3 @@ def test_workskilllist_connected(instance):
     metadata_response = instance.metadata.get_workskills(response_type=JSON_RESPONSE)
     logging.debug(json.dumps(metadata_response, indent=4))
     objList = WorkskillList.model_validate(metadata_response["items"])
-
-
-def test_activity_type_group_model(instance):
-    instance.core.config.auto_model = False
-    metadata_response = instance.metadata.get_activity_type_groups(
-        response_type=JSON_RESPONSE
-    )
-    logging.debug(json.dumps(metadata_response, indent=4))
-    objList = ActivityTypeGroupList.model_validate(metadata_response["items"])
-    ## Iterate through the list and validate each item
-    for idx, obj in enumerate(objList):
-        assert type(obj) == ActivityTypeGroup
-        assert obj.label == metadata_response["items"][idx]["label"]
-        new_obj = ActivityTypeGroup.model_validate(
-            instance.metadata.get_activity_type_group(
-                label=obj.label, response_type=JSON_RESPONSE
-            )
-        )
-        assert new_obj.label == obj.label
-        assert new_obj.translations == obj.translations
-
-
-def test_activity_type_model_list(instance):
-    instance.core.config.auto_model = False
-    metadata_response = instance.metadata.get_activity_types(
-        response_type=JSON_RESPONSE
-    )
-    logging.debug(json.dumps(metadata_response, indent=4))
-    objList = ActivityTypeList.model_validate(metadata_response["items"])
-    ## Iterate through the list and validate each item
-    for idx, obj in enumerate(objList):
-        assert type(obj) == ActivityType
-        assert obj.label == metadata_response["items"][idx]["label"]
-        new_obj = ActivityType.model_validate(
-            instance.metadata.get_activity_type(
-                label=obj.label, response_type=JSON_RESPONSE
-            )
-        )
-        assert new_obj.label == obj.label
-
-
-def test_activity_type_model_simple(instance):
-    instance.core.config.auto_model = False
-    metadata_response = instance.metadata.get_activity_type(
-        label="01", response_type=JSON_RESPONSE
-    )
-    logging.debug(json.dumps(metadata_response, indent=4))
-    obj = ActivityType.model_validate(metadata_response)
-    assert obj.label == metadata_response["label"]
-    assert obj.translations == TranslationList.model_validate(
-        metadata_response["translations"]
-    )

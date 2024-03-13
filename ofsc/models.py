@@ -1,6 +1,6 @@
 import base64
 from enum import Enum
-from typing import Any, List, Optional
+from typing import Any, Generic, List, Optional, TypeVar
 from urllib.parse import urljoin
 
 import requests
@@ -17,6 +17,14 @@ from pydantic_settings import BaseSettings
 from typing_extensions import Annotated
 
 from ofsc.common import FULL_RESPONSE, JSON_RESPONSE, wrap_return
+
+T = TypeVar("T")
+
+
+class OFSResponseList(BaseModel, Generic[T]):
+    totalResults: int
+    items: List[T]
+    hasMore: Annotated[bool, Field(alias="hasMore")]
 
 
 class OFSConfig(BaseModel):
@@ -345,7 +353,13 @@ class BulkUpdateResponse(BaseModel):
 
 class ActivityTypeGroup(BaseModel):
     label: str
+    name: str
+    _activityTypes: Annotated[Optional[List[dict]], "activityTypes"] = []
     translations: TranslationList
+
+    @property
+    def activityTypes(self):
+        return [_activityType["label"] for _activityType in self._activityTypes]
 
 
 class ActivityTypeGroupList(RootModel[List[ActivityTypeGroup]]):
@@ -354,6 +368,10 @@ class ActivityTypeGroupList(RootModel[List[ActivityTypeGroup]]):
 
     def __getitem__(self, item):
         return self.root[item]
+
+
+class ActivityTypeGroupListResponse(OFSResponseList[ActivityTypeGroup]):
+    pass
 
 
 class ActivityTypeColors(BaseModel):
@@ -422,3 +440,7 @@ class ActivityTypeList(RootModel[List[ActivityType]]):
 
     def __getitem__(self, item):
         return self.root[item]
+
+
+class ActivityTypeListResponse(OFSResponseList[ActivityType]):
+    pass

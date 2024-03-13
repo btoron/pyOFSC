@@ -12,6 +12,8 @@ from .common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE, wrap_return
 from .models import (
     ActivityTypeGroup,
     ActivityTypeGroupList,
+    ActivityTypeGroupListResponse,
+    ActivityTypeListResponse,
     OFSApi,
     OFSConfig,
     Property,
@@ -59,22 +61,6 @@ class OFSMetadata(OFSApi):
         encoded_label = urllib.parse.quote_plus(label)
         url = urljoin(
             self.baseUrl, "/rest/ofscMetadata/v1/capacityAreas/{}".format(encoded_label)
-        )
-        response = requests.get(url, headers=self.headers)
-        return response
-
-    ## 202205 Activity Type
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
-    def get_activity_types(self, offset=0, limit=100, response_type=FULL_RESPONSE):
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/activityTypes")
-        response = requests.get(url, headers=self.headers)
-        return response
-
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
-    def get_activity_type(self, label):
-        encoded_label = urllib.parse.quote_plus(label)
-        url = urljoin(
-            self.baseUrl, "/rest/ofscMetadata/v1/activityTypes/{}".format(encoded_label)
         )
         response = requests.get(url, headers=self.headers)
         return response
@@ -211,11 +197,12 @@ class OFSMetadata(OFSApi):
 
     # 202402 Metadata - Activity Type Groups
     @wrap_return(
-        response_type=JSON_RESPONSE, expected=[200], model=ActivityTypeGroupList
+        response_type=JSON_RESPONSE, expected=[200], model=ActivityTypeGroupListResponse
     )
     def get_activity_type_groups(self, offset=0, limit=100):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/activityTypeGroups")
-        response = requests.get(url, headers=self.headers)
+        params = {"offset": offset, "limit": limit}
+        response = requests.get(url, headers=self.headers, params=params)
         return response
 
     @wrap_return(response_type=JSON_RESPONSE, expected=[200], model=ActivityTypeGroup)
@@ -224,6 +211,25 @@ class OFSMetadata(OFSApi):
         url = urljoin(
             self.baseUrl,
             f"/rest/ofscMetadata/v1/activityTypeGroups/{encoded_label}",
+        )
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    ## 202402 Activity Type
+    @wrap_return(
+        response_type=JSON_RESPONSE, expected=[200], model=ActivityTypeListResponse
+    )
+    def get_activity_types(self, offset=0, limit=100):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/activityTypes")
+        params = {"offset": offset, "limit": limit}
+        response = requests.get(url, headers=self.headers, params=params)
+        return response
+
+    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    def get_activity_type(self, label):
+        encoded_label = urllib.parse.quote_plus(label)
+        url = urljoin(
+            self.baseUrl, "/rest/ofscMetadata/v1/activityTypes/{}".format(encoded_label)
         )
         response = requests.get(url, headers=self.headers)
         return response

@@ -4,7 +4,11 @@ import requests
 
 from ofsc.common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE
 from ofsc.exceptions import OFSAPIException
-from ofsc.models import ActivityTypeGroup, ActivityTypeGroupList
+from ofsc.models import (
+    ActivityTypeGroup,
+    ActivityTypeGroupList,
+    ActivityTypeGroupListResponse,
+)
 
 
 def test_wrapper_generic(instance):
@@ -53,7 +57,7 @@ def test_wrapper_with_model_list(instance, demo_data):
     assert raw_response.status_code == 200
 
     json_response = instance.metadata.get_activity_type_groups()
-    assert isinstance(json_response, ActivityTypeGroupList)
+    assert isinstance(json_response, ActivityTypeGroupListResponse)
 
 
 def test_wrapper_with_model_single(instance):

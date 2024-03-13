@@ -49,10 +49,7 @@ def wrap_return(*decorator_args, **decorator_kwargs):
                         case _:
                             data_response = response.json()
                             if config.auto_model and model is not None:
-                                if data_response.get("items"):
-                                    return model.model_validate(data_response["items"])
-                                else:
-                                    return model.model_validate(data_response)
+                                return model.model_validate(data_response)
                             else:
                                 return data_response
                 else:
