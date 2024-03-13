@@ -8,7 +8,7 @@ from urllib.parse import urljoin
 
 import requests
 
-from .common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE, wrap_return
+from .common import FULL_RESPONSE, OBJ_RESPONSE, TEXT_RESPONSE, wrap_return
 from .models import (
     ActivityTypeGroup,
     ActivityTypeGroupList,
@@ -39,7 +39,7 @@ class OFSMetadata(OFSApi):
     ]
     capacityHeaders = capacityAreasFields.split(",") + additionalCapacityFields
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_capacity_areas(
         self,
         expand="parent",
@@ -56,7 +56,7 @@ class OFSMetadata(OFSApi):
         response = requests.get(url, params=params, headers=self.headers)
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_capacity_area(self, label: str):
         encoded_label = urllib.parse.quote_plus(label)
         url = urljoin(
@@ -67,7 +67,7 @@ class OFSMetadata(OFSApi):
 
     ## 202202 Properties and file properties
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_properties(self, offset=0, limit=100):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/properties")
         params = {"offset": offset, "limit": limit}
@@ -79,14 +79,14 @@ class OFSMetadata(OFSApi):
         return response
 
     # 202209 Get Property
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_property(self, label: str):
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/properties/{label}")
         response = requests.get(url, headers=self.headers)
         return response
 
     # 202209 Create Property
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def create_or_replace_property(self, property: Property):
         url = urljoin(
             self.baseUrl, f"/rest/ofscMetadata/v1/properties/{property.label}"
@@ -97,7 +97,7 @@ class OFSMetadata(OFSApi):
     # 202208 Skill management
 
     # 202208 Workzones
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_workzones(
         self,
         offset=0,
@@ -113,14 +113,14 @@ class OFSMetadata(OFSApi):
         return response
 
     # 202209 Resource Types
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_resource_types(self):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/resourceTypes")
         response = requests.get(url, headers=self.headers)
         return response
 
     # 202212 Import plugin
-    @wrap_return(response_type=JSON_RESPONSE, expected=[204])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
     def import_plugin_file(self, plugin: Path):
         url = urljoin(
             self.baseUrl, f"/rest/ofscMetadata/v1/plugins/custom-actions/import"
@@ -130,7 +130,7 @@ class OFSMetadata(OFSApi):
         return response
 
     # 202212 Import plugin
-    @wrap_return(response_type=JSON_RESPONSE, expected=[204])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
     def import_plugin(self, plugin: str):
         url = urljoin(
             self.baseUrl, f"/rest/ofscMetadata/v1/plugins/custom-actions/import"
@@ -139,7 +139,7 @@ class OFSMetadata(OFSApi):
         response = requests.post(url, headers=self.headers, files=files)
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_workskills(self, offset=0, limit=100, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkills")
         params = {"offset": offset, "limit": limit}
@@ -150,7 +150,7 @@ class OFSMetadata(OFSApi):
         )
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_workskill(self, label: str, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{label}")
         response = requests.get(
@@ -159,20 +159,20 @@ class OFSMetadata(OFSApi):
         )
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def create_or_update_workskill(self, skill: Workskill, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{skill.label}")
         response = requests.put(url, headers=self.headers, data=skill.model_dump_json())
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[204])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
     def delete_workskill(self, label: str, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{label}")
         response = requests.delete(url, headers=self.headers)
         return response
 
     # Workskill conditions
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_workskill_conditions(self, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillConditions")
         response = requests.get(
@@ -181,7 +181,7 @@ class OFSMetadata(OFSApi):
         )
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def replace_workskill_conditions(
         self, data: WorskillConditionList, response_type=FULL_RESPONSE
     ):
@@ -197,7 +197,7 @@ class OFSMetadata(OFSApi):
 
     # 202402 Metadata - Activity Type Groups
     @wrap_return(
-        response_type=JSON_RESPONSE, expected=[200], model=ActivityTypeGroupListResponse
+        response_type=OBJ_RESPONSE, expected=[200], model=ActivityTypeGroupListResponse
     )
     def get_activity_type_groups(self, offset=0, limit=100):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/activityTypeGroups")
@@ -205,7 +205,7 @@ class OFSMetadata(OFSApi):
         response = requests.get(url, headers=self.headers, params=params)
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200], model=ActivityTypeGroup)
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=ActivityTypeGroup)
     def get_activity_type_group(self, label):
         encoded_label = urllib.parse.quote_plus(label)
         url = urljoin(
@@ -217,7 +217,7 @@ class OFSMetadata(OFSApi):
 
     ## 202402 Activity Type
     @wrap_return(
-        response_type=JSON_RESPONSE, expected=[200], model=ActivityTypeListResponse
+        response_type=OBJ_RESPONSE, expected=[200], model=ActivityTypeListResponse
     )
     def get_activity_types(self, offset=0, limit=100):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/activityTypes")
@@ -225,7 +225,7 @@ class OFSMetadata(OFSApi):
         response = requests.get(url, headers=self.headers, params=params)
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_activity_type(self, label):
         encoded_label = urllib.parse.quote_plus(label)
         url = urljoin(

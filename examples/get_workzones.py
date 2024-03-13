@@ -5,12 +5,12 @@ import pprint
 from logging import basicConfig, debug, info, warning
 from typing import AnyStr, List
 
-import ofsc
-from ofsc import FULL_RESPONSE, JSON_RESPONSE, OFSC
-from ofsc.models import Workzone, WorkzoneList
+from config import Config
 from openpyxl import Workbook
 
-from config import Config
+import ofsc
+from ofsc import FULL_RESPONSE, OBJ_RESPONSE, OFSC
+from ofsc.models import Workzone, WorkzoneList
 
 
 def init_script():
@@ -45,7 +45,7 @@ def init_script():
 
 
 def get_workzone_list():
-    response = instance.metadata.get_workzones(response_type=JSON_RESPONSE)
+    response = instance.metadata.get_workzones(response_type=OBJ_RESPONSE)
     return WorkzoneList.parse_obj(response["items"])
 
 

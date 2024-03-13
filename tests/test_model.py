@@ -6,7 +6,7 @@ import pytest
 from pydantic import ValidationError
 from requests import Response
 
-from ofsc.common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE
+from ofsc.common import FULL_RESPONSE, OBJ_RESPONSE, TEXT_RESPONSE
 from ofsc.models import (
     ActivityType,
     ActivityTypeGroup,
@@ -200,6 +200,6 @@ def test_workskill_model_base():
 
 
 def test_workskilllist_connected(instance):
-    metadata_response = instance.metadata.get_workskills(response_type=JSON_RESPONSE)
+    metadata_response = instance.metadata.get_workskills(response_type=OBJ_RESPONSE)
     logging.debug(json.dumps(metadata_response, indent=4))
     objList = WorkskillList.model_validate(metadata_response["items"])

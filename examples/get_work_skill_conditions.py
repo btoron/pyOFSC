@@ -4,12 +4,12 @@ import pprint
 from logging import basicConfig, debug, info, warning
 from typing import AnyStr, List
 
-import ofsc
-from ofsc import FULL_RESPONSE, JSON_RESPONSE, OFSC
-from ofsc.models import WorkskillCondition, WorskillConditionList
+from config import Config
 from openpyxl import Workbook
 
-from config import Config
+import ofsc
+from ofsc import FULL_RESPONSE, OBJ_RESPONSE, OFSC
+from ofsc.models import WorkskillCondition, WorskillConditionList
 
 
 def init_script():
@@ -44,7 +44,7 @@ def init_script():
 
 
 def get_workskill_list():
-    response = instance.metadata.get_workskill_conditions(response_type=JSON_RESPONSE)
+    response = instance.metadata.get_workskill_conditions(response_type=OBJ_RESPONSE)
     ws_list = WorskillConditionList.parse_obj(response["items"])
     return ws_list
 

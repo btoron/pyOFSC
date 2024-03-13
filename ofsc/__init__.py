@@ -1,6 +1,6 @@
 import logging
 
-from .common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE
+from .common import FULL_RESPONSE, OBJ_RESPONSE, TEXT_RESPONSE
 from .core import OFSCore
 from .metadata import OFSMetadata
 from .models import OFSConfig

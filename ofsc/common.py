@@ -7,7 +7,7 @@ from .exceptions import OFSAPIException
 
 TEXT_RESPONSE = 1
 FULL_RESPONSE = 2
-JSON_RESPONSE = 3
+OBJ_RESPONSE = 3
 
 
 def wrap_return(*decorator_args, **decorator_kwargs):
@@ -25,7 +25,7 @@ def wrap_return(*decorator_args, **decorator_kwargs):
             config = func_args[0].config
             # Pre:
             response_type = func_kwargs.get(
-                "response_type", decorator_kwargs.get("response_type", FULL_RESPONSE)
+                "response_type", decorator_kwargs.get("response_type", OBJ_RESPONSE)
             )
             func_kwargs.pop("response_type", None)
             expected_codes = decorator_kwargs.get("expected_codes", [200])
@@ -38,7 +38,7 @@ def wrap_return(*decorator_args, **decorator_kwargs):
 
             if response_type == FULL_RESPONSE:
                 return response
-            elif response_type == JSON_RESPONSE:
+            elif response_type == OBJ_RESPONSE:
                 logging.debug(
                     f"{response_type=}, {config.auto_model=}, {model=} {func_args= } {func_kwargs=}"
                 )

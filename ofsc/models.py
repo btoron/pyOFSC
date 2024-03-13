@@ -16,7 +16,7 @@ from pydantic import (
 from pydantic_settings import BaseSettings
 from typing_extensions import Annotated
 
-from ofsc.common import FULL_RESPONSE, JSON_RESPONSE, wrap_return
+from ofsc.common import FULL_RESPONSE, OBJ_RESPONSE, wrap_return
 
 T = TypeVar("T")
 

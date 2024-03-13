@@ -5,7 +5,7 @@ from pathlib import Path
 from requests import Response
 
 from ofsc import OFSC
-from ofsc.common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE
+from ofsc.common import FULL_RESPONSE, OBJ_RESPONSE, TEXT_RESPONSE
 from ofsc.models import (
     Condition,
     Property,
@@ -88,7 +88,7 @@ def test_get_workskill_conditions(instance, pp, demo_data):
 
 
 def test_replace_workskill_conditions(instance, pp, demo_data):
-    response = instance.metadata.get_workskill_conditions(response_type=JSON_RESPONSE)
+    response = instance.metadata.get_workskill_conditions(response_type=OBJ_RESPONSE)
     expected_workskill_conditions = demo_data.get("metadata").get(
         "expected_workskill_conditions"
     )

@@ -6,19 +6,19 @@ from urllib.parse import urljoin
 
 import requests
 
-from .common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE, wrap_return
+from .common import FULL_RESPONSE, OBJ_RESPONSE, TEXT_RESPONSE, wrap_return
 from .models import BulkUpdateRequest, OFSApi, OFSConfig
 
 
 class OFSCore(OFSApi):
     # OFSC Function Library
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_activities(self, params):
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/activities")
         response = requests.get(url, headers=self.headers, params=params)
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_activity(self, activity_id):
         url = urljoin(
             self.baseUrl, "/rest/ofscCore/v1/activities/{}".format(activity_id)
@@ -26,7 +26,7 @@ class OFSCore(OFSApi):
         response = requests.get(url, headers=self.headers)
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def update_activity(self, activity_id, data):
         url = urljoin(
             self.baseUrl, "/rest/ofscCore/v1/activities/{}".format(activity_id)
@@ -35,7 +35,7 @@ class OFSCore(OFSApi):
         return response
 
     # 202107 Added ssearch
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def search_activities(self, params):
         url = urljoin(
             self.baseUrl, "/rest/ofscCore/v1/activities/custom-actions/search"
@@ -43,7 +43,7 @@ class OFSCore(OFSApi):
         response = requests.get(url, headers=self.headers, params=params)
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def move_activity(self, activity_id, data):
         url = urljoin(
             self.baseUrl,
@@ -52,7 +52,7 @@ class OFSCore(OFSApi):
         response = requests.post(url, headers=self.headers, data=data)
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_events(self, params):
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/events")
         response = requests.get(
@@ -66,7 +66,7 @@ class OFSCore(OFSApi):
     # RESOURCE MANAGEMENT
     ####
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_resource(
         self,
         resource_id,
@@ -105,21 +105,21 @@ class OFSCore(OFSApi):
         return response
 
     # 202209 Resource Types
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def create_resource(self, resourceId, data):
         url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resourceId}")
         logging.debug(f"OFSC.Create_Resource: {data} {type(data)}")
         response = requests.put(url, headers=self.headers, data=data)
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def create_resource_from_obj(self, resourceId, data):
         url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resourceId}")
         logging.debug(f"OFSC.Create_Resource: {data} {type(data)}")
         response = requests.put(url, headers=self.headers, data=json.dumps(data))
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_position_history(self, resource_id, date):
         url = urljoin(
             self.baseUrl,
@@ -130,7 +130,7 @@ class OFSCore(OFSApi):
         response = requests.get(url, params=params, headers=self.headers)
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_resource_route(
         self, resource_id, date, activityFields=None, offset=0, limit=100
     ):
@@ -144,7 +144,7 @@ class OFSCore(OFSApi):
         response = requests.get(url, params=params, headers=self.headers)
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_resource_descendants(
         self,
         resource_id,
@@ -194,7 +194,7 @@ class OFSCore(OFSApi):
         return response
 
     ## 202104 User Management
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_users(self, offset=0, limit=100):
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/users")
         params = {}
@@ -203,20 +203,20 @@ class OFSCore(OFSApi):
         response = requests.get(url, params, headers=self.headers)
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_user(self, login):
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/users/{}".format(login))
         response = requests.get(url, headers=self.headers)
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def update_user(self, login, data):
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/users/{}".format(login))
         response = requests.patch(url, headers=self.headers, data=data)
         return response
 
     ##202106
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def create_user(self, login, data):
         url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/users/{login}")
         response = requests.put(url, headers=self.headers, data=data)
@@ -224,21 +224,21 @@ class OFSCore(OFSApi):
 
     ##202106
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def delete_user(self, login):
         url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/users/{login}")
         response = requests.delete(url, headers=self.headers)
         return response
 
     ##202105 Daily Extract - NOT TESTED
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_daily_extract_dates(self):
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/folders/dailyExtract/folders/")
         response = requests.get(url, headers=self.headers)
         return response
 
     ##202105 Daily Extract - NOT TESTED
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_daily_extract_files(self, date):
         url = urljoin(
             self.baseUrl,
@@ -248,7 +248,7 @@ class OFSCore(OFSApi):
         return response
 
     ##202105 Daily Extract - NOT TESTED
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_daily_extract_file(self, date, filename):
         url = urljoin(
             self.baseUrl,
@@ -331,19 +331,19 @@ class OFSCore(OFSApi):
     ###
     # 1. Subscriptions Management. Using wrapper
     ###
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_subscriptions(self):
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/events/subscriptions")
         response = requests.get(url, headers=self.headers)
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def create_subscription(self, data):
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/events/subscriptions")
         response = requests.post(url, headers=self.headers, data=data)
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[204])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
     def delete_subscription(self, subscription_id):
         url = urljoin(
             self.baseUrl, f"/rest/ofscCore/v1/events/subscriptions/{subscription_id}"
@@ -351,7 +351,7 @@ class OFSCore(OFSApi):
         response = requests.delete(url, headers=self.headers)
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_subscription_details(self, subscription_id):
         url = urljoin(
             self.baseUrl,
@@ -364,7 +364,7 @@ class OFSCore(OFSApi):
     # 2. Core / Activities
     ###
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def bulk_update(self, data: BulkUpdateRequest):
         url = urljoin(
             self.baseUrl,
@@ -373,7 +373,7 @@ class OFSCore(OFSApi):
         response = requests.post(url, headers=self.headers, data=data.model_dump_json())
         return response
 
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_file_property(
         self,
         activityId,

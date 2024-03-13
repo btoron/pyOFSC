@@ -4,12 +4,13 @@ A simple Python wrapper for Oracle OFS REST API
 
 ## Models
 
-Starting with OFS 1.17 we are adding models for the most common entities. All models should be imported from `ofsc.models`. All existing create functions will be transitioned to models. In OFS 2.0 all functions will use models
+Starting with OFS 1.17 we added models for the most common entities and metadata. All models should be imported from `ofsc.models`. All existing create functions will be transitioned to models. In OFS 2.0 all functions will use models
 
 The models are based on the Pydantic BaseModel, so it is possible to build an entity using the `model_validate` static methods.
 
 Currently implemented:
 - ActivityTypeGroup
+- ActivityType
 - Property
 - Workskill
 - WorkSkillCondition
@@ -94,7 +95,7 @@ Experimental:
 ### Metadata / Resource Types
     get_resource_types(self, response_type=JSON_RESPONSE):
 
-### Metadata / workzones
+### Metadata / Workzones
     get_workzones(self, response_type=JSON_RESPONSE)
     
 ## Test History
@@ -110,7 +111,7 @@ OFS REST API Version | PyOFSC
 
 ## Deprecation Warning
 
-Starting in OFSC 2.0  all functions have to be called using the API name (Core or Metadata). See the examples.
+Starting in OFSC 2.0  all functions are called using the API name (Core or Metadata). See the examples.
 
 Instead of
 
