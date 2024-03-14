@@ -83,7 +83,7 @@ def test_get_capacity_areas_model_with_parameters(instance, pp, demo_data):
     assert metadata_response.totalResults == expected_result
 
 
-def test_get_capacity_area(instance, pp):
+def test_get_capacity_area_no_model(instance, pp):
     raw_response = instance.metadata.get_capacity_area(
         "FLUSA", response_type=FULL_RESPONSE
     )
@@ -96,3 +96,13 @@ def test_get_capacity_area(instance, pp):
     assert response["configuration"] is not None
     assert response["parentLabel"] is not None
     assert response["parentLabel"] == "SUNRISE"
+
+
+def test_get_capacity_area_model(instance, pp, demo_data):
+    metadata_response = instance.metadata.get_capacity_area("FLUSA")
+    assert metadata_response.label == "FLUSA"
+    assert metadata_response.configuration is not None
+    assert metadata_response.parentLabel is not None
+    assert metadata_response.parentLabel == "SUNRISE"
+    assert metadata_response.status == "active"
+    assert metadata_response.type == "area"

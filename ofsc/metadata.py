@@ -226,7 +226,6 @@ class OFSMetadata(OFSApi):
             "status": None if not activeOnly else "active",
             "type": None if not areasOnly else "area",
         }
-        logging.warning(f"{params=}")
         response = requests.get(url, params=params, headers=self.headers)
         return response
 

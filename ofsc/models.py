@@ -494,6 +494,7 @@ class CapacityArea(BaseModel):
     translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
         None
     )
+    # Note: as of 24A the additional fields returned are just HREFs so we won't include them here
 
 
 class CapacityAreaList(RootModel[List[CapacityArea]]):
