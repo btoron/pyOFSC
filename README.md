@@ -131,3 +131,4 @@ During the transition period a DeprecationWarning will be raised if the function
 - All functions are now using the API name (Core or Metadata)
 - All functions return a python object by default. If there is an available model it will be used, otherwise a dict will be returned (see `response_type` parameter and `auto_model` parameter)
 - Errors during API calls can raise exceptions and will by default when returning an object (see `auto_raise` parameter)
+- JSON_RESPONSE and TEXT_RESPONSE are now deprecated. Use `response_type` parameter to control the response type

@@ -13,6 +13,8 @@ from ofsc.models import (
     ActivityTypeGroupList,
     ActivityTypeGroupListResponse,
     ActivityTypeList,
+    CapacityArea,
+    CapacityAreaListResponse,
     Condition,
     SharingEnum,
     Translation,
@@ -59,7 +61,7 @@ def test_translationlist_model_json():
     assert json.loads(objList.model_dump_json())[1]["name"] == base[1]["name"]
 
 
-# Activity Type Groups
+# region Activity Type Groups
 def test_activity_type_group_model_base():
     base = {
         "label": "customer",
@@ -170,6 +172,118 @@ def test_activity_type_model_base():
     assert obj.label == base["label"]
 
 
+# endregion
+
+# region Capacity Areas
+
+
+def test_capacity_area_model_base():
+    base = {
+        "label": "CapacityArea",
+        "name": "Capacity Area",
+        "type": "area",
+        "status": "active",
+        "workZones": {
+            "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/workZones"
+        },
+        "organizations": {
+            "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/organizations"
+        },
+        "capacityCategories": {
+            "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/capacityCategories"
+        },
+        "timeIntervals": {
+            "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/timeIntervals"
+        },
+        "timeSlots": {
+            "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/timeSlots"
+        },
+        "parentLabel": "66000",
+        "configuration": {
+            "definitionLevel": ["day"],
+            "isAllowCloseOnWorkzoneLevel": False,
+            "byDay": "percentIncludeOtherActivities",
+            "byCapacityCategory": "minutes",
+            "byTimeSlot": "minutes",
+            "isTimeSlotBase": False,
+        },
+    }
+    obj = CapacityArea.model_validate(base)
+    assert obj.label == base["label"]
+
+
+def test_capacity_area_list_model_base():
+    base = {
+        "items": [
+            {
+                "label": "22",
+                "name": "Sunrise Enterprise",
+                "type": "group",
+                "status": "active",
+            },
+            {
+                "label": "ASIA",
+                "name": "Asia",
+                "type": "area",
+                "status": "active",
+                "parent": {"label": "22"},
+            },
+            {
+                "label": "EUROPE",
+                "name": "Europe",
+                "type": "area",
+                "status": "active",
+                "parent": {"label": "22"},
+            },
+            {
+                "label": "66000",
+                "name": "Newfoundland",
+                "type": "group",
+                "status": "active",
+                "parent": {"label": "22"},
+            },
+            {
+                "label": "CapacityArea",
+                "name": "Capacity Area",
+                "type": "area",
+                "status": "active",
+                "parent": {"label": "66000"},
+            },
+            {
+                "label": "routing",
+                "name": "Planning",
+                "type": "area",
+                "status": "active",
+                "parent": {"label": "22"},
+            },
+            {
+                "label": "S??o Jos??",
+                "name": "S??o Jos?? dos Campos",
+                "type": "area",
+                "status": "active",
+                "parent": {"label": "22"},
+            },
+            {
+                "label": "Texasin",
+                "name": "Texas inventories",
+                "type": "group",
+                "status": "active",
+                "parent": {"label": "22"},
+            },
+            {
+                "label": "routing_bucket_T",
+                "name": "Texas City",
+                "type": "area",
+                "status": "active",
+                "parent": {"label": "Texasin"},
+            },
+        ]
+    }
+
+    obj = CapacityAreaListResponse.model_validate(base)
+
+
+# endregion
 def test_workskill_model_base():
     base = {
         "label": "EST",

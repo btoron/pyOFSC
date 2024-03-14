@@ -14,6 +14,8 @@ from .models import (
     ActivityTypeGroupList,
     ActivityTypeGroupListResponse,
     ActivityTypeListResponse,
+    CapacityArea,
+    CapacityAreaListResponse,
     OFSApi,
     OFSConfig,
     Property,
@@ -24,46 +26,6 @@ from .models import (
 
 
 class OFSMetadata(OFSApi):
-
-    capacityAreasFields = "label,name,type,status,parent.name,parent.label"
-    additionalCapacityFields = [
-        "parentLabel",
-        "configuration.isTimeSlotBase",
-        "configuration.byCapacityCategory",
-        "configuration.byDay",
-        "configuration.byTimeSlot",
-        "configuration.isAllowCloseOnWorkzoneLevel",
-        "configuration.definitionLevel.day",
-        "configuration.definitionLevel.timeSlot",
-        "configuration.definitionLevel.capacityCategory",
-    ]
-    capacityHeaders = capacityAreasFields.split(",") + additionalCapacityFields
-
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
-    def get_capacity_areas(
-        self,
-        expand="parent",
-        fields=capacityAreasFields,
-        status="active",
-        queryType="area",
-    ):
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/capacityAreas")
-        params = {}
-        params["expand"] = expand
-        params["fields"] = fields
-        params["status"] = status
-        params["type"] = queryType
-        response = requests.get(url, params=params, headers=self.headers)
-        return response
-
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
-    def get_capacity_area(self, label: str):
-        encoded_label = urllib.parse.quote_plus(label)
-        url = urljoin(
-            self.baseUrl, "/rest/ofscMetadata/v1/capacityAreas/{}".format(encoded_label)
-        )
-        response = requests.get(url, headers=self.headers)
-        return response
 
     ## 202202 Properties and file properties
 
@@ -233,3 +195,48 @@ class OFSMetadata(OFSApi):
         )
         response = requests.get(url, headers=self.headers)
         return response
+
+    # region Capacity Areas
+    capacityAreasFields = [
+        "label",
+        "name",
+        "type",
+        "status",
+        "parent.name",
+        "parent.label",
+    ]
+
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=CapacityAreaListResponse
+    )
+    def get_capacity_areas(
+        self,
+        expandParent: bool = False,
+        fields: list[str] = ["label"],
+        activeOnly: bool = False,
+        areasOnly: bool = False,
+    ):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/capacityAreas")
+        assert isinstance(fields, list)
+        params = {
+            "expand": None if not expandParent else "parent",
+            "fields": (
+                ",".join(fields) if fields else ",".join(self.capacityAreasFields)
+            ),
+            "status": None if not activeOnly else "active",
+            "type": None if not areasOnly else "area",
+        }
+        logging.warning(f"{params=}")
+        response = requests.get(url, params=params, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=CapacityArea)
+    def get_capacity_area(self, label: str):
+        encoded_label = urllib.parse.quote_plus(label)
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}"
+        )
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    # endregion

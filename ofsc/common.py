@@ -57,6 +57,7 @@ def wrap_return(*decorator_args, **decorator_kwargs):
                         return response.json()
                     # Check if response.statyus code is between 400 and 499
                     if 400 <= response.status_code < 500:
+                        logging.error(response.json())
                         raise OFSAPIException(**response.json())
                     elif 500 <= response.status_code < 600:
                         raise OFSAPIException(**response.json())

@@ -101,7 +101,33 @@ def demo_data():
                 "expected_activity_type_groups": 5,
                 "expected_activity_types": 35,
                 "expected_activity_types_customer": 25,
-                "expected_capacity_areas": ["CAUSA", "FLUSA", "South Florida"],
+                "expected_capacity_areas": [
+                    {
+                        "label": "CAUSA",
+                        "status": "active",
+                        "type": "area",
+                        "parentLabel": "SUNRISE",
+                    },
+                    {
+                        "label": "FLUSA",
+                        "status": "active",
+                        "type": "area",
+                        "parentLabel": "SUNRISE",
+                    },
+                    {
+                        "label": "South Florida",
+                        "status": "active",
+                        "type": "area",
+                        "parentLabel": "FLUSA",
+                    },
+                    {"label": "SUNRISE", "status": "active", "type": "group"},
+                    {
+                        "label": "routing_old",
+                        "status": "inactive",
+                        "type": "area",
+                        "parentLabel": "FLUSA",
+                    },
+                ],
             },
             "get_file_property": {
                 "activity_id": 3954799,  # Note: manual addition

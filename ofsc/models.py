@@ -1,4 +1,5 @@
 import base64
+import logging
 from enum import Enum
 from typing import Any, Generic, List, Optional, TypeVar
 from urllib.parse import urljoin
@@ -12,6 +13,7 @@ from pydantic import (
     RootModel,
     ValidationInfo,
     field_validator,
+    model_validator,
 )
 from pydantic_settings import BaseSettings
 from typing_extensions import Annotated
@@ -22,9 +24,16 @@ T = TypeVar("T")
 
 
 class OFSResponseList(BaseModel, Generic[T]):
-    totalResults: int
+
     items: List[T]
-    hasMore: Annotated[bool, Field(alias="hasMore")]
+    hasMore: Annotated[Optional[bool], Field(alias="hasMore")] = False
+    totalResults: int = -1
+
+    @model_validator(mode="after")
+    def check_coherence(self):
+        if self.totalResults != len(self.items) and self.hasMore is False:
+            self.totalResults = len(self.items)
+        return self
 
 
 class OFSConfig(BaseModel):
@@ -351,6 +360,9 @@ class BulkUpdateResponse(BaseModel):
     results: Optional[List[BulkUpdateResult]] = None
 
 
+# region Activity Type Groups
+
+
 class ActivityTypeGroup(BaseModel):
     label: str
     name: str
@@ -372,6 +384,11 @@ class ActivityTypeGroupList(RootModel[List[ActivityTypeGroup]]):
 
 class ActivityTypeGroupListResponse(OFSResponseList[ActivityTypeGroup]):
     pass
+
+
+# endregion
+
+# region Activity Types
 
 
 class ActivityTypeColors(BaseModel):
@@ -443,4 +460,49 @@ class ActivityTypeList(RootModel[List[ActivityType]]):
 
 
 class ActivityTypeListResponse(OFSResponseList[ActivityType]):
+    pass
+
+
+# endregion
+
+# region Capacity Areas
+
+
+class CapacityAreaParent(BaseModel):
+    label: str
+    name: Optional[str] = None
+
+
+class CapacityAreaConfiguration(BaseModel):
+    isTimeSlotBase: bool
+    byCapacityCategory: str
+    byDay: str
+    byTimeSlot: str
+    isAllowCloseOnWorkzoneLevel: bool
+    definitionLevel: List[str]
+
+
+class CapacityArea(BaseModel):
+    label: str
+    name: Optional[str] = None
+    type: Optional[str] = "area"
+    status: Optional[str] = "active"
+    configuration: CapacityAreaConfiguration = None
+    parentLabel: Optional[str] = None
+    parent: Annotated[Optional[CapacityAreaParent], Field(alias="parent")] = None
+    status: str
+    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
+        None
+    )
+
+
+class CapacityAreaList(RootModel[List[CapacityArea]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class CapacityAreaListResponse(OFSResponseList[CapacityArea]):
     pass
