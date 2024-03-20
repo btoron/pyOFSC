@@ -15,7 +15,10 @@ from ofsc.models import (
     ActivityTypeList,
     CapacityArea,
     CapacityAreaListResponse,
+    CapacityCategory,
+    CapacityCategoryListResponse,
     Condition,
+    ItemList,
     SharingEnum,
     Translation,
     TranslationList,
@@ -284,6 +287,7 @@ def test_capacity_area_list_model_base():
 
 
 # endregion
+# region Workskills
 def test_workskill_model_base():
     base = {
         "label": "EST",
@@ -317,3 +321,98 @@ def test_workskilllist_connected(instance):
     metadata_response = instance.metadata.get_workskills(response_type=OBJ_RESPONSE)
     logging.debug(json.dumps(metadata_response, indent=4))
     objList = WorkskillList.model_validate(metadata_response["items"])
+
+
+# endregion
+# region Capacity Categories
+capacityCategoryList = {
+    "hasMore": True,
+    "totalResults": 8,
+    "limit": 1,
+    "offset": 2,
+    "items": [
+        {
+            "label": "UP",
+            "name": "Upgrade",
+            "active": True,
+            "workSkills": [{"label": "UP", "ratio": 1, "startDate": "2000-01-01"}],
+            "workSkillGroups": [],
+            "timeSlots": [
+                {"label": "08-10"},
+                {"label": "10-12"},
+                {"label": "13-15"},
+                {"label": "15-17"},
+            ],
+            "translations": [
+                {"language": "en", "name": "Upgrade", "languageISO": "en-US"},
+                {"language": "es", "name": "Upgrade", "languageISO": "es-ES"},
+                {"language": "fr", "name": "Upgrade", "languageISO": "fr-FR"},
+                {"language": "nl", "name": "Upgrade", "languageISO": "nl-NL"},
+                {"language": "de", "name": "Upgrade", "languageISO": "de-DE"},
+                {"language": "ro", "name": "Upgrade", "languageISO": "ro-RO"},
+                {
+                    "language": "ru",
+                    "name": "????????????????????????",
+                    "languageISO": "ru-RU",
+                },
+                {"language": "br", "name": "Upgrade", "languageISO": "pt-BR"},
+            ],
+            "links": [
+                {
+                    "rel": "canonical",
+                    "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityCategories/UP",
+                },
+                {
+                    "rel": "describedby",
+                    "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/metadata-catalog/capacityCategories",
+                },
+            ],
+        }
+    ],
+    "links": [
+        {
+            "rel": "canonical",
+            "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityCategories?limit=1&offset=2",
+        },
+        {
+            "rel": "prev",
+            "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityCategories?offset=1",
+        },
+        {
+            "rel": "next",
+            "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityCategories?offset=3",
+        },
+        {
+            "rel": "describedby",
+            "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/metadata-catalog/capacityCategories",
+        },
+    ],
+}
+
+
+def test_capacity_category_model_list():
+    objList = CapacityCategoryListResponse.model_validate(capacityCategoryList)
+    assert objList.hasMore == capacityCategoryList["hasMore"]
+    assert objList.totalResults == capacityCategoryList["totalResults"]
+    assert objList.limit == capacityCategoryList["limit"]
+    assert objList.offset == capacityCategoryList["offset"]
+    assert len(objList.items) == len(capacityCategoryList["items"])
+    assert objList.links == capacityCategoryList["links"]
+    for idx, item in enumerate(objList.items):
+        assert item.label == capacityCategoryList["items"][idx]["label"]
+        assert item.name == capacityCategoryList["items"][idx]["name"]
+        assert item.active == capacityCategoryList["items"][idx]["active"]
+        assert item.timeSlots == ItemList.model_validate(
+            capacityCategoryList["items"][idx]["timeSlots"]
+        )
+        assert item.translations == TranslationList.model_validate(
+            capacityCategoryList["items"][idx]["translations"]
+        )
+        assert item.links == capacityCategoryList["items"][idx]["links"]
+        # assert item.workSkills == capacityCategoryList["items"][idx]["workSkills"]
+        assert item.workSkillGroups == ItemList.model_validate(
+            capacityCategoryList["items"][idx]["workSkillGroups"]
+        )
+
+
+# endregion

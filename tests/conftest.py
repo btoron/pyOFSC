@@ -128,6 +128,11 @@ def demo_data():
                         "parentLabel": "FLUSA",
                     },
                 ],
+                "expected_capacity_categories": {
+                    "EST": {"label": "EST", "name": "Estimate"},
+                    "RES": {"label": "RES", "name": "Residential"},
+                    "COM": {"label": "COM", "name": "Commercial"},
+                },
             },
             "get_file_property": {
                 "activity_id": 3954799,  # Note: manual addition

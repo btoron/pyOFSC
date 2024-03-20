@@ -24,8 +24,11 @@ T = TypeVar("T")
 
 
 class OFSResponseList(BaseModel, Generic[T]):
+    model_config = ConfigDict(extra="allow")
 
     items: List[T]
+    offset: Annotated[Optional[int], Field(alias="offset")] = None
+    limit: Annotated[Optional[int], Field(alias="limit")] = None
     hasMore: Annotated[Optional[bool], Field(alias="hasMore")] = False
     totalResults: int = -1
 
@@ -507,3 +510,42 @@ class CapacityAreaList(RootModel[List[CapacityArea]]):
 
 class CapacityAreaListResponse(OFSResponseList[CapacityArea]):
     pass
+
+
+# endregion
+# region 202403 Capacity Categories
+class Item(BaseModel):
+    label: str
+    name: Optional[str] = None
+
+
+class ItemList(RootModel[List[Item]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class CapacityCategory(BaseModel):
+    label: str
+    name: str
+    timeSlots: Optional[ItemList] = None
+    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
+        None
+    )
+    workSkillGroups: Optional[ItemList] = None
+    workSkills: Optional[ItemList] = None
+    active: bool
+    model_config = ConfigDict(extra="allow")
+
+
+class CapacityCategoryListResponse(OFSResponseList[CapacityCategory]):
+    pass
+
+
+#  endregion
+# region 202404 Metadata - Time Slots
+# endregion
+# region 202404 Metadata - Workzones
+# endregion

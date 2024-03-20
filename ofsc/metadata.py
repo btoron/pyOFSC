@@ -16,6 +16,8 @@ from .models import (
     ActivityTypeListResponse,
     CapacityArea,
     CapacityAreaListResponse,
+    CapacityCategory,
+    CapacityCategoryListResponse,
     OFSApi,
     OFSConfig,
     Property,
@@ -239,3 +241,25 @@ class OFSMetadata(OFSApi):
         return response
 
     # endregion
+
+    # region 202402 Metadata - Capacity Categories
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=CapacityCategoryListResponse
+    )
+    def get_capacity_categories(self, offset=0, limit=100):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/capacityCategories")
+        params = {"offset": offset, "limit": limit}
+        response = requests.get(url, headers=self.headers, params=params)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=CapacityCategory)
+    def get_capacity_category(self, label: str):
+        encoded_label = urllib.parse.quote_plus(label)
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/capacityCategories/{encoded_label}"
+        )
+        response = requests.get(url, headers=self.headers)
+        return response
+
+
+# endregion
