@@ -28,13 +28,44 @@ def test_get_properties(instance, demo_data):
     assert response["items"][0]["label"] == "ITEM_NUMBER"
 
 
-def test_create_replace_property(instance: OFSC, request_logging, faker):
+def test_create_replace_property(instance: OFSC, faker):
     property = Property.model_validate(
         {
             "label": faker.pystr(),
             "type": "string",
             "entity": "activity",
             "name": faker.pystr(),
+            "translations": [],
+            "gui": "text",
+        }
+    )
+    en_name = Translation(name=property.name)
+    property.translations = TranslationList([en_name])
+    metadata_response = instance.metadata.create_or_replace_property(
+        property, response_type=FULL_RESPONSE
+    )
+    logging.debug(metadata_response.json())
+    assert metadata_response.status_code < 299, metadata_response.json()
+
+    metadata_response = instance.metadata.get_property(
+        property.label, response_type=FULL_RESPONSE
+    )
+    assert metadata_response.status_code < 299
+    response = metadata_response.json()
+    assert response["name"] == property.name
+    assert response["type"] == property.type
+    assert response["entity"] == property.entity
+    assert response.get("translations")[0]["name"] == property.translations[0].name
+    property = Property.model_validate(response)
+
+
+def test_create_replace_property_noansi(instance: OFSC, request_logging, faker):
+    property = Property.model_validate(
+        {
+            "label": faker.pystr(),
+            "type": "string",
+            "entity": "activity",
+            "name": "césped",
             "translations": [],
             "gui": "text",
         }

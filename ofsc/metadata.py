@@ -58,7 +58,7 @@ class OFSMetadata(OFSApi):
             self.baseUrl, f"/rest/ofscMetadata/v1/properties/{property.label}"
         )
         response = requests.put(
-            url, headers=self.headers, data=property.model_dump_json()
+            url, headers=self.headers, data=property.model_dump_json().encode("utf-8")
         )
         return response
 

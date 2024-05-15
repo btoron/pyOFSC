@@ -111,6 +111,8 @@ class OFSApi:
     @property
     def headers(self):
         self._headers = {}
+        self._headers["Content-Type"] = "application/json;charset=UTF-8"
+
         if not self._config.useToken:
             self._headers["Authorization"] = (
                 "Basic " + self._config.basicAuthString.decode("utf-8")
@@ -262,7 +264,7 @@ class Property(BaseModel):
             raise ValueError(f"{v} is not a valid GUI value")
         return v
 
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="ignore")
 
 
 class PropertyList(RootModel[List[Property]]):
