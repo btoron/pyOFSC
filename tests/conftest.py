@@ -133,6 +133,13 @@ def demo_data():
                     "RES": {"label": "RES", "name": "Residential"},
                     "COM": {"label": "COM", "name": "Commercial"},
                 },
+                "expected_inventory_types": {
+                    "count": 23,
+                    "demo": {
+                        "label": "FIT5000",
+                        "status": "active",
+                    },
+                },
             },
             "get_file_property": {
                 "activity_id": 3954799,  # Note: manual addition

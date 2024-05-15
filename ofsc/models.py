@@ -161,6 +161,9 @@ class TranslationList(RootModel[List[Translation]]):
     def __getitem__(self, item):
         return self.root[item]
 
+    def map(self):
+        return {translation.language: translation for translation in self.root}
+
 
 class Workskill(BaseModel):
     label: str
@@ -545,6 +548,34 @@ class CapacityCategoryListResponse(OFSResponseList[CapacityCategory]):
 
 
 #  endregion
+
+# region 202405 Inventory Types
+
+
+class InventoryType(BaseModel):
+    label: str
+    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
+        None
+    )
+    active: bool = True
+    model_property: Optional[str] = None
+    non_serialized: bool = False
+    quantityPrecision: Optional[int] = 0
+    model_config = ConfigDict(extra="allow")
+
+
+class InventoryTypeList(RootModel[List[InventoryType]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class InventoryTypeListResponse(OFSResponseList[InventoryType]):
+    pass
+
+
 # region 202404 Metadata - Time Slots
 # endregion
 # region 202404 Metadata - Workzones

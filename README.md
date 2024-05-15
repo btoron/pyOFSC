@@ -75,6 +75,11 @@ Experimental:
     get_capacity_areas (self, expand="parent", fields=capacityAreasFields, status="active", queryType="area", response_type=JSON_RESPONSE)
     get_capacity_area (self,label, response_type=JSON_RESPONSE)
 
+### Metadata / Inventory
+    get_inventory_types (self, offset=0, limit=100, response_type=JSON_RESPONSE)
+    get_inventory_type (self, label, response_type=JSON_RESPONSE)
+    create_or_replace_inventory_type(self, inventory: InventoryType, response_type=JSON_RESPONSE)
+
 ### Metadata / Properties
     get_properties (self, offset=0, limit=100, response_type=JSON_RESPONSE)
     get_property(self, label: str, response_type=JSON_RESPONSE)

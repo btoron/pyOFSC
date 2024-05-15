@@ -2,7 +2,7 @@ import logging
 
 from ofsc import OFSC
 from ofsc.common import FULL_RESPONSE
-from ofsc.models import Property, Translation
+from ofsc.models import Property, Translation, TranslationList
 
 
 def test_get_property(instance):
@@ -39,7 +39,8 @@ def test_create_replace_property(instance: OFSC, request_logging, faker):
             "gui": "text",
         }
     )
-    property.translations.__root__.append(Translation(name=property.name))
+    en_name = Translation(name=property.name)
+    property.translations = TranslationList([en_name])
     metadata_response = instance.metadata.create_or_replace_property(
         property, response_type=FULL_RESPONSE
     )
@@ -54,4 +55,5 @@ def test_create_replace_property(instance: OFSC, request_logging, faker):
     assert response["name"] == property.name
     assert response["type"] == property.type
     assert response["entity"] == property.entity
+    assert response.get("translations")[0]["name"] == property.translations[0].name
     property = Property.model_validate(response)

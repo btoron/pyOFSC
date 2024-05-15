@@ -64,6 +64,16 @@ def test_translationlist_model_json():
     assert json.loads(objList.model_dump_json())[1]["name"] == base[1]["name"]
 
 
+def test_translation_map():
+    base = [
+        {"language": "en", "name": "Estimate", "languageISO": "en-US"},
+        {"language": "es", "name": "Estimar"},
+    ]
+    ## Map the list into a dictionary with the language as the key
+    objMap = TranslationList.model_validate(base).map()
+    assert objMap.get("en").name == "Estimate"
+
+
 # region Activity Type Groups
 def test_activity_type_group_model_base():
     base = {

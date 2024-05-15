@@ -18,6 +18,8 @@ from .models import (
     CapacityAreaListResponse,
     CapacityCategory,
     CapacityCategoryListResponse,
+    InventoryType,
+    InventoryTypeListResponse,
     OFSApi,
     OFSConfig,
     Property,
@@ -55,7 +57,9 @@ class OFSMetadata(OFSApi):
         url = urljoin(
             self.baseUrl, f"/rest/ofscMetadata/v1/properties/{property.label}"
         )
-        response = requests.put(url, headers=self.headers, data=property.json())
+        response = requests.put(
+            url, headers=self.headers, data=property.model_dump_json()
+        )
         return response
 
     # 202208 Skill management
@@ -261,5 +265,24 @@ class OFSMetadata(OFSApi):
         response = requests.get(url, headers=self.headers)
         return response
 
+    # endregion
 
-# endregion
+    # region 202405 Inventory Types
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=InventoryTypeListResponse
+    )
+    def get_inventory_types(self):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/inventoryTypes")
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=InventoryType)
+    def get_inventory_type(self, label: str):
+        encoded_label = urllib.parse.quote_plus(label)
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/inventoryTypes/{encoded_label}"
+        )
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    # endregion
