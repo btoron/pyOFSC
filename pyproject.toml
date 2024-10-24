@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ofsc"
-version = "2.0.4"
+version = "2.0.5"
 license = "MIT"
 description = "Python wrapper for Oracle Field Service API"
 authors = ["Borja Toron <borja.toron@gmail.com>"]
@@ -11,13 +11,13 @@ repository = 'https://github.com/btoron/pyOFSC'
 [tool.poetry.dependencies]
 python = "^3.11"
 requests = "^2.28.1"
-pytest = "7.4"
 pydantic = "^2.6.3"
 cachetools = "^5.3.1"
 pydantic-settings = "^2.2.1"
 
 [tool.poetry.dev-dependencies]
 openpyxl = "^3.0.10"
+pytest = "7.4"
 pyarmor = "^7.6.0"
 Faker = "^14.2.0"
 
