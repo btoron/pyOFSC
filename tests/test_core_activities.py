@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import date, timedelta
 
 import pytest
@@ -7,8 +8,21 @@ from ofsc.common import FULL_RESPONSE
 from ofsc.models import BulkUpdateRequest, BulkUpdateResponse
 
 
+# Test A.01 Get Activity Info (activity exists)
+def test_get_activity(instance):
+    raw_response = instance.core.get_activity(3951935, response_type=FULL_RESPONSE)
+    response = raw_response.json()
+    logging.debug(response)
+    assert response["customerNumber"] == "019895700"
+
+
+# Test A.02 Get Activity Info (activity does not exist)
+def test_get_activity_error(instance):
+    raw_response = instance.core.get_activity(99999, response_type=FULL_RESPONSE)
+    assert raw_response.status_code == 404
+
+
 def test_search_activities_001(instance):
-    logging.info("...101: Search Activities (activity exists)")
     params = {
         "searchInField": "customerPhone",
         "searchForValue": "555760757294",
@@ -16,17 +30,16 @@ def test_search_activities_001(instance):
         "dateTo": "2099-01-01",
     }
     response = instance.core.search_activities(params, response_type=FULL_RESPONSE)
-    logging.info(response.json())
+    logging.debug(response.json())
     assert response.status_code == 200
     assert response.json()["totalResults"] == 2  # 202206 Modified in demo 22B
 
 
 # test A.06 Get Activities
 def test_get_activities_no_offset(instance, current_date, demo_data, request_logging):
-    logging.info("...102: Get activities (no offset)")
     start = date.fromisoformat(current_date) - timedelta(days=5)
     end = start + timedelta(days=20)
-    logging.info(f"{start} {end}")
+    logging.debug(f"{start} {end}")
     params = {
         "dateFrom": start.strftime("%Y-%m-%d"),
         "dateTo": end.strftime("%Y-%m-%d"),
@@ -55,10 +68,9 @@ def test_get_activities_no_offset(instance, current_date, demo_data, request_log
 
 
 def test_get_activities_offset(instance, current_date, demo_data, request_logging):
-    logging.info("...103: Get activities (offset)")
     start = date.fromisoformat(current_date) - timedelta(days=5)
     end = start + timedelta(days=20)
-    logging.info(f"{start} {end}")
+    logging.debug(f"{start} {end}")
     params = {
         "dateFrom": start.strftime("%Y-%m-%d"),
         "dateTo": end.strftime("%Y-%m-%d"),
@@ -86,7 +98,6 @@ def test_get_activities_offset(instance, current_date, demo_data, request_loggin
 
 
 def test_model_bulk_update_simple(instance, request_logging):
-    logging.info("...104. Bulk Update")
     data = {
         "updateParameters": {
             "identifyActivityBy": "apptNumber",
@@ -151,8 +162,58 @@ def test_model_bulk_update_simple(instance, request_logging):
             }
         ],
     }
-    input = BulkUpdateRequest.parse_obj(data)
+    input = BulkUpdateRequest.model_validate(data)
     raw_response = instance.core.bulk_update(input, response_type=FULL_RESPONSE)
     assert raw_response.status_code == 200
     response = raw_response.json()
-    output = BulkUpdateResponse.parse_obj(response)
+    output = BulkUpdateResponse.model_validate(response)
+
+
+# Test C.P.10 Get File Property 01
+def test_get_file_property_01(instance, pp, demo_data):
+    activity_id = demo_data.get("get_file_property").get("activity_id")
+    # Get all properties from the activity
+    raw_response = instance.core.get_activity(activity_id, response_type=FULL_RESPONSE)
+    assert raw_response.status_code == 200, raw_response.json()
+    response = raw_response.json()
+    # verify that the file is there
+    assert response.get("csign") is not None
+    assert response.get("csign").get("links") is not None
+    logging.info(pp.pformat(response.get("csign").get("links")[0].get("href")))
+    raw_response = instance.core.get_file_property(
+        activityId=activity_id,
+        label="csign",
+        mediaType="*/*",
+        response_type=FULL_RESPONSE,
+    )
+    assert raw_response.status_code == 200, raw_response.json()
+    logging.info(pp.pformat(raw_response.json()))
+    response = raw_response.json()
+    logging.info(pp.pformat(response))
+    assert response["mediaType"] is not None
+    assert response["mediaType"] == "image/png"
+    assert response["name"] == "signature.png"
+
+
+# Test C.P.10 Get File Property 02
+def test_get_file_property_02(instance, pp, demo_data):
+    logging.info("...C.P.02 Get File Property content")
+    activity_id = demo_data.get("get_file_property").get("activity_id")
+    metadata_response = instance.core.get_file_property(
+        activityId=activity_id,
+        label="csign",
+        mediaType="*/*",
+        response_type=FULL_RESPONSE,
+    )
+    logging.debug(pp.pformat(metadata_response.json()))
+    response = metadata_response.json()
+    raw_response = instance.core.get_file_property(
+        activityId=activity_id,
+        label="csign",
+        mediaType="image/png",
+        response_type=FULL_RESPONSE,
+    )
+    with open(os.path.join(os.getcwd(), response["name"]), "wb") as fd:
+        fd.write(raw_response.content)
+    assert response["name"] == "signature.png"
+    # TODO: Assert the size of the file

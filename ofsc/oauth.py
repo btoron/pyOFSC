@@ -6,12 +6,12 @@ from urllib.parse import urljoin
 
 import requests
 
-from .common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE, wrap_return
+from .common import FULL_RESPONSE, OBJ_RESPONSE, TEXT_RESPONSE, wrap_return
 from .models import OFSApi, OFSConfig, OFSOAuthRequest
 
 
 class OFSOauth2(OFSApi):
-    @wrap_return(response_type=JSON_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_token(
         self, params: OFSOAuthRequest = OFSOAuthRequest()
     ) -> requests.Response:

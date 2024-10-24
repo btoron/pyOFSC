@@ -1,11 +1,6 @@
-import base64
 import logging
-from functools import wraps
-from http import client
-from urllib import response
-from warnings import warn
 
-from .common import FULL_RESPONSE, JSON_RESPONSE, TEXT_RESPONSE, wrap_return
+from .common import FULL_RESPONSE, OBJ_RESPONSE, TEXT_RESPONSE
 from .core import OFSCore
 from .metadata import OFSMetadata
 from .models import OFSConfig
@@ -13,11 +8,20 @@ from .oauth import OFSOauth2
 
 
 class OFSC:
-    # 202308 The API portal was deprecated, so the default URL becomes {companyname}.fs.ocs.oraclecloud.com
 
+    # the default URL becomes {companyname}.fs.ocs.oraclecloud.com
     def __init__(
-        self, clientID, companyName, secret, root=None, baseUrl=None, useToken=False
+        self,
+        clientID,
+        companyName,
+        secret,
+        root=None,
+        baseUrl=None,
+        useToken=False,
+        enable_auto_raise=True,
+        enable_auto_model=True,
     ):
+
         self._config = OFSConfig(
             baseURL=baseUrl,
             clientID=clientID,
@@ -25,6 +29,8 @@ class OFSC:
             companyName=companyName,
             root=root,
             useToken=useToken,
+            auto_raise=enable_auto_raise,  # 20240401: This is a new feature that will raise an exception if the API returns an error
+            auto_model=enable_auto_model,  # 20240401: This is a new feature that will return a pydantic model if the API returns a 200
         )
         self._core = OFSCore(config=self._config)
         self._metadata = OFSMetadata(config=self._config)
@@ -62,6 +68,17 @@ class OFSC:
             self._oauth = OFSOauth2(config=self._config)
         return self._oauth
 
+    @property
+    def auto_model(self):
+        return self._config.auto_model
+
+    @auto_model.setter
+    def auto_model(self, value):
+        self._config.auto_model = value
+        self._core.config.auto_model = value
+        self._metadata.config.auto_model = value
+        self._oauth.config.auto_model = value
+
     def __str__(self) -> str:
         return f"baseURL={self._config.baseURL}"
 
@@ -75,18 +92,14 @@ class OFSC:
 
         def wrapper(*args, **kwargs):
             if method_name in self._core_methods:
-                warn(
-                    f"{method_name} was called without the API name (Core). This will be deprecated in OFSC 2.0",
-                    DeprecationWarning,
+                raise NotImplementedError(
+                    f"{method_name} was called without the API name (Core). This was deprecated in OFSC 2.0"
                 )
-                return getattr(self.core, method_name)(*args, **kwargs)
 
             if method_name in self._metadata_methods:
-                warn(
-                    f"{method_name} was called without the API name (Metadata). This will be deprecated in OFSC 2.0",
-                    DeprecationWarning,
+                raise NotImplementedError(
+                    f"{method_name} was called without the API name (Metadata). This was deprecated in OFSC 2.0"
                 )
-                return getattr(self.metadata, method_name)(*args, **kwargs)
             raise Exception("method not found")
 
         return wrapper

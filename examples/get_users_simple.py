@@ -2,10 +2,10 @@
 import argparse
 import logging
 
-import ofsc
-from ofsc import FULL_RESPONSE, JSON_RESPONSE, OFSC
-
 from config import Config
+
+import ofsc
+from ofsc import FULL_RESPONSE, OBJ_RESPONSE, OFSC
 
 
 def init_script():
@@ -38,7 +38,7 @@ def init_script():
 
 
 def get_users(instance):
-    response = instance.core.get_users(offset=0, limit=100, response_type=JSON_RESPONSE)
+    response = instance.core.get_users(offset=0, limit=100, response_type=OBJ_RESPONSE)
     total_results = response["totalResults"]
     offset = response["offset"]
     final_items_list = response["items"]
@@ -50,7 +50,7 @@ def get_users(instance):
         )
         offset = offset + 100
         response_json = instance.core.get_users(
-            offset=offset, response_type=JSON_RESPONSE
+            offset=offset, response_type=OBJ_RESPONSE
         )
         total_results = response_json["totalResults"]
         items = response_json["items"]

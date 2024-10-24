@@ -4,10 +4,10 @@ import json
 import logging
 import pprint
 
-from flatten_dict import flatten
-from ofsc import FULL_RESPONSE, JSON_RESPONSE, OFSC
-
 from config import Config
+from flatten_dict import flatten
+
+from ofsc import FULL_RESPONSE, OBJ_RESPONSE, OFSC
 
 capacityAreasFields = "label,name,type,status,parent.name,parent.label"
 

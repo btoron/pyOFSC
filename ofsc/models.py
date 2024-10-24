@@ -1,14 +1,42 @@
 import base64
-import typing
+import logging
 from enum import Enum
-from typing import Any, List, Optional
+from typing import Any, Generic, List, Optional, TypeVar
 from urllib.parse import urljoin
 
 import requests
 from cachetools import TTLCache, cached
-from pydantic import BaseModel, Extra, validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    RootModel,
+    ValidationInfo,
+    field_validator,
+    model_validator,
+)
+from pydantic_settings import BaseSettings
+from typing_extensions import Annotated
 
-from ofsc.common import FULL_RESPONSE, JSON_RESPONSE, wrap_return
+from ofsc.common import FULL_RESPONSE, OBJ_RESPONSE, wrap_return
+
+T = TypeVar("T")
+
+
+class OFSResponseList(BaseModel, Generic[T]):
+    model_config = ConfigDict(extra="allow")
+
+    items: List[T]
+    offset: Annotated[Optional[int], Field(alias="offset")] = None
+    limit: Annotated[Optional[int], Field(alias="limit")] = None
+    hasMore: Annotated[Optional[bool], Field(alias="hasMore")] = False
+    totalResults: int = -1
+
+    @model_validator(mode="after")
+    def check_coherence(self):
+        if self.totalResults != len(self.items) and self.hasMore is False:
+            self.totalResults = len(self.items)
+        return self
 
 
 class OFSConfig(BaseModel):
@@ -16,8 +44,10 @@ class OFSConfig(BaseModel):
     secret: str
     companyName: str
     useToken: bool = False
-    root: Optional[str]
-    baseURL: Optional[str]
+    root: Optional[str] = None
+    baseURL: Optional[str] = None
+    auto_raise: bool = True
+    auto_model: bool = True
 
     @property
     def basicAuthString(self):
@@ -25,19 +55,24 @@ class OFSConfig(BaseModel):
             bytes(self.clientID + "@" + self.companyName + ":" + self.secret, "utf-8")
         )
 
-    class Config:
-        validate_assignment = True
+    model_config = ConfigDict(validate_assignment=True)
 
-    @validator("baseURL")
-    def set_base_URL(cls, url, values):
-        print(values)
-        return url or f"https://{values['companyName']}.fs.ocs.oraclecloud.com"
+    @field_validator("baseURL")
+    def set_base_URL(cls, url, info: ValidationInfo):
+        return url or f"https://{info.data['companyName']}.fs.ocs.oraclecloud.com"
 
 
 class OFSOAuthRequest(BaseModel):
-    assertion: Optional[str]
+    assertion: Optional[str] = None
     grant_type: str = "client_credentials"
-    ofs_dynamic_scope: Optional[str]
+    ofs_dynamic_scope: Optional[str] = None
+
+
+class OFSAPIError(BaseModel):
+    type: str
+    title: str
+    status: int
+    detail: str
 
 
 class OFSApi:
@@ -69,17 +104,19 @@ class OFSApi:
         headers["Content-Type"] = "application/x-www-form-urlencoded"
         url = urljoin(self.baseUrl, "/rest/oauthTokenService/v2/token")
         response = requests.post(
-            url, data=auth.dict(exclude_none=True), headers=headers
+            url, data=auth.model_dump(exclude_none=True), headers=headers
         )
         return response
 
     @property
     def headers(self):
         self._headers = {}
+        self._headers["Content-Type"] = "application/json;charset=UTF-8"
+
         if not self._config.useToken:
-            self._headers[
-                "Authorization"
-            ] = "Basic " + self._config.basicAuthString.decode("utf-8")
+            self._headers["Authorization"] = (
+                "Basic " + self._config.basicAuthString.decode("utf-8")
+            )
         else:
             self._token = self.token().json()["access_token"]
             self._headers["Authorization"] = f"Bearer {self._token}"
@@ -116,17 +153,18 @@ class EntityEnum(str, Enum):
 class Translation(BaseModel):
     language: str = "en"
     name: str
-    languageISO: Optional[str]
+    languageISO: Optional[str] = None
 
 
-class TranslationList(BaseModel):
-    __root__: List[Translation]
-
+class TranslationList(RootModel[List[Translation]]):
     def __iter__(self):
-        return iter(self.__root__)
+        return iter(self.root)
 
     def __getitem__(self, item):
-        return self.__root__[item]
+        return self.root[item]
+
+    def map(self):
+        return {translation.language: translation for translation in self.root}
 
 
 class Workskill(BaseModel):
@@ -134,21 +172,23 @@ class Workskill(BaseModel):
     active: bool = True
     name: str = ""
     sharing: SharingEnum
-    translations: Optional[TranslationList]
+    translations: Annotated[Optional[TranslationList], Field(validate_default=True)] = (
+        None
+    )
 
-    @validator("translations", always=True)
+    @field_validator("translations")
     def set_default(cls, field_value, values):
-        return field_value or [Translation(name=values["name"])]
+        return field_value or TranslationList(
+            [Translation(name=values.data.get("name"))]
+        )
 
 
-class WorkskillList(BaseModel):
-    __root__: List[Workskill]
-
+class WorkskillList(RootModel[List[Workskill]]):
     def __iter__(self):
-        return iter(self.__root__)
+        return iter(self.root)
 
     def __getitem__(self, item):
-        return self.__root__[item]
+        return self.root[item]
 
 
 class Condition(BaseModel):
@@ -164,17 +204,15 @@ class WorkskillCondition(BaseModel):
     requiredLevel: int
     preferableLevel: int
     conditions: List[Condition]
-    dependencies: Any
+    dependencies: Any = None
 
 
-class WorskillConditionList(BaseModel):
-    __root__: List[WorkskillCondition]
-
+class WorskillConditionList(RootModel[List[WorkskillCondition]]):
     def __iter__(self):
-        return iter(self.__root__)
+        return iter(self.root)
 
     def __getitem__(self, item):
-        return self.__root__[item]
+        return self.root[item]
 
 
 # Workzones
@@ -186,29 +224,28 @@ class Workzone(BaseModel):
     keys: List[Any]
 
 
-class WorkzoneList(BaseModel):
-    __root__: List[Workzone]
-
+class WorkzoneList(RootModel[List[Workzone]]):
     def __iter__(self):
-        return iter(self.__root__)
+        return iter(self.root)
 
     def __getitem__(self, item):
-        return self.__root__[item]
+        return self.root[item]
 
 
 class Property(BaseModel):
     label: str
     name: str
     type: str
-    entity: Optional[EntityEnum]
-    gui: Optional[str]
-    translations: TranslationList = []
+    entity: Optional[EntityEnum] = None
+    gui: Optional[str] = None
+    translations: Annotated[TranslationList, Field(validate_default=True)] = []
 
-    @validator("translations", always=True)
+    @field_validator("translations")
     def set_default(cls, field_value, values):
-        return field_value or [Translation(name=values["name"])]
+        return field_value or [Translation(name=values.name)]
 
-    @validator("gui")
+    @field_validator("gui")
+    @classmethod
     def gui_match(cls, v):
         if v not in [
             "text",
@@ -227,47 +264,40 @@ class Property(BaseModel):
             raise ValueError(f"{v} is not a valid GUI value")
         return v
 
-    class Config:
-        extra = Extra.allow  # or 'allow' str
+    model_config = ConfigDict(extra="ignore")
 
 
-class PropertyList(BaseModel):
-    __root__: List[Property]
-
+class PropertyList(RootModel[List[Property]]):
     def __iter__(self):
-        return iter(self.__root__)
+        return iter(self.root)
 
     def __getitem__(self, item):
-        return self.__root__[item]
+        return self.root[item]
 
 
 class Resource(BaseModel):
-    resourceId: Optional[str]
-    parentResourceId: Optional[str]
+    resourceId: Optional[str] = None
+    parentResourceId: Optional[str] = None
     resourceType: str
     name: str
     status: str = "active"
     organization: str = "default"
     language: str
-    languageISO: Optional[str]
+    languageISO: Optional[str] = None
     timeZone: str
     timeFormat: str = "24-hour"
     dateFormat: str = "mm/dd/yy"
-    email: Optional[str]
-    phone: Optional[str]
-
-    class Config:
-        extra = Extra.allow  # or 'allow' str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
 
 
-class ResourceList(BaseModel):
-    __root__: List[Resource]
-
+class ResourceList(RootModel[List[Resource]]):
     def __iter__(self):
-        return iter(self.__root__)
+        return iter(self.root)
 
     def __getitem__(self, item):
-        return self.__root__[item]
+        return self.root[item]
 
 
 class ResourceType(BaseModel):
@@ -275,40 +305,34 @@ class ResourceType(BaseModel):
     name: str
     active: bool
     role: str  # TODO: change to enum
-
-    class Config:
-        extra = Extra.allow  # or 'allow' str
+    model_config = ConfigDict(extra="allow")
 
 
-class ResourceTypeList(BaseModel):
-    __root__: List[ResourceType]
-
+class ResourceTypeList(RootModel[List[ResourceType]]):
     def __iter__(self):
-        return iter(self.__root__)
+        return iter(self.root)
 
     def __getitem__(self, item):
-        return self.__root__[item]
+        return self.root[item]
 
 
 # Core / Activities
 class BulkUpdateActivityItem(BaseModel):
-    activityId: Optional[int]
-    activityType: Optional[str]
-    date: Optional[str]
-
-    class Config:
-        extra = Extra.allow  # or 'allow' str
+    activityId: Optional[int] = None
+    activityType: Optional[str] = None
+    date: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
 
 
 # CORE / BulkUpdaterequest
 
 
 class BulkUpdateParameters(BaseModel):
-    fallbackResource: Optional[str]
-    identifyActivityBy: Optional[str]
-    ifExistsThenDoNotUpdateFields: Optional[List[str]]
-    ifInFinalStatusThen: Optional[str]
-    inventoryPropertiesUpdateMode: Optional[str]
+    fallbackResource: Optional[str] = None
+    identifyActivityBy: Optional[str] = None
+    ifExistsThenDoNotUpdateFields: Optional[List[str]] = None
+    ifInFinalStatusThen: Optional[str] = None
+    inventoryPropertiesUpdateMode: Optional[str] = None
 
 
 class BulkUpdateRequest(BaseModel):
@@ -317,28 +341,244 @@ class BulkUpdateRequest(BaseModel):
 
 
 class ActivityKeys(BaseModel):
-    activityId: Optional[int]
-    apptNumber: Optional[str]
-    customerNumber: Optional[str]
+    activityId: Optional[int] = None
+    apptNumber: Optional[str] = None
+    customerNumber: Optional[str] = None
 
 
 class BulkUpdateError(BaseModel):
-    errorDetail: Optional[str]
-    operation: Optional[str]
+    errorDetail: Optional[str] = None
+    operation: Optional[str] = None
 
 
 class BulkUpdateWarning(BaseModel):
-    code: Optional[int]
-    message: Optional[int]
+    code: Optional[int] = None
+    message: Optional[int] = None
 
 
 class BulkUpdateResult(BaseModel):
-    activityKeys: Optional[ActivityKeys]
-    errors: Optional[List[BulkUpdateError]]
-    operationsFailed: Optional[List[str]]
-    operationsPerformed: Optional[List[str]]
-    warnings: Optional[List[BulkUpdateWarning]]
+    activityKeys: Optional[ActivityKeys] = None
+    errors: Optional[List[BulkUpdateError]] = None
+    operationsFailed: Optional[List[str]] = None
+    operationsPerformed: Optional[List[str]] = None
+    warnings: Optional[List[BulkUpdateWarning]] = None
 
 
 class BulkUpdateResponse(BaseModel):
-    results: Optional[List[BulkUpdateResult]]
+    results: Optional[List[BulkUpdateResult]] = None
+
+
+# region Activity Type Groups
+
+
+class ActivityTypeGroup(BaseModel):
+    label: str
+    name: str
+    _activityTypes: Annotated[Optional[List[dict]], "activityTypes"] = []
+    translations: TranslationList
+
+    @property
+    def activityTypes(self):
+        return [_activityType["label"] for _activityType in self._activityTypes]
+
+
+class ActivityTypeGroupList(RootModel[List[ActivityTypeGroup]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class ActivityTypeGroupListResponse(OFSResponseList[ActivityTypeGroup]):
+    pass
+
+
+# endregion
+
+# region Activity Types
+
+
+class ActivityTypeColors(BaseModel):
+    cancelled: Annotated[Optional[str], Field(alias="cancelled")]
+    completed: Annotated[Optional[str], Field(alias="completed")]
+    notdone: Annotated[Optional[str], Field(alias="notdone")]
+    notOrdered: Annotated[Optional[str], Field(alias="notOrdered")]
+    pending: Annotated[Optional[str], Field(alias="pending")]
+    started: Annotated[Optional[str], Field(alias="started")]
+    suspended: Annotated[Optional[str], Field(alias="suspended")]
+    warning: Annotated[Optional[str], Field(alias="warning")]
+
+
+class ActivityTypeFeatures(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    allowCreationInBuckets: Optional[bool] = False
+    allowMassActivities: Optional[bool] = False
+    allowMoveBetweenResources: Optional[bool] = False
+    allowNonScheduled: Optional[bool] = False
+    allowRepeatingActivities: Optional[bool] = False
+    allowReschedule: Optional[bool] = False
+    allowToCreateFromIncomingInterface: Optional[bool] = False
+    allowToSearch: Optional[bool] = False
+    calculateActivityDurationUsingStatistics: Optional[bool] = False
+    calculateDeliveryWindow: Optional[bool] = False
+    calculateTravel: Optional[bool] = False
+    disableLocationTracking: Optional[bool] = False
+    enableDayBeforeTrigger: Optional[bool] = False
+    enableNotStartedTrigger: Optional[bool] = False
+    enableReminderAndChangeTriggers: Optional[bool] = False
+    enableSwWarningTrigger: Optional[bool] = False
+    isSegmentingEnabled: Optional[bool] = False
+    isTeamworkAvailable: Optional[bool] = False
+    slaAndServiceWindowUseCustomerTimeZone: Optional[bool] = False
+    supportOfInventory: Optional[bool] = False
+    supportOfLinks: Optional[bool] = False
+    supportOfNotOrderedActivities: Optional[bool] = False
+    supportOfPreferredResources: Optional[bool] = False
+    supportOfRequiredInventory: Optional[bool] = False
+    supportOfTimeSlots: Optional[bool] = False
+    supportOfWorkSkills: Optional[bool] = False
+    supportOfWorkZones: Optional[bool] = False
+
+
+class ActivityTypeTimeSlots(BaseModel):
+    label: str
+
+
+class ActivityType(BaseModel):
+    active: bool
+    colors: Optional[ActivityTypeColors]
+    defaultDuration: int
+    features: Optional[ActivityTypeFeatures]
+    groupLabel: Optional[str]
+    label: str
+    name: str
+    segmentMaxDuration: Optional[int] = None
+    segmentMinDuration: Optional[int] = None
+    timeSlots: Optional[List[ActivityTypeTimeSlots]] = None
+    translations: TranslationList
+
+
+class ActivityTypeList(RootModel[List[ActivityType]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class ActivityTypeListResponse(OFSResponseList[ActivityType]):
+    pass
+
+
+# endregion
+
+# region Capacity Areas
+
+
+class CapacityAreaParent(BaseModel):
+    label: str
+    name: Optional[str] = None
+
+
+class CapacityAreaConfiguration(BaseModel):
+    isTimeSlotBase: bool
+    byCapacityCategory: str
+    byDay: str
+    byTimeSlot: str
+    isAllowCloseOnWorkzoneLevel: bool
+    definitionLevel: List[str]
+
+
+class CapacityArea(BaseModel):
+    label: str
+    name: Optional[str] = None
+    type: Optional[str] = "area"
+    status: Optional[str] = "active"
+    configuration: CapacityAreaConfiguration = None
+    parentLabel: Optional[str] = None
+    parent: Annotated[Optional[CapacityAreaParent], Field(alias="parent")] = None
+    status: str
+    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
+        None
+    )
+    # Note: as of 24A the additional fields returned are just HREFs so we won't include them here
+
+
+class CapacityAreaList(RootModel[List[CapacityArea]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class CapacityAreaListResponse(OFSResponseList[CapacityArea]):
+    pass
+
+
+# endregion
+# region 202403 Capacity Categories
+class Item(BaseModel):
+    label: str
+    name: Optional[str] = None
+
+
+class ItemList(RootModel[List[Item]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class CapacityCategory(BaseModel):
+    label: str
+    name: str
+    timeSlots: Optional[ItemList] = None
+    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
+        None
+    )
+    workSkillGroups: Optional[ItemList] = None
+    workSkills: Optional[ItemList] = None
+    active: bool
+    model_config = ConfigDict(extra="allow")
+
+
+class CapacityCategoryListResponse(OFSResponseList[CapacityCategory]):
+    pass
+
+
+#  endregion
+
+# region 202405 Inventory Types
+
+
+class InventoryType(BaseModel):
+    label: str
+    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
+        None
+    )
+    active: bool = True
+    model_property: Optional[str] = None
+    non_serialized: bool = False
+    quantityPrecision: Optional[int] = 0
+    model_config = ConfigDict(extra="allow")
+
+
+class InventoryTypeList(RootModel[List[InventoryType]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class InventoryTypeListResponse(OFSResponseList[InventoryType]):
+    pass
+
+
+# region 202404 Metadata - Time Slots
+# endregion
+# region 202404 Metadata - Workzones
+# endregion
