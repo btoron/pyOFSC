@@ -97,3 +97,30 @@ def test_workskill_groups_obj(instance):
     assert len(response.items) == response.totalResults
     for item in response.items:
         assert isinstance(item, WorkSkillGroup)
+
+
+def test_create_or_update_workskill_group(instance):
+    group = WorkSkillGroup(
+        label="TESTGROUP2",
+        name="Just a test",
+        assignToResource=True,
+        addToCapacityCategory=True,
+        active=True,
+        workSkills=[
+            {"label": "COM", "ratio": 100},
+            {"label": "EST", "ratio": 50},
+            {"label": "installer", "ratio": 20},
+        ],
+        translations=[
+            {"language": "en", "name": "Just a test", "languageISO": "en-US"},
+            {
+                "language": "es",
+                "name": "Prueba de un grupo de habilidades",
+                "languageISO": "es-ES",
+            },
+        ],
+    )
+    response = instance.metadata.create_or_update_workskill_group(group)
+    assert response.status_code == 201
+    assert response.json() == _workskill_group
+    assert response.json()["label"] == "TESTGROUP2"

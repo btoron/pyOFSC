@@ -298,9 +298,10 @@ class OFSMetadata(OFSApi):
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
-    def create_or_update_workskill_group(self, label: str, data: dict):
+    def create_or_update_workskill_group(self, data: WorkSkillGroup):
+        label = data.label
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillGroups/{label}")
-        response = requests.put(url, headers=self.headers, json=data)
+        response = requests.put(url, headers=self.headers, json=data.model_dump_json())
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
