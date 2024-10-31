@@ -1,31 +1,21 @@
 import json
 import logging
-from dbm import dumb
 
 import pytest
 from pydantic import ValidationError
-from requests import Response
 
-from ofsc.common import FULL_RESPONSE, OBJ_RESPONSE, TEXT_RESPONSE
+from ofsc.common import OBJ_RESPONSE
 from ofsc.models import (
     ActivityType,
     ActivityTypeGroup,
-    ActivityTypeGroupList,
-    ActivityTypeGroupListResponse,
-    ActivityTypeList,
     CapacityArea,
     CapacityAreaListResponse,
-    CapacityCategory,
     CapacityCategoryListResponse,
-    Condition,
     ItemList,
-    SharingEnum,
     Translation,
     TranslationList,
     Workskill,
-    WorkskillCondition,
     WorkskillList,
-    WorskillConditionList,
 )
 
 

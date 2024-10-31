@@ -1,13 +1,12 @@
 import argparse
 import csv
-import json
 import logging
 import pprint
 
 from config import Config
 from flatten_dict import flatten
 
-from ofsc import FULL_RESPONSE, OBJ_RESPONSE, OFSC
+from ofsc import FULL_RESPONSE, OFSC
 
 capacityAreasFields = "label,name,type,status,parent.name,parent.label"
 
