@@ -1,17 +1,11 @@
-import json
 import logging
 from pathlib import Path
 
-from requests import Response
-
 from ofsc import OFSC
-from ofsc.common import FULL_RESPONSE, OBJ_RESPONSE, TEXT_RESPONSE
+from ofsc.common import FULL_RESPONSE, OBJ_RESPONSE
 from ofsc.models import (
     Condition,
-    Property,
     SharingEnum,
-    Translation,
-    TranslationList,
     Workskill,
     WorkskillCondition,
     WorskillConditionList,

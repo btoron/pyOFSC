@@ -1,17 +1,12 @@
-import base64
-import json
-import logging
 import urllib
 from pathlib import Path
-from typing import List
 from urllib.parse import urljoin
 
 import requests
 
-from .common import FULL_RESPONSE, OBJ_RESPONSE, TEXT_RESPONSE, wrap_return
+from .common import FULL_RESPONSE, OBJ_RESPONSE, wrap_return
 from .models import (
     ActivityTypeGroup,
-    ActivityTypeGroupList,
     ActivityTypeGroupListResponse,
     ActivityTypeListResponse,
     CapacityArea,
@@ -21,10 +16,10 @@ from .models import (
     InventoryType,
     InventoryTypeListResponse,
     OFSApi,
-    OFSConfig,
     Property,
     Workskill,
-    WorkskillCondition,
+    WorkSkillGroup,
+    WorkSkillGroupListResponse,
     WorskillConditionList,
 )
 
@@ -91,7 +86,7 @@ class OFSMetadata(OFSApi):
     @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
     def import_plugin_file(self, plugin: Path):
         url = urljoin(
-            self.baseUrl, f"/rest/ofscMetadata/v1/plugins/custom-actions/import"
+            self.baseUrl, "/rest/ofscMetadata/v1/plugins/custom-actions/import"
         )
         files = [("pluginFile", (plugin.name, plugin.read_text(), "text/xml"))]
         response = requests.post(url, headers=self.headers, files=files)
@@ -101,7 +96,7 @@ class OFSMetadata(OFSApi):
     @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
     def import_plugin(self, plugin: str):
         url = urljoin(
-            self.baseUrl, f"/rest/ofscMetadata/v1/plugins/custom-actions/import"
+            self.baseUrl, "/rest/ofscMetadata/v1/plugins/custom-actions/import"
         )
         files = [("pluginFile", ("noname.xml", plugin, "text/xml"))]
         response = requests.post(url, headers=self.headers, files=files)
@@ -142,7 +137,7 @@ class OFSMetadata(OFSApi):
     # Workskill conditions
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_workskill_conditions(self, response_type=FULL_RESPONSE):
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillConditions")
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillConditions")
         response = requests.get(
             url,
             headers=self.headers,
@@ -153,7 +148,7 @@ class OFSMetadata(OFSApi):
     def replace_workskill_conditions(
         self, data: WorskillConditionList, response_type=FULL_RESPONSE
     ):
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillConditions")
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillConditions")
         content = '{"items":' + data.model_dump_json(exclude_none=True) + "}"
         headers = self.headers
         headers["Content-Type"] = "application/json"
@@ -286,3 +281,32 @@ class OFSMetadata(OFSApi):
         return response
 
     # endregion
+
+    # region 202410 Metadata - Workskill Groups
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=WorkSkillGroupListResponse
+    )
+    def get_workskill_groups(self):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillGroups")
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=WorkSkillGroup)
+    def get_workskill_group(self, label: str):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillGroups/{label}")
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def create_or_update_workskill_group(self, label: str, data: dict):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillGroups/{label}")
+        response = requests.put(url, headers=self.headers, json=data)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
+    def delete_workskill_group(self, label: str):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillGroups/{label}")
+        response = requests.delete(url, headers=self.headers)
+        return response
+
+    # endregion 202410 Metadata - Workskill Groups

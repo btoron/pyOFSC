@@ -1,5 +1,4 @@
 import base64
-import logging
 from enum import Enum
 from typing import Any, Generic, List, Optional, TypeVar
 from urllib.parse import urljoin
@@ -15,10 +14,9 @@ from pydantic import (
     field_validator,
     model_validator,
 )
-from pydantic_settings import BaseSettings
 from typing_extensions import Annotated
 
-from ofsc.common import FULL_RESPONSE, OBJ_RESPONSE, wrap_return
+from ofsc.common import FULL_RESPONSE, wrap_return
 
 T = TypeVar("T")
 
@@ -581,4 +579,46 @@ class InventoryTypeListResponse(OFSResponseList[InventoryType]):
 # region 202404 Metadata - Time Slots
 # endregion
 # region 202404 Metadata - Workzones
+# endregion
+
+# region 202410 Work Skill Groups
+
+
+class WorksSkillAssignments(BaseModel):
+    label: str
+    ratio: int = Field(gt=0, lt=101)
+    model_config = ConfigDict(extra="forbid")
+
+
+class WorkSkillAssignmentsList(RootModel[List[WorksSkillAssignments]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class WorkSkillGroup(BaseModel):
+    label: str
+    name: str
+    active: bool
+    assignToResource: bool
+    addToCapacityCategory: bool
+    workSkills: WorkSkillAssignmentsList
+    translations: TranslationList
+    model_config = ConfigDict(extra="allow")
+
+
+class WorkSkillGroupList(RootModel[List[WorkSkillGroup]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class WorkSkillGroupListResponse(OFSResponseList[WorkSkillGroup]):
+    pass
+
+
 # endregion

@@ -15,11 +15,11 @@ pydantic = "^2.6.3"
 cachetools = "^5.3.1"
 pydantic-settings = "^2.2.1"
 
-[tool.poetry.dev-dependencies]
-openpyxl = "^3.0.10"
-pytest = "7.4"
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.3"
 pyarmor = "^7.6.0"
 Faker = "^14.2.0"
+openpyxl = "^3.0.10"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

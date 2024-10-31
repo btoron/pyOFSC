@@ -1,15 +1,13 @@
 #!python
 import argparse
 import pprint
-from logging import basicConfig, debug, info, warning
-from typing import AnyStr, List
+from logging import basicConfig, info
 
 from config import Config
 from openpyxl import Workbook
 
-import ofsc
-from ofsc import FULL_RESPONSE, OBJ_RESPONSE, OFSC
-from ofsc.models import WorkskillCondition, WorskillConditionList
+from ofsc import OBJ_RESPONSE, OFSC
+from ofsc.models import WorskillConditionList
 
 
 def init_script():
@@ -45,7 +43,7 @@ def init_script():
 
 def get_workskill_list():
     response = instance.metadata.get_workskill_conditions(response_type=OBJ_RESPONSE)
-    ws_list = WorskillConditionList.parse_obj(response["items"])
+    ws_list = WorskillConditionList.model_validate(response["items"])
     return ws_list
 
 
@@ -76,7 +74,9 @@ def write_xls(filename: str, wsc_list: WorskillConditionList):
             )
             print(f"Condition Fields: {condition_field_names}")
             ws_conditions.append(condition_field_names)
-        data = list(condition.dict(exclude={"conditions", "dependencies"}).values())
+        data = list(
+            condition.model_dump(exclude={"conditions", "dependencies"}).values()
+        )
         ws_conditions.append(data)
         for rule in condition.conditions:
             if len(rules_field_names) == 1:

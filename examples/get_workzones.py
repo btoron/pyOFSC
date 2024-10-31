@@ -2,15 +2,13 @@
 import argparse
 import logging
 import pprint
-from logging import basicConfig, debug, info, warning
-from typing import AnyStr, List
+from logging import basicConfig, info
 
 from config import Config
 from openpyxl import Workbook
 
-import ofsc
-from ofsc import FULL_RESPONSE, OBJ_RESPONSE, OFSC
-from ofsc.models import Workzone, WorkzoneList
+from ofsc import OBJ_RESPONSE, OFSC
+from ofsc.models import WorkzoneList
 
 
 def init_script():
@@ -46,7 +44,7 @@ def init_script():
 
 def get_workzone_list():
     response = instance.metadata.get_workzones(response_type=OBJ_RESPONSE)
-    return WorkzoneList.parse_obj(response["items"])
+    return WorkzoneList.model_validate(response["items"])
 
 
 def write_xls(filename: str, wz_list: WorkzoneList):
