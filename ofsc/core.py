@@ -118,10 +118,15 @@ class OFSCore(OFSApi):
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
-    def update_resource(self, resourceId, data):
+    def update_resource(
+        self, resourceId, data: dict, identify_by_internal_id: bool = False
+    ):
         url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resourceId}")
+        if identify_by_internal_id:
+            # add a query parameter to identify the resource by internal id
+            url += "?identifyResourceBy=resourceInternalId"
         logging.debug(f"OFSC.Update_Resource: {data} {type(data)}")
-        response = requests.patch(url, headers=self.headers, data=data)
+        response = requests.patch(url, headers=self.headers, data=json.dumps(data))
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
