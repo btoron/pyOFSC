@@ -1,13 +1,11 @@
-import base64
 import json
 import logging
-import urllib
 from urllib.parse import urljoin
 
 import requests
 
-from .common import FULL_RESPONSE, OBJ_RESPONSE, TEXT_RESPONSE, wrap_return
-from .models import BulkUpdateRequest, OFSApi, OFSConfig
+from .common import FULL_RESPONSE, OBJ_RESPONSE, wrap_return
+from .models import BulkUpdateRequest, OFSApi
 
 
 class OFSCore(OFSApi):
@@ -117,6 +115,18 @@ class OFSCore(OFSApi):
         url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resourceId}")
         logging.debug(f"OFSC.Create_Resource: {data} {type(data)}")
         response = requests.put(url, headers=self.headers, data=json.dumps(data))
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def update_resource(
+        self, resourceId, data: dict, identify_by_internal_id: bool = False
+    ):
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resourceId}")
+        if identify_by_internal_id:
+            # add a query parameter to identify the resource by internal id
+            url += "?identifyResourceBy=resourceInternalId"
+        logging.debug(f"OFSC.Update_Resource: {data} {type(data)}")
+        response = requests.patch(url, headers=self.headers, data=json.dumps(data))
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])

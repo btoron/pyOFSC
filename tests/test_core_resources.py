@@ -131,3 +131,24 @@ def test_get_resource_descendants_noexpand_fields(instance, pp):
     response = raw_response.json()
     logging.debug(pp.pformat(response))
     assert response["totalResults"] == 37
+
+
+def test_update_resource(instance, demo_data, request_logging):
+    raw_response = instance.core.update_resource(
+        "FLUSA", data={"name": "FLUSA-1"}, response_type=FULL_RESPONSE
+    )
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    assert response["name"] == "FLUSA-1"
+
+
+def test_update_resource_external_id(instance, demo_data, request_logging):
+    raw_response = instance.core.update_resource(
+        "8100308",
+        data={"resourceId": "FLUSA-1"},
+        identify_by_internal_id=True,
+        response_type=FULL_RESPONSE,
+    )
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    assert response["resourceId"] == "FLUSA-1"
