@@ -203,6 +203,24 @@ class OFSCore(OFSApi):
         response = requests.get(url, params=params, headers=self.headers)
         return response
 
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def get_resource_users(self, resource_id):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{str(resource_id)}/users",
+        )
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def get_resource_assigned_locations(self, resource_id):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{str(resource_id)}/assignedLocations",
+        )
+        response = requests.get(url, headers=self.headers)
+        return response
+
     ## 202104 User Management
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_users(self, offset=0, limit=100):
