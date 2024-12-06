@@ -1,17 +1,18 @@
 import logging
 import os
 import pprint
+from datetime import datetime, timedelta
 from http.client import HTTPConnection  # py3
+from pathlib import Path
 
+import jwt
 import pytest
-import requests
-from faker import Faker
 
 from ofsc import FULL_RESPONSE, OFSC
 
 
 @pytest.fixture(scope="module")
-def instance():
+def instance() -> OFSC:
     # todo add credentials to test run
     instance = OFSC(
         clientID=os.environ.get("OFSC_CLIENT_ID"),
@@ -20,6 +21,23 @@ def instance():
         root=os.environ.get("OFSC_ROOT"),
     )
     return instance
+
+
+@pytest.fixture(scope="module")
+def assertion() -> str:
+    payload = {}
+    payload["sub"] = "admin"
+    payload["iss"] = (
+        "/C=US/ST=Florida/L=Miami/O=MyOrg/CN=JohnSmith/emailAddress=test@example.com"
+    )
+    payload["iat"] = datetime.now()
+    payload["exp"] = datetime.now() + timedelta(minutes=6000)
+    payload["aud"] = (
+        f'ofsc:{os.environ.get("OFSC_COMPANY")}:{os.environ.get("OFSC_CLIENT_ID")}'
+    )
+    payload["scope"] = "/REST"
+    key = Path("tests/keys/ofsc.key").read_text()
+    return jwt.encode(payload, key, algorithm="RS256")
 
 
 @pytest.fixture(scope="module")
