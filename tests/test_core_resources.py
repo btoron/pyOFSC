@@ -3,7 +3,8 @@ import logging
 
 import pytest
 
-from ofsc.common import FULL_RESPONSE
+from ofsc.common import FULL_RESPONSE, OBJ_RESPONSE
+from ofsc.models import ResourceUsersListResponse
 
 
 @pytest.fixture
@@ -152,3 +153,106 @@ def test_update_resource_external_id(instance, demo_data, request_logging):
     assert raw_response.status_code == 200
     response = raw_response.json()
     assert response["resourceId"] == "FLUSA-1"
+
+
+def test_get_resource_users_base(instance, demo_data):
+    raw_response = instance.core.get_resource_users(
+        "33001", response_type=FULL_RESPONSE
+    )
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    assert response["totalResults"] == 1
+    assert response["items"][0]["login"] == "william.arndt"
+
+
+def test_get_resource_users_obj(instance, demo_data):
+    response = instance.core.get_resource_users("33001", response_type=OBJ_RESPONSE)
+    assert isinstance(response, ResourceUsersListResponse)
+    assert response.totalResults == 1
+    assert response.users[0] == "william.arndt"
+
+
+def test_set_resource_users(instance, demo_data):
+    initial_data = instance.core.get_resource_users("33001", response_type=OBJ_RESPONSE)
+    assert initial_data.totalResults == 1
+    assert initial_data.users[0] == "william.arndt"
+
+    raw_response = instance.core.set_resource_users(
+        resource_id="33001",
+        users=["william.arndt", "terri.basile"],
+        response_type=FULL_RESPONSE,
+    )
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    assert response["items"][0]["login"] == "william.arndt"
+    logging.warning(initial_data.users)
+    new_response = instance.core.set_resource_users(
+        resource_id="33001", users=initial_data.users, response_type=FULL_RESPONSE
+    )
+    assert new_response.status_code == 200
+    logging.warning(new_response.json())
+    assert False
+
+
+def test_reset_resource_users(instance, demo_data):
+    instance.core.delete_resource_users(resource_id="33001")
+    raw_response = instance.core.set_resource_users(
+        resource_id="33001", users=["william.arndt"], response_type=FULL_RESPONSE
+    )
+    assert raw_response.status_code == 200, raw_response.json()
+    response = raw_response.json()
+    assert response["items"][0]["login"] == "william.arndt"
+    assert len(response["items"]) == 1
+    raw_response = instance.core.get_resource_users(
+        "33001", response_type=FULL_RESPONSE
+    )
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    assert response["totalResults"] == 1
+
+
+def test_reset2_resource_users(instance, demo_data):
+    raw_response = instance.core.set_resource_users(
+        resource_id="33001", users=["william.arndt"], response_type=FULL_RESPONSE
+    )
+    assert raw_response.status_code == 200, raw_response.json()
+    response = raw_response.json()
+    assert response["items"][0]["login"] == "william.arndt"
+    assert len(response["items"]) == 1
+    raw_response = instance.core.get_resource_users(
+        "33001", response_type=FULL_RESPONSE
+    )
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    assert response["totalResults"] == 1
+    assert response["items"][0]["login"] == "william.arndt"
+
+
+def test_delete_resource_users(instance, demo_data):
+    initial_data = instance.core.get_resource_users("33001", response_type=OBJ_RESPONSE)
+    assert initial_data.totalResults == 1
+    assert initial_data.users[0] == "william.arndt"
+
+    raw_response = instance.core.delete_resource_users(
+        resource_id="33001",
+        response_type=FULL_RESPONSE,
+    )
+    assert raw_response.status_code == 204
+    modified_data = instance.core.get_resource_users(
+        "33001", response_type=OBJ_RESPONSE
+    )
+    assert modified_data.totalResults == 0
+    instance.core.set_resource_users(resource_id="33001", users=initial_data.users)
+
+
+def test_add_resource_users(instance, demo_data):
+    raw_response = instance.core.set_resource_users(
+        resource_id="33001",
+        users=["william.arndt", "admin"],
+        response_type=FULL_RESPONSE,
+    )
+    assert raw_response.status_code == 200, raw_response.json()
+    response = raw_response.json()
+    assert len(response["items"]) == 2
+    assert response["items"][0]["login"] == "william.arndt"
+    assert response["items"][1]["login"] == "admin"

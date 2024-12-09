@@ -5,7 +5,7 @@ from urllib.parse import urljoin
 import requests
 
 from .common import FULL_RESPONSE, OBJ_RESPONSE, wrap_return
-from .models import BulkUpdateRequest, OFSApi
+from .models import BulkUpdateRequest, OFSApi, ResourceUsersListResponse
 
 
 class OFSCore(OFSApi):
@@ -60,10 +60,7 @@ class OFSCore(OFSApi):
         )
         return response
 
-    #####
-    # RESOURCE MANAGEMENT
-    ####
-
+    # region Resource Management
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_resource(
         self,
@@ -203,11 +200,52 @@ class OFSCore(OFSApi):
         response = requests.get(url, params=params, headers=self.headers)
         return response
 
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=ResourceUsersListResponse
+    )
     def get_resource_users(self, resource_id):
         url = urljoin(
             self.baseUrl,
             f"/rest/ofscCore/v1/resources/{str(resource_id)}/users",
+        )
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def set_resource_users(self, *, resource_id, users: tuple[str]):
+        data = {
+            "items": [{"login": user} for user in users],
+        }
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{str(resource_id)}/users",
+        )
+        response = requests.put(url, headers=self.headers, data=json.dumps(data))
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
+    def delete_resource_users(self, resource_id):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{str(resource_id)}/users",
+        )
+        response = requests.delete(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def get_resource_workschedules(self, resource_id):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{str(resource_id)}/workSchedules",
+        )
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def get_resource_inventories(self, resource_id):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{str(resource_id)}/inventories",
         )
         response = requests.get(url, headers=self.headers)
         return response
@@ -221,7 +259,27 @@ class OFSCore(OFSApi):
         response = requests.get(url, headers=self.headers)
         return response
 
-    ## 202104 User Management
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def get_resource_workzones(self, resource_id):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{str(resource_id)}/workZones",
+        )
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def get_resource_workskills(self, resource_id):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{str(resource_id)}/workSkills",
+        )
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    # endregion
+    # region User Management
+
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_users(self, offset=0, limit=100):
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/users")
@@ -258,6 +316,8 @@ class OFSCore(OFSApi):
         response = requests.delete(url, headers=self.headers)
         return response
 
+    # endregion
+    # region Daily Extract
     ##202105 Daily Extract - NOT TESTED
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_daily_extract_dates(self):
@@ -287,6 +347,7 @@ class OFSCore(OFSApi):
         response = requests.get(url, headers=self.headers)
         return response
 
+    # endregion
     ## 202202 Helper functions
     def get_all_activities(
         self, root, date_from, date_to, activity_fields, initial_offset=0, limit=5000
@@ -414,6 +475,11 @@ class OFSCore(OFSApi):
         )
         headers = self.headers
         headers["Accept"] = mediaType
+        response = requests.get(
+            url,
+            headers=headers,
+        )
+        return response
         response = requests.get(
             url,
             headers=headers,

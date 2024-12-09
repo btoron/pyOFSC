@@ -25,7 +25,7 @@ T = TypeVar("T")
 class OFSResponseList(BaseModel, Generic[T]):
     model_config = ConfigDict(extra="allow")
 
-    items: List[T]
+    items: List[T] = []
     offset: Annotated[Optional[int], Field(alias="offset")] = None
     limit: Annotated[Optional[int], Field(alias="limit")] = None
     hasMore: Annotated[Optional[bool], Field(alias="hasMore")] = False
@@ -627,3 +627,12 @@ class WorkSkillGroupListResponse(OFSResponseList[WorkSkillGroup]):
 
 
 # endregion
+# region Users
+class BaseUser(BaseModel):
+    login: str
+
+
+class ResourceUsersListResponse(OFSResponseList[BaseUser]):
+    @property
+    def users(self) -> List[str]:
+        return [item.login for item in self.items]
