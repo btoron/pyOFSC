@@ -1,4 +1,5 @@
 import base64
+import logging
 from enum import Enum
 from typing import Any, Generic, List, Optional, TypeVar
 from urllib.parse import urljoin
@@ -63,7 +64,7 @@ class OFSConfig(BaseModel):
 class OFSOAuthRequest(BaseModel):
     assertion: Optional[str] = None
     grant_type: str = "client_credentials"
-    ofs_dynamic_scope: Optional[str] = None
+    # ofs_dynamic_scope: Optional[str] = None
 
 
 class OFSAPIError(BaseModel):
@@ -91,7 +92,11 @@ class OFSApi:
     @wrap_return(response_type=FULL_RESPONSE, expected=[200])
     def token(self, auth: OFSOAuthRequest = OFSOAuthRequest()) -> requests.Response:
         headers = {}
-        if auth.grant_type == "client_credentials":
+        logging.info(f"Getting token with {auth.grant_type}")
+        if (
+            auth.grant_type == "client_credentials"
+            or auth.grant_type == "urn:ietf:params:oauth:grant-type:jwt-bearer"
+        ):
             headers["Authorization"] = "Basic " + self._config.basicAuthString.decode(
                 "utf-8"
             )

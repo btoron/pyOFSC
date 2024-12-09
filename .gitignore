@@ -170,3 +170,4 @@ cython_debug/
 signature.png
 **/log.txt
 log.txt
+tests/keys/*
