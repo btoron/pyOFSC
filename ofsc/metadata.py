@@ -13,6 +13,7 @@ from .models import (
     CapacityAreaListResponse,
     CapacityCategory,
     CapacityCategoryListResponse,
+    EnumerationValueList,
     InventoryType,
     InventoryTypeListResponse,
     OFSApi,
@@ -25,6 +26,8 @@ from .models import (
 
 
 class OFSMetadata(OFSApi):
+
+    # region Properties
 
     ## 202202 Properties and file properties
 
@@ -56,6 +59,25 @@ class OFSMetadata(OFSApi):
             url, headers=self.headers, data=property.model_dump_json().encode("utf-8")
         )
         return response
+
+    # 202412 Get Enumerated Property Values
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=EnumerationValueList)
+    def get_enumeration_values(self, label: str, offset=0, limit=100):
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/properties/{label}/enumerationList"
+        )
+        params = {
+            "offset": offset,
+            "limit": limit,
+        }
+        response = requests.get(
+            url,
+            headers=self.headers,
+            params=params,
+        )
+        return response
+
+    # endregion
 
     # 202208 Skill management
 

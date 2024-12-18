@@ -636,3 +636,17 @@ class ResourceUsersListResponse(OFSResponseList[BaseUser]):
     @property
     def users(self) -> List[str]:
         return [item.login for item in self.items]
+
+
+class EnumerationValue(BaseModel):
+    active: bool
+    label: str
+    translations: TranslationList
+
+    @property
+    def map(self):
+        return {translation.language: translation for translation in self.translations}
+
+
+class EnumerationValueList(OFSResponseList[EnumerationValue]):
+    pass
