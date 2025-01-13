@@ -41,3 +41,26 @@ def test_get_appplication_obj(instance: OFSC):
     response = instance.metadata.get_application(instance._config.clientID)
     assert isinstance(response, Application)
     assert response.label == instance._config.clientID
+
+
+def test_get_application_api_accesses_basic(instance: OFSC):
+    raw_response = instance.metadata.get_application_api_accesses(
+        instance._config.clientID, response_type=FULL_RESPONSE
+    )
+    assert raw_response is not None
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    assert response["items"] is not None
+    assert len(response["items"]) > 0
+    accesses = {access["label"]: access for access in response["items"]}
+    assert accesses is not None
+
+
+def test_get_application_api_access_basic(instance: OFSC):
+    raw_response = instance.metadata.get_application_api_access(
+        instance._config.clientID, "metadataAPI", response_type=FULL_RESPONSE
+    )
+    assert raw_response is not None
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    assert response["label"] == "metadataAPI"

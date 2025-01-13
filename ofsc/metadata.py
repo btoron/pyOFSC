@@ -350,4 +350,21 @@ class OFSMetadata(OFSApi):
         response = requests.get(url, headers=self.headers)
         return response
 
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def get_application_api_accesses(self, label: str):
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/applications/{label}/apiAccess"
+        )
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def get_application_api_access(self, label: str, accessId: str):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/applications/{label}/apiAccess/{accessId}",
+        )
+        response = requests.get(url, headers=self.headers)
+        return response
+
     # endregion Applications
