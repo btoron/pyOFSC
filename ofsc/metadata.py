@@ -9,6 +9,8 @@ from .models import (
     ActivityTypeGroup,
     ActivityTypeGroupListResponse,
     ActivityTypeListResponse,
+    Application,
+    ApplicationListResponse,
     CapacityArea,
     CapacityAreaListResponse,
     CapacityCategory,
@@ -333,3 +335,19 @@ class OFSMetadata(OFSApi):
         return response
 
     # endregion 202410 Metadata - Workskill Groups
+    # region Applications
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=ApplicationListResponse
+    )
+    def get_applications(self):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/applications")
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=Application)
+    def get_application(self, label: str):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/applications/{label}")
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    # endregion Applications

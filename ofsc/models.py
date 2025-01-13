@@ -650,3 +650,17 @@ class EnumerationValue(BaseModel):
 
 class EnumerationValueList(OFSResponseList[EnumerationValue]):
     pass
+
+
+class Application(BaseModel):
+    label: str
+    name: str
+    resourcesToAllow: List[str] = None
+    allowedCorsDomains: List[str] = None
+    IPAddressesToAllow: List[str] = None
+    status: str
+    tokenService: str
+
+
+class ApplicationListResponse(OFSResponseList[Application]):
+    pass
