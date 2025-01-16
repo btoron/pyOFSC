@@ -611,7 +611,7 @@ class WorkSkillGroup(BaseModel):
     addToCapacityCategory: bool
     workSkills: WorkSkillAssignmentsList
     translations: TranslationList
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="ignore")
 
 
 class WorkSkillGroupList(RootModel[List[WorkSkillGroup]]):

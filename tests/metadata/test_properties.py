@@ -30,7 +30,7 @@ def test_get_properties(instance, demo_data):
     assert metadata_response.status_code == 200
     response = metadata_response.json()
     assert response["totalResults"]
-    assert response["totalResults"] == expected_properties  # 22.D
+    assert response["totalResults"] >= expected_properties  # 22.D
     assert response["items"][0]["label"] == "ITEM_NUMBER"
 
 

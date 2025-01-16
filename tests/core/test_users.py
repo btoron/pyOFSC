@@ -1,17 +1,9 @@
-import os
-import sys
-import unittest
-
-sys.path.append(os.path.abspath("."))
-import argparse
 import json
 import logging
-import pprint
 
-from ofsc import FULL_RESPONSE, OFSC
+from ofsc.common import FULL_RESPONSE
 
 
-# Test C.U.01 Get Users
 def test_get_users(instance, demo_data, pp):
     raw_response = instance.core.get_users(response_type=FULL_RESPONSE)
     logging.debug(pp.pformat(raw_response.json()))

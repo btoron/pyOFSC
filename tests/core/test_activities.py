@@ -2,13 +2,10 @@ import logging
 import os
 from datetime import date, timedelta
 
-import pytest
-
 from ofsc.common import FULL_RESPONSE
 from ofsc.models import BulkUpdateRequest, BulkUpdateResponse
 
 
-# Test A.01 Get Activity Info (activity exists)
 def test_get_activity(instance):
     raw_response = instance.core.get_activity(3951935, response_type=FULL_RESPONSE)
     response = raw_response.json()
@@ -16,7 +13,6 @@ def test_get_activity(instance):
     assert response["customerNumber"] == "019895700"
 
 
-# Test A.02 Get Activity Info (activity does not exist)
 def test_get_activity_error(instance):
     raw_response = instance.core.get_activity(99999, response_type=FULL_RESPONSE)
     assert raw_response.status_code == 404
@@ -35,7 +31,6 @@ def test_search_activities_001(instance):
     assert response.json()["totalResults"] == 2  # 202206 Modified in demo 22B
 
 
-# test A.06 Get Activities
 def test_get_activities_no_offset(instance, current_date, demo_data, request_logging):
     start = date.fromisoformat(current_date) - timedelta(days=5)
     end = start + timedelta(days=20)
@@ -58,8 +53,6 @@ def test_get_activities_no_offset(instance, current_date, demo_data, request_log
     expected_id = demo_data.get("get_all_activities").get("expected_id")
     expected_postalcode = demo_data.get("get_all_activities").get("expected_postalcode")
     assert len(data["items"]) == expected_items
-
-    # TODO: Due to the nature of the get_activities this assert may fail
 
     assert data["items"][10] == {
         "activityId": expected_id,
@@ -88,8 +81,6 @@ def test_get_activities_offset(instance, current_date, demo_data, request_loggin
     expected_id = demo_data.get("get_all_activities").get("expected_id")
     expected_postalcode = demo_data.get("get_all_activities").get("expected_postalcode")
     assert len(data["items"]) == params["limit"]
-
-    # TODO: Due to the nature of the get_activities this assert may fail
 
     assert data["items"][0] == {
         "activityId": expected_id,
@@ -169,7 +160,6 @@ def test_model_bulk_update_simple(instance, request_logging):
     output = BulkUpdateResponse.model_validate(response)
 
 
-# Test C.P.10 Get File Property 01
 def test_get_file_property_01(instance, pp, demo_data):
     activity_id = demo_data.get("get_file_property").get("activity_id")
     # Get all properties from the activity
@@ -195,7 +185,6 @@ def test_get_file_property_01(instance, pp, demo_data):
     assert response["name"] == "signature.png"
 
 
-# Test C.P.10 Get File Property 02
 def test_get_file_property_02(instance, pp, demo_data):
     logging.info("...C.P.02 Get File Property content")
     activity_id = demo_data.get("get_file_property").get("activity_id")
@@ -216,4 +205,3 @@ def test_get_file_property_02(instance, pp, demo_data):
     with open(os.path.join(os.getcwd(), response["name"]), "wb") as fd:
         fd.write(raw_response.content)
     assert response["name"] == "signature.png"
-    # TODO: Assert the size of the file

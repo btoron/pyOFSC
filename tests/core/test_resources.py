@@ -141,6 +141,9 @@ def test_update_resource(instance, demo_data, request_logging):
     assert raw_response.status_code == 200
     response = raw_response.json()
     assert response["name"] == "FLUSA-1"
+    raw_response = instance.core.update_resource(
+        "FLUSA", data={"name": "FLUSA"}, response_type=FULL_RESPONSE
+    )
 
 
 def test_update_resource_external_id(instance, demo_data, request_logging):
@@ -153,23 +156,43 @@ def test_update_resource_external_id(instance, demo_data, request_logging):
     assert raw_response.status_code == 200
     response = raw_response.json()
     assert response["resourceId"] == "FLUSA-1"
+    # Do a get to the resource
+    raw_response = instance.core.get_resource("FLUSA-1", response_type=FULL_RESPONSE)
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    assert response["resourceId"] == "FLUSA-1"
+    # reset
+    raw_response = instance.core.update_resource(
+        "8100308",
+        data={"resourceId": "FLUSA"},
+        identify_by_internal_id=True,
+        response_type=FULL_RESPONSE,
+    )
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    assert response["resourceId"] == "FLUSA"
+    # Do a get to the resource
+    raw_response = instance.core.get_resource("FLUSA", response_type=FULL_RESPONSE)
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    assert response["resourceId"] == "FLUSA"
 
 
 def test_get_resource_users_base(instance, demo_data):
     raw_response = instance.core.get_resource_users(
-        "33001", response_type=FULL_RESPONSE
+        "55001", response_type=FULL_RESPONSE
     )
     assert raw_response.status_code == 200
     response = raw_response.json()
     assert response["totalResults"] == 1
-    assert response["items"][0]["login"] == "william.arndt"
+    assert response["items"][0]["login"] == "walter.ambriz"
 
 
 def test_get_resource_users_obj(instance, demo_data):
-    response = instance.core.get_resource_users("33001", response_type=OBJ_RESPONSE)
+    response = instance.core.get_resource_users("55001", response_type=OBJ_RESPONSE)
     assert isinstance(response, ResourceUsersListResponse)
     assert response.totalResults == 1
-    assert response.users[0] == "william.arndt"
+    assert response.users[0] == "walter.ambriz"
 
 
 def test_set_resource_users(instance, demo_data):
@@ -195,16 +218,18 @@ def test_set_resource_users(instance, demo_data):
 
 
 def test_reset_resource_users(instance, demo_data):
-    instance.core.delete_resource_users(resource_id="33001")
+    instance.core.delete_resource_users(resource_id="100000490999044")
     raw_response = instance.core.set_resource_users(
-        resource_id="33001", users=["william.arndt"], response_type=FULL_RESPONSE
+        resource_id="100000490999044",
+        users=["chris.conner"],
+        response_type=FULL_RESPONSE,
     )
     assert raw_response.status_code == 200, raw_response.json()
     response = raw_response.json()
-    assert response["items"][0]["login"] == "william.arndt"
+    assert response["items"][0]["login"] == "chris.conner"
     assert len(response["items"]) == 1
     raw_response = instance.core.get_resource_users(
-        "33001", response_type=FULL_RESPONSE
+        "100000490999044", response_type=FULL_RESPONSE
     )
     assert raw_response.status_code == 200
     response = raw_response.json()

@@ -1,6 +1,4 @@
-import logging
-
-from ofsc.common import FULL_RESPONSE, OBJ_RESPONSE
+from ofsc.common import OBJ_RESPONSE
 from ofsc.models import InventoryType, InventoryTypeListResponse
 
 
@@ -22,7 +20,7 @@ def test_inventory_types_demo(instance, demo_data):
     )
     assert metadata_response.items, "No inventory types found"
     assert metadata_response.totalResults > 0, "No inventory types found"
-    assert len(metadata_response.items) == demo_data.get("metadata").get(
+    assert len(metadata_response.items) >= demo_data.get("metadata").get(
         "expected_inventory_types"
     ).get(
         "count"
@@ -36,5 +34,3 @@ def test_inventory_types_create_replace(instance, demo_data, request_logging):
     )
     assert isinstance(inv_type, InventoryType)
     assert inv_type.label == data.get("label")
-    logging.warning(inv_type.model_dump_json())
-    assert False

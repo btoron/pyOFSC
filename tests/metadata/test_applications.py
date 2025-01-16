@@ -25,7 +25,7 @@ def test_get_applications_obj(instance: OFSC):
     assert instance._config.clientID in applications.keys()
 
 
-def test_get_appplication_basic(instance: OFSC):
+def test_get_application_basic(instance: OFSC):
     raw_response = instance.metadata.get_application(
         instance._config.clientID, response_type=FULL_RESPONSE
     )
@@ -37,7 +37,7 @@ def test_get_appplication_basic(instance: OFSC):
     assert application_obj is not None
 
 
-def test_get_appplication_obj(instance: OFSC):
+def test_get_application_obj(instance: OFSC):
     response = instance.metadata.get_application(instance._config.clientID)
     assert isinstance(response, Application)
     assert response.label == instance._config.clientID
