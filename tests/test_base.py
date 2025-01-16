@@ -1,14 +1,10 @@
-import logging
+from collections import ChainMap
 
 import requests
 
 from ofsc.common import FULL_RESPONSE, OBJ_RESPONSE, TEXT_RESPONSE
 from ofsc.exceptions import OFSAPIException
-from ofsc.models import (
-    ActivityTypeGroup,
-    ActivityTypeGroupList,
-    ActivityTypeGroupListResponse,
-)
+from ofsc.models import ActivityTypeGroup, ActivityTypeGroupListResponse
 
 
 def test_wrapper_generic(instance):
@@ -72,3 +68,12 @@ def test_wrapper_without_model(instance):
     assert isinstance(raw_response, dict)
     assert "label" in raw_response.keys()
     assert "name" in raw_response.keys()
+
+
+def test_demo_data(demo_data):
+    # Assert that the demo_data is a ChainMap
+    assert isinstance(demo_data, ChainMap)
+    # Assert that the demo_data has the expected keys
+    assert "get_file_property" in demo_data.keys()
+    # Assert that the demo_data returns the newest data
+    assert demo_data["get_file_property"]["activity_id"] == 3954799

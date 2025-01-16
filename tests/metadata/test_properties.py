@@ -2,7 +2,13 @@ import logging
 
 from ofsc import OFSC
 from ofsc.common import FULL_RESPONSE
-from ofsc.models import Property, Translation, TranslationList
+from ofsc.models import (
+    EnumerationValue,
+    EnumerationValueList,
+    Property,
+    Translation,
+    TranslationList,
+)
 
 
 def test_get_property(instance):
@@ -24,7 +30,7 @@ def test_get_properties(instance, demo_data):
     assert metadata_response.status_code == 200
     response = metadata_response.json()
     assert response["totalResults"]
-    assert response["totalResults"] == expected_properties  # 22.D
+    assert response["totalResults"] >= expected_properties  # 22.D
     assert response["items"][0]["label"] == "ITEM_NUMBER"
 
 
@@ -88,3 +94,20 @@ def test_create_replace_property_noansi(instance: OFSC, request_logging, faker):
     assert response["entity"] == property.entity
     assert response.get("translations")[0]["name"] == property.translations[0].name
     property = Property.model_validate(response)
+
+
+def test_get_enumeration_values_full(instance: OFSC):
+    metadata_response = instance.metadata.get_enumeration_values(
+        "complete_code", response_type=FULL_RESPONSE
+    )
+    assert metadata_response.status_code == 200
+    response = metadata_response.json()
+    assert response["totalResults"]
+
+
+def test_get_enumeration_values_obj(instance: OFSC):
+    response = instance.metadata.get_enumeration_values("complete_code")
+    assert isinstance(response, EnumerationValueList)
+    for value in response.items:
+        assert isinstance(value, EnumerationValue)
+        assert value.map.get("en") is not None

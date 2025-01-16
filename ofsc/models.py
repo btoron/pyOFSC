@@ -611,7 +611,7 @@ class WorkSkillGroup(BaseModel):
     addToCapacityCategory: bool
     workSkills: WorkSkillAssignmentsList
     translations: TranslationList
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="ignore")
 
 
 class WorkSkillGroupList(RootModel[List[WorkSkillGroup]]):
@@ -636,3 +636,31 @@ class ResourceUsersListResponse(OFSResponseList[BaseUser]):
     @property
     def users(self) -> List[str]:
         return [item.login for item in self.items]
+
+
+class EnumerationValue(BaseModel):
+    active: bool
+    label: str
+    translations: TranslationList
+
+    @property
+    def map(self):
+        return {translation.language: translation for translation in self.translations}
+
+
+class EnumerationValueList(OFSResponseList[EnumerationValue]):
+    pass
+
+
+class Application(BaseModel):
+    label: str
+    name: str
+    resourcesToAllow: List[str] = None
+    allowedCorsDomains: List[str] = None
+    IPAddressesToAllow: List[str] = None
+    status: str
+    tokenService: str
+
+
+class ApplicationListResponse(OFSResponseList[Application]):
+    pass

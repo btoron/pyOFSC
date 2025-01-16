@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ofsc"
-version = "2.3.0"
+version = "2.6.1"
 license = "MIT"
 description = "Python wrapper for Oracle Field Service API"
 authors = ["Borja Toron <borja.toron@gmail.com>"]
@@ -22,6 +22,8 @@ Faker = "^14.2.0"
 openpyxl = "^3.0.10"
 pyjwt = "^2.10.1"
 cryptography = "^44.0.0"
+pytest-env = "^1.1.5"
+python-dotenv = "^1.0.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -32,3 +34,6 @@ log_cli = true
 log_cli_level = "INFO"
 log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
 log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+
+[tool.pytest_env]
+RUN_ENV=1

@@ -277,6 +277,33 @@ class OFSCore(OFSApi):
         response = requests.get(url, headers=self.headers)
         return response
 
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def bulk_update_resource_workzones(self, *, data):
+        url = urljoin(
+            self.baseUrl,
+            "/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkZones",
+        )
+        response = requests.post(url, headers=self.headers, data=data)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def bulk_update_resource_workskills(self, *, data):
+        url = urljoin(
+            self.baseUrl,
+            "/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkSkills",
+        )
+        response = requests.post(url, headers=self.headers, data=data)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def bulk_update_resource_workschedules(self, *, data):
+        url = urljoin(
+            self.baseUrl,
+            "/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkSchedules",
+        )
+        response = requests.post(url, headers=self.headers, data=data)
+        return response
+
     # endregion
     # region User Management
 

@@ -1,18 +1,22 @@
 import logging
 import os
 import pprint
+from collections import ChainMap
 from datetime import datetime, timedelta
 from http.client import HTTPConnection  # py3
 from pathlib import Path
 
 import jwt
 import pytest
+from dotenv import load_dotenv
 
 from ofsc import FULL_RESPONSE, OFSC
 
 
 @pytest.fixture(scope="module")
 def instance() -> OFSC:
+    # load .env file
+    load_dotenv()
     # todo add credentials to test run
     instance = OFSC(
         clientID=os.environ.get("OFSC_CLIENT_ID"),
@@ -42,6 +46,8 @@ def assertion() -> str:
 
 @pytest.fixture(scope="module")
 def instance_with_token():
+    # load .env file
+    load_dotenv()
     # todo add credentials to test run
     instance = OFSC(
         clientID=os.environ.get("OFSC_CLIENT_ID"),
@@ -168,6 +174,5 @@ def demo_data():
             "events": {"move_from": "FLUSA", "move_to": "CAUSA", "move_id": 4224268},
         },
     }
-    return demo_data[
-        "24A WMP 02 Demo_Services.E360.Supremo.Chapter8.ESM . 2024-03-01 22:20"
-    ]
+    # return a ChainMap of the demo_data elements, sorting them by the keys
+    return ChainMap(*demo_data.values())

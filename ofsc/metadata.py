@@ -9,10 +9,13 @@ from .models import (
     ActivityTypeGroup,
     ActivityTypeGroupListResponse,
     ActivityTypeListResponse,
+    Application,
+    ApplicationListResponse,
     CapacityArea,
     CapacityAreaListResponse,
     CapacityCategory,
     CapacityCategoryListResponse,
+    EnumerationValueList,
     InventoryType,
     InventoryTypeListResponse,
     OFSApi,
@@ -25,6 +28,8 @@ from .models import (
 
 
 class OFSMetadata(OFSApi):
+
+    # region Properties
 
     ## 202202 Properties and file properties
 
@@ -56,6 +61,25 @@ class OFSMetadata(OFSApi):
             url, headers=self.headers, data=property.model_dump_json().encode("utf-8")
         )
         return response
+
+    # 202412 Get Enumerated Property Values
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=EnumerationValueList)
+    def get_enumeration_values(self, label: str, offset=0, limit=100):
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/properties/{label}/enumerationList"
+        )
+        params = {
+            "offset": offset,
+            "limit": limit,
+        }
+        response = requests.get(
+            url,
+            headers=self.headers,
+            params=params,
+        )
+        return response
+
+    # endregion
 
     # 202208 Skill management
 
@@ -301,7 +325,7 @@ class OFSMetadata(OFSApi):
     def create_or_update_workskill_group(self, data: WorkSkillGroup):
         label = data.label
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillGroups/{label}")
-        response = requests.put(url, headers=self.headers, json=data.model_dump_json())
+        response = requests.put(url, headers=self.headers, json=data.model_dump())
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
@@ -311,3 +335,36 @@ class OFSMetadata(OFSApi):
         return response
 
     # endregion 202410 Metadata - Workskill Groups
+    # region Applications
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=ApplicationListResponse
+    )
+    def get_applications(self):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/applications")
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=Application)
+    def get_application(self, label: str):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/applications/{label}")
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def get_application_api_accesses(self, label: str):
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/applications/{label}/apiAccess"
+        )
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def get_application_api_access(self, label: str, accessId: str):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/applications/{label}/apiAccess/{accessId}",
+        )
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    # endregion Applications
