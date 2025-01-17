@@ -25,6 +25,7 @@ from .models import (
     Property,
     PropertyListResponse,
     ResourceTypeListResponse,
+    TimeSlotListResponse,
     Workskill,
     WorkskillConditionList,
     WorkskillConditionListResponse,
@@ -374,3 +375,13 @@ class OFSMetadata(OFSApi):
         return response
 
     # endregion Workzones
+
+    # region TimeSlots
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=TimeSlotListResponse)
+    def get_timeslots(self, offset=0, limit=100):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/timeSlots")
+        params = {"offset": offset, "limit": limit}
+        response = requests.get(url, headers=self.headers, params=params)
+        return response
+
+    # endregion TimeSlots

@@ -4,8 +4,7 @@ import logging
 
 from config import Config
 
-import ofsc
-from ofsc import FULL_RESPONSE, OBJ_RESPONSE, OFSC
+from ofsc import OBJ_RESPONSE, OFSC
 
 
 def init_script():
@@ -39,9 +38,9 @@ def init_script():
 
 def get_users(instance):
     response = instance.core.get_users(offset=0, limit=100, response_type=OBJ_RESPONSE)
-    total_results = response["totalResults"]
-    offset = response["offset"]
-    final_items_list = response["items"]
+    total_results = response.totalResults
+    offset = response.offset
+    final_items_list = response.items
     while offset + 100 < total_results:
         print(
             "Still pending users Total Results : {} - Offset : {} - List size {}".format(
@@ -49,13 +48,10 @@ def get_users(instance):
             )
         )
         offset = offset + 100
-        response_json = instance.core.get_users(
-            offset=offset, response_type=OBJ_RESPONSE
-        )
-        total_results = response_json["totalResults"]
-        items = response_json["items"]
-        final_items_list.extend(items)
-        offset = response_json["offset"]
+        response = instance.core.get_users(offset=offset, response_type=OBJ_RESPONSE)
+        total_results = response.totalResults
+        final_items_list.extend(response.items)
+        offset = response.offset
     return final_items_list
 
 

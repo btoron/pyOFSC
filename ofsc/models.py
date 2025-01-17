@@ -62,6 +62,8 @@ class OFSConfig(BaseModel):
 
 
 class OFSOAuthRequest(BaseModel):
+    # Make the model frozen
+    model_config = ConfigDict(frozen=True)
     assertion: Optional[str] = None
     grant_type: str = "client_credentials"
     # ofs_dynamic_scope: Optional[str] = None
@@ -751,6 +753,167 @@ class ApplicationApiAccessList(RootModel[List[ApplicationApiAccess]]):
 
 
 class ApplicationApiAccessListResponse(OFSResponseList[ApplicationApiAccess]):
+    pass
+
+
+# endregion
+
+
+# region TimeSlots
+class TimeSlot(BaseModel):
+    label: str
+    name: str
+    active: bool = True
+    isAllDay: bool = False
+    timeStart: Optional[str] = None
+    timeEnd: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class TimeSlotList(RootModel[List[TimeSlot]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class TimeSlotListResponse(BaseModel):
+    items: List[TimeSlot]
+    totalResults: int
+    hasMore: bool = True
+    offset: int
+    limit: int
+    model_config = ConfigDict(extra="allow")
+
+
+# endregion
+# region Subscriptions
+
+
+class SubscriptionConfigItem(BaseModel):
+    events: List[str]
+    fields: Optional[List[str]] = None
+    filterExpression: Optional[str] = None
+    monitorChanges: Optional[List[str]] = None
+    model_config = ConfigDict(extra="allow")
+
+    @field_validator("events")
+    def validate_events(cls, v):
+        valid_events = [
+            "activityCreated",
+            "activityUpdated",
+            "activityStarted",
+            "activityTravelStarted",
+            "activityTravelStopped",
+            "activitySuspended",
+            "activityCompleted",
+            "activityNotDone",
+            "activityCanceled",
+            "activityDeleted",
+            "activityDelayed",
+            "activityReopened",
+            "activityPreworkCreated",
+            "activityLinkCreated",
+            "activityLinkDeleted",
+            "resourcePreferenceCreated",
+            "resourcePreferenceDeleted",
+            "requiredInventoryCreated",
+            "requiredInventoryUpdated",
+            "requiredInventoryDeleted",
+            "inventoryInstalled",
+            "inventoryDeinstalled",
+            "customerInventoryCreated",
+            "customerInventoryUpdated",
+            "customerInventoryDeleted",
+            "inventoryUndoInstall",
+            "inventoryUndoDeinstall",
+            "activityMoved",
+            "routeCreated",
+            "routeUpdated",
+            "routeActivated",
+            "routeDeactivated",
+            "routeReactivated",
+            "customerRequestCreated",
+            "inventoryRequestCreated",
+            "resourceRequestCreated",
+            "chatMessageSent",
+            "chatUpdated",
+            "broadcastStatusUpdate",
+            "transactionUpdated",
+            "userCreated",
+            "userUpdated",
+            "userDeleted",
+            "resourceCreated",
+            "resourceUpdated",
+            "routingRun",
+            "formSubmitted",
+        ]
+        if not all(event in valid_events for event in v):
+            raise ValueError("Invalid event type")
+        return v
+
+
+class SubscriptionConfig(RootModel[List[SubscriptionConfigItem]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+    model_config = ConfigDict(extra="allow")
+
+
+class Subscription(BaseModel):
+    subscriptionId: Annotated[
+        str,
+        Field(
+            alias="subscriptionId", description="Unique identifier for the subscription"
+        ),
+    ]
+    subscriptionTitle: Annotated[
+        Optional[str],
+        Field(
+            alias="subscriptionTitle", description="Optional title for the subscription"
+        ),
+    ] = None
+    applicationId: Annotated[
+        str,
+        Field(
+            alias="applicationId",
+            description="Identifier of the associated application",
+        ),
+    ]
+    createdTime: Annotated[
+        str,
+        Field(
+            alias="createdTime",
+            description="Subscription creation timestamp (YYYY-MM-DD HH:MM:SS)",
+        ),
+    ]
+    expirationTime: Annotated[
+        str,
+        Field(
+            alias="expirationTime",
+            description="Subscription expiration timestamp (YYYY-MM-DD HH:MM:SS)",
+        ),
+    ]
+    subscriptionConfig: Annotated[
+        Optional[List[SubscriptionConfigItem]],
+        Field(
+            alias="subscriptionConfig",
+            description="List of subscription configurations",
+        ),
+    ] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class SubscriptionList(RootModel[List[Subscription]]):
+    def __iter__(self):
+        return iter(self.root)
+
+
+class SubscriptionListResponse(OFSResponseList[Subscription]):
     pass
 
 

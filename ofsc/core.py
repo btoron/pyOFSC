@@ -5,7 +5,12 @@ from urllib.parse import urljoin
 import requests
 
 from .common import FULL_RESPONSE, OBJ_RESPONSE, wrap_return
-from .models import BulkUpdateRequest, OFSApi, ResourceUsersListResponse
+from .models import (
+    BulkUpdateRequest,
+    OFSApi,
+    ResourceUsersListResponse,
+    SubscriptionListResponse,
+)
 
 
 class OFSCore(OFSApi):
@@ -447,7 +452,9 @@ class OFSCore(OFSApi):
     ###
     # 1. Subscriptions Management. Using wrapper
     ###
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=SubscriptionListResponse
+    )
     def get_subscriptions(self):
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/events/subscriptions")
         response = requests.get(url, headers=self.headers)
