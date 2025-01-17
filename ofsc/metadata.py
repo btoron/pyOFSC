@@ -6,6 +6,7 @@ import requests
 
 from .common import FULL_RESPONSE, OBJ_RESPONSE, wrap_return
 from .models import (
+    ActivityType,
     ActivityTypeGroup,
     ActivityTypeGroupListResponse,
     ActivityTypeListResponse,
@@ -21,9 +22,11 @@ from .models import (
     OFSApi,
     Property,
     Workskill,
+    WorkskillConditionList,
+    WorkskillConditionListResponse,
     WorkSkillGroup,
     WorkSkillGroupListResponse,
-    WorskillConditionList,
+    WorkskillListResponse,
 )
 
 
@@ -126,7 +129,9 @@ class OFSMetadata(OFSApi):
         response = requests.post(url, headers=self.headers, files=files)
         return response
 
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=WorkskillListResponse
+    )
     def get_workskills(self, offset=0, limit=100, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkills")
         params = {"offset": offset, "limit": limit}
@@ -137,13 +142,10 @@ class OFSMetadata(OFSApi):
         )
         return response
 
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=Workskill)
     def get_workskill(self, label: str, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{label}")
-        response = requests.get(
-            url,
-            headers=self.headers,
-        )
+        response = requests.get(url, headers=self.headers)
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
@@ -159,7 +161,9 @@ class OFSMetadata(OFSApi):
         return response
 
     # Workskill conditions
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=WorkskillConditionListResponse
+    )
     def get_workskill_conditions(self, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillConditions")
         response = requests.get(
@@ -170,7 +174,7 @@ class OFSMetadata(OFSApi):
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def replace_workskill_conditions(
-        self, data: WorskillConditionList, response_type=FULL_RESPONSE
+        self, data: WorkskillConditionList, response_type=FULL_RESPONSE
     ):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillConditions")
         content = '{"items":' + data.model_dump_json(exclude_none=True) + "}"
@@ -212,11 +216,11 @@ class OFSMetadata(OFSApi):
         response = requests.get(url, headers=self.headers, params=params)
         return response
 
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=ActivityType)
     def get_activity_type(self, label):
         encoded_label = urllib.parse.quote_plus(label)
         url = urljoin(
-            self.baseUrl, "/rest/ofscMetadata/v1/activityTypes/{}".format(encoded_label)
+            self.baseUrl, f"/rest/ofscMetadata/v1/activityTypes/{encoded_label}"
         )
         response = requests.get(url, headers=self.headers)
         return response

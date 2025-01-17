@@ -152,7 +152,7 @@ class EntityEnum(str, Enum):
 #     cs = "cs"
 
 
-# Work skills
+# region Work skills
 class Translation(BaseModel):
     language: str = "en"
     name: str
@@ -194,6 +194,10 @@ class WorkskillList(RootModel[List[Workskill]]):
         return self.root[item]
 
 
+class WorkskillListResponse(OFSResponseList[Workskill]):
+    pass
+
+
 class Condition(BaseModel):
     label: str
     function: str
@@ -210,7 +214,7 @@ class WorkskillCondition(BaseModel):
     dependencies: Any = None
 
 
-class WorskillConditionList(RootModel[List[WorkskillCondition]]):
+class WorkskillConditionList(RootModel[List[WorkskillCondition]]):
     def __iter__(self):
         return iter(self.root)
 
@@ -218,7 +222,14 @@ class WorskillConditionList(RootModel[List[WorkskillCondition]]):
         return self.root[item]
 
 
-# Workzones
+class WorkskillConditionListResponse(OFSResponseList[WorkskillCondition]):
+    pass
+
+
+# endregion
+
+
+# region Workzones
 class Workzone(BaseModel):
     workZoneLabel: str
     workZoneName: str

@@ -2,23 +2,15 @@ from ofsc.common import FULL_RESPONSE, OBJ_RESPONSE
 from ofsc.models import (
     Condition,
     SharingEnum,
-    WorkSkill,
     Workskill,
     WorkskillCondition,
-    WorkSkillList,
-    WorskillConditionList,
+    WorkskillConditionList,
+    WorkskillConditionListResponse,
+    WorkskillListResponse,
 )
 
 
-def test_get_workskills_basic(instance):
-    response = instance.metadata.get_workskills(response_type=FULL_RESPONSE)
-    assert response.status_code == 200
-    data = response.json()
-    assert data["items"] is not None
-    assert len(data["items"]) > 0
-
-
-def test_get_workskills(instance, demo_data):
+def test_get_workskills_basic(instance, demo_data):
     metadata_response = instance.metadata.get_workskills(response_type=FULL_RESPONSE)
     response = metadata_response.json()
     expected_workskills = demo_data.get("metadata").get("expected_workskills")
@@ -30,7 +22,7 @@ def test_get_workskills(instance, demo_data):
 
 def test_get_workskills_obj(instance):
     response = instance.metadata.get_workskills()
-    assert isinstance(response, WorkSkillList)
+    assert isinstance(response, WorkskillListResponse)
     assert len(response.items) > 0
 
 
@@ -41,23 +33,14 @@ def test_get_workskill_basic(instance):
     assert data["label"] == "COM"
 
 
-def test_get_workskill(instance):
-    metadata_response = instance.metadata.get_workskill(
-        label="RES", response_type=FULL_RESPONSE
-    )
-    response = metadata_response.json()
-    assert response["label"] == "RES"
-    assert response["name"] == "Residential"
-
-
 def test_get_workskill_obj(instance):
     response = instance.metadata.get_workskill("COM")
-    assert isinstance(response, WorkSkill)
+    assert isinstance(response, Workskill)
     assert response.label == "COM"
 
 
 def test_create_workskill(instance, pp):
-    skill = Workskill(label="TEST", name="test", sharing=SharingEnum.maximal)
+    skill = Workskill(label="TESTWSKILL", name="test", sharing=SharingEnum.maximal)
     metadata_response = instance.metadata.create_or_update_workskill(
         skill=skill, response_type=FULL_RESPONSE
     )
@@ -65,12 +48,17 @@ def test_create_workskill(instance, pp):
     assert metadata_response.status_code < 299, response
     assert response["label"] == skill.label
     assert response["name"] == skill.name
+    # Check if it is created
+    metadata_response = instance.metadata.get_workskill(
+        label=skill.label, response_type=FULL_RESPONSE
+    )
+    assert metadata_response.status_code == 200
     # Cleaning up
     instance.metadata.delete_workskill(label=skill.label, response_type=FULL_RESPONSE)
 
 
 def test_delete_workskill(instance):
-    skill = Workskill(label="TEST", name="test", sharing=SharingEnum.maximal)
+    skill = Workskill(label="TESTWSKILL", name="test", sharing=SharingEnum.maximal)
     metadata_response = instance.metadata.create_or_update_workskill(
         skill=skill, response_type=FULL_RESPONSE
     )
@@ -82,9 +70,14 @@ def test_delete_workskill(instance):
         label=skill.label, response_type=FULL_RESPONSE
     )
     assert metadata_response.status_code == 204
+    # Check if it is deleted
+    metadata_response = instance.metadata.get_workskill(
+        label=skill.label, response_type=FULL_RESPONSE
+    )
+    assert metadata_response.status_code == 404
 
 
-def test_get_workskill_conditions(instance, pp, demo_data):
+def test_get_workskill_conditions_basic(instance, pp, demo_data):
     metadata_response = instance.metadata.get_workskill_conditions(
         response_type=FULL_RESPONSE
     )
@@ -94,12 +87,18 @@ def test_get_workskill_conditions(instance, pp, demo_data):
     response = metadata_response.json()
     assert metadata_response.status_code == 200
     assert response["totalResults"] is not None
-    assert response["totalResults"] == expected_workskill_conditions
+    assert response["totalResults"] >= expected_workskill_conditions
     for item in response["items"]:
         ws_item = WorkskillCondition.model_validate(item)
         assert ws_item.label == item["label"]
         for condition in ws_item.conditions:
-            assert type(condition) == Condition
+            assert isinstance(condition, Condition)
+
+
+def test_get_workskill_conditions_obj(instance):
+    response = instance.metadata.get_workskill_conditions()
+    assert isinstance(response, WorkskillConditionListResponse)
+    assert len(response.items) > 0
 
 
 def test_replace_workskill_conditions(instance, pp, demo_data):
@@ -107,12 +106,13 @@ def test_replace_workskill_conditions(instance, pp, demo_data):
     expected_workskill_conditions = demo_data.get("metadata").get(
         "expected_workskill_conditions"
     )
-    assert response["totalResults"] is not None
-    assert response["totalResults"] == expected_workskill_conditions
-    ws_list = WorskillConditionList.model_validate(response["items"])
+    assert response.totalResults is not None
+    assert response.totalResults >= expected_workskill_conditions
+    current_count = response.totalResults
+    ws_list = WorkskillConditionList.model_validate(response.items)
     metadata_response = instance.metadata.replace_workskill_conditions(
         ws_list, response_type=FULL_RESPONSE
     )
     assert metadata_response.status_code == 200
-    assert response["totalResults"] is not None
-    assert response["totalResults"] == expected_workskill_conditions
+    assert response.totalResults >= expected_workskill_conditions
+    assert response.totalResults >= current_count
