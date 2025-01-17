@@ -1,7 +1,8 @@
 from ofsc.common import FULL_RESPONSE
+from ofsc.models import ResourceTypeListResponse
 
 
-def test_get_resource_types(instance, demo_data):
+def test_get_resource_types_basic(instance, demo_data):
     metadata_response = instance.metadata.get_resource_types(
         response_type=FULL_RESPONSE
     )
@@ -10,3 +11,9 @@ def test_get_resource_types(instance, demo_data):
     assert response["totalResults"] >= demo_data.get("metadata").get(
         "expected_resource_types"
     )
+
+
+def test_get_resource_types_obj(instance):
+    response = instance.metadata.get_resource_types()
+    assert isinstance(response, ResourceTypeListResponse)
+    assert len(response.items) > 0

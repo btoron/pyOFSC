@@ -6,12 +6,13 @@ from ofsc.models import (
     EnumerationValue,
     EnumerationValueList,
     Property,
+    PropertyListResponse,
     Translation,
     TranslationList,
 )
 
 
-def test_get_property(instance):
+def test_get_property_basic(instance):
     metadata_response = instance.metadata.get_property(
         "XA_CASE_ACCOUNT", response_type=FULL_RESPONSE
     )
@@ -22,9 +23,12 @@ def test_get_property(instance):
     assert response["type"] == "string"
     assert response["entity"] == "activity"
     property = Property.model_validate(response)
+    assert property.label == "XA_CASE_ACCOUNT"
+    assert property.type == "string"
+    assert property.entity == "activity"
 
 
-def test_get_properties(instance, demo_data):
+def test_get_properties_basic(instance, demo_data):
     metadata_response = instance.metadata.get_properties(response_type=FULL_RESPONSE)
     expected_properties = demo_data.get("metadata").get("expected_properties")
     assert metadata_response.status_code == 200
@@ -32,6 +36,12 @@ def test_get_properties(instance, demo_data):
     assert response["totalResults"]
     assert response["totalResults"] >= expected_properties  # 22.D
     assert response["items"][0]["label"] == "ITEM_NUMBER"
+
+
+def test_get_properties_obj(instance):
+    response = instance.metadata.get_properties()
+    assert isinstance(response, PropertyListResponse)
+    assert len(response.items) > 0
 
 
 def test_create_replace_property(instance: OFSC, faker):

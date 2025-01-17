@@ -11,6 +11,8 @@ from .models import (
     ActivityTypeGroupListResponse,
     ActivityTypeListResponse,
     Application,
+    ApplicationApiAccess,
+    ApplicationApiAccessListResponse,
     ApplicationListResponse,
     CapacityArea,
     CapacityAreaListResponse,
@@ -21,12 +23,16 @@ from .models import (
     InventoryTypeListResponse,
     OFSApi,
     Property,
+    PropertyListResponse,
+    ResourceTypeListResponse,
     Workskill,
     WorkskillConditionList,
     WorkskillConditionListResponse,
     WorkSkillGroup,
     WorkSkillGroupListResponse,
     WorkskillListResponse,
+    Workzone,
+    WorkzoneListResponse,
 )
 
 
@@ -36,7 +42,7 @@ class OFSMetadata(OFSApi):
 
     ## 202202 Properties and file properties
 
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=PropertyListResponse)
     def get_properties(self, offset=0, limit=100):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/properties")
         params = {"offset": offset, "limit": limit}
@@ -48,7 +54,7 @@ class OFSMetadata(OFSApi):
         return response
 
     # 202209 Get Property
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=Property)
     def get_property(self, label: str):
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/properties/{label}")
         response = requests.get(url, headers=self.headers)
@@ -84,10 +90,8 @@ class OFSMetadata(OFSApi):
 
     # endregion
 
-    # 202208 Skill management
-
-    # 202208 Workzones
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    # region Workzones
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=WorkzoneListResponse)
     def get_workzones(
         self,
         offset=0,
@@ -102,12 +106,32 @@ class OFSMetadata(OFSApi):
         )
         return response
 
-    # 202209 Resource Types
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    # 202209 Get Workzone
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=Workzone)
+    def get_workzone(self, label: str):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workZones/{label}")
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    # endregion
+
+    # region Resource Types
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=ResourceTypeListResponse
+    )
     def get_resource_types(self):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/resourceTypes")
         response = requests.get(url, headers=self.headers)
         return response
+
+    # As of today there is no way to get a single resource type
+    # @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=ResourceType)
+    # def get_resource_type(self, label: str):
+    #     url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/resourceTypes/{label}")
+    #     response = requests.get(url, headers=self.headers)
+    #     return response
+
+    # endregion
 
     # 202212 Import plugin
     @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
@@ -354,7 +378,11 @@ class OFSMetadata(OFSApi):
         response = requests.get(url, headers=self.headers)
         return response
 
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    @wrap_return(
+        response_type=OBJ_RESPONSE,
+        expected=[200],
+        model=ApplicationApiAccessListResponse,
+    )
     def get_application_api_accesses(self, label: str):
         url = urljoin(
             self.baseUrl, f"/rest/ofscMetadata/v1/applications/{label}/apiAccess"
@@ -362,7 +390,7 @@ class OFSMetadata(OFSApi):
         response = requests.get(url, headers=self.headers)
         return response
 
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=ApplicationApiAccess)
     def get_application_api_access(self, label: str, accessId: str):
         url = urljoin(
             self.baseUrl,

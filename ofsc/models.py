@@ -246,6 +246,10 @@ class WorkzoneList(RootModel[List[Workzone]]):
         return self.root[item]
 
 
+class WorkzoneListResponse(OFSResponseList[Workzone]):
+    pass
+
+
 class Property(BaseModel):
     label: str
     name: str
@@ -328,6 +332,10 @@ class ResourceTypeList(RootModel[List[ResourceType]]):
 
     def __getitem__(self, item):
         return self.root[item]
+
+
+class ResourceTypeListResponse(OFSResponseList[ResourceType]):
+    pass
 
 
 # Core / Activities
@@ -675,3 +683,75 @@ class Application(BaseModel):
 
 class ApplicationListResponse(OFSResponseList[Application]):
     pass
+
+
+class PropertyListResponse(OFSResponseList[Property]):
+    pass
+
+
+# region Application API Access
+class ApplicationApiAccessMethod(BaseModel):
+    label: str = Field(min_length=1, max_length=80)
+    status: str = Field(pattern="^(on|off)$")
+
+
+class ApplicationApiAccessEntity(BaseModel):
+    label: str = Field(min_length=1, max_length=80)
+    access: str = Field(pattern="^(ReadOnly|ReadWrite|Hidden)$")
+
+
+class ApplicationApiAccessContextConditions(BaseModel):
+    label: str = Field(min_length=1, max_length=40)
+    function: str = Field(pattern="^(in|not_in|contains|dcontain|is_null|is_not_null)$")
+    value: Optional[str] = None
+    valueList: List[str] = []
+
+
+class ApplicationApiAccessVisibility(BaseModel):
+    visibility: str = Field(pattern="^(ReadOnly|ReadWrite|Mandatory)$")
+    conditions: Optional[List[ApplicationApiAccessContextConditions]] = None
+
+
+class ApplicationApiAccessValueVisibility(BaseModel):
+    value: str
+    conditions: Optional[List[ApplicationApiAccessContextConditions]] = None
+
+
+class ApplicationApiAccessContext(BaseModel):
+    label: str = Field(min_length=1, max_length=255)
+    visibilities: List[ApplicationApiAccessVisibility] = []
+    valuesVisibility: List[ApplicationApiAccessValueVisibility] = []
+
+
+class ApplicationApiAccessContextUser(BaseModel):
+    label: str = Field(min_length=1, max_length=255)
+    visibilities: List[ApplicationApiAccessVisibility] = []
+
+
+class ApplicationApiAccess(BaseModel):
+    label: str = Field(min_length=1, max_length=255)
+    name: str = Field(min_length=1, max_length=255)
+    status: str = Field(pattern="^(active|inactive)$")
+    apiMethods: Optional[List[ApplicationApiAccessMethod]] = None
+    apiEntities: Optional[List[ApplicationApiAccessEntity]] = None
+    activityFields: Optional[List[ApplicationApiAccessContext]] = None
+    inventoryFields: Optional[List[ApplicationApiAccessContext]] = None
+    providerFields: Optional[List[ApplicationApiAccessContext]] = None
+    userFields: Optional[List[ApplicationApiAccessContextUser]] = None
+    requestFields: Optional[List[ApplicationApiAccessContext]] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ApplicationApiAccessList(RootModel[List[ApplicationApiAccess]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class ApplicationApiAccessListResponse(OFSResponseList[ApplicationApiAccess]):
+    pass
+
+
+# endregion

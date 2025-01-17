@@ -1,6 +1,11 @@
 from ofsc import OFSC
 from ofsc.common import FULL_RESPONSE
-from ofsc.models import Application, ApplicationListResponse
+from ofsc.models import (
+    Application,
+    ApplicationApiAccess,
+    ApplicationApiAccessListResponse,
+    ApplicationListResponse,
+)
 
 
 def test_get_applications_basic(instance: OFSC):
@@ -54,6 +59,20 @@ def test_get_application_api_accesses_basic(instance: OFSC):
     assert len(response["items"]) > 0
     accesses = {access["label"]: access for access in response["items"]}
     assert accesses is not None
+
+
+def test_get_application_api_access_list_obj(instance: OFSC):
+    response = instance.metadata.get_application_api_accesses(instance._config.clientID)
+    assert isinstance(response, ApplicationApiAccessListResponse)
+    assert len(response.items) > 0
+
+
+def test_get_application_api_access_obj(instance: OFSC):
+    response = instance.metadata.get_application_api_access(
+        instance._config.clientID, "metadataAPI"
+    )
+    assert isinstance(response, ApplicationApiAccess)
+    assert response.label == "metadataAPI"
 
 
 def test_get_application_api_access_basic(instance: OFSC):
