@@ -1,10 +1,8 @@
 import json
-import logging
 
 import pytest
 from pydantic import ValidationError
 
-from ofsc.common import OBJ_RESPONSE
 from ofsc.models import (
     ActivityType,
     ActivityTypeGroup,
@@ -15,7 +13,6 @@ from ofsc.models import (
     Translation,
     TranslationList,
     Workskill,
-    WorkskillList,
 )
 
 
@@ -28,8 +25,8 @@ def test_translation_model_base():
 
 def test_translation_model_base_invalid():
     base = {"language": "xx", "Noname": "NoEstimate", "languageISO": "en-US"}
-    with pytest.raises(ValidationError) as validation:
-        obj = Translation.model_validate(base)
+    with pytest.raises(ValidationError):
+        Translation.model_validate(base)
 
 
 def test_translationlist_model_base():
@@ -39,7 +36,7 @@ def test_translationlist_model_base():
     ]
     objList = TranslationList.model_validate(base)
     for idx, obj in enumerate(objList):
-        assert type(obj) == Translation
+        assert isinstance(obj, Translation)
         assert obj.language == base[idx]["language"]
         assert obj.name == base[idx]["name"]
 
@@ -283,7 +280,7 @@ def test_capacity_area_list_model_base():
         ]
     }
 
-    obj = CapacityAreaListResponse.model_validate(base)
+    CapacityAreaListResponse.model_validate(base)
 
 
 # endregion
@@ -315,12 +312,6 @@ def test_workskill_model_base():
     assert obj.sharing == base["sharing"]
     assert obj.translations == TranslationList.model_validate(base["translations"])
     assert json.loads(obj.model_dump_json())["label"] == base["label"]
-
-
-def test_workskilllist_connected(instance):
-    metadata_response = instance.metadata.get_workskills(response_type=OBJ_RESPONSE)
-    logging.debug(json.dumps(metadata_response, indent=4))
-    objList = WorkskillList.model_validate(metadata_response["items"])
 
 
 # endregion

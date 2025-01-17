@@ -37,180 +37,7 @@ from .models import (
 
 
 class OFSMetadata(OFSApi):
-
-    # region Properties
-
-    ## 202202 Properties and file properties
-
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=PropertyListResponse)
-    def get_properties(self, offset=0, limit=100):
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/properties")
-        params = {"offset": offset, "limit": limit}
-        response = requests.get(
-            url,
-            headers=self.headers,
-            params=params,
-        )
-        return response
-
-    # 202209 Get Property
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=Property)
-    def get_property(self, label: str):
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/properties/{label}")
-        response = requests.get(url, headers=self.headers)
-        return response
-
-    # 202209 Create Property
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
-    def create_or_replace_property(self, property: Property):
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscMetadata/v1/properties/{property.label}"
-        )
-        response = requests.put(
-            url, headers=self.headers, data=property.model_dump_json().encode("utf-8")
-        )
-        return response
-
-    # 202412 Get Enumerated Property Values
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=EnumerationValueList)
-    def get_enumeration_values(self, label: str, offset=0, limit=100):
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscMetadata/v1/properties/{label}/enumerationList"
-        )
-        params = {
-            "offset": offset,
-            "limit": limit,
-        }
-        response = requests.get(
-            url,
-            headers=self.headers,
-            params=params,
-        )
-        return response
-
-    # endregion
-
-    # region Workzones
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=WorkzoneListResponse)
-    def get_workzones(
-        self,
-        offset=0,
-        limit=100,
-    ):
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workZones")
-        params = {"offset": offset, "limit": limit}
-        response = requests.get(
-            url,
-            headers=self.headers,
-            params=params,
-        )
-        return response
-
-    # 202209 Get Workzone
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=Workzone)
-    def get_workzone(self, label: str):
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workZones/{label}")
-        response = requests.get(url, headers=self.headers)
-        return response
-
-    # endregion
-
-    # region Resource Types
-    @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=ResourceTypeListResponse
-    )
-    def get_resource_types(self):
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/resourceTypes")
-        response = requests.get(url, headers=self.headers)
-        return response
-
-    # As of today there is no way to get a single resource type
-    # @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=ResourceType)
-    # def get_resource_type(self, label: str):
-    #     url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/resourceTypes/{label}")
-    #     response = requests.get(url, headers=self.headers)
-    #     return response
-
-    # endregion
-
-    # 202212 Import plugin
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
-    def import_plugin_file(self, plugin: Path):
-        url = urljoin(
-            self.baseUrl, "/rest/ofscMetadata/v1/plugins/custom-actions/import"
-        )
-        files = [("pluginFile", (plugin.name, plugin.read_text(), "text/xml"))]
-        response = requests.post(url, headers=self.headers, files=files)
-        return response
-
-    # 202212 Import plugin
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
-    def import_plugin(self, plugin: str):
-        url = urljoin(
-            self.baseUrl, "/rest/ofscMetadata/v1/plugins/custom-actions/import"
-        )
-        files = [("pluginFile", ("noname.xml", plugin, "text/xml"))]
-        response = requests.post(url, headers=self.headers, files=files)
-        return response
-
-    @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=WorkskillListResponse
-    )
-    def get_workskills(self, offset=0, limit=100, response_type=FULL_RESPONSE):
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkills")
-        params = {"offset": offset, "limit": limit}
-        response = requests.get(
-            url,
-            headers=self.headers,
-            params=params,
-        )
-        return response
-
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=Workskill)
-    def get_workskill(self, label: str, response_type=FULL_RESPONSE):
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{label}")
-        response = requests.get(url, headers=self.headers)
-        return response
-
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
-    def create_or_update_workskill(self, skill: Workskill, response_type=FULL_RESPONSE):
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{skill.label}")
-        response = requests.put(url, headers=self.headers, data=skill.model_dump_json())
-        return response
-
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
-    def delete_workskill(self, label: str, response_type=FULL_RESPONSE):
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{label}")
-        response = requests.delete(url, headers=self.headers)
-        return response
-
-    # Workskill conditions
-    @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=WorkskillConditionListResponse
-    )
-    def get_workskill_conditions(self, response_type=FULL_RESPONSE):
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillConditions")
-        response = requests.get(
-            url,
-            headers=self.headers,
-        )
-        return response
-
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
-    def replace_workskill_conditions(
-        self, data: WorkskillConditionList, response_type=FULL_RESPONSE
-    ):
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillConditions")
-        content = '{"items":' + data.model_dump_json(exclude_none=True) + "}"
-        headers = self.headers
-        headers["Content-Type"] = "application/json"
-        response = requests.put(url, headers=headers, data=content)
-        return response
-
-    #####
-    # Migration to OFS 2.0 model format
-
-    # 202402 Metadata - Activity Type Groups
+    # region Activity Types
     @wrap_return(
         response_type=OBJ_RESPONSE, expected=[200], model=ActivityTypeGroupListResponse
     )
@@ -230,7 +57,6 @@ class OFSMetadata(OFSApi):
         response = requests.get(url, headers=self.headers)
         return response
 
-    ## 202402 Activity Type
     @wrap_return(
         response_type=OBJ_RESPONSE, expected=[200], model=ActivityTypeListResponse
     )
@@ -249,120 +75,8 @@ class OFSMetadata(OFSApi):
         response = requests.get(url, headers=self.headers)
         return response
 
-    # region Capacity Areas
-    capacityAreasFields = [
-        "label",
-        "name",
-        "type",
-        "status",
-        "parent.name",
-        "parent.label",
-    ]
+    # endregion Activity Types
 
-    @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=CapacityAreaListResponse
-    )
-    def get_capacity_areas(
-        self,
-        expandParent: bool = False,
-        fields: list[str] = ["label"],
-        activeOnly: bool = False,
-        areasOnly: bool = False,
-    ):
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/capacityAreas")
-        assert isinstance(fields, list)
-        params = {
-            "expand": None if not expandParent else "parent",
-            "fields": (
-                ",".join(fields) if fields else ",".join(self.capacityAreasFields)
-            ),
-            "status": None if not activeOnly else "active",
-            "type": None if not areasOnly else "area",
-        }
-        response = requests.get(url, params=params, headers=self.headers)
-        return response
-
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=CapacityArea)
-    def get_capacity_area(self, label: str):
-        encoded_label = urllib.parse.quote_plus(label)
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}"
-        )
-        response = requests.get(url, headers=self.headers)
-        return response
-
-    # endregion
-
-    # region 202402 Metadata - Capacity Categories
-    @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=CapacityCategoryListResponse
-    )
-    def get_capacity_categories(self, offset=0, limit=100):
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/capacityCategories")
-        params = {"offset": offset, "limit": limit}
-        response = requests.get(url, headers=self.headers, params=params)
-        return response
-
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=CapacityCategory)
-    def get_capacity_category(self, label: str):
-        encoded_label = urllib.parse.quote_plus(label)
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscMetadata/v1/capacityCategories/{encoded_label}"
-        )
-        response = requests.get(url, headers=self.headers)
-        return response
-
-    # endregion
-
-    # region 202405 Inventory Types
-    @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=InventoryTypeListResponse
-    )
-    def get_inventory_types(self):
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/inventoryTypes")
-        response = requests.get(url, headers=self.headers)
-        return response
-
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=InventoryType)
-    def get_inventory_type(self, label: str):
-        encoded_label = urllib.parse.quote_plus(label)
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscMetadata/v1/inventoryTypes/{encoded_label}"
-        )
-        response = requests.get(url, headers=self.headers)
-        return response
-
-    # endregion
-
-    # region 202410 Metadata - Workskill Groups
-    @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=WorkSkillGroupListResponse
-    )
-    def get_workskill_groups(self):
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillGroups")
-        response = requests.get(url, headers=self.headers)
-        return response
-
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=WorkSkillGroup)
-    def get_workskill_group(self, label: str):
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillGroups/{label}")
-        response = requests.get(url, headers=self.headers)
-        return response
-
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
-    def create_or_update_workskill_group(self, data: WorkSkillGroup):
-        label = data.label
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillGroups/{label}")
-        response = requests.put(url, headers=self.headers, json=data.model_dump())
-        return response
-
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
-    def delete_workskill_group(self, label: str):
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillGroups/{label}")
-        response = requests.delete(url, headers=self.headers)
-        return response
-
-    # endregion 202410 Metadata - Workskill Groups
     # region Applications
     @wrap_return(
         response_type=OBJ_RESPONSE, expected=[200], model=ApplicationListResponse
@@ -400,3 +114,263 @@ class OFSMetadata(OFSApi):
         return response
 
     # endregion Applications
+
+    # region Capacity
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=CapacityAreaListResponse
+    )
+    def get_capacity_areas(
+        self,
+        expandParent: bool = False,
+        fields: list[str] = ["label"],
+        activeOnly: bool = False,
+        areasOnly: bool = False,
+    ):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/capacityAreas")
+        assert isinstance(fields, list)
+        params = {
+            "expand": None if not expandParent else "parent",
+            "fields": (
+                ",".join(fields) if fields else ",".join(self.capacityAreasFields)
+            ),
+            "status": None if not activeOnly else "active",
+            "type": None if not areasOnly else "area",
+        }
+        response = requests.get(url, params=params, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=CapacityArea)
+    def get_capacity_area(self, label: str):
+        encoded_label = urllib.parse.quote_plus(label)
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}"
+        )
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=CapacityCategoryListResponse
+    )
+    def get_capacity_categories(self, offset=0, limit=100):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/capacityCategories")
+        params = {"offset": offset, "limit": limit}
+        response = requests.get(url, headers=self.headers, params=params)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=CapacityCategory)
+    def get_capacity_category(self, label: str):
+        encoded_label = urllib.parse.quote_plus(label)
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/capacityCategories/{encoded_label}"
+        )
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    # endregion Capacity
+
+    # region Inventory Types
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=InventoryTypeListResponse
+    )
+    def get_inventory_types(self):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/inventoryTypes")
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=InventoryType)
+    def get_inventory_type(self, label: str):
+        encoded_label = urllib.parse.quote_plus(label)
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/inventoryTypes/{encoded_label}"
+        )
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    # endregion Inventory Types
+
+    # region Plugins
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
+    def import_plugin_file(self, plugin: Path):
+        url = urljoin(
+            self.baseUrl, "/rest/ofscMetadata/v1/plugins/custom-actions/import"
+        )
+        files = [("pluginFile", (plugin.name, plugin.read_text(), "text/xml"))]
+        response = requests.post(url, headers=self.headers, files=files)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
+    def import_plugin(self, plugin: str):
+        url = urljoin(
+            self.baseUrl, "/rest/ofscMetadata/v1/plugins/custom-actions/import"
+        )
+        files = [("pluginFile", ("noname.xml", plugin, "text/xml"))]
+        response = requests.post(url, headers=self.headers, files=files)
+        return response
+
+    # endregion Plugins
+
+    # region Properties
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=PropertyListResponse)
+    def get_properties(self, offset=0, limit=100):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/properties")
+        params = {"offset": offset, "limit": limit}
+        response = requests.get(
+            url,
+            headers=self.headers,
+            params=params,
+        )
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=Property)
+    def get_property(self, label: str):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/properties/{label}")
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def create_or_replace_property(self, property: Property):
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/properties/{property.label}"
+        )
+        response = requests.put(
+            url, headers=self.headers, data=property.model_dump_json().encode("utf-8")
+        )
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=EnumerationValueList)
+    def get_enumeration_values(self, label: str, offset=0, limit=100):
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/properties/{label}/enumerationList"
+        )
+        params = {
+            "offset": offset,
+            "limit": limit,
+        }
+        response = requests.get(
+            url,
+            headers=self.headers,
+            params=params,
+        )
+        return response
+
+    # endregion Properties
+
+    # region Resource Types
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=ResourceTypeListResponse
+    )
+    def get_resource_types(self):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/resourceTypes")
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    # endregion Resource Types
+
+    # region Workskills
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=WorkskillListResponse
+    )
+    def get_workskills(self, offset=0, limit=100, response_type=FULL_RESPONSE):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkills")
+        params = {"offset": offset, "limit": limit}
+        response = requests.get(
+            url,
+            headers=self.headers,
+            params=params,
+        )
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=Workskill)
+    def get_workskill(self, label: str, response_type=FULL_RESPONSE):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{label}")
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def create_or_update_workskill(self, skill: Workskill, response_type=FULL_RESPONSE):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{skill.label}")
+        response = requests.put(url, headers=self.headers, data=skill.model_dump_json())
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
+    def delete_workskill(self, label: str, response_type=FULL_RESPONSE):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{label}")
+        response = requests.delete(url, headers=self.headers)
+        return response
+
+    # endregion Workskills
+
+    # region Workskill Conditions
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=WorkskillConditionListResponse
+    )
+    def get_workskill_conditions(self, response_type=FULL_RESPONSE):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillConditions")
+        response = requests.get(
+            url,
+            headers=self.headers,
+        )
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def replace_workskill_conditions(
+        self, data: WorkskillConditionList, response_type=FULL_RESPONSE
+    ):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillConditions")
+        content = '{"items":' + data.model_dump_json(exclude_none=True) + "}"
+        headers = self.headers
+        headers["Content-Type"] = "application/json"
+        response = requests.put(url, headers=headers, data=content)
+        return response
+
+    # endregion Workskill Conditions
+
+    # region Workskill Groups
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=WorkSkillGroupListResponse
+    )
+    def get_workskill_groups(self):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillGroups")
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=WorkSkillGroup)
+    def get_workskill_group(self, label: str):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillGroups/{label}")
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def create_or_update_workskill_group(self, data: WorkSkillGroup):
+        label = data.label
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillGroups/{label}")
+        response = requests.put(url, headers=self.headers, json=data.model_dump())
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
+    def delete_workskill_group(self, label: str):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillGroups/{label}")
+        response = requests.delete(url, headers=self.headers)
+        return response
+
+    # endregion Workskill Groups
+
+    # region Workzones
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=WorkzoneListResponse)
+    def get_workzones(self, offset=0, limit=100):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workZones")
+        params = {"offset": offset, "limit": limit}
+        response = requests.get(
+            url,
+            headers=self.headers,
+            params=params,
+        )
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=Workzone)
+    def get_workzone(self, label: str):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workZones/{label}")
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    # endregion Workzones
