@@ -8,8 +8,10 @@ from .common import FULL_RESPONSE, OBJ_RESPONSE, wrap_return
 from .models import (
     BulkUpdateRequest,
     OFSApi,
+    PropertyListResponse,
     ResourceUsersListResponse,
     SubscriptionListResponse,
+    SubscriptionRequest,
 )
 
 
@@ -423,31 +425,22 @@ class OFSCore(OFSApi):
         return items
 
     def get_all_properties(self, initial_offset=0, limit=100):
-        items = []
-        hasMore = True
         offset = initial_offset
+        hasMore = True
+
         while hasMore:
-            response = self.get_properties(
-                offset=offset, limit=limit, response_type=FULL_RESPONSE
+            response: PropertyListResponse = self.get_properties(
+                offset=offset, limit=limit, response_type=OBJ_RESPONSE
             )
-            response_body = response.json()
-            if "items" in response_body.keys():
-                response_count = len(response_body["items"])
-                items.extend(response_body["items"])
-            else:
-                response_count = 0
-            if "hasMore" in response_body.keys():
-                hasMore = response_body["hasMore"]
-                logging.info(
-                    "{},{},{}".format(offset, response_count, response.elapsed)
-                )
-            else:
-                hasMore = False
-                logging.info(
-                    "{},{},{}".format(offset, response_count, response.elapsed)
-                )
+
+            for item in response.items:
+                yield item
+
+            hasMore = response.hasMore
+            response_count = len(response.items)
+            logging.info("{},{},{}".format(offset, response_count, response.elapsed))
+
             offset = offset + response_count
-        return items
 
     ###
     # 1. Subscriptions Management. Using wrapper
@@ -461,9 +454,9 @@ class OFSCore(OFSApi):
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
-    def create_subscription(self, data):
+    def create_subscription(self, data: SubscriptionRequest):
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/events/subscriptions")
-        response = requests.post(url, headers=self.headers, data=data)
+        response = requests.post(url, headers=self.headers, data=data.model_dump_json())
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[204])

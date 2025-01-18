@@ -3,13 +3,19 @@ import logging
 import time
 
 from ofsc.common import FULL_RESPONSE
+from ofsc.models import SubscriptionListResponse
 
 
-def test_get_subscriptions(instance):
+def test_get_subscriptions_basic(instance):
     raw_response = instance.core.get_subscriptions(response_type=FULL_RESPONSE)
     assert raw_response.status_code == 200
     response = raw_response.json()
     assert "totalResults" in response.keys()
+
+
+def test_get_subscriptions_model(instance):
+    raw_response = instance.core.get_subscriptions()
+    assert isinstance(raw_response, SubscriptionListResponse)
 
 
 def test_get_subscriptions_with_token(instance_with_token):
@@ -21,7 +27,7 @@ def test_get_subscriptions_with_token(instance_with_token):
     assert "totalResults" in response.keys()
 
 
-def test_create_delete_subscription(instance):
+def test_create_delete_subscription_simple(instance):
     data = {"events": ["activityMoved"], "title": "Simple Subscription"}
     raw_response = instance.core.create_subscription(
         json.dumps(data), response_type=FULL_RESPONSE

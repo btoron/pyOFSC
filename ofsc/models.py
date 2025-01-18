@@ -861,7 +861,21 @@ class SubscriptionConfig(RootModel[List[SubscriptionConfigItem]]):
     def __getitem__(self, item):
         return self.root[item]
 
-    model_config = ConfigDict(extra="allow")
+
+class SubscriptionRequest(BaseModel):
+    subscriptionTitle: Annotated[
+        Optional[str],
+        Field(
+            alias="subscriptionTitle", description="Optional title for the subscription"
+        ),
+    ] = None
+    subscriptionConfig: Annotated[
+        List[SubscriptionConfigItem],
+        Field(
+            alias="subscriptionConfig",
+            description="List of subscription configurations",
+        ),
+    ] = None
 
 
 class Subscription(BaseModel):

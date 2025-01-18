@@ -10,6 +10,9 @@ from ofsc.models import (
     CapacityAreaListResponse,
     CapacityCategoryListResponse,
     ItemList,
+    SubscriptionConfig,
+    SubscriptionConfigItem,
+    SubscriptionListResponse,
     Translation,
     TranslationList,
     Workskill,
@@ -407,3 +410,113 @@ def test_capacity_category_model_list():
 
 
 # endregion
+# region Subscriptions
+
+subscription_config_item = {
+    "events": ["activityUpdated"],
+    "filterExpression": "not (activityType in ['IN','TC','BR']) and (event.user != 'ics_integ') and customerName != ''",
+}
+
+
+def test_subscription_config_item_model_base():
+    obj = SubscriptionConfigItem.model_validate(subscription_config_item)
+    assert obj.events == subscription_config_item["events"]
+    assert obj.filterExpression == subscription_config_item["filterExpression"]
+
+
+subscription_config = [
+    {
+        "events": ["activityUpdated"],
+        "filterExpression": "not (activityType in ['IN','TC','BR']) and (event.user != 'ics_integ') and customerName != ''",
+    },
+    {
+        "events": ["activityCompleted"],
+        "fields": ["firstManualOperationUser", "endTime"],
+    },
+]
+
+
+def test_subscription_config_model_base():
+    obj = SubscriptionConfig.model_validate(subscription_config)
+    assert obj[0].events == subscription_config[0]["events"]
+    assert obj[1].fields == subscription_config[1]["fields"]
+
+
+subscription_list = {
+    "items": [
+        {
+            "subscriptionId": "356a192b7913b04c54574d18c28d46e6395428ab",
+            "subscriptionTitle": "My first subscription",
+            "applicationId": "middleware1",
+            "createdTime": "2017-05-04 07:39:19",
+            "expirationTime": "2017-05-05 17:39:19",
+            "subscriptionConfig": [
+                {
+                    "events": ["activityUpdated"],
+                    "filterExpression": "not (activityType in ['IN','TC','BR']) and (event.user != 'ics_integ') and customerName != ''",
+                }
+            ],
+        },
+        {
+            "subscriptionId": "da4b9237bacccdf19c0760cab7aec4a8359010b0",
+            "subscriptionTitle": "My second subscription",
+            "applicationId": "middleware1",
+            "createdTime": "2017-05-04 07:39:19",
+            "expirationTime": "2017-05-05 17:39:19",
+            "subscriptionConfig": [
+                {
+                    "events": ["activityCompleted"],
+                    "fields": ["firstManualOperationUser", "endTime"],
+                }
+            ],
+        },
+    ]
+}
+
+
+def test_subscription_model_list():
+    objList = SubscriptionListResponse.model_validate(subscription_list)
+    assert (
+        objList.items[0].subscriptionId
+        == subscription_list["items"][0]["subscriptionId"]
+    )
+    assert (
+        objList.items[0].subscriptionTitle
+        == subscription_list["items"][0]["subscriptionTitle"]
+    )
+    assert (
+        objList.items[0].applicationId == subscription_list["items"][0]["applicationId"]
+    )
+    assert objList.items[0].createdTime == subscription_list["items"][0]["createdTime"]
+    assert (
+        objList.items[0].expirationTime
+        == subscription_list["items"][0]["expirationTime"]
+    )
+    assert (
+        objList.items[0].subscriptionConfig[0].events
+        == subscription_list["items"][0]["subscriptionConfig"][0]["events"]
+    )
+    assert (
+        objList.items[1].subscriptionId
+        == subscription_list["items"][1]["subscriptionId"]
+    )
+    assert (
+        objList.items[1].subscriptionTitle
+        == subscription_list["items"][1]["subscriptionTitle"]
+    )
+    assert (
+        objList.items[1].applicationId == subscription_list["items"][1]["applicationId"]
+    )
+    assert objList.items[1].createdTime == subscription_list["items"][1]["createdTime"]
+    assert (
+        objList.items[1].expirationTime
+        == subscription_list["items"][1]["expirationTime"]
+    )
+    assert (
+        objList.items[1].subscriptionConfig[0].events
+        == subscription_list["items"][1]["subscriptionConfig"][0]["events"]
+    )
+    assert (
+        objList.items[1].subscriptionConfig[0].fields
+        == subscription_list["items"][1]["subscriptionConfig"][0]["fields"]
+    )
