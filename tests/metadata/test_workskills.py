@@ -2,10 +2,9 @@ from ofsc.common import FULL_RESPONSE, OBJ_RESPONSE
 from ofsc.models import (
     Condition,
     SharingEnum,
-    WorkSkill,
     Workskill,
     WorkskillCondition,
-    WorkSkillList,
+    WorkskillList,
     WorskillConditionList,
 )
 
@@ -30,7 +29,7 @@ def test_get_workskills(instance, demo_data):
 
 def test_get_workskills_obj(instance):
     response = instance.metadata.get_workskills()
-    assert isinstance(response, WorkSkillList)
+    assert isinstance(response, WorkskillList)
     assert len(response.items) > 0
 
 
@@ -52,7 +51,7 @@ def test_get_workskill(instance):
 
 def test_get_workskill_obj(instance):
     response = instance.metadata.get_workskill("COM")
-    assert isinstance(response, WorkSkill)
+    assert isinstance(response, Workskill)
     assert response.label == "COM"
 
 
@@ -99,7 +98,7 @@ def test_get_workskill_conditions(instance, pp, demo_data):
         ws_item = WorkskillCondition.model_validate(item)
         assert ws_item.label == item["label"]
         for condition in ws_item.conditions:
-            assert type(condition) == Condition
+            assert isinstance(condition, Condition)
 
 
 def test_replace_workskill_conditions(instance, pp, demo_data):

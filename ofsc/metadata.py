@@ -19,6 +19,8 @@ from .models import (
     InventoryType,
     InventoryTypeListResponse,
     OFSApi,
+    Organization,
+    OrganizationListResponse,
     Property,
     Workskill,
     WorkSkillGroup,
@@ -28,7 +30,6 @@ from .models import (
 
 
 class OFSMetadata(OFSApi):
-
     # region Properties
 
     ## 202202 Properties and file properties
@@ -368,3 +369,19 @@ class OFSMetadata(OFSApi):
         return response
 
     # endregion Applications
+    # region Organizations
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=OrganizationListResponse
+    )
+    def get_organizations(self):
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/organizations")
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=Organization)
+    def get_organization(self, label: str):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/organizations/{label}")
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    # endregion Organizations

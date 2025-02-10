@@ -664,3 +664,25 @@ class Application(BaseModel):
 
 class ApplicationListResponse(OFSResponseList[Application]):
     pass
+
+
+class Organization(BaseModel):
+    label: str
+    name: str
+    translations: TranslationList
+    type: str
+
+
+class OrganizationList(RootModel[List[Organization]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class OrganizationListResponse(OFSResponseList[Organization]):
+    pass
+
+
+# endregion
