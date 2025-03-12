@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ofsc"
-version = "2.7.0"
+version = "2.8.0"
 license = "MIT"
 description = "Python wrapper for Oracle Field Service API"
 authors = ["Borja Toron <borja.toron@gmail.com>"]
@@ -36,4 +36,4 @@ log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(linen
 log_cli_date_format = "%Y-%m-%d %H:%M:%S"
 
 [tool.pytest_env]
-RUN_ENV=1
+RUN_ENV = 1

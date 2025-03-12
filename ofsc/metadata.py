@@ -1,5 +1,6 @@
 import urllib
 from pathlib import Path
+from typing import Tuple
 from urllib.parse import urljoin
 
 import requests
@@ -15,6 +16,7 @@ from .models import (
     CapacityAreaListResponse,
     CapacityCategory,
     CapacityCategoryListResponse,
+    EnumerationValue,
     EnumerationValueList,
     InventoryType,
     InventoryTypeListResponse,
@@ -78,6 +80,19 @@ class OFSMetadata(OFSApi):
             headers=self.headers,
             params=params,
         )
+        return response
+
+    # 202503 Update or create Enumeration Value
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=EnumerationValueList)
+    def create_or_update_enumeration_value(
+        self, label: str, value: Tuple[EnumerationValue, ...]
+    ):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/properties/{label}/enumerationList",
+        )
+        data = {"items": [item.model_dump() for item in value]}
+        response = requests.put(url, headers=self.headers, json=data)
         return response
 
     # endregion
