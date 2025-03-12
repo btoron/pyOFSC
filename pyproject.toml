@@ -36,4 +36,4 @@ log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(linen
 log_cli_date_format = "%Y-%m-%d %H:%M:%S"
 
 [tool.pytest_env]
-RUN_ENV=1
+RUN_ENV = 1
