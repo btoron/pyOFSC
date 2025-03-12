@@ -111,3 +111,31 @@ def test_get_enumeration_values_obj(instance: OFSC):
     for value in response.items:
         assert isinstance(value, EnumerationValue)
         assert value.map.get("en") is not None
+
+
+def test_create_or_update_enumeration_value(instance: OFSC):
+    # Get existing values for property XA_SEVERITY
+    label = "XA_SEVERITY"
+    response = instance.metadata.get_enumeration_values(label)
+    assert isinstance(response, EnumerationValueList)
+    existing_values = response.items
+    assert len(existing_values) > 0
+
+    # Create a new value
+    new_value = EnumerationValue(
+        label="NEW_VALUE",
+        active=True,
+        translations=[Translation(name="New Value", language="en")],
+    )
+    new_value_list = existing_values + [new_value]
+    response = instance.metadata.create_or_update_enumeration_value(
+        label, new_value_list
+    )
+    # Verify the new value was added
+    response = instance.metadata.get_enumeration_values("XA_SEVERITY")
+    assert isinstance(response, EnumerationValueList)
+    updated_values = response.items
+    assert len(updated_values) == len(existing_values) + 1
+    assert any(value.label == "NEW_VALUE" for value in updated_values)
+
+    # Re
