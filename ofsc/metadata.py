@@ -80,6 +80,17 @@ class OFSMetadata(OFSApi):
         )
         return response
 
+    # 202503 Update or create Enumeration Value
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=EnumerationValueList)
+    def create_or_update_enumeration_value(self, value: EnumerationValueList):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/properties/{value.label}/enumerationList",
+        )
+        data = {"items": [item.model_dump() for item in value.items]}
+        response = requests.put(url, headers=self.headers, data=data)
+        return response
+
     # endregion
 
     # 202208 Skill management
