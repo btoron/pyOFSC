@@ -1,10 +1,16 @@
 import json
 import logging
+from datetime import date, timedelta
 
 import pytest
 
 from ofsc.common import FULL_RESPONSE, OBJ_RESPONSE
-from ofsc.models import ResourceUsersListResponse
+from ofsc.models import (
+    CalendarView,
+    CalendarViewItem,
+    CalendarViewShift,
+    ResourceUsersListResponse,
+)
 
 
 @pytest.fixture
@@ -281,3 +287,41 @@ def test_add_resource_users(instance, demo_data):
     assert len(response["items"]) == 2
     assert response["items"][0]["login"] == "william.arndt"
     assert response["items"][1]["login"] == "admin"
+
+
+def test_get_calendar_view_basic(instance, demo_data):
+    raw_response = instance.core.get_resource_calendar(
+        "33001",
+        dateFrom=date.today(),
+        dateTo=date.today() + timedelta(days=30),
+        response_type=FULL_RESPONSE,
+    )
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    assert isinstance(response, dict)
+    # Delete the links
+    del response["links"]
+    assert len(response) == 31
+    for day in response:
+        assert isinstance(response[day], dict)
+        for label, record in response[day].items():
+            assert isinstance(label, str)
+            assert label in ["regular", "on-call"]
+            data = CalendarViewItem.model_validate(record)
+
+
+def test_get_calendar_view_object(instance, demo_data):
+    response: CalendarView = instance.core.get_resource_calendar(
+        "33008",
+        dateFrom=date.today(),
+        dateTo=date.today() + timedelta(days=30),
+        response_type=OBJ_RESPONSE,
+    )
+    assert isinstance(response, CalendarView)
+    for day, shift in response.root.items():
+        assert isinstance(day, str)
+        assert isinstance(response[day], CalendarViewShift)
+        if shift.regular is not None:
+            assert isinstance(shift.regular, CalendarViewItem)
+        if shift.on_call is not None:
+            assert isinstance(shift.on_call, CalendarViewItem)
