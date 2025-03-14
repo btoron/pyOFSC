@@ -1,12 +1,13 @@
 import base64
 import logging
 from enum import Enum
-from typing import Any, Generic, List, Optional, TypeVar
+from typing import Any, Dict, Generic, List, Optional, TypeVar
 from urllib.parse import urljoin
 
 import requests
 from cachetools import TTLCache, cached
 from pydantic import (
+    AliasChoices,
     BaseModel,
     ConfigDict,
     Field,
@@ -683,6 +684,54 @@ class OrganizationList(RootModel[List[Organization]]):
 
 class OrganizationListResponse(OFSResponseList[Organization]):
     pass
+
+
+# endregion
+# region 202411 Calendars
+
+
+class CalendarViewItemRecordType(str, Enum):
+    schedule = "schedule"
+    shift = "shift"
+    extra_shift = "extra_shift"
+    working = "working"
+    extra_working = "extra_working"
+    non_working = "non-working"
+    error = "error"
+
+
+class CalendarViewItem(BaseModel):
+    comments: Optional[str] = None
+    nonWorkingReason: Optional[str] = None
+    points: Optional[int] = None
+    recordType: CalendarViewItemRecordType
+    scheduleLabel: Optional[str] = None
+    shiftLabel: Optional[str] = None
+    workTimeEnd: Optional[str] = None
+    workTimeStart: Optional[str] = None
+
+
+class CalendarViewList(RootModel[List[CalendarViewItem]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class CalendarViewShift(BaseModel):
+    regular: Optional[CalendarViewItem] = Field(default=None)
+    on_call: Optional[CalendarViewItem] = Field(
+        default=None, validation_alias=AliasChoices("onCall", "on-call")
+    )
+
+
+class CalendarView(RootModel[Dict[str, CalendarViewShift]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
 
 
 # endregion

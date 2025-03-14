@@ -1,11 +1,12 @@
 import json
 import logging
+from datetime import date
 from urllib.parse import urljoin
 
 import requests
 
 from .common import FULL_RESPONSE, OBJ_RESPONSE, wrap_return
-from .models import BulkUpdateRequest, OFSApi, ResourceUsersListResponse
+from .models import BulkUpdateRequest, CalendarView, OFSApi, ResourceUsersListResponse
 
 
 class OFSCore(OFSApi):
@@ -239,6 +240,18 @@ class OFSCore(OFSApi):
             f"/rest/ofscCore/v1/resources/{str(resource_id)}/workSchedules",
         )
         response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=CalendarView)
+    def get_resource_calendar(self, resource_id: str, dateFrom: date, dateTo: date):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{str(resource_id)}/workSchedules/calendarView",
+        )
+        params = {}
+        params["dateFrom"] = dateFrom.strftime("%Y-%m-%d")
+        params["dateTo"] = dateTo.strftime("%Y-%m-%d")
+        response = requests.get(url, headers=self.headers, params=params)
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])

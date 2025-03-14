@@ -1,6 +1,7 @@
 import logging
 from functools import wraps
 
+import pydantic
 import requests
 
 from .exceptions import OFSAPIException
@@ -29,7 +30,9 @@ def wrap_return(*decorator_args, **decorator_kwargs):
             )
             func_kwargs.pop("response_type", None)
             expected_codes = decorator_kwargs.get("expected_codes", [200])
-            model = func_kwargs.get("model", decorator_kwargs.get("model", None))
+            model: pydantic.BaseModel | None = func_kwargs.get(
+                "model", decorator_kwargs.get("model", None)
+            )
             func_kwargs.pop("model", None)
 
             response = func(*func_args, **func_kwargs)
@@ -49,6 +52,9 @@ def wrap_return(*decorator_args, **decorator_kwargs):
                         case _:
                             data_response = response.json()
                             if config.auto_model and model is not None:
+                                # Remove the links unless there is a field called links in the model
+                                if not hasattr(model, "links"):
+                                    del data_response["links"]
                                 return model.model_validate(data_response)
                             else:
                                 return data_response
