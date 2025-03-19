@@ -77,3 +77,13 @@ def test_demo_data(demo_data):
     assert "get_file_property" in demo_data.keys()
     # Assert that the demo_data returns the newest data
     assert demo_data["get_file_property"]["activity_id"] == 3954799
+
+
+def test_generic_call_get(instance):
+    raw_response = instance.core.call(
+        method="GET", partialUrl="/rest/ofscCore/v1/events/subscriptions"
+    )
+    assert isinstance(raw_response, requests.Response)
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    assert "totalResults" in response.keys()

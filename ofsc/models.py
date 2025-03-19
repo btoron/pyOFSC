@@ -113,6 +113,16 @@ class OFSApi:
         )
         return response
 
+    # Wrapper for requests not included in the standard methods
+    def call(
+        self, *, method: str, partialUrl: str, additionalHeaders: dict = {}, **kwargs
+    ) -> requests.Response:
+        headers = self.headers | additionalHeaders
+        url = urljoin(self.baseUrl, partialUrl)
+        headers = self.headers
+        response = requests.request(method, url, headers=headers, **kwargs)
+        return response
+
     @property
     def headers(self):
         self._headers = {}
