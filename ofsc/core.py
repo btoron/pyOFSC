@@ -1,11 +1,19 @@
 import json
 import logging
+from datetime import date
 from urllib.parse import urljoin
 
 import requests
 
 from .common import FULL_RESPONSE, OBJ_RESPONSE, wrap_return
-from .models import BulkUpdateRequest, OFSApi, ResourceUsersListResponse
+from .models import (
+    BulkUpdateRequest,
+    CalendarView,
+    OFSApi,
+    ResourceUsersListResponse,
+    ResourceWorkScheduleItem,
+    ResourceWorkScheduleResponse,
+)
 
 
 class OFSCore(OFSApi):
@@ -232,13 +240,42 @@ class OFSCore(OFSApi):
         response = requests.delete(url, headers=self.headers)
         return response
 
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
-    def get_resource_workschedules(self, resource_id):
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=ResourceWorkScheduleResponse
+    )
+    def get_resource_workschedules(self, resource_id, actualDate: date):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{str(resource_id)}/workSchedules?actualDate={actualDate.isoformat()}",
+        )
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=ResourceWorkScheduleResponse
+    )
+    def set_resource_workschedules(self, resource_id, data: ResourceWorkScheduleItem):
         url = urljoin(
             self.baseUrl,
             f"/rest/ofscCore/v1/resources/{str(resource_id)}/workSchedules",
         )
-        response = requests.get(url, headers=self.headers)
+        response = requests.post(
+            url,
+            headers=self.headers,
+            data=data.model_dump_json(exclude_none=True),
+        )
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=CalendarView)
+    def get_resource_calendar(self, resource_id: str, dateFrom: date, dateTo: date):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{str(resource_id)}/workSchedules/calendarView",
+        )
+        params = {}
+        params["dateFrom"] = dateFrom.strftime("%Y-%m-%d")
+        params["dateTo"] = dateTo.strftime("%Y-%m-%d")
+        response = requests.get(url, headers=self.headers, params=params)
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
@@ -507,6 +544,7 @@ class OFSCore(OFSApi):
             headers=headers,
         )
         return response
+        headers["Accept"] = mediaType
         response = requests.get(
             url,
             headers=headers,

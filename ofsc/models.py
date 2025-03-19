@@ -1,12 +1,14 @@
 import base64
 import logging
+from datetime import date
 from enum import Enum
-from typing import Any, Generic, List, Optional, TypeVar
+from typing import Any, Dict, Generic, List, Optional, TypeVar
 from urllib.parse import urljoin
 
 import requests
 from cachetools import TTLCache, cached
 from pydantic import (
+    AliasChoices,
     BaseModel,
     ConfigDict,
     Field,
@@ -652,6 +654,10 @@ class EnumerationValueList(OFSResponseList[EnumerationValue]):
     pass
 
 
+# endregion
+# region 202412 Applications
+
+
 class Application(BaseModel):
     label: str
     name: str
@@ -682,6 +688,121 @@ class OrganizationList(RootModel[List[Organization]]):
 
 
 class OrganizationListResponse(OFSResponseList[Organization]):
+    pass
+
+
+# endregion
+# region 202411 Calendars
+class RecurrenceType(str, Enum):
+    daily = "daily"
+    weekly = "weekly"
+    everyday = "everyday"
+    yearly = "yearly"
+
+
+class WeekDay(str, Enum):
+    Sunday = "Sun"
+    Monday = "Mon"
+    Tuesday = "Tue"
+    Wednesday = "Wed"
+    Thursday = "Thu"
+    Friday = "Fri"
+    Saturday = "Sat"
+
+
+class Recurrence(BaseModel):
+    dayFrom: Optional[date] = None
+    dayTo: Optional[date] = None
+    recurEvery: int = Field(ge=1, le=255)
+    recurrenceType: RecurrenceType
+    weekDays: Optional[List[str]] = None
+
+    @model_validator(mode="after")
+    def check_week_days(cls, values):
+        if values.recurrenceType == RecurrenceType.weekly and not values.weekDays:
+            raise ValueError("weekDays is required for weekly recurrence")
+        if values.recurrenceType == RecurrenceType.yearly and not values.dayFrom:
+            raise ValueError("dayFrom is required for yearly recurrence")
+        if values.recurrenceType == RecurrenceType.yearly and not values.dayTo:
+            raise ValueError("dayTo is required for yearly recurrence")
+        return values
+
+
+class CalendarViewItemRecordType(str, Enum):
+    schedule = "schedule"
+    shift = "shift"
+    extra_shift = "extra_shift"
+    working = "working"
+    extra_working = "extra_working"
+    non_working = "non-working"
+    error = "error"
+
+
+class CalendarViewItem(BaseModel):
+    comments: Optional[str] = None
+    nonWorkingReason: Optional[str] = None
+    points: Optional[int] = None
+    recordType: CalendarViewItemRecordType
+    scheduleLabel: Optional[str] = None
+    shiftLabel: Optional[str] = None
+    workTimeEnd: Optional[str] = None
+    workTimeStart: Optional[str] = None
+
+
+class CalendarViewList(RootModel[List[CalendarViewItem]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class CalendarViewShift(BaseModel):
+    regular: Optional[CalendarViewItem] = Field(default=None)
+    on_call: Optional[CalendarViewItem] = Field(
+        default=None, validation_alias=AliasChoices("onCall", "on-call")
+    )
+
+
+class CalendarView(RootModel[Dict[str, CalendarViewShift]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+# endregion
+# region 202503 ResourceWorkSchedule
+
+
+class ResourceWorkScheduleItem(BaseModel):
+    comments: Optional[str] = None
+    endDate: Optional[date] = None
+    isWorking: Optional[bool] = None
+    nonWorkingReason: Optional[str] = None
+    points: Optional[int] = None
+    recordType: CalendarViewItemRecordType
+    recurrence: Optional[Recurrence] = Recurrence(recurEvery=1, recurrenceType="daily")
+    scheduleItemId: Optional[int] = None
+    scheduleLabel: Optional[str] = None
+    scheduleShifts: Optional[List[CalendarViewItem]] = None
+    shiftLabel: Optional[str] = None
+    shiftType: Optional[str] = None
+    startDate: Optional[date] = date.today()
+    workTimeEnd: Optional[str] = None
+    workTimeStart: Optional[str] = None
+
+
+class ResourceWorkScheduleResponseList(RootModel[List[ResourceWorkScheduleItem]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class ResourceWorkScheduleResponse(OFSResponseList[ResourceWorkScheduleItem]):
     pass
 
 
