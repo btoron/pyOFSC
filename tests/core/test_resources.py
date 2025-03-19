@@ -10,6 +10,8 @@ from ofsc.models import (
     CalendarViewItem,
     CalendarViewShift,
     ResourceUsersListResponse,
+    ResourceWorkScheduleItem,
+    ResourceWorkScheduleResponse,
 )
 
 
@@ -325,3 +327,29 @@ def test_get_calendar_view_object(instance, demo_data):
             assert isinstance(shift.regular, CalendarViewItem)
         if shift.on_call is not None:
             assert isinstance(shift.on_call, CalendarViewItem)
+
+
+def test_get_resource_workschedules_base(instance):
+    raw_response = instance.core.get_resource_workschedules(
+        "33003", actualDate=date.today(), response_type=FULL_RESPONSE
+    )
+    assert raw_response.status_code == 200
+
+
+def test_get_resource_workschedules_obj(instance):
+    response = instance.core.get_resource_workschedules(
+        "33003", actualDate=date.today(), response_type=OBJ_RESPONSE
+    )
+    assert isinstance(response, ResourceWorkScheduleResponse)
+    for item in response.items:
+        assert isinstance(item, ResourceWorkScheduleItem)
+
+
+def test_set_resource_workschedules_obj(instance, request_logging):
+    schedule = ResourceWorkScheduleItem(shiftLabel="9-18", recordType="shift")
+    response = instance.core.set_resource_workschedules(
+        "33003",
+        data=schedule,
+        response_type=FULL_RESPONSE,
+    )
+    assert response.status_code == 200, f"Error: {response.json()}"
