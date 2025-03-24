@@ -39,6 +39,21 @@ class OFSResponseList(BaseModel, Generic[T]):
             self.totalResults = len(self.items)
         return self
 
+    def __len__(self):
+        return len(self.items)
+
+    def __iter__(self):
+        return iter(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+    def __contains__(self, item):
+        return item in self.items
+
+    def __next__(self):
+        return next(self.items)
+
 
 class OFSConfig(BaseModel):
     clientID: str
@@ -81,7 +96,7 @@ class OFSApi:
         self._config = config
 
     @property
-    def config(self):
+    def config(self) -> OFSConfig:
         return self._config
 
     @property
@@ -332,7 +347,39 @@ class ResourceTypeList(RootModel[List[ResourceType]]):
 
 
 # Core / Activities
-class BulkUpdateActivityItem(BaseModel):
+class Activity(BaseModel):
+    activityId: Optional[int] = None
+    activityType: Optional[str] = None
+    date: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class GetActivityRequest(BaseModel):
+    dateFrom: Optional[date] = None
+    dateTo: Optional[date] = None
+    fields: Optional[list[str]] = None
+    includeChildren: Optional[str] = "all"
+    offset: Optional[int] = 0
+    includeNonScheduled: Optional[bool] = False
+    limit: Optional[int] = 5000
+    q: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+    resources: list[str]
+
+    @model_validator(mode="after")
+    def check_date_range(self):
+        if self.dateFrom and self.dateTo and self.dateFrom > self.dateTo:
+            raise ValueError("dateFrom must be before dateTo")
+        return self
+        if not self.includeNonScheduled:
+            if self.dateFrom is None or self.dateTo is None:
+                raise ValueError(
+                    "dateFrom and dateTo are required when includeNonScheduled is False"
+                )
+        return self
+
+
+class BulkUpdateActivityItem(Activity):
     activityId: Optional[int] = None
     activityType: Optional[str] = None
     date: Optional[str] = None

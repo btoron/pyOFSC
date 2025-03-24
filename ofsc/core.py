@@ -1,15 +1,17 @@
 import json
 import logging
-from datetime import date
+from datetime import date, timedelta
 from urllib.parse import urljoin
 
 import requests
 
 from .common import FULL_RESPONSE, OBJ_RESPONSE, wrap_return
 from .models import (
+    Activity,
     BulkUpdateRequest,
     CalendarView,
     OFSApi,
+    OFSResponseList,
     ResourceUsersListResponse,
     ResourceWorkScheduleItem,
     ResourceWorkScheduleResponse,
@@ -414,20 +416,29 @@ class OFSCore(OFSApi):
     # endregion
     ## 202202 Helper functions
     def get_all_activities(
-        self, root, date_from, date_to, activity_fields, initial_offset=0, limit=5000
-    ):
+        self,
+        *,
+        root: str = None,
+        date_from: date = date.today() - timedelta(days=7),
+        date_to: date = date.today() + timedelta(days=7),
+        activity_fields: list[str] = ["activityId"],
+        initial_offset: int = 0,
+        include_non_scheduled: bool = False,
+        limit: int = 5000,
+    ) -> OFSResponseList[Activity]:
+        if root is None:
+            root = self.config.root
         items = []
         hasMore = True
         offset = initial_offset
         while hasMore:
             request_params = {
-                "dateFrom": date_from,
-                "dateTo": date_to,
+                "dateFrom": date_from.isoformat(),
+                "dateTo": date_to.isoformat(),
                 "resources": root,
                 "includeChildren": "all",
-                # "includeNonScheduled": "true",
-                # "q":"status=='notdone'",
-                "fields": activity_fields,
+                "includeNonScheduled": "true" if include_non_scheduled else "false",
+                "fields": ",".join(activity_fields),
                 "offset": offset,
                 "limit": limit,
             }
@@ -435,6 +446,7 @@ class OFSCore(OFSApi):
             response = self.get_activities(
                 response_type=FULL_RESPONSE, params=request_params
             )
+            print(response.json())
             response_body = response.json()
             if "items" in response_body.keys():
                 response_count = len(response_body["items"])
@@ -452,7 +464,7 @@ class OFSCore(OFSApi):
                     "{},{},{}".format(offset, response_count, response.elapsed)
                 )
             offset = offset + response_count
-        return items
+        return OFSResponseList(items=items)
 
     def get_all_properties(self, initial_offset=0, limit=100):
         items = []
@@ -538,12 +550,6 @@ class OFSCore(OFSApi):
             f"/rest/ofscCore/v1/activities/{activityId}/{label}",
         )
         headers = self.headers
-        headers["Accept"] = mediaType
-        response = requests.get(
-            url,
-            headers=headers,
-        )
-        return response
         headers["Accept"] = mediaType
         response = requests.get(
             url,
