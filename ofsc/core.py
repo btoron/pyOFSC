@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import date, timedelta
+from typing import Optional
 from urllib.parse import urljoin
 
 import requests
@@ -421,7 +422,14 @@ class OFSCore(OFSApi):
         root: str = None,
         date_from: date = date.today() - timedelta(days=7),
         date_to: date = date.today() + timedelta(days=7),
-        activity_fields: list[str] = ["activityId"],
+        activity_fields: list[str] = [
+            "activityId",
+            "activityType",
+            "date",
+            "resourceId",
+            "status",
+        ],
+        additional_fields: Optional[list[str]] = None,
         initial_offset: int = 0,
         include_non_scheduled: bool = False,
         limit: int = 5000,
@@ -433,8 +441,8 @@ class OFSCore(OFSApi):
         offset = initial_offset
         while hasMore:
             request_params = {
-                "dateFrom": date_from.isoformat(),
-                "dateTo": date_to.isoformat(),
+                "dateFrom": date_from.isoformat() if date_from else None,
+                "dateTo": date_to.isoformat() if date_to else None,
                 "resources": root,
                 "includeChildren": "all",
                 "includeNonScheduled": "true" if include_non_scheduled else "false",

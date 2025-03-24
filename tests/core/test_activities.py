@@ -18,6 +18,15 @@ def test_get_all_activities(instance):
     assert len(response) > 0
 
 
+def test_get_all_activities_with_date_range(instance):
+    response = instance.core.get_all_activities(
+        date_from=None,
+        date_to=None,
+        include_non_scheduled=True,
+    )
+    assert len(response) > 0
+
+
 def test_get_activity_error(instance):
     raw_response = instance.core.get_activity(99999, response_type=FULL_RESPONSE)
     assert raw_response.status_code == 404
