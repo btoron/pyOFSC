@@ -11,6 +11,7 @@ from .models import (
     Activity,
     BulkUpdateRequest,
     CalendarView,
+    Location,
     LocationListResponse,
     OFSApi,
     OFSResponseList,
@@ -345,13 +346,35 @@ class OFSCore(OFSApi):
         response = requests.post(url, headers=self.headers, data=data)
         return response
 
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=LocationListResponse)
-    def get_resource_locations(self, resource_id):
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[201], model=Location)
+    def create_resource_location(self, resource_id, *, location: Location):
         url = urljoin(
             self.baseUrl,
             f"/rest/ofscCore/v1/resources/{str(resource_id)}/locations",
         )
-        response = requests.get(url, headers=self.headers)
+        print(
+            location.model_dump(
+                exclude="locationId", exclude_unset=True, exclude_none=True
+            )
+        )
+        response = requests.post(
+            url,
+            headers=self.headers,
+            data=json.dumps(
+                location.model_dump(
+                    exclude="locationId", exclude_unset=True, exclude_none=True
+                )
+            ),
+        )
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[204], model=LocationListResponse)
+    def delete_resource_location(self, resource_id, location_id):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{str(resource_id)}/locations/{location_id}",
+        )
+        response = requests.delete(url, headers=self.headers)
         return response
 
     # endregion

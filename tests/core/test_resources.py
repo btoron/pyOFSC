@@ -372,3 +372,30 @@ def test_get_resource_locations_obj(instance):
     assert isinstance(response, LocationListResponse)
     for item in response.items:
         assert isinstance(item, Location)
+
+
+def test_create_resource_location(instance, request_logging):
+    location = Location(
+        address="3232 Coral Way",
+        city="Miami",
+        state="FL",
+        postalCode="33145",
+        label="HOME",
+    )
+    raw_response = instance.core.create_resource_location(
+        "FLUSA", location=location, response_type=FULL_RESPONSE
+    )
+    assert raw_response.status_code == 201, raw_response.json()
+    response = raw_response.json()
+    assert [
+        response[key] == location.model_dump()[key]
+        for key in location.model_dump(
+            exclude_defaults=True, exclude_none=True, exclude_unset=True
+        ).keys()
+    ]
+    assert response["locationId"] is not None
+    # Reset the location
+    raw_response = instance.core.delete_resource_location(
+        "FLUSA", location_id=response["locationId"], response_type=FULL_RESPONSE
+    )
+    assert raw_response.status_code == 204
