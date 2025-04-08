@@ -11,6 +11,7 @@ from .models import (
     Activity,
     BulkUpdateRequest,
     CalendarView,
+    LocationListResponse,
     OFSApi,
     OFSResponseList,
     ResourceUsersListResponse,
@@ -342,6 +343,15 @@ class OFSCore(OFSApi):
             "/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkSchedules",
         )
         response = requests.post(url, headers=self.headers, data=data)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=LocationListResponse)
+    def get_resource_locations(self, resource_id):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{str(resource_id)}/locations",
+        )
+        response = requests.get(url, headers=self.headers)
         return response
 
     # endregion

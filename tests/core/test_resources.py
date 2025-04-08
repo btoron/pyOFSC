@@ -9,6 +9,8 @@ from ofsc.models import (
     CalendarView,
     CalendarViewItem,
     CalendarViewShift,
+    Location,
+    LocationListResponse,
     ResourceUsersListResponse,
     ResourceWorkScheduleItem,
     ResourceWorkScheduleResponse,
@@ -353,3 +355,20 @@ def test_set_resource_workschedules_obj(instance, request_logging):
         response_type=FULL_RESPONSE,
     )
     assert response.status_code == 200, f"Error: {response.json()}"
+
+
+def test_get_resource_locations_base(instance):
+    raw_response = instance.core.get_resource_locations(
+        "FLUSA", response_type=FULL_RESPONSE
+    )
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    assert response["totalResults"] == 1
+    assert response["items"][0]["postalCode"] == "32817"
+
+
+def test_get_resource_locations_obj(instance):
+    response = instance.core.get_resource_locations("FLUSA", response_type=OBJ_RESPONSE)
+    assert isinstance(response, LocationListResponse)
+    for item in response.items:
+        assert isinstance(item, Location)
