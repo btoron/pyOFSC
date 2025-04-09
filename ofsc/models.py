@@ -888,5 +888,22 @@ class LocationList(RootModel[List[Location]]):
         return self.root[item]
 
 
+class AssignedLocation(BaseModel):
+    start: Optional[int] = None
+    end: Optional[int] = None
+    homeZoneCenter: Optional[int] = None
+
+
+class AssignedLocationsResponse(BaseModel):
+    mon: Optional[AssignedLocation] = None
+    tue: Optional[AssignedLocation] = None
+    wed: Optional[AssignedLocation] = None
+    thu: Optional[AssignedLocation] = None
+    fri: Optional[AssignedLocation] = None
+    sat: Optional[AssignedLocation] = None
+    sun: Optional[AssignedLocation] = None
+    model_config = ConfigDict(extra="allow")
+
+
 class LocationListResponse(OFSResponseList[Location]):
     pass
