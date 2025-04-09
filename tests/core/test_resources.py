@@ -6,9 +6,13 @@ import pytest
 
 from ofsc.common import FULL_RESPONSE, OBJ_RESPONSE
 from ofsc.models import (
+    AssignedLocation,
+    AssignedLocationsResponse,
     CalendarView,
     CalendarViewItem,
     CalendarViewShift,
+    Location,
+    LocationListResponse,
     ResourceUsersListResponse,
     ResourceWorkScheduleItem,
     ResourceWorkScheduleResponse,
@@ -353,3 +357,106 @@ def test_set_resource_workschedules_obj(instance, request_logging):
         response_type=FULL_RESPONSE,
     )
     assert response.status_code == 200, f"Error: {response.json()}"
+
+
+def test_get_resource_locations_base(instance):
+    raw_response = instance.core.get_resource_locations(
+        "FLUSA", response_type=FULL_RESPONSE
+    )
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    assert response["totalResults"] == 1
+    assert response["items"][0]["postalCode"] == "32817"
+
+
+def test_get_resource_locations_obj(instance):
+    response = instance.core.get_resource_locations("FLUSA", response_type=OBJ_RESPONSE)
+    assert isinstance(response, LocationListResponse)
+    for item in response.items:
+        assert isinstance(item, Location)
+
+
+def test_create_resource_location_basic(instance, request_logging):
+    location = Location(
+        address="3232 Coral Way",
+        city="Miami",
+        state="FL",
+        postalCode="33145",
+        label="HOME",
+    )
+    raw_response = instance.core.create_resource_location(
+        "FLUSA", location=location, response_type=FULL_RESPONSE
+    )
+    assert raw_response.status_code == 201, raw_response.json()
+    response = raw_response.json()
+    assert [
+        response[key] == location.model_dump()[key]
+        for key in location.model_dump(
+            exclude_defaults=True, exclude_none=True, exclude_unset=True
+        ).keys()
+    ]
+    assert response["locationId"] is not None
+    # Reset the location
+    raw_response = instance.core.delete_resource_location(
+        "FLUSA", location_id=response["locationId"], response_type=FULL_RESPONSE
+    )
+    assert raw_response.status_code == 204
+
+
+def test_create_resource_location_obj(instance, request_logging):
+    location = Location(
+        address="3232 Coral Way",
+        city="Miami",
+        state="FL",
+        postalCode="33145",
+        label="HOME",
+    )
+    response = instance.core.create_resource_location("FLUSA", location=location)
+    assert isinstance(response, Location)
+    # Reset the location
+    instance.core.delete_resource_location(
+        "FLUSA", location_id=response.locationId, response_type=FULL_RESPONSE
+    )
+
+
+def test_get_assigned_locations_basic(instance):
+    raw_response = instance.core.get_assigned_locations(
+        "33003", response_type=FULL_RESPONSE
+    )
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    assert isinstance(response, dict)
+
+
+def test_get_assigned_locations_obj(instance):
+    response = instance.core.get_assigned_locations("33003", response_type=OBJ_RESPONSE)
+    assert isinstance(response, AssignedLocationsResponse)
+
+
+def test_set_assigned_locations_obj(instance):
+    location = Location(
+        address="3232 Coral Way",
+        city="Miami",
+        state="FL",
+        postalCode="33145",
+        label="HOME",
+    )
+    # Create the location in the resource 33008
+    created_location = instance.core.create_resource_location(
+        "33008", location=location
+    )
+    assert isinstance(created_location, Location)
+
+    # Set the assigned location only for mondays
+    assigned_location = AssignedLocationsResponse(
+        mon=AssignedLocation(start=created_location.locationId, end=None)
+    )
+
+    response = instance.core.set_assigned_locations(
+        "33008",
+        data=assigned_location,
+    )
+    # reset
+    instance.core.delete_resource_location(
+        "33008", location_id=created_location.locationId
+    )

@@ -864,3 +864,46 @@ class ResourceWorkScheduleResponse(OFSResponseList[ResourceWorkScheduleItem]):
 
 
 # endregion
+
+
+# region 202504 Locations
+class Location(BaseModel):
+    label: str
+    postalCode: Optional[str] = ""
+    city: Optional[str] = ""
+    state: Optional[str] = ""
+    address: Optional[str] = ""
+    longitude: Optional[float] = None
+    latitude: Optional[float] = None
+    country: str = "US"
+    locationId: Optional[int] = None
+    status: Optional[str] = None
+
+
+class LocationList(RootModel[List[Location]]):
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class AssignedLocation(BaseModel):
+    start: Optional[int] = None
+    end: Optional[int] = None
+    homeZoneCenter: Optional[int] = None
+
+
+class AssignedLocationsResponse(BaseModel):
+    mon: Optional[AssignedLocation] = None
+    tue: Optional[AssignedLocation] = None
+    wed: Optional[AssignedLocation] = None
+    thu: Optional[AssignedLocation] = None
+    fri: Optional[AssignedLocation] = None
+    sat: Optional[AssignedLocation] = None
+    sun: Optional[AssignedLocation] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class LocationListResponse(OFSResponseList[Location]):
+    pass

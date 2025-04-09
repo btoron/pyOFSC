@@ -9,8 +9,11 @@ import requests
 from .common import FULL_RESPONSE, OBJ_RESPONSE, wrap_return
 from .models import (
     Activity,
+    AssignedLocationsResponse,
     BulkUpdateRequest,
     CalendarView,
+    Location,
+    LocationListResponse,
     OFSApi,
     OFSResponseList,
     ResourceUsersListResponse,
@@ -342,6 +345,80 @@ class OFSCore(OFSApi):
             "/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkSchedules",
         )
         response = requests.post(url, headers=self.headers, data=data)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=LocationListResponse)
+    def get_resource_locations(self, resource_id):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{str(resource_id)}/locations",
+        )
+        response = requests.get(url, headers=self.headers)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[201], model=Location)
+    def create_resource_location(self, resource_id, *, location: Location):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{str(resource_id)}/locations",
+        )
+        print(
+            location.model_dump(
+                exclude="locationId", exclude_unset=True, exclude_none=True
+            )
+        )
+        response = requests.post(
+            url,
+            headers=self.headers,
+            data=json.dumps(
+                location.model_dump(
+                    exclude="locationId", exclude_unset=True, exclude_none=True
+                )
+            ),
+        )
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[204], model=LocationListResponse)
+    def delete_resource_location(self, resource_id, location_id):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{str(resource_id)}/locations/{location_id}",
+        )
+        response = requests.delete(url, headers=self.headers)
+        return response
+
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=AssignedLocationsResponse
+    )
+    def get_assigned_locations(
+        self, resource_id, *, dateFrom: date = date.today(), dateTo: date = date.today()
+    ):
+        params = {
+            "dateFrom": dateFrom.strftime("%Y-%m-%d"),
+            "dateTo": dateTo.strftime("%Y-%m-%d"),
+        }
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{str(resource_id)}/assignedLocations",
+        )
+        response = requests.get(url, headers=self.headers, params=params)
+        return response
+
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=AssignedLocationsResponse
+    )
+    def set_assigned_locations(
+        self, resource_id: str, data: AssignedLocationsResponse
+    ) -> requests.Response:
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{str(resource_id)}/assignedLocations",
+        )
+        response = requests.put(
+            url,
+            headers=self.headers,
+            data=data.model_dump_json(exclude_none=True, exclude_unset=True),
+        )
         return response
 
     # endregion

@@ -29,7 +29,7 @@ def wrap_return(*decorator_args, **decorator_kwargs):
                 "response_type", decorator_kwargs.get("response_type", OBJ_RESPONSE)
             )
             func_kwargs.pop("response_type", None)
-            expected_codes = decorator_kwargs.get("expected_codes", [200])
+            expected_codes = decorator_kwargs.get("expected", [200])
             model: pydantic.BaseModel | None = func_kwargs.get(
                 "model", decorator_kwargs.get("model", None)
             )
@@ -51,6 +51,7 @@ def wrap_return(*decorator_args, **decorator_kwargs):
                             return response.text
                         case _:
                             data_response = response.json()
+                            print(f"{data_response=}")
                             if config.auto_model and model is not None:
                                 # Remove the links unless there is a field called links in the model
                                 if not hasattr(model, "links"):
