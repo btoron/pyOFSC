@@ -2,7 +2,6 @@ import logging
 from functools import wraps
 
 import pydantic
-import requests
 
 from .exceptions import OFSAPIException
 
@@ -51,7 +50,6 @@ def wrap_return(*decorator_args, **decorator_kwargs):
                             return response.text
                         case _:
                             data_response = response.json()
-                            print(f"{data_response=}")
                             if config.auto_model and model is not None:
                                 # Remove the links unless there is a field called links in the model
                                 if not hasattr(model, "links"):
