@@ -12,6 +12,7 @@ from .models import (
     AssignedLocationsResponse,
     BulkUpdateRequest,
     CalendarView,
+    DailyExtractFolders,
     Location,
     LocationListResponse,
     OFSApi,
@@ -463,7 +464,7 @@ class OFSCore(OFSApi):
     # endregion
     # region Daily Extract
     ##202105 Daily Extract - NOT TESTED
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=DailyExtractFolders)
     def get_daily_extract_dates(self):
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/folders/dailyExtract/folders/")
         response = requests.get(url, headers=self.headers)
@@ -492,7 +493,7 @@ class OFSCore(OFSApi):
         return response
 
     # endregion
-    ## 202202 Helper functions
+    # region 202202 Helper functions
     def get_all_activities(
         self,
         *,
@@ -578,6 +579,8 @@ class OFSCore(OFSApi):
             offset = offset + response_count
         return items
 
+    # endregion
+    # region Subscriptions & Events
     ###
     # 1. Subscriptions Management. Using wrapper
     ###
@@ -610,7 +613,8 @@ class OFSCore(OFSApi):
         response = requests.get(url, headers=self.headers)
         return response
 
-    ###
+    # endregion
+    # region Activities Management
     # 2. Core / Activities
     ###
 
@@ -641,3 +645,6 @@ class OFSCore(OFSApi):
             headers=headers,
         )
         return response
+
+
+# endregion
