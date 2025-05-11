@@ -9,6 +9,7 @@ import requests
 from cachetools import TTLCache, cached
 from pydantic import (
     AliasChoices,
+    AnyHttpUrl,
     BaseModel,
     ConfigDict,
     Field,
@@ -907,3 +908,34 @@ class AssignedLocationsResponse(BaseModel):
 
 class LocationListResponse(OFSResponseList[Location]):
     pass
+
+
+# endregion
+# region 202505 Daily Extracts
+
+
+class Link(BaseModel):
+    href: AnyHttpUrl
+    rel: str
+    mediaType: Optional[str] = None
+
+
+class DailyExtractItem(BaseModel):
+    name: str
+    bytes: Optional[int] = None
+    mediaType: Optional[str] = None
+    links: list[Link]
+
+
+class DailyExtractItemList(BaseModel):
+    items: list[DailyExtractItem] = []
+
+
+class DailyExtractFolders(BaseModel):
+    name: str = "folders"
+    folders: Optional[DailyExtractItemList] = None
+
+
+class DailyExtractFiles(BaseModel):
+    name: str = "files"
+    files: Optional[DailyExtractItemList] = None
