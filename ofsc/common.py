@@ -8,6 +8,7 @@ from .exceptions import OFSAPIException
 TEXT_RESPONSE = 1
 FULL_RESPONSE = 2
 OBJ_RESPONSE = 3
+FILE_RESPONSE = 4
 
 
 def wrap_return(*decorator_args, **decorator_kwargs):
@@ -57,6 +58,19 @@ def wrap_return(*decorator_args, **decorator_kwargs):
                                 return model.model_validate(data_response)
                             else:
                                 return data_response
+                else:
+                    if not config.auto_raise:
+                        return response.json()
+                    # Check if response.statyus code is between 400 and 499
+                    if 400 <= response.status_code < 500:
+                        logging.error(response.json())
+                        raise OFSAPIException(**response.json())
+                    elif 500 <= response.status_code < 600:
+                        raise OFSAPIException(**response.json())
+            elif response_type == FILE_RESPONSE:
+                if response.status_code in expected_codes:
+                    # We return the filed content in a bytes object
+                    return response.content
                 else:
                     if not config.auto_raise:
                         return response.json()

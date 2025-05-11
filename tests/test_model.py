@@ -11,6 +11,7 @@ from ofsc.models import (
     CapacityArea,
     CapacityAreaListResponse,
     CapacityCategoryListResponse,
+    DailyExtractFiles,
     DailyExtractFolders,
     DailyExtractItem,
     DailyExtractItemList,
@@ -471,3 +472,52 @@ def test_daily_extract_subfolders():
     assert isinstance(obj.folders, DailyExtractItemList)
     assert isinstance(obj.folders.items[0], DailyExtractItem)
     assert obj.folders.items[0].name == base["folders"]["items"][0]["name"]
+
+
+def test_daily_extract_files():
+    base = {
+        "name": "files",
+        "files": {
+            "items": [
+                {
+                    "name": "activity-data.tar.gz",
+                    "bytes": 3943529,
+                    "mediaType": "application/octet-stream",
+                    "links": [
+                        {
+                            "rel": "canonical",
+                            "href": "https://test.fs.ocs.oraclecloud.com/rest/ofscCore/v1/folders/dailyExtract/folders/2015-07-02/files/activity-data.tar.gz",
+                        }
+                    ],
+                },
+                {
+                    "name": "inventory-data.tar.gz",
+                    "bytes": 32727812,
+                    "mediaType": "application/octet-stream",
+                    "links": [
+                        {
+                            "rel": "canonical",
+                            "href": "https://test.fs.ocs.oraclecloud.com/rest/ofscCore/v1/folders/dailyExtract/folders/2015-07-02/files/inventory-data.tar.gz",
+                        }
+                    ],
+                },
+            ]
+        },
+        "links": [
+            {
+                "rel": "canonical",
+                "href": "https://test.fs.ocs.oraclecloud.com/rest/ofscCore/v1/folders/dailyExtract/folders/2015-07-02/files",
+            },
+            {
+                "rel": "describedby",
+                "href": "https://test.fs.ocs.oraclecloud.com/rest/ofscCore/v1/metadata-catalog/folders",
+            },
+        ],
+    }
+    obj = DailyExtractFiles.model_validate(base)
+    assert obj.name == base["name"]
+    assert isinstance(obj.files, DailyExtractItemList)
+    assert isinstance(obj.files.items[0], DailyExtractItem)
+    assert obj.files.items[0].name == base["files"]["items"][0]["name"]
+    assert obj.files.items[0].bytes == base["files"]["items"][0]["bytes"]
+    assert obj.files.items[0].mediaType == base["files"]["items"][0]["mediaType"]

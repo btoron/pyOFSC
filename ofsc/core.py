@@ -6,12 +6,13 @@ from urllib.parse import urljoin
 
 import requests
 
-from .common import FULL_RESPONSE, OBJ_RESPONSE, wrap_return
+from .common import FILE_RESPONSE, FULL_RESPONSE, OBJ_RESPONSE, wrap_return
 from .models import (
     Activity,
     AssignedLocationsResponse,
     BulkUpdateRequest,
     CalendarView,
+    DailyExtractFiles,
     DailyExtractFolders,
     Location,
     LocationListResponse,
@@ -463,33 +464,31 @@ class OFSCore(OFSApi):
 
     # endregion
     # region Daily Extract
-    ##202105 Daily Extract - NOT TESTED
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=DailyExtractFolders)
     def get_daily_extract_dates(self):
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/folders/dailyExtract/folders/")
         response = requests.get(url, headers=self.headers)
         return response
 
-    ##202105 Daily Extract - NOT TESTED
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=DailyExtractFiles)
     def get_daily_extract_files(self, date):
         url = urljoin(
             self.baseUrl,
-            "/rest/ofscCore/v1/folders/dailyExtract/folders/{}/files".format(date),
+            f"/rest/ofscCore/v1/folders/dailyExtract/folders/{date}/files",
         )
         response = requests.get(url, headers=self.headers)
         return response
 
     ##202105 Daily Extract - NOT TESTED
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    @wrap_return(response_type=FILE_RESPONSE, expected=[200])
     def get_daily_extract_file(self, date, filename):
+        headers = self.headers
+        headers["Accept"] = "application/octet-stream"
         url = urljoin(
             self.baseUrl,
-            "/rest/ofscCore/v1/folders/dailyExtract/folders/{}/files/{}".format(
-                date, filename
-            ),
+            f"/rest/ofscCore/v1/folders/dailyExtract/folders/{date}/files/{filename}",
         )
-        response = requests.get(url, headers=self.headers)
+        response = requests.get(url, headers=headers)
         return response
 
     # endregion

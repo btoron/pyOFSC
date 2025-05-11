@@ -922,6 +922,8 @@ class Link(BaseModel):
 
 class DailyExtractItem(BaseModel):
     name: str
+    bytes: Optional[int] = None
+    mediaType: Optional[str] = None
     links: list[Link]
 
 
@@ -932,3 +934,8 @@ class DailyExtractItemList(BaseModel):
 class DailyExtractFolders(BaseModel):
     name: str = "folders"
     folders: Optional[DailyExtractItemList] = None
+
+
+class DailyExtractFiles(BaseModel):
+    name: str = "files"
+    files: Optional[DailyExtractItemList] = None
