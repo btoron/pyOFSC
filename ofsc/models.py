@@ -716,10 +716,15 @@ class EnumerationValueList(OFSResponseList[EnumerationValue]):
 # region 202412 Applications
 
 
+class ApplicationsResourcestoAllow(BaseModel):
+    resourceId: str
+    resourceInternalId: int
+
+
 class Application(BaseModel):
     label: str
     name: str
-    resourcesToAllow: List[str] = None
+    resourcesToAllow: List[ApplicationsResourcestoAllow] = None
     allowedCorsDomains: List[str] = None
     IPAddressesToAllow: List[str] = None
     status: str
