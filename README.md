@@ -49,9 +49,19 @@ The models are based on the Pydantic BaseModel, so it is possible to build an en
 - **DailyExtractFiles**: Available files for a specific date
 - **DailyExtractItem**: Individual extract file information
 
+### Capacity Models
+- **CapacityRequest**: Request model for capacity queries with areas, dates, and filters
+- **GetCapacityResponse**: Response model for capacity data
+- **GetQuotaRequest**: Request model for quota queries with automatic CsvList conversion for string arrays
+- **CapacityResponseItem**: Individual capacity response item by date
+- **CapacityAreaResponseItem**: Capacity area response with metrics and categories
+- **CapacityMetrics**: Capacity metrics with count and optional minutes arrays
+- **CapacityCategoryItem**: Capacity category items with calendar and available metrics
+
 ### Configuration & Utility Models
 - **OFSConfig**: Main configuration model for API connection
 - **OFSResponseList**: Generic paginated response wrapper
+- **CsvList**: Auxiliary model for comma-separated string lists with conversion methods
 - **Translation**: Multi-language translation support
 - **OFSAPIError**: Standardized API error responses
 
@@ -175,6 +185,77 @@ The models are based on the Pydantic BaseModel, so it is possible to build an en
 ### Metadata / Organizations
     get_organizations(self, response_type=OBJ_RESPONSE)
     get_organization(self, label: str, response_type=OBJ_RESPONSE)
+
+### Capacity / Available Capacity
+    getAvailableCapacity(self, request: CapacityRequest, response_type=OBJ_RESPONSE)
+
+## Usage Examples
+
+### Capacity API
+```python
+from ofsc import OFSC
+from ofsc.models import CapacityRequest
+
+# Initialize connection
+ofsc_instance = OFSC(
+    clientID="your_client_id",
+    secret="your_secret", 
+    companyName="your_company"
+)
+
+# Create capacity request
+capacity_request = CapacityRequest(
+    areas=["Atlantic", "Pacific"],
+    dates=["2025-06-25", "2025-06-26"],
+    availableTimeIntervals="all",
+    calendarTimeIntervals="all"
+)
+
+# Get capacity data
+response = ofsc_instance.capacity.getAvailableCapacity(capacity_request)
+
+# Access response data
+for item in response.items:
+    print(f"Date: {item.date}")
+    for area in item.areas:
+        print(f"  Area: {area.label}")
+        print(f"  Calendar count: {area.calendar.count}")
+        if area.available:
+            print(f"  Available count: {area.available.count}")
+```
+
+### Quota API with CsvList
+```python
+from ofsc.models import GetQuotaRequest, CsvList
+
+# Create quota request with list[str] (automatically converted to CsvList)
+quota_request = GetQuotaRequest(
+    aggregateResults=True,
+    areas=["Atlantic", "Pacific"],  # list[str] - auto-converted
+    categories=["Install", "Repair"],  # list[str] - auto-converted
+    categoryLevel=True,
+    dates=["2025-06-25", "2025-06-26"],  # list[str] - auto-converted
+    intervalLevel=False,
+    returnStatuses=True,
+    timeSlotLevel=False
+)
+
+# Or with CsvList directly
+quota_request2 = GetQuotaRequest(
+    aggregateResults=False,
+    areas=CsvList.from_list(["Europe", "Asia"]),  # CsvList input
+    categories="Service,Support",  # CSV string - auto-converted
+    categoryLevel=False,
+    dates=["2025-06-27", "2025-06-28"],
+    intervalLevel=True,
+    returnStatuses=False,
+    timeSlotLevel=True
+)
+
+# Access as lists
+areas_list = quota_request.get_areas_list()  # ["Atlantic", "Pacific"]
+categories_list = quota_request.get_categories_list()  # ["Install", "Repair"]
+```
     
 ## Test History
 
