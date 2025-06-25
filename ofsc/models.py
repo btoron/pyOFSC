@@ -988,13 +988,48 @@ class DailyExtractFiles(BaseModel):
 
 
 class CapacityRequest(BaseModel):
+    """Request model for capacity queries with CsvList support for string arrays
+    
+    Accepts list[str], CsvList, or str for string array parameters but converts internally to CsvList
+    """
     aggregateResults: Optional[bool] = None
-    areas: list[str]
+    areas: CsvList
     availableTimeIntervals: str = "all"
     calendarTimeIntervals: str = "all"
-    categories: list[str] = []
-    dates: list[str]
+    categories: Optional[CsvList] = None
+    dates: CsvList
     fields: Optional[list[str]] = None
+    
+    @field_validator('areas', 'categories', 'dates', mode='before')
+    @classmethod
+    def convert_to_csvlist(cls, v):
+        """Convert list[str], CsvList, str, or dict to CsvList"""
+        if v is None:
+            return None
+        elif isinstance(v, list):
+            return CsvList.from_list(v)
+        elif isinstance(v, CsvList):
+            return v
+        elif isinstance(v, str):
+            # Handle string input as CSV
+            return CsvList(value=v)
+        elif isinstance(v, dict) and 'value' in v:
+            # Handle dict from JSON deserialization
+            return CsvList(value=v['value'])
+        else:
+            raise ValueError(f"Expected list[str], CsvList, str, dict with 'value' key, or None, got {type(v)}")
+    
+    def get_areas_list(self) -> List[str]:
+        """Get areas as a list of strings"""
+        return self.areas.to_list()
+    
+    def get_categories_list(self) -> List[str]:
+        """Get categories as a list of strings"""
+        return self.categories.to_list() if self.categories is not None else []
+    
+    def get_dates_list(self) -> List[str]:
+        """Get dates as a list of strings"""
+        return self.dates.to_list()
 
 
 class CapacityMetrics(BaseModel):
@@ -1033,6 +1068,35 @@ class GetCapacityResponse(BaseModel):
     """Model for complete capacity response"""
 
     items: List[CapacityResponseItem] = []
+
+
+class QuotaAreaItem(BaseModel):
+    """Model for quota area items with quota-specific fields"""
+    
+    label: Optional[str] = None
+    name: Optional[str] = None
+    maxAvailable: Optional[int] = None
+    otherActivities: Optional[int] = None
+    quota: Optional[int] = None
+    quotaPercent: Optional[int] = None
+    minQuota: Optional[int] = None
+    used: Optional[int] = None
+    usedQuotaPercent: Optional[int] = None
+    bookedActivities: Optional[int] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class QuotaResponseItem(BaseModel):
+    """Model for individual quota response item by date"""
+    
+    date: str
+    areas: List[QuotaAreaItem] = []
+
+
+class GetQuotaResponse(BaseModel):
+    """Model for complete quota response"""
+
+    items: List[QuotaResponseItem] = []
 
 
 class GetQuotaRequest(BaseModel):
