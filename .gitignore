@@ -173,3 +173,4 @@ log.txt
 tests/keys/*
 CLAUDE.md
 response_examples
+_*.json
