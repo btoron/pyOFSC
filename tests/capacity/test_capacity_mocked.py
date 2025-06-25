@@ -167,7 +167,7 @@ class TestCapacityAPIMocked:
             assert params["aggregateResults"] == "true"  # Should be converted to lowercase
             assert params["availableTimeIntervals"] == "15"
             assert params["calendarTimeIntervals"] == "60"
-            assert params["fields"] == ["label", "name"]
+            assert params["fields"] == "label,name"  # CsvList converts to CSV string
 
 
 class TestQuotaRequestValidation:

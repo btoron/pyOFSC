@@ -998,9 +998,9 @@ class CapacityRequest(BaseModel):
     calendarTimeIntervals: str = "all"
     categories: Optional[CsvList] = None
     dates: CsvList
-    fields: Optional[list[str]] = None
+    fields: Optional[CsvList] = None
     
-    @field_validator('areas', 'categories', 'dates', mode='before')
+    @field_validator('areas', 'categories', 'dates', 'fields', mode='before')
     @classmethod
     def convert_to_csvlist(cls, v):
         """Convert list[str], CsvList, str, or dict to CsvList"""
@@ -1030,6 +1030,10 @@ class CapacityRequest(BaseModel):
     def get_dates_list(self) -> List[str]:
         """Get dates as a list of strings"""
         return self.dates.to_list()
+    
+    def get_fields_list(self) -> List[str]:
+        """Get fields as a list of strings"""
+        return self.fields.to_list() if self.fields is not None else []
 
 
 class CapacityMetrics(BaseModel):
@@ -1052,7 +1056,7 @@ class CapacityAreaResponseItem(BaseModel):
 
     label: str
     name: Optional[str] = None
-    calendar: CapacityMetrics
+    calendar: Optional[CapacityMetrics] = None
     available: Optional[CapacityMetrics] = None
     categories: List[CapacityCategoryItem] = []
 

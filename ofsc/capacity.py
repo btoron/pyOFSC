@@ -69,7 +69,7 @@ class OFSCapacity(OFSApi):
                              aggregateResults: Optional[bool] = None,
                              availableTimeIntervals: str = "all",
                              calendarTimeIntervals: str = "all",
-                             fields: Optional[list[str]] = None):
+                             fields: Optional[Union[list[str], CsvList, str]] = None):
         """
         Get available capacity for a given resource or group of resources.
 
