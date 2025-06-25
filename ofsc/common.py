@@ -53,7 +53,7 @@ def wrap_return(*decorator_args, **decorator_kwargs):
                             data_response = response.json()
                             if config.auto_model and model is not None:
                                 # Remove the links unless there is a field called links in the model
-                                if not hasattr(model, "links"):
+                                if not hasattr(model, "links") and "links" in data_response:
                                     del data_response["links"]
                                 return model.model_validate(data_response)
                             else:

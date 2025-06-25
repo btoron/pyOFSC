@@ -1,0 +1,229 @@
+{
+  "minimal_dates_only": {
+    "description": "Minimal request with only dates",
+    "request_params": {
+      "dates": [
+        "2025-06-25"
+      ]
+    },
+    "processed_params": {
+      "dates": "2025-06-25"
+    },
+    "status_code": 200,
+    "response_data": {
+      "items": [
+        {
+          "date": "2025-06-25",
+          "areas": [
+            {
+              "label": "routing_old",
+              "name": "Planning",
+              "maxAvailable": 47539,
+              "otherActivities": 0,
+              "quota": null,
+              "quotaPercent": null,
+              "minQuota": 0,
+              "used": 0,
+              "bookedActivities": 0
+            },
+            {
+              "label": "FLUSA",
+              "name": "FL, USA",
+              "maxAvailable": 14158,
+              "otherActivities": 971,
+              "quota": null,
+              "quotaPercent": null,
+              "minQuota": 0,
+              "used": 11888,
+              "bookedActivities": 237
+            },
+            {
+              "label": "CAUSA",
+              "name": "CA, USA",
+              "maxAvailable": 5508,
+              "otherActivities": 749,
+              "quota": null,
+              "quotaPercent": null,
+              "minQuota": 0,
+              "used": 4710,
+              "bookedActivities": 92
+            },
+            {
+              "label": "South Florida",
+              "name": "South Florida",
+              "maxAvailable": 9454,
+              "otherActivities": 1031,
+              "quota": 0,
+              "quotaPercent": 0,
+              "minQuota": 0,
+              "used": 7422,
+              "usedQuotaPercent": 0,
+              "bookedActivities": 143
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "with_areas": {
+    "description": "Request with areas",
+    "request_params": {
+      "dates": [
+        "2025-06-25",
+        "2025-06-26"
+      ],
+      "areas": [
+        "FLUSA",
+        "CAUSA"
+      ]
+    },
+    "processed_params": {
+      "areas": "FLUSA,CAUSA",
+      "dates": "2025-06-25,2025-06-26"
+    },
+    "status_code": 200,
+    "response_data": {
+      "items": [
+        {
+          "date": "2025-06-25",
+          "areas": [
+            {
+              "label": "FLUSA",
+              "name": "FL, USA",
+              "maxAvailable": 14158,
+              "otherActivities": 971,
+              "quota": null,
+              "quotaPercent": null,
+              "minQuota": 0,
+              "used": 11888,
+              "bookedActivities": 237
+            },
+            {
+              "label": "CAUSA",
+              "name": "CA, USA",
+              "maxAvailable": 5508,
+              "otherActivities": 749,
+              "quota": null,
+              "quotaPercent": null,
+              "minQuota": 0,
+              "used": 4710,
+              "bookedActivities": 92
+            }
+          ]
+        },
+        {
+          "date": "2025-06-26",
+          "areas": [
+            {
+              "label": "FLUSA",
+              "name": "FL, USA",
+              "maxAvailable": 15540,
+              "otherActivities": 1080,
+              "quota": null,
+              "quotaPercent": null,
+              "minQuota": 0,
+              "used": 14230,
+              "bookedActivities": 232
+            },
+            {
+              "label": "CAUSA",
+              "name": "CA, USA",
+              "maxAvailable": 5400,
+              "otherActivities": 600,
+              "quota": null,
+              "quotaPercent": null,
+              "minQuota": 0,
+              "used": 4391,
+              "bookedActivities": 55
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "with_categories": {
+    "description": "Request with areas and categories",
+    "request_params": {
+      "dates": [
+        "2025-06-25"
+      ],
+      "areas": [
+        "FLUSA"
+      ],
+      "categories": [
+        "EST",
+        "RES",
+        "COM"
+      ]
+    },
+    "processed_params": {
+      "areas": "FLUSA",
+      "categories": "EST,RES,COM",
+      "dates": "2025-06-25"
+    },
+    "status_code": 200,
+    "response_data": {
+      "items": [
+        {
+          "date": "2025-06-25",
+          "areas": [
+            {
+              "label": "FLUSA",
+              "name": "FL, USA",
+              "maxAvailable": 14158,
+              "otherActivities": 971,
+              "quota": null,
+              "quotaPercent": null,
+              "minQuota": 0,
+              "used": 11888,
+              "bookedActivities": 237
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "with_boolean_flags": {
+    "description": "Request with boolean parameters",
+    "request_params": {
+      "dates": [
+        "2025-06-25"
+      ],
+      "areas": [
+        "FLUSA",
+        "CAUSA"
+      ],
+      "aggregateResults": true,
+      "categoryLevel": false,
+      "intervalLevel": true,
+      "returnStatuses": false,
+      "timeSlotLevel": true
+    },
+    "processed_params": {
+      "aggregateResults": "true",
+      "areas": "FLUSA,CAUSA",
+      "categoryLevel": "false",
+      "dates": "2025-06-25",
+      "intervalLevel": "true",
+      "returnStatuses": "false",
+      "timeSlotLevel": "true"
+    },
+    "status_code": 200,
+    "response_data": {
+      "items": [
+        {
+          "date": "2025-06-25",
+          "areas": [
+            {
+              "maxAvailable": 19666,
+              "otherActivities": 1720,
+              "quota": 0,
+              "used": 16598,
+              "bookedActivities": 329
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

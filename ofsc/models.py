@@ -25,6 +25,44 @@ from ofsc.common import FULL_RESPONSE, wrap_return
 T = TypeVar("T")
 
 
+class CsvList(BaseModel):
+    """Auxiliary model to represent a list of strings as comma-separated values"""
+    
+    value: str = ""
+    
+    @classmethod
+    def from_list(cls, string_list: List[str]) -> 'CsvList':
+        """Create CsvList from a list of strings
+        
+        Args:
+            string_list: List of strings to convert to CSV format
+            
+        Returns:
+            CsvList instance with comma-separated values
+        """
+        if not string_list:
+            return cls(value="")
+        return cls(value=",".join(string_list))
+    
+    def to_list(self) -> List[str]:
+        """Convert CsvList to a list of strings
+        
+        Returns:
+            List of strings split by commas, empty list if value is empty
+        """
+        if not self.value or self.value.strip() == "":
+            return []
+        return [item.strip() for item in self.value.split(",") if item.strip()]
+    
+    def __str__(self) -> str:
+        """String representation returns the CSV value"""
+        return self.value
+    
+    def __repr__(self) -> str:
+        """Representation shows both CSV and list format"""
+        return f"CsvList(value='{self.value}', list={self.to_list()})"
+
+
 class OFSResponseList(BaseModel, Generic[T]):
     model_config = ConfigDict(extra="allow")
 
@@ -944,3 +982,167 @@ class DailyExtractFolders(BaseModel):
 class DailyExtractFiles(BaseModel):
     name: str = "files"
     files: Optional[DailyExtractItemList] = None
+
+
+# region Capacity
+
+
+class CapacityRequest(BaseModel):
+    """Request model for capacity queries with CsvList support for string arrays
+    
+    Accepts list[str], CsvList, or str for string array parameters but converts internally to CsvList
+    """
+    aggregateResults: Optional[bool] = None
+    areas: CsvList
+    availableTimeIntervals: str = "all"
+    calendarTimeIntervals: str = "all"
+    categories: Optional[CsvList] = None
+    dates: CsvList
+    fields: Optional[list[str]] = None
+    
+    @field_validator('areas', 'categories', 'dates', mode='before')
+    @classmethod
+    def convert_to_csvlist(cls, v):
+        """Convert list[str], CsvList, str, or dict to CsvList"""
+        if v is None:
+            return None
+        elif isinstance(v, list):
+            return CsvList.from_list(v)
+        elif isinstance(v, CsvList):
+            return v
+        elif isinstance(v, str):
+            # Handle string input as CSV
+            return CsvList(value=v)
+        elif isinstance(v, dict) and 'value' in v:
+            # Handle dict from JSON deserialization
+            return CsvList(value=v['value'])
+        else:
+            raise ValueError(f"Expected list[str], CsvList, str, dict with 'value' key, or None, got {type(v)}")
+    
+    def get_areas_list(self) -> List[str]:
+        """Get areas as a list of strings"""
+        return self.areas.to_list()
+    
+    def get_categories_list(self) -> List[str]:
+        """Get categories as a list of strings"""
+        return self.categories.to_list() if self.categories is not None else []
+    
+    def get_dates_list(self) -> List[str]:
+        """Get dates as a list of strings"""
+        return self.dates.to_list()
+
+
+class CapacityMetrics(BaseModel):
+    """Model for capacity metrics with count and optional minutes arrays"""
+
+    count: List[int] = []
+    minutes: Optional[List[int]] = None
+
+
+class CapacityCategoryItem(BaseModel):
+    """Model for capacity category items with metrics"""
+
+    label: str
+    calendar: CapacityMetrics
+    available: Optional[CapacityMetrics] = None
+
+
+class CapacityAreaResponseItem(BaseModel):
+    """Model for capacity area response with proper nested structure"""
+
+    label: str
+    name: Optional[str] = None
+    calendar: CapacityMetrics
+    available: Optional[CapacityMetrics] = None
+    categories: List[CapacityCategoryItem] = []
+
+
+class CapacityResponseItem(BaseModel):
+    """Model for individual capacity response item by date"""
+
+    date: str
+    areas: List[CapacityAreaResponseItem] = []
+
+
+class GetCapacityResponse(BaseModel):
+    """Model for complete capacity response"""
+
+    items: List[CapacityResponseItem] = []
+
+
+class QuotaAreaItem(BaseModel):
+    """Model for quota area items with quota-specific fields"""
+    
+    label: Optional[str] = None
+    name: Optional[str] = None
+    maxAvailable: Optional[int] = None
+    otherActivities: Optional[int] = None
+    quota: Optional[int] = None
+    quotaPercent: Optional[int] = None
+    minQuota: Optional[int] = None
+    used: Optional[int] = None
+    usedQuotaPercent: Optional[int] = None
+    bookedActivities: Optional[int] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class QuotaResponseItem(BaseModel):
+    """Model for individual quota response item by date"""
+    
+    date: str
+    areas: List[QuotaAreaItem] = []
+
+
+class GetQuotaResponse(BaseModel):
+    """Model for complete quota response"""
+
+    items: List[QuotaResponseItem] = []
+
+
+class GetQuotaRequest(BaseModel):
+    """Request model for quota queries with comprehensive parameters
+    
+    Accepts list[str] or CsvList for string array parameters but converts internally to CsvList
+    """
+    aggregateResults: Optional[bool] = None
+    areas: Optional[CsvList] = None
+    categories: Optional[CsvList] = None
+    categoryLevel: Optional[bool] = None
+    dates: CsvList  # Required parameter
+    intervalLevel: Optional[bool] = None
+    returnStatuses: Optional[bool] = None
+    timeSlotLevel: Optional[bool] = None
+    
+    @field_validator('areas', 'categories', 'dates', mode='before')
+    @classmethod
+    def convert_to_csvlist(cls, v):
+        """Convert list[str], CsvList, str, or dict to CsvList"""
+        if v is None:
+            return None
+        elif isinstance(v, list):
+            return CsvList.from_list(v)
+        elif isinstance(v, CsvList):
+            return v
+        elif isinstance(v, str):
+            # Handle string input as CSV
+            return CsvList(value=v)
+        elif isinstance(v, dict) and 'value' in v:
+            # Handle dict from JSON deserialization
+            return CsvList(value=v['value'])
+        else:
+            raise ValueError(f"Expected list[str], CsvList, str, dict with 'value' key, or None, got {type(v)}")
+    
+    def get_areas_list(self) -> List[str]:
+        """Get areas as a list of strings"""
+        return self.areas.to_list() if self.areas is not None else []
+    
+    def get_categories_list(self) -> List[str]:
+        """Get categories as a list of strings"""
+        return self.categories.to_list() if self.categories is not None else []
+    
+    def get_dates_list(self) -> List[str]:
+        """Get dates as a list of strings"""
+        return self.dates.to_list()
+
+
+# endregion

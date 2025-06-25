@@ -1,6 +1,7 @@
 import logging
 
 from .common import FULL_RESPONSE, OBJ_RESPONSE, TEXT_RESPONSE
+from .capacity import OFSCapacity
 from .core import OFSCore
 from .metadata import OFSMetadata
 from .models import OFSConfig
@@ -32,11 +33,18 @@ class OFSC:
             auto_raise=enable_auto_raise,  # 20240401: This is a new feature that will raise an exception if the API returns an error
             auto_model=enable_auto_model,  # 20240401: This is a new feature that will return a pydantic model if the API returns a 200
         )
+        self._capacity = OFSCapacity(config=self._config)
         self._core = OFSCore(config=self._config)
         self._metadata = OFSMetadata(config=self._config)
         self._oauth = OFSOauth2(config=self._config)
 
         # For compatibility we build dynamically the method list of the submodules
+        self._capacity_methods = [
+            attribute
+            for attribute in dir(OFSCapacity)
+            if callable(getattr(OFSCapacity, attribute))
+            and attribute.startswith("_") is False
+        ]
         self._core_methods = [
             attribute
             for attribute in dir(OFSCore)
@@ -49,6 +57,12 @@ class OFSC:
             if callable(getattr(OFSMetadata, attribute))
             and attribute.startswith("_") is False
         ]
+
+    @property
+    def capacity(self) -> OFSCapacity:
+        if not self._capacity:
+            self._capacity = OFSCapacity(config=self._config)
+        return self._capacity
 
     @property
     def core(self) -> OFSCore:
@@ -75,6 +89,7 @@ class OFSC:
     @auto_model.setter
     def auto_model(self, value):
         self._config.auto_model = value
+        self._capacity.config.auto_model = value
         self._core.config.auto_model = value
         self._metadata.config.auto_model = value
         self._oauth.config.auto_model = value
@@ -91,6 +106,11 @@ class OFSC:
         """
 
         def wrapper(*args, **kwargs):
+            if method_name in self._capacity_methods:
+                raise NotImplementedError(
+                    f"{method_name} was called without the API name (Capacity). This was deprecated in OFSC 2.0"
+                )
+
             if method_name in self._core_methods:
                 raise NotImplementedError(
                     f"{method_name} was called without the API name (Core). This was deprecated in OFSC 2.0"
