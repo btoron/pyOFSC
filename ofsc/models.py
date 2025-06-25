@@ -1077,6 +1077,36 @@ class GetCapacityResponse(BaseModel):
     items: List[CapacityResponseItem] = []
 
 
+class QuotaTimeInterval(BaseModel):
+    """Model for quota time interval data"""
+
+    timeFrom: str
+    timeTo: str
+    quota: Optional[int] = None
+    used: Optional[int] = None
+    quotaIsClosed: Optional[bool] = None
+    quotaIsAutoClosed: Optional[bool] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class QuotaCategoryItem(BaseModel):
+    """Model for quota category items with category-specific quota fields"""
+
+    label: Optional[str] = None
+    maxAvailable: Optional[int] = None
+    quota: Optional[int] = None
+    quotaPercentDay: Optional[float] = None
+    quotaPercentCategory: Optional[float] = None
+    minQuota: Optional[int] = None
+    used: Optional[int] = None
+    usedQuotaPercent: Optional[float] = None
+    bookedActivities: Optional[int] = None
+    quotaIsClosed: Optional[bool] = None
+    quotaIsAutoClosed: Optional[bool] = None
+    intervals: List[QuotaTimeInterval] = []
+    model_config = ConfigDict(extra="allow")
+
+
 class QuotaAreaItem(BaseModel):
     """Model for quota area items with quota-specific fields"""
 
@@ -1085,11 +1115,15 @@ class QuotaAreaItem(BaseModel):
     maxAvailable: Optional[int] = None
     otherActivities: Optional[int] = None
     quota: Optional[int] = None
-    quotaPercent: Optional[int] = None
+    quotaPercent: Optional[float] = None  # Changed to float
     minQuota: Optional[int] = None
     used: Optional[int] = None
-    usedQuotaPercent: Optional[int] = None
+    usedQuotaPercent: Optional[float] = None  # Changed to float
     bookedActivities: Optional[int] = None
+    quotaIsClosed: Optional[bool] = None  # Added
+    quotaIsAutoClosed: Optional[bool] = None  # Added
+    intervals: List[QuotaTimeInterval] = []  # Added
+    categories: List[QuotaCategoryItem] = []  # Added
     model_config = ConfigDict(extra="allow")
 
 

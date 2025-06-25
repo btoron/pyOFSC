@@ -168,8 +168,3 @@ class OFSCapacity(OFSApi):
             params=params,
         )
         return response
-            url,
-            headers=self.headers,
-            params=params,
-        )
-        return response
