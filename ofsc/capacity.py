@@ -1,6 +1,5 @@
-from typing import Optional, Union, get_origin, get_args
+from typing import Optional, Union, get_args, get_origin
 from urllib.parse import urljoin
-import inspect
 
 import requests
 from pydantic import BaseModel
@@ -8,7 +7,12 @@ from pydantic import BaseModel
 from ofsc.models import CsvList, OFSApi
 
 from .common import OBJ_RESPONSE, wrap_return
-from .models import CapacityRequest, GetCapacityResponse, GetQuotaRequest, GetQuotaResponse
+from .models import (
+    CapacityRequest,
+    GetCapacityResponse,
+    GetQuotaRequest,
+    GetQuotaResponse,
+)
 
 
 def _convert_model_to_api_params(model: BaseModel) -> dict:
@@ -64,7 +68,7 @@ class OFSCapacity(OFSApi):
     @wrap_return(response_type=OBJ_RESPONSE, model=GetCapacityResponse)
     def getAvailableCapacity(self, 
                              dates: Union[list[str], CsvList, str],
-                             areas: Union[list[str], CsvList, str],
+                             areas: Optional[Union[list[str], CsvList, str]] = None,
                              categories: Optional[Union[list[str], CsvList, str]] = None,
                              aggregateResults: Optional[bool] = None,
                              availableTimeIntervals: str = "all",
@@ -159,6 +163,11 @@ class OFSCapacity(OFSApi):
         base_url = self.baseUrl or ""
         url = urljoin(base_url, "/rest/ofscCapacity/v2/quota")
         response = requests.get(
+            url,
+            headers=self.headers,
+            params=params,
+        )
+        return response
             url,
             headers=self.headers,
             params=params,
