@@ -1,0 +1,253 @@
+"""OFSC Python Wrapper v3.0 Models
+
+This module provides backward-compatible imports for all Pydantic models used
+throughout the OFSC Python Wrapper. Models are now organized into focused
+submodules but can still be imported from this root module.
+
+Usage:
+    # These imports continue to work unchanged from v2
+    from ofsc.models import Property, Workskill, Activity
+    from ofsc.models import OFSConfig, OFSResponseList
+    
+    # New submodule imports are also available
+    from ofsc.models.metadata import Property
+    from ofsc.models.core import Activity  
+    from ofsc.models.capacity import CapacityArea
+"""
+
+# Base models and infrastructure
+from .base import (
+    CsvList,
+    EntityEnum,
+    OFSResponseList,
+    SharingEnum,
+    Translation,
+    TranslationList,
+)
+
+# Authentication and configuration models
+from .auth import (
+    OFSApi,
+    OFSAPIError,
+    OFSConfig,
+    OFSOAuthRequest,
+)
+
+# Metadata API models
+from .metadata import (
+    ActivityType,
+    ActivityTypeColors,
+    ActivityTypeFeatures,
+    ActivityTypeGroup,
+    ActivityTypeGroupList,
+    ActivityTypeGroupListResponse,
+    ActivityTypeList,
+    ActivityTypeListResponse,
+    ActivityTypeTimeSlots,
+    Application,
+    ApplicationListResponse,
+    ApplicationsResourcestoAllow,
+    Condition,
+    EnumerationValue,
+    EnumerationValueList,
+    InventoryType,
+    InventoryTypeList,
+    InventoryTypeListResponse,
+    Organization,
+    OrganizationList,
+    OrganizationListResponse,
+    Property,
+    PropertyList,
+    ResourceType,
+    ResourceTypeList,
+    WorkSkillAssignmentsList,
+    WorkSkillGroup,
+    WorkSkillGroupList,
+    WorkSkillGroupListResponse,
+    Workskill,
+    WorkskillCondition,
+    WorkskillList,
+    Workzone,
+    WorkzoneList,
+    WorksSkillAssignments,
+    WorskillConditionList,
+)
+
+# Core API models
+from .core import (
+    Activity,
+    ActivityKeys,
+    AssignedLocation,
+    AssignedLocationsResponse,
+    BaseUser,
+    BulkUpdateActivityItem,
+    BulkUpdateError,
+    BulkUpdateParameters,
+    BulkUpdateRequest,
+    BulkUpdateResult,
+    BulkUpdateResponse,
+    BulkUpdateWarning,
+    CalendarView,
+    CalendarViewItem,
+    CalendarViewItemRecordType,
+    CalendarViewList,
+    CalendarViewShift,
+    DailyExtractFiles,
+    DailyExtractFolders,
+    DailyExtractItem,
+    DailyExtractItemList,
+    GetActivityRequest,
+    Link,
+    Location,
+    LocationList,
+    LocationListResponse,
+    Recurrence,
+    RecurrenceType,
+    Resource,
+    ResourceList,
+    ResourceUsersListResponse,
+    ResourceWorkScheduleItem,
+    ResourceWorkScheduleResponse,
+    ResourceWorkScheduleResponseList,
+    WeekDay,
+)
+
+# Capacity API models  
+from .capacity import (
+    CapacityArea,
+    CapacityAreaConfiguration,
+    CapacityAreaList,
+    CapacityAreaListResponse,
+    CapacityAreaParent,
+    CapacityAreaResponseItem,
+    CapacityCategory,
+    CapacityCategoryItem,
+    CapacityCategoryListResponse,
+    CapacityMetrics,
+    CapacityRequest,
+    CapacityResponseItem,
+    GetCapacityResponse,
+    GetQuotaRequest,
+    GetQuotaResponse,
+    Item,
+    ItemList,
+    QuotaAreaItem,
+    QuotaCategoryItem,
+    QuotaResponseItem,
+    QuotaTimeInterval,
+)
+
+# Ensure all exports are available
+__all__ = [
+    # Base models
+    "CsvList",
+    "EntityEnum", 
+    "OFSResponseList",
+    "SharingEnum",
+    "Translation",
+    "TranslationList",
+    
+    # Auth models
+    "OFSApi",
+    "OFSAPIError", 
+    "OFSConfig",
+    "OFSOAuthRequest",
+    
+    # Metadata models
+    "ActivityType",
+    "ActivityTypeColors",
+    "ActivityTypeFeatures", 
+    "ActivityTypeGroup",
+    "ActivityTypeGroupList",
+    "ActivityTypeGroupListResponse",
+    "ActivityTypeList",
+    "ActivityTypeListResponse",
+    "ActivityTypeTimeSlots",
+    "Application",
+    "ApplicationListResponse",
+    "ApplicationsResourcestoAllow",
+    "Condition",
+    "EnumerationValue",
+    "EnumerationValueList",
+    "InventoryType",
+    "InventoryTypeList",
+    "InventoryTypeListResponse",
+    "Organization",
+    "OrganizationList", 
+    "OrganizationListResponse",
+    "Property",
+    "PropertyList",
+    "ResourceType",
+    "ResourceTypeList",
+    "WorkSkillAssignmentsList",
+    "WorkSkillGroup",
+    "WorkSkillGroupList",
+    "WorkSkillGroupListResponse",
+    "Workskill",
+    "WorkskillCondition",
+    "WorkskillList",
+    "Workzone",
+    "WorkzoneList",
+    "WorksSkillAssignments",
+    "WorskillConditionList",
+    
+    # Core models
+    "Activity",
+    "ActivityKeys",
+    "AssignedLocation",
+    "AssignedLocationsResponse",
+    "BaseUser",
+    "BulkUpdateActivityItem",
+    "BulkUpdateError",
+    "BulkUpdateParameters",
+    "BulkUpdateRequest",
+    "BulkUpdateResult",
+    "BulkUpdateResponse",
+    "BulkUpdateWarning",
+    "CalendarView",
+    "CalendarViewItem",
+    "CalendarViewItemRecordType",
+    "CalendarViewList",
+    "CalendarViewShift",
+    "DailyExtractFiles",
+    "DailyExtractFolders",
+    "DailyExtractItem",
+    "DailyExtractItemList",
+    "GetActivityRequest",
+    "Link",
+    "Location",
+    "LocationList",
+    "LocationListResponse",
+    "Recurrence",
+    "RecurrenceType",
+    "Resource",
+    "ResourceList",
+    "ResourceUsersListResponse",
+    "ResourceWorkScheduleItem",
+    "ResourceWorkScheduleResponse",
+    "ResourceWorkScheduleResponseList",
+    "WeekDay",
+    
+    # Capacity models
+    "CapacityArea",
+    "CapacityAreaConfiguration",
+    "CapacityAreaList",
+    "CapacityAreaListResponse",
+    "CapacityAreaParent",
+    "CapacityAreaResponseItem",
+    "CapacityCategory",
+    "CapacityCategoryItem",
+    "CapacityCategoryListResponse", 
+    "CapacityMetrics",
+    "CapacityRequest",
+    "CapacityResponseItem",
+    "GetCapacityResponse",
+    "GetQuotaRequest",
+    "GetQuotaResponse",
+    "Item",
+    "ItemList",
+    "QuotaAreaItem",
+    "QuotaCategoryItem",
+    "QuotaResponseItem",
+    "QuotaTimeInterval",
+]
