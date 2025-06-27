@@ -33,7 +33,7 @@ Integration tests against a custom mock server that simulates OFSC API.
 ### 4. Live Tests (`tests/live/`)
 End-to-end tests against real OFSC test environments.
 
-- `test_auth_live.py` - Live OAuth2 authentication tests with token caching and API validation
+- `test_auth_live.py` - Live authentication tests using OFSC client classes (Basic Auth, OAuth2, token caching, client creation)
 
 **Purpose**: Validate actual API integration
 **Marker**: `@pytest.mark.live`
@@ -124,9 +124,9 @@ Model validation tests use real API responses from `response_examples/`:
 
 ## Current Test Coverage
 
-### ✅ Authentication (25 tests)
-- **Location**: `tests/unit/test_auth.py` (17 tests), `tests/live/test_auth_live.py` (8 tests)
-- **Coverage**: Basic Auth, OAuth2, environment variables, client integration, live token validation
+### ✅ Authentication (28 tests)
+- **Location**: `tests/unit/test_auth.py` (17 tests), `tests/live/test_auth_live.py` (11 tests)
+- **Coverage**: Basic Auth, OAuth2, environment variables, client integration, live token validation, client creation
 - **Status**: Complete
 
 ### ✅ Model Validation (12+ tests)

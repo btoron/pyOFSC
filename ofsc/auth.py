@@ -3,7 +3,7 @@
 import base64
 import logging
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional
 
 import httpx
@@ -141,7 +141,7 @@ class OAuth2Auth(BaseAuth):
         # Check if we have a cached valid token
         if self._token and self._token_expires_at:
             # Add 5 minute buffer before expiration
-            if datetime.utcnow() < (self._token_expires_at - timedelta(minutes=5)):
+            if datetime.now(timezone.utc) < (self._token_expires_at - timedelta(minutes=5)):
                 return self._token
         
         # Token expired or doesn't exist, get a new one
@@ -150,7 +150,7 @@ class OAuth2Auth(BaseAuth):
         
         # Set expiration time
         if self._token.expires_in:
-            self._token_expires_at = datetime.utcnow() + timedelta(seconds=self._token.expires_in)
+            self._token_expires_at = datetime.now(timezone.utc) + timedelta(seconds=self._token.expires_in)
         else:
             # Default to 1 hour if no expires_in provided
             self._token_expires_at = datetime.utcnow() + timedelta(hours=1)
@@ -159,7 +159,7 @@ class OAuth2Auth(BaseAuth):
     
     def _request_token(self) -> OAuth2TokenResponse:
         """Request a new OAuth2 token from the server."""
-        token_url = f"{self.base_url.rstrip('/')}/rest/ofscCore/v1/token"
+        token_url = f"{self.base_url.rstrip('/')}/rest/oauthTokenService/v2/token"
         
         # Create Basic Auth for token request
         basic_auth_str = base64.b64encode(
@@ -195,7 +195,7 @@ class OAuth2Auth(BaseAuth):
         self._token = self._request_token()
         
         if self._token.expires_in:
-            self._token_expires_at = datetime.utcnow() + timedelta(seconds=self._token.expires_in)
+            self._token_expires_at = datetime.now(timezone.utc) + timedelta(seconds=self._token.expires_in)
         else:
             self._token_expires_at = datetime.utcnow() + timedelta(hours=1)
         
