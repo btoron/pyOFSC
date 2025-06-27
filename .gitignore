@@ -174,3 +174,7 @@ tests/keys/*
 CLAUDE.md
 response_examples
 _*.json
+test_v2
+test_v3
+test_debug
+tests/config.test.toml

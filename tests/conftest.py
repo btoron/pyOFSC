@@ -1,178 +1,316 @@
-import logging
-import os
-import pprint
-from collections import ChainMap
-from datetime import datetime, timedelta
-from http.client import HTTPConnection  # py3
-from pathlib import Path
+"""Pytest configuration and fixtures for OFSC v3.0 tests following documented strategy."""
 
-import jwt
+import os
 import pytest
+import asyncio
+from unittest.mock import Mock
+from pathlib import Path
+import httpx
 from dotenv import load_dotenv
 
-from ofsc import FULL_RESPONSE, OFSC
+# Import test configuration
+from .config import load_test_config, TestEnvironmentConfig
+
+# Import directly from client modules to avoid old dependencies
+import sys
+import importlib.util
+
+# Add project root to path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, project_root)
+
+# Load modules directly to avoid import issues with old code
+def load_module(module_name, file_path):
+    if module_name in sys.modules:
+        return sys.modules[module_name]
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+# Load required modules
+auth_module = load_module("ofsc.auth", os.path.join(project_root, "ofsc", "auth.py"))
+base_module = load_module("ofsc.client.base", os.path.join(project_root, "ofsc", "client", "base.py"))
+sync_module = load_module("ofsc.client.sync_client", os.path.join(project_root, "ofsc", "client", "sync_client.py"))
+async_module = load_module("ofsc.client.async_client", os.path.join(project_root, "ofsc", "client", "async_client.py"))
+
+# Import classes
+OFSC = sync_module.OFSC
+AsyncOFSC = async_module.AsyncOFSC
+BasicAuth = auth_module.BasicAuth
+OAuth2Auth = auth_module.OAuth2Auth
+
+# Load environment variables from .env file
+load_dotenv()
 
 
-@pytest.fixture(scope="module")
-def instance() -> OFSC:
-    # load .env file
-    load_dotenv()
-    # todo add credentials to test run
-    instance = OFSC(
-        clientID=os.environ.get("OFSC_CLIENT_ID"),
-        secret=os.environ.get("OFSC_CLIENT_SECRET"),
-        companyName=os.environ.get("OFSC_COMPANY"),
-        root=os.environ.get("OFSC_ROOT"),
-    )
-    return instance
-
-
-@pytest.fixture(scope="module")
-def assertion() -> str:
-    payload = {}
-    payload["sub"] = "admin"
-    payload["iss"] = (
-        "/C=US/ST=Florida/L=Miami/O=MyOrg/CN=JohnSmith/emailAddress=test@example.com"
-    )
-    payload["iat"] = datetime.now()
-    payload["exp"] = datetime.now() + timedelta(minutes=6000)
-    payload["aud"] = (
-        f'ofsc:{os.environ.get("OFSC_COMPANY")}:{os.environ.get("OFSC_CLIENT_ID")}'
-    )
-    payload["scope"] = "/REST"
-    key = Path("tests/keys/ofsc.key").read_text()
-    return jwt.encode(payload, key, algorithm="RS256")
-
-
-@pytest.fixture(scope="module")
-def instance_with_token():
-    # load .env file
-    load_dotenv()
-    # todo add credentials to test run
-    instance = OFSC(
-        clientID=os.environ.get("OFSC_CLIENT_ID"),
-        secret=os.environ.get("OFSC_CLIENT_SECRET"),
-        companyName=os.environ.get("OFSC_COMPANY"),
-        root=os.environ.get("OFSC_ROOT"),
-        useToken=True,
-    )
-    return instance
-
-
-@pytest.fixture(scope="module")
-def clear_subscriptions(instance):
-    response = instance.core.get_subscriptions(response_type=FULL_RESPONSE)
-    if response.status_code == 200 and response.json()["totalResults"] > 0:
-        for subscription in response.json()["items"]:
-            logging.info(subscription)
-            instance.core.delete_subscription(subscription["subscriptionId"])
-    yield
-    response = instance.core.get_subscriptions(response_type=FULL_RESPONSE)
-    if response.status_code == 200 and response.json()["totalResults"] > 0:
-        for subscription in response.json()["items"]:
-            instance.core.delete_subscription(subscription["subscriptionId"])
+# Configuration fixtures
+@pytest.fixture(scope="session")
+def test_config():
+    """Load test configuration with precedence handling."""
+    return load_test_config()
 
 
 @pytest.fixture
-def current_date():
-    return os.environ.get("OFSC_TEST_DATE")
-
-
-@pytest.fixture
-def pp():
-    pp = pprint.PrettyPrinter(indent=4)
-    return pp
-
-
-@pytest.fixture
-def request_logging():
-    log = logging.getLogger("urllib3")
-    log.setLevel(logging.DEBUG)
-
-    # logging from urllib3 to console
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-    log.addHandler(ch)
-
-    # print statements from `http.client.HTTPConnection` to console/stdout
-    HTTPConnection.debuglevel = 1
-
-
-@pytest.fixture
-def demo_data():
-    # TODO: find a better way to change based on demo date
-    demo_data = {
-        "23B Service Update 1": {
-            "get_all_activities": {
-                "bucket_id": "CAUSA",
-                "expected_id": 3960470,
-                "expected_items": 758,
-                "expected_postalcode": "55001",
-            }
-        },
-        "24A WMP 02 Demo_Services.E360.Supremo.Chapter8.ESM . 2024-03-01 22:20": {
-            "get_all_activities": {
-                "bucket_id": "CAUSA",
-                "expected_id": 3960470,
-                "expected_items": 698,
-                "expected_postalcode": "55001",
-            },
-            "metadata": {
-                "expected_workskills": 7,
-                "expected_workskill_conditions": 8,
-                "expected_resource_types": 10,
-                "expected_properties": 463,
-                "expected_activity_type_groups": 5,
-                "expected_activity_types": 35,
-                "expected_activity_types_customer": 25,
-                "expected_capacity_areas": [
-                    {
-                        "label": "CAUSA",
-                        "status": "active",
-                        "type": "area",
-                        "parentLabel": "SUNRISE",
-                    },
-                    {
-                        "label": "FLUSA",
-                        "status": "active",
-                        "type": "area",
-                        "parentLabel": "SUNRISE",
-                    },
-                    {
-                        "label": "South Florida",
-                        "status": "active",
-                        "type": "area",
-                        "parentLabel": "FLUSA",
-                    },
-                    {"label": "SUNRISE", "status": "active", "type": "group"},
-                    {
-                        "label": "routing_old",
-                        "status": "inactive",
-                        "type": "area",
-                        "parentLabel": "FLUSA",
-                    },
-                ],
-                "expected_capacity_categories": {
-                    "EST": {"label": "EST", "name": "Estimate"},
-                    "RES": {"label": "RES", "name": "Residential"},
-                    "COM": {"label": "COM", "name": "Commercial"},
-                },
-                "expected_inventory_types": {
-                    "count": 23,
-                    "demo": {
-                        "label": "FIT5000",
-                        "status": "active",
-                    },
-                },
-            },
-            "get_file_property": {
-                "activity_id": 3954799,  # Note: manual addition
-            },
-            "get_users": {
-                "totalResults": 322,
-            },
-            "events": {"move_from": "FLUSA", "move_to": "CAUSA", "move_id": 4224268},
-        },
+def test_credentials():
+    """Test credentials for mocked tests."""
+    return {
+        "instance": "test_instance",
+        "client_id": "test_client_id",
+        "client_secret": "test_client_secret"
     }
-    # return a ChainMap of the demo_data elements, sorting them by the keys
-    return ChainMap(*demo_data.values())
+
+
+@pytest.fixture
+def live_credentials(test_config):
+    """Live credentials from configuration for integration tests."""
+    # Try to get from test config first, then fall back to env vars
+    env_config = test_config.environments.get("env")
+    if env_config:
+        return {
+            "instance": env_config.instance,
+            "client_id": env_config.client_id,
+            "client_secret": env_config.client_secret
+        }
+    
+    # Fallback to direct env var check
+    instance = os.getenv('OFSC_INSTANCE')
+    client_id = os.getenv('OFSC_CLIENT_ID')
+    client_secret = os.getenv('OFSC_CLIENT_SECRET')
+    
+    if not all([instance, client_id, client_secret]):
+        pytest.skip("Live credentials not available. Set OFSC_INSTANCE, OFSC_CLIENT_ID, OFSC_CLIENT_SECRET")
+    
+    return {
+        "instance": instance,
+        "client_id": client_id,
+        "client_secret": client_secret
+    }
+
+
+# Authentication fixtures
+@pytest.fixture
+def basic_auth(test_credentials):
+    """Basic authentication instance for testing."""
+    return BasicAuth(
+        instance=test_credentials["instance"],
+        client_id=test_credentials["client_id"],
+        client_secret=test_credentials["client_secret"]
+    )
+
+
+# Mock fixtures
+@pytest.fixture
+def mock_httpx_client():
+    """Mock httpx.Client for unit testing."""
+    mock_client = Mock(spec=httpx.Client)
+    mock_response = Mock(spec=httpx.Response)
+    mock_response.status_code = 200
+    mock_response.json.return_value = {"status": "success"}
+    mock_response.text = '{"status": "success"}'
+    mock_client.request.return_value = mock_response
+    mock_client.is_closed = False
+    return mock_client
+
+
+# Client fixtures
+@pytest.fixture
+def sync_client(test_credentials):
+    """Sync OFSC client for unit testing."""
+    return OFSC(
+        instance=test_credentials["instance"],
+        client_id=test_credentials["client_id"],
+        client_secret=test_credentials["client_secret"]
+    )
+
+
+@pytest.fixture
+def async_client(test_credentials):
+    """Async OFSC client for unit testing."""
+    return AsyncOFSC(
+        instance=test_credentials["instance"],
+        client_id=test_credentials["client_id"],
+        client_secret=test_credentials["client_secret"]
+    )
+
+
+@pytest.fixture
+def live_sync_client(live_credentials):
+    """Live sync OFSC client for integration tests."""
+    return OFSC(
+        instance=live_credentials["instance"],
+        client_id=live_credentials["client_id"],
+        client_secret=live_credentials["client_secret"]
+    )
+
+
+@pytest.fixture
+def live_async_client(live_credentials):
+    """Live async OFSC client for integration tests."""
+    return AsyncOFSC(
+        instance=live_credentials["instance"],
+        client_id=live_credentials["client_id"],
+        client_secret=live_credentials["client_secret"]
+    )
+
+
+# Environment-specific client fixtures
+@pytest.fixture
+def dev_sync_client(test_config):
+    """Sync client for dev environment."""
+    env_config = test_config.environments.get("dev")
+    if not env_config:
+        pytest.skip("Dev environment not configured")
+    
+    return OFSC(
+        instance=env_config.instance,
+        client_id=env_config.client_id,
+        client_secret=env_config.client_secret
+    )
+
+
+@pytest.fixture
+def dev_async_client(test_config):
+    """Async client for dev environment."""
+    env_config = test_config.environments.get("dev")
+    if not env_config:
+        pytest.skip("Dev environment not configured")
+    
+    return AsyncOFSC(
+        instance=env_config.instance,
+        client_id=env_config.client_id,
+        client_secret=env_config.client_secret
+    )
+
+
+# Data fixtures
+@pytest.fixture
+def response_examples_path():
+    """Path to response examples directory."""
+    return Path(__file__).parent.parent / "response_examples"
+
+
+@pytest.fixture
+def test_data_path():
+    """Path to test data directory."""
+    return Path(__file__).parent / "data"
+
+
+# Async test configuration
+@pytest.fixture
+def event_loop():
+    """Create event loop for async tests."""
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
+
+
+# Test isolation fixtures
+@pytest.fixture
+def test_prefix():
+    """Generate unique prefix for test isolation in live tests."""
+    import uuid
+    return f"PYTEST_{uuid.uuid4().hex[:8]}_"
+
+
+# Mock server fixtures (placeholder for future implementation)
+@pytest.fixture(scope="session")
+def mock_server(test_config):
+    """Mock server fixture for integration tests."""
+    # Placeholder - will be implemented in Phase 2
+    pytest.skip("Mock server not yet implemented")
+
+
+# Test markers configuration
+def pytest_configure(config):
+    """Configure pytest markers."""
+    config.addinivalue_line(
+        "markers", "unit: marks tests as unit tests (no external dependencies)"
+    )
+    config.addinivalue_line(
+        "markers", "integration: marks tests as integration tests (may require live credentials)"
+    )
+    config.addinivalue_line(
+        "markers", "live: marks tests as live environment tests (requires real OFSC instance)"
+    )
+    config.addinivalue_line(
+        "markers", "slow: marks tests as slow running tests"
+    )
+
+
+# Debug fixtures
+@pytest.fixture
+def debug_mode(test_config):
+    """Enable debug mode based on configuration."""
+    return test_config.debug_on_failure
+
+
+# Environment selection
+def pytest_addoption(parser):
+    """Add command line options for test execution."""
+    parser.addoption(
+        "--env",
+        action="store",
+        default="dev",
+        help="Test environment to use: dev, staging, prod"
+    )
+    parser.addoption(
+        "--live",
+        action="store_true",
+        default=False,
+        help="Run live tests against real OFSC instance"
+    )
+
+
+@pytest.fixture
+def test_env(request):
+    """Get the test environment from command line."""
+    return request.config.getoption("--env")
+
+
+@pytest.fixture
+def run_live_tests(request):
+    """Determine if live tests should be run."""
+    return request.config.getoption("--live")
+
+
+# Parametrized client fixtures for testing both sync and async
+@pytest.fixture(params=["sync", "async"])
+def both_clients(request, sync_client, async_client):
+    """Parametrized fixture to test both sync and async clients."""
+    if request.param == "sync":
+        return sync_client
+    else:
+        return async_client
+
+
+# Error handling and debugging
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """Generate detailed debug logs on test failure."""
+    outcome = yield
+    rep = outcome.get_result()
+    
+    if rep.when == "call" and rep.failed:
+        # Create debug directory
+        debug_dir = Path("test_debug") / item.nodeid.replace("/", "_").replace("::", "_")
+        debug_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Save test context if debug mode is enabled
+        try:
+            config = load_test_config()
+            if config.debug_on_failure:
+                import json
+                from datetime import datetime
+                
+                with open(debug_dir / "context.json", "w") as f:
+                    json.dump({
+                        "test": item.nodeid,
+                        "timestamp": datetime.now().isoformat(),
+                        "environment": getattr(item, "test_env", "unknown"),
+                        "error": str(rep.longrepr)
+                    }, f, indent=2)
+        except Exception:
+            # Don't fail if debug saving fails
+            pass
