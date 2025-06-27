@@ -1,12 +1,11 @@
 import base64
 import logging
+from abc import ABC
 from datetime import date
 from enum import Enum
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 from urllib.parse import urljoin
 
-import requests
-from cachetools import TTLCache, cached
 from pydantic import (
     AliasChoices,
     AnyHttpUrl,
@@ -19,8 +18,6 @@ from pydantic import (
     model_validator,
 )
 from typing_extensions import Annotated
-
-from ofsc.common import FULL_RESPONSE, wrap_return
 
 T = TypeVar("T")
 
@@ -130,67 +127,50 @@ class OFSAPIError(BaseModel):
     detail: str
 
 
-class OFSApi:
+class OFSApi(ABC):
+    """Abstract base API client class for OFSC v2 compatibility.
+    
+    This abstract class defines the interface that all OFSC API clients
+    must implement. It provides common configuration and base URL handling.
+    
+    Note: For v3.0, this will be replaced by the new client architecture
+    in ofsc.client.base.BaseOFSClient
+    """
+    
     def __init__(self, config: OFSConfig) -> None:
         self._config = config
 
     @property
     def config(self) -> OFSConfig:
+        """Get the configuration object."""
         return self._config
 
     @property
-    def baseUrl(self):
+    def baseUrl(self) -> Optional[str]:
+        """Get the base URL for API requests."""
         return self._config.baseURL
 
-    @cached(
-        cache=TTLCache(maxsize=1, ttl=3000)
-    )  # Cache of token results for 50 minutes
-    @wrap_return(response_type=FULL_RESPONSE, expected=[200])
-    def token(self, auth: OFSOAuthRequest = OFSOAuthRequest()) -> requests.Response:
-        headers = {}
-        logging.info(f"Getting token with {auth.grant_type}")
-        if (
-            auth.grant_type == "client_credentials"
-            or auth.grant_type == "urn:ietf:params:oauth:grant-type:jwt-bearer"
-        ):
-            headers["Authorization"] = "Basic " + self._config.basicAuthString.decode(
-                "utf-8"
-            )
-        else:
-            raise NotImplementedError(
-                f"grant_type {auth.grant_type} not implemented yet"
-            )
-        headers["Content-Type"] = "application/x-www-form-urlencoded"
-        url = urljoin(self.baseUrl, "/rest/oauthTokenService/v2/token")
-        response = requests.post(
-            url, data=auth.model_dump(exclude_none=True), headers=headers
-        )
-        return response
-
-    # Wrapper for requests not included in the standard methods
-    def call(
-        self, *, method: str, partialUrl: str, additionalHeaders: dict = {}, **kwargs
-    ) -> requests.Response:
-        headers = self.headers | additionalHeaders
-        url = urljoin(self.baseUrl, partialUrl)
-        headers = self.headers
-        response = requests.request(method, url, headers=headers, **kwargs)
-        return response
-
     @property
-    def headers(self):
-        self._headers = {}
-        self._headers["Content-Type"] = "application/json;charset=UTF-8"
+    def headers(self) -> dict:
+        """Get headers for API requests.
+        
+        Default implementation for backward compatibility.
+        Subclasses can override this for custom behavior.
+        """
+        _headers = {}
+        _headers["Content-Type"] = "application/json;charset=UTF-8"
 
         if not self._config.useToken:
-            self._headers["Authorization"] = (
+            _headers["Authorization"] = (
                 "Basic " + self._config.basicAuthString.decode("utf-8")
             )
         else:
-            self._token = self.token().json()["access_token"]
-            self._headers["Authorization"] = f"Bearer {self._token}"
-            print(f"Not implemented {self._token}")
-        return self._headers
+            # Token-based auth would require actual HTTP implementation
+            raise NotImplementedError(
+                "Token-based authentication requires HTTP functionality. "
+                "This will be implemented in Phase 1.6 with httpx migration."
+            )
+        return _headers
 
 
 class SharingEnum(str, Enum):

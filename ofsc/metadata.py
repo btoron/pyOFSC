@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Tuple
 from urllib.parse import urljoin
 
+# TODO: Phase 1.6 - Migrate from requests to httpx
 import requests
 
 from .common import FULL_RESPONSE, OBJ_RESPONSE, wrap_return

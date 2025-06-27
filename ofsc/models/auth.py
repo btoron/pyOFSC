@@ -8,15 +8,10 @@ This module contains models related to:
 """
 
 import base64
-import logging
+from abc import ABC
 from typing import Optional
-from urllib.parse import urljoin
 
-import requests
-from cachetools import TTLCache, cached
 from pydantic import BaseModel, ConfigDict, ValidationInfo, field_validator
-
-from ofsc.common import FULL_RESPONSE, wrap_return
 
 
 class OFSConfig(BaseModel):
@@ -64,10 +59,13 @@ class OFSAPIError(BaseModel):
     detail: str
 
 
-class OFSApi:
-    """Base API client class for legacy v2 authentication.
+class OFSApi(ABC):
+    """Abstract base API client class for OFSC v2 compatibility.
     
-    Note: This will be replaced by the new v3.0 client architecture
+    This abstract class defines the interface that all OFSC API clients
+    must implement. It provides common configuration and base URL handling.
+    
+    Note: For v3.0, this will be replaced by the new client architecture
     in ofsc.client.base.BaseOFSClient
     """
     
@@ -76,30 +74,32 @@ class OFSApi:
 
     @property
     def config(self) -> OFSConfig:
+        """Get the configuration object."""
         return self._config
+    
+    @property
+    def baseUrl(self) -> Optional[str]:
+        """Get the base URL for API requests."""
+        return self._config.baseURL
+    
+    @property
+    def headers(self) -> dict:
+        """Get headers for API requests.
+        
+        Default implementation for backward compatibility.
+        Subclasses can override this for custom behavior.
+        """
+        _headers = {}
+        _headers["Content-Type"] = "application/json;charset=UTF-8"
 
-    @cached(
-        cache=TTLCache(maxsize=5, ttl=3300),
-        key=lambda self, auth: f"{auth.grant_type}_{auth.assertion}",
-    )
-    def token(self, auth: OFSOAuthRequest = OFSOAuthRequest()) -> requests.Response:
-        """Get OAuth2 token (legacy v2 implementation)"""
-        headers = {
-            "Authorization": "Basic " + self.config.basicAuthString.decode("utf-8"),
-            "Content-Type": "application/x-www-form-urlencoded",
-        }
-        url = urljoin(self.config.baseURL, "rest/ofscCore/v1/token")
-        data = auth.model_dump()
-        return requests.post(url, data=data, headers=headers)
-
-    @wrap_return(response_type=FULL_RESPONSE, expected=[200])
-    def authorization_test(
-        self, auth: OFSOAuthRequest = OFSOAuthRequest()
-    ) -> requests.Response:
-        """Test authorization credentials"""
-        url = urljoin(self.config.baseURL, "rest/ofscCore/v1/authorize/test")
-        headers = {
-            "Authorization": "Bearer " + self.token(auth).json()["access_token"],
-            "Content-Type": "application/json",
-        }
-        return requests.get(url, headers=headers)
+        if not self._config.useToken:
+            _headers["Authorization"] = (
+                "Basic " + self._config.basicAuthString.decode("utf-8")
+            )
+        else:
+            # Token-based auth would require actual HTTP implementation
+            raise NotImplementedError(
+                "Token-based authentication requires HTTP functionality. "
+                "This will be implemented in Phase 1.6 with httpx migration."
+            )
+        return _headers
