@@ -66,26 +66,56 @@ This document provides a detailed implementation plan for the OFSC Python Wrappe
 - Environment variables load correctly
 - Credentials are never logged
 
-#### 1.4 Pydantic Response Models
+#### 1.4 Pydantic Response Models (Split into 5 Subphases)
 
+**Phase 1.4.0: Model Submodule Organization**
 **Tasks:**
-- [ ] Design `BaseOFSResponse` with raw response access
-- [ ] Create response models for Core API endpoints
-- [ ] Create response models for Metadata API endpoints
-- [ ] Create response models for Capacity API endpoints
-- [ ] Implement generic `OFSResponseList[T]` type
-- [ ] Add model validation and type hints
+- [ ] Create `ofsc/models/` directory structure
+- [ ] Split large models.py into focused submodules (base, metadata, core, capacity, auth)
+- [ ] Create `ofsc/models/__init__.py` with backward-compatible re-exports
+- [ ] Update all existing imports throughout codebase
+- [ ] Verify no breaking changes to existing model imports
+
+**Phase 1.4.1: BaseOFSResponse Foundation + Metadata Model Adaptation**
+**Tasks:**
+- [ ] Design `BaseOFSResponse` with raw httpx response access
+- [ ] Adapt existing Metadata models for v3.0 integration
+- [ ] Update response examples validation for Metadata models
+- [ ] Integrate models with new client classes
+
+**Phase 1.4.2: Core API Model Adaptation**
+**Tasks:**
+- [ ] Adapt existing Core models for v3.0 (Resource, Activity, Location, etc.)
+- [ ] Add any missing Core models based on response examples
+- [ ] Update Core API client integration with adapted models
+- [ ] Extend model validation tests for Core API
+
+**Phase 1.4.3: Capacity API Model Adaptation**
+**Tasks:**
+- [ ] Adapt existing Capacity models for v3.0 (CapacityArea, CapacityCategory, Quota, etc.)
+- [ ] Validate complex capacity response structures
+- [ ] Update Capacity API client integration
+- [ ] Extend model validation tests for Capacity API
+
+**Phase 1.4.4: Model Integration Finalization**
+**Tasks:**
+- [ ] Final integration of all adapted models with client classes
+- [ ] Comprehensive model validation against all response examples
+- [ ] Type hint enhancement for IDE support
+- [ ] Model documentation and cross-API relationship validation
 
 **Deliverables:**
-- Complete set of Pydantic models for all API responses
-- Base response class with raw_response property
-- Generic list response type
+- Organized model submodule structure with backward compatibility
+- Adapted (not rewritten) Pydantic models for all API responses
+- BaseOFSResponse class with httpx integration
+- Complete model validation test suite
 
 **Acceptance Criteria:**
-- All response examples validate against models
+- All existing `from ofsc.models import X` statements continue to work unchanged
+- All 33+ response examples validate against adapted models
 - Raw httpx response accessible via `model.raw_response`
 - Type hints work correctly in IDEs
-- Models serialize to/from JSON
+- Zero breaking changes to existing model field names
 
 #### 1.5 Error Handling
 
@@ -488,17 +518,18 @@ This document provides a detailed implementation plan for the OFSC Python Wrappe
 | Week | Phase | Key Deliverables |
 |------|-------|------------------|
 | 1 | 1.1-1.2 | Project setup, HTTP clients |
-| 2 | 1.3-1.4 | Auth system, Pydantic models |
-| 3 | 1.5-1.6 | Error handling, API endpoints |
-| 4 | 1.6 | Complete Phase 1, API migration |
-| 5 | 2.1-2.2 | Configuration, logging/monitoring |
-| 6 | 2.3-2.4 | Security, extensibility |
-| 7 | 2.5 | Request handling, Phase 2 complete |
-| 8 | 3.1-3.2 | Testing suite, type safety |
-| 9 | 3.3-3.4 | Config testing, security testing |
-| 10 | 3.5 | Extensibility testing, Phase 3 complete |
-| 11 | 4.1-4.2 | Documentation, backwards compatibility |
-| 12 | 4.3-4.5 | Examples, release preparation |
+| 2 | 1.3 | Auth system |
+| 3 | 1.4.0-1.4.2 | Model reorganization, Metadata & Core model adaptation |
+| 4 | 1.4.3-1.4.4, 1.5 | Capacity models, integration, Error handling |
+| 5 | 1.6 | Complete Phase 1, API endpoints migration |
+| 6 | 2.1-2.2 | Configuration, logging/monitoring |
+| 7 | 2.3-2.4 | Security, extensibility |
+| 8 | 2.5 | Request handling, Phase 2 complete |
+| 9 | 3.1-3.2 | Testing suite, type safety |
+| 10 | 3.3-3.4 | Config testing, security testing |
+| 11 | 3.5 | Extensibility testing, Phase 3 complete |
+| 12 | 4.1-4.2 | Documentation, backwards compatibility |
+| 13 | 4.3-4.5 | Examples, release preparation |
 
 ## Acceptance Criteria Summary
 
@@ -533,7 +564,7 @@ This document provides a detailed implementation plan for the OFSC Python Wrappe
 ## Final Release Criteria
 
 The v3.0 release is ready when:
-1. All 188 tasks completed (covering all 16 requirements R1-R16)
+1. All 202 tasks completed (covering all 16 requirements R1-R16)
 2. All acceptance criteria met
 3. 80% test coverage achieved
 4. mypy strict mode passes

@@ -3,7 +3,7 @@
 ## Project Status
 
 **Current Phase:** Phase 1 - Foundation and Breaking Changes  
-**Overall Progress:** 8% (15/188 tasks completed)  
+**Overall Progress:** 7% (15/202 tasks completed)  
 **Start Date:** December 27, 2024  
 **Target Completion:** TBD  
 
@@ -11,11 +11,11 @@
 
 | Phase | Tasks | Completed | Progress | Status |
 |-------|-------|-----------|----------|---------|
-| Phase 1: Foundation | 71 | 15 | 21% | In Progress |
+| Phase 1: Foundation | 85 | 15 | 18% | In Progress |
 | Phase 2: Enhanced Features | 47 | 0 | 0% | Not Started |
 | Phase 3: Testing & QA | 42 | 0 | 0% | Not Started |
 | Phase 4: Documentation & Migration | 28 | 0 | 0% | Not Started |
-| **Total** | **188** | **15** | **8%** | **In Progress** |
+| **Total** | **202** | **15** | **7%** | **In Progress** |
 
 ## Phase 1: Foundation and Breaking Changes (Weeks 1-4)
 
@@ -66,18 +66,59 @@
 - ✅ Environment variables load correctly (OFSC_INSTANCE, OFSC_CLIENT_ID, OFSC_CLIENT_SECRET)
 - ✅ Credentials are never logged (authentication module masks sensitive data)
 
-### 1.4 Pydantic Response Models
-**Progress: 0/6 tasks (0%)**
+### 1.4 Pydantic Response Models (Split into 5 Subphases)
+**Progress: 0/20 tasks (0%)**
 
-- [ ] Design `BaseOFSResponse` with raw response access
-- [ ] Create response models for Core API endpoints
-- [ ] Create response models for Metadata API endpoints
-- [ ] Create response models for Capacity API endpoints
-- [ ] Implement generic `OFSResponseList[T]` type
-- [ ] Add model validation and type hints
+#### 1.4.0 Model Submodule Organization
+**Progress: 0/5 tasks (0%)**
+
+- [ ] Create `ofsc/models/` directory structure
+- [ ] Split large models.py into focused submodules (base, metadata, core, capacity, auth)
+- [ ] Create `ofsc/models/__init__.py` with backward-compatible re-exports
+- [ ] Update all existing imports throughout codebase
+- [ ] Verify no breaking changes to existing model imports
 
 **Status:** Not Started  
-**Acceptance Criteria Met:** 0/4
+
+#### 1.4.1 BaseOFSResponse Foundation + Metadata Model Adaptation
+**Progress: 0/4 tasks (0%)**
+
+- [ ] Design `BaseOFSResponse` with raw httpx response access
+- [ ] Adapt existing Metadata models for v3.0 integration
+- [ ] Update response examples validation for Metadata models
+- [ ] Integrate models with new client classes
+
+**Status:** Not Started  
+
+#### 1.4.2 Core API Model Adaptation
+**Progress: 0/4 tasks (0%)**
+
+- [ ] Adapt existing Core models for v3.0 (Resource, Activity, Location, etc.)
+- [ ] Add any missing Core models based on response examples
+- [ ] Update Core API client integration with adapted models
+- [ ] Extend model validation tests for Core API
+
+**Status:** Not Started  
+
+#### 1.4.3 Capacity API Model Adaptation
+**Progress: 0/4 tasks (0%)**
+
+- [ ] Adapt existing Capacity models for v3.0 (CapacityArea, CapacityCategory, Quota, etc.)
+- [ ] Validate complex capacity response structures
+- [ ] Update Capacity API client integration
+- [ ] Extend model validation tests for Capacity API
+
+**Status:** Not Started  
+
+#### 1.4.4 Model Integration Finalization
+**Progress: 0/3 tasks (0%)**
+
+- [ ] Final integration of all adapted models with client classes
+- [ ] Comprehensive model validation against all response examples
+- [ ] Type hint enhancement and model documentation
+
+**Status:** Not Started  
+**Overall Acceptance Criteria Met:** 0/5
 
 ### 1.5 Error Handling
 **Progress: 0/5 tasks (0%)**
@@ -376,6 +417,11 @@
 ## Notes and Decisions
 
 ### Implementation Notes
+- **December 27, 2024**: Updated Phase 1.4 to leverage existing v2 models
+  - Split Phase 1.4 from 6 tasks to 20 tasks across 5 subphases (1.4.0 to 1.4.4)
+  - Focus on model reorganization and adaptation rather than rewriting
+  - Existing models.py contains 64+ BaseModel classes that will be reused
+  - Plan emphasizes backward compatibility and model submodule organization
 - Track decisions and rationale here
 - Document any deviations from the plan
 - Record lessons learned
@@ -388,4 +434,4 @@
 ## Last Updated
 **Date:** December 27, 2024  
 **Updated By:** Claude  
-**Changes:** Initial tracker creation
+**Changes:** Updated Phase 1.4 plan to leverage existing v2 models with submodule organization strategy
