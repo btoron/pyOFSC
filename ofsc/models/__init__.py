@@ -107,10 +107,13 @@ from .core import (
     RecurrenceType,
     Resource,
     ResourceList,
+    ResourcePosition,
+    ResourcePositionListResponse,
     ResourceUsersListResponse,
     ResourceWorkScheduleItem,
     ResourceWorkScheduleResponse,
     ResourceWorkScheduleResponseList,
+    User,
     WeekDay,
 )
 
@@ -226,10 +229,13 @@ __all__ = [
     "RecurrenceType",
     "Resource",
     "ResourceList",
+    "ResourcePosition",
+    "ResourcePositionListResponse",
     "ResourceUsersListResponse",
     "ResourceWorkScheduleItem",
     "ResourceWorkScheduleResponse",
     "ResourceWorkScheduleResponseList",
+    "User",
     "WeekDay",
     
     # Capacity models

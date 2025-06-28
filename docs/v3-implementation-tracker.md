@@ -3,7 +3,7 @@
 ## Project Status
 
 **Current Phase:** Phase 1 - Foundation and Breaking Changes  
-**Overall Progress:** 12% (24/202 tasks completed)  
+**Overall Progress:** 14% (28/202 tasks completed)  
 **Start Date:** December 27, 2024  
 **Target Completion:** TBD  
 
@@ -11,11 +11,11 @@
 
 | Phase | Tasks | Completed | Progress | Status |
 |-------|-------|-----------|----------|---------|
-| Phase 1: Foundation | 85 | 24 | 28% | In Progress |
+| Phase 1: Foundation | 85 | 28 | 33% | In Progress |
 | Phase 2: Enhanced Features | 47 | 0 | 0% | Not Started |
 | Phase 3: Testing & QA | 42 | 0 | 0% | Not Started |
 | Phase 4: Documentation & Migration | 28 | 0 | 0% | Not Started |
-| **Total** | **202** | **24** | **12%** | **In Progress** |
+| **Total** | **202** | **28** | **14%** | **In Progress** |
 
 ## Phase 1: Foundation and Breaking Changes (Weeks 1-4)
 
@@ -67,7 +67,7 @@
 - ✅ Credentials are never logged (authentication module masks sensitive data)
 
 ### 1.4 Pydantic Response Models (Split into 5 Subphases)
-**Progress: 9/20 tasks (45%)**
+**Progress: 13/20 tasks (65%)**
 
 #### 1.4.0 Model Submodule Organization
 **Progress: 5/5 tasks (100%)**
@@ -106,14 +106,23 @@
 - Successfully tested live authentication against OFSC dev servers  
 
 #### 1.4.2 Core API Model Adaptation
-**Progress: 0/4 tasks (0%)**
+**Progress: 4/4 tasks (100%)**
 
-- [ ] Adapt existing Core models for v3.0 (Resource, Activity, Location, etc.)
-- [ ] Add any missing Core models based on response examples
-- [ ] Update Core API client integration with adapted models
-- [ ] Extend model validation tests for Core API
+- [x] Adapt existing Core models for v3.0 (Resource, Activity, Location, etc.)
+- [x] Add any missing Core models based on response examples
+- [x] Update Core API client integration with adapted models
+- [x] Extend model validation tests for Core API
 
-**Status:** Not Started  
+**Status:** Completed  
+**Completion Date:** December 28, 2024  
+**Key Achievements:**
+- Successfully adapted all Core API models to inherit from BaseOFSResponse
+- Enhanced Resource model with resourceInternalId, timeZoneIANA, and related resource links
+- Added comprehensive User model with full user properties (userType, timeZoneIANA, etc.)
+- Created ResourcePosition and ResourcePositionListResponse models for position tracking
+- Updated Core API client imports to include new models (Resource, User, ResourcePosition)
+- Created comprehensive model validation tests against real API responses
+- All 5 validation tests pass with real response examples (resources, users, positions)  
 
 #### 1.4.3 Capacity API Model Adaptation
 **Progress: 0/4 tasks (0%)**
@@ -133,9 +142,10 @@
 - [ ] Type hint enhancement and model documentation
 
 **Status:** Not Started  
-**Overall Acceptance Criteria Met:** 2/5
+**Overall Acceptance Criteria Met:** 3/5
 - ✅ BaseOFSResponse class implemented with httpx integration and raw response access
 - ✅ OAuth consolidation completed with backward compatibility maintained
+- ✅ Core API models adapted for v3.0 with comprehensive validation testing
 
 ### 1.5 Error Handling
 **Progress: 0/5 tasks (0%)**
@@ -457,6 +467,15 @@
   - Verified live authentication testing against OFSC dev servers
   - Maintained 100% backward compatibility through wrapper pattern
   - Current project progress: 12% overall (24/202 tasks), Phase 1: 28% (24/85 tasks)
+- **December 28, 2024**: Completed Phase 1.4.2 - Core API Model Adaptation
+  - Successfully adapted all Core API models to inherit from BaseOFSResponse for v3.0 integration
+  - Enhanced Resource model with additional fields: resourceInternalId, timeZoneIANA, timeZoneDiff, related links
+  - Added comprehensive User model with full properties: userType, createdTime, lastLoginTime, etc.
+  - Created new ResourcePosition model for tracking resource positions with error handling
+  - Updated Core API client integration with new model imports
+  - Implemented comprehensive model validation tests against real API response examples
+  - All 5 validation tests pass demonstrating models work with actual OFSC API data
+  - Current project progress: 14% overall (28/202 tasks), Phase 1: 33% (28/85 tasks)
 
 ### Blockers and Dependencies
 - List any blockers encountered
