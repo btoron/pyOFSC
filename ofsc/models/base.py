@@ -2,14 +2,13 @@
 
 This module contains the core model infrastructure used by all other model modules:
 - Base response types and generic list handling
-- Utility classes like CsvList for API parameter handling  
+- Utility classes like CsvList for API parameter handling
 - Common enums and translation support
 - TypeVar definitions and base configurations
 """
 
-from datetime import date
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar
+from typing import TYPE_CHECKING, Dict, Generic, List, Optional, TypeVar
 
 from pydantic import (
     BaseModel,
@@ -17,8 +16,6 @@ from pydantic import (
     Field,
     PrivateAttr,
     RootModel,
-    ValidationInfo,
-    field_validator,
     model_validator,
 )
 from typing_extensions import Annotated
@@ -69,49 +66,49 @@ class CsvList(BaseModel):
 
 class BaseOFSResponse(BaseModel):
     """Base class for all OFSC API responses that provides raw response access.
-    
+
     This class allows Pydantic models to store and access the raw httpx response
     object, enabling access to headers, status codes, and other HTTP metadata
     while still providing the convenience of validated model fields.
     """
-    
+
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="ignore")
-    
-    _raw_response: Optional['httpx.Response'] = PrivateAttr(default=None)
-    
+
+    _raw_response: Optional["httpx.Response"] = PrivateAttr(default=None)
+
     @property
-    def raw_response(self) -> Optional['httpx.Response']:
+    def raw_response(self) -> Optional["httpx.Response"]:
         """Access the raw httpx response object.
-        
+
         Returns:
             The original httpx.Response object if available, None otherwise.
             Provides access to response.status_code, response.headers, etc.
         """
         return self._raw_response
-    
+
     @classmethod
-    def from_response(cls, response: 'httpx.Response', **kwargs):
+    def from_response(cls, response: "httpx.Response", **kwargs):
         """Create model instance from httpx response.
-        
+
         Args:
             response: The httpx.Response object to parse
             **kwargs: Additional arguments passed to model_validate
-            
+
         Returns:
             An instance of the model with raw_response populated
-            
+
         Raises:
             ValidationError: If the response JSON doesn't match the model schema
         """
         instance = cls.model_validate(response.json(), **kwargs)
         instance._raw_response = response
         return instance
-    
+
     @property
     def status_code(self) -> Optional[int]:
         """Convenience property to access response status code."""
         return self._raw_response.status_code if self._raw_response else None
-    
+
     @property
     def headers(self) -> Optional[Dict[str, str]]:
         """Convenience property to access response headers."""
@@ -120,10 +117,11 @@ class BaseOFSResponse(BaseModel):
 
 class OFSResponseList(BaseOFSResponse, Generic[T]):
     """Generic response list model for paginated OFSC API responses.
-    
+
     This class handles the standard OFSC list response format with pagination
     metadata and provides list-like access to the contained items.
     """
+
     model_config = ConfigDict(extra="allow")
 
     items: List[T] = []
@@ -157,6 +155,7 @@ class OFSResponseList(BaseOFSResponse, Generic[T]):
 # Common Enums used across multiple model types
 class SharingEnum(str, Enum):
     """Sharing level enumeration for work skills and other shared resources"""
+
     area = "area"
     category = "category"
     maximal = "maximal"
@@ -167,6 +166,7 @@ class SharingEnum(str, Enum):
 
 class EntityEnum(str, Enum):
     """Entity type enumeration for properties and other multi-entity models"""
+
     activity = "activity"
     inventory = "inventory"
     resource = "resource"
@@ -177,6 +177,7 @@ class EntityEnum(str, Enum):
 # Translation support classes
 class Translation(BaseModel):
     """Translation model for internationalized text content"""
+
     language: str = "en"
     name: str
     languageISO: Optional[str] = None
@@ -184,7 +185,7 @@ class Translation(BaseModel):
 
 class TranslationList(RootModel[List[Translation]]):
     """List of translations with mapping utilities"""
-    
+
     def __iter__(self):
         return iter(self.root)
 

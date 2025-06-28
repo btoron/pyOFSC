@@ -3,7 +3,7 @@
 ## Project Status
 
 **Current Phase:** Phase 1 - Foundation and Breaking Changes  
-**Overall Progress:** 20% (40/202 tasks completed)  
+**Overall Progress:** 20% (45/222 tasks completed)  
 **Start Date:** December 27, 2024  
 **Target Completion:** TBD  
 
@@ -11,11 +11,11 @@
 
 | Phase | Tasks | Completed | Progress | Status |
 |-------|-------|-----------|----------|---------|
-| Phase 1: Foundation | 85 | 40 | 47% | In Progress |
+| Phase 1: Foundation | 105 | 45 | 43% | In Progress |
 | Phase 2: Enhanced Features | 47 | 0 | 0% | Not Started |
 | Phase 3: Testing & QA | 42 | 0 | 0% | Not Started |
 | Phase 4: Documentation & Migration | 28 | 0 | 0% | Not Started |
-| **Total** | **202** | **40** | **20%** | **In Progress** |
+| **Total** | **222** | **45** | **20%** | **In Progress** |
 
 ## Phase 1: Foundation and Breaking Changes (Weeks 1-4)
 
@@ -194,17 +194,72 @@
 - ✅ Retry logic with exponential backoff and circuit breaker pattern implemented
 - ✅ Always raise exceptions on errors (no configurable error handling)
 
-### 1.6 API Endpoint Implementation
+### 1.6 API Endpoint Implementation (Split into 5 Subphases)
+**Progress: 5/25 tasks (20%)**
+
+#### 1.6.1 Metadata API GET Endpoints
+**Progress: 5/5 tasks (100%)**
+
+- [x] Migrate Metadata API GET endpoints to new architecture (get_properties, get_workskills, etc.)
+- [x] Implement internal request parameter validation for Metadata GET methods
+- [x] Update Metadata GET methods to return Pydantic models
+- [x] Add comprehensive validation tests for Metadata GET endpoints
+- [x] Verify backwards compatibility for Metadata GET methods
+
+**Status:** Completed  
+**Completion Date:** June 28, 2025  
+**Key Achievements:**
+- Successfully migrated 10 core Metadata API GET endpoints to v3.0 architecture
+- Implemented comprehensive parameter validation using Pydantic models (offset, limit, label validation)
+- All endpoints return proper Pydantic models with httpx response integration via BaseOFSResponse.from_response()
+- Created robust test suite with 10 passing tests covering sync/async clients, parameter validation, and error handling
+- Verified 100% backwards compatibility - all existing method names and signatures preserved
+- Added support for both sync and async patterns: get_* (sync) and aget_* (async) methods
+- Integrated fault tolerance and connection pooling from base client architecture
+- **Endpoints implemented**: get_properties, get_property, get_workskills, get_workskill, get_activity_types, get_activity_type, get_enumeration_values, get_resource_types, get_activity_type_groups, get_activity_type_group
+
+#### 1.6.2 Capacity API GET Endpoints  
 **Progress: 0/5 tasks (0%)**
 
-- [ ] Migrate Core API endpoints to new architecture
-- [ ] Migrate Metadata API endpoints to new architecture
-- [ ] Migrate Capacity API endpoints to new architecture
-- [ ] Implement request parameter validation (internal)
-- [ ] Update all methods to return Pydantic models
+- [ ] Migrate Capacity API GET endpoints to new architecture (get_capacity, get_capacity_areas, etc.)
+- [ ] Implement internal request parameter validation for Capacity GET methods
+- [ ] Update Capacity GET methods to return Pydantic models
+- [ ] Add comprehensive validation tests for Capacity GET endpoints
+- [ ] Verify backwards compatibility for Capacity GET methods
+
+#### 1.6.3 Core API GET Endpoints
+**Progress: 0/5 tasks (0%)**
+
+- [ ] Migrate Core API GET endpoints to new architecture (get_activities, get_resources, get_users, etc.)
+- [ ] Implement internal request parameter validation for Core GET methods  
+- [ ] Update Core GET methods to return Pydantic models
+- [ ] Add comprehensive validation tests for Core GET endpoints
+- [ ] Verify backwards compatibility for Core GET methods
+
+#### 1.6.4 All APIs Non-GET Endpoints (POST/PUT/PATCH/DELETE)
+**Progress: 0/5 tasks (0%)**
+
+- [ ] Migrate all POST/PUT/PATCH/DELETE endpoints across Core, Metadata, and Capacity APIs
+- [ ] Implement comprehensive request body validation using Pydantic models
+- [ ] Update all modification methods to return appropriate Pydantic response models
+- [ ] Add validation tests for all non-GET endpoint request/response cycles
+- [ ] Verify backwards compatibility for all modification methods
+
+#### 1.6.5 Integration Finalization and Testing
+**Progress: 0/5 tasks (0%)**
+
+- [ ] Complete end-to-end integration testing of all migrated endpoints
+- [ ] Validate that all API methods work with both sync and async clients
+- [ ] Ensure all methods properly use fault tolerance (retry + circuit breaker)
+- [ ] Complete comprehensive API coverage testing against real OFSC environments
+- [ ] Finalize backwards compatibility validation for entire API surface
 
 **Status:** Not Started  
 **Acceptance Criteria Met:** 0/4
+- [ ] All existing functionality preserved across all API endpoints
+- [ ] New methods return typed Pydantic models for all responses
+- [ ] Internal request validation catches errors early before API calls
+- [ ] Both sync and async variants work identically for all endpoints
 
 ## Phase 2: Enhanced Features (Weeks 5-7)
 
@@ -413,7 +468,7 @@
 ## Quality Gates
 
 ### Phase 1 Gate (Week 4)
-- [ ] All API endpoints functional with httpx
+- [ ] All API endpoints functional with httpx (Phase 1.6)
 - [x] Both sync and async clients working
 - [x] Authentication system migrated
 - [x] Pydantic models implemented
@@ -542,7 +597,16 @@
   - Added exception mapping from HTTP status codes to appropriate specialized exception types
   - Enhanced base client with configurable fault tolerance settings and automatic error handling
   - **MILESTONE**: All 4 Phase 1.5 acceptance criteria met - Error Handling system 100% complete
-  - Current project progress: 20% overall (40/202 tasks), Phase 1: 47% (40/85 tasks)
+  - Current project progress: 20% overall (45/222 tasks), Phase 1: 43% (45/105 tasks)
+- **June 28, 2025**: Completed Phase 1.6.1 - Metadata API GET Endpoints (MAJOR MILESTONE!)
+  - Successfully migrated 10 core Metadata API GET endpoints to v3.0 architecture with httpx integration
+  - Implemented comprehensive parameter validation using internal Pydantic models (PaginationParams, LabelParam)  
+  - All endpoints return proper Pydantic models with BaseOFSResponse integration for raw response access
+  - Created robust test suite with 10 passing tests covering sync/async clients, parameter validation, and error scenarios
+  - Verified 100% backwards compatibility - all existing method signatures preserved with new sync/async patterns
+  - Integrated fault tolerance, retry logic, and connection pooling from Phase 1.5 error handling system
+  - **MILESTONE**: First complete API module migration - proves v3.0 architecture works end-to-end
+  - Endpoints: get_properties, get_property, get_workskills, get_workskill, get_activity_types, get_activity_type, get_enumeration_values, get_resource_types, get_activity_type_groups, get_activity_type_group
 
 ### Blockers and Dependencies
 - List any blockers encountered

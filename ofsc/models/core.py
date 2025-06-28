@@ -29,6 +29,7 @@ from .base import BaseOFSResponse, OFSResponseList
 # Resources
 class Resource(BaseOFSResponse):
     """Resource definition and configuration"""
+
     resourceId: Optional[str] = None
     parentResourceId: Optional[str] = None
     resourceInternalId: Optional[int] = None
@@ -56,7 +57,7 @@ class Resource(BaseOFSResponse):
 
 class ResourceList(RootModel[List[Resource]]):
     """List of resources"""
-    
+
     def __iter__(self):
         return iter(self.root)
 
@@ -67,6 +68,7 @@ class ResourceList(RootModel[List[Resource]]):
 # Activities
 class Activity(BaseOFSResponse):
     """Activity definition and configuration"""
+
     activityId: Optional[int] = None
     activityType: Optional[str] = None
     date: Optional[str] = None
@@ -75,6 +77,7 @@ class Activity(BaseOFSResponse):
 
 class GetActivityRequest(BaseOFSResponse):
     """Request model for activity queries"""
+
     dateFrom: Optional[date] = None
     dateTo: Optional[date] = None
     fields: Optional[list[str]] = None
@@ -100,6 +103,7 @@ class GetActivityRequest(BaseOFSResponse):
 
 class BulkUpdateActivityItem(BaseOFSResponse):
     """Activity item for bulk update operations"""
+
     activityId: Optional[int] = None
     activityType: Optional[str] = None
     date: Optional[str] = None
@@ -114,6 +118,7 @@ class BulkUpdateActivityItem(BaseOFSResponse):
 # Bulk Update Operations
 class BulkUpdateParameters(BaseOFSResponse):
     """Parameters for bulk update operations"""
+
     fallbackResource: Optional[str] = None
     identifyActivityBy: Optional[str] = None
     ifExistsThenDoNotUpdateFields: Optional[List[str]] = None
@@ -123,12 +128,14 @@ class BulkUpdateParameters(BaseOFSResponse):
 
 class BulkUpdateRequest(BaseOFSResponse):
     """Request model for bulk update operations"""
+
     activities: List[BulkUpdateActivityItem]
     updateParameters: BulkUpdateParameters
 
 
 class ActivityKeys(BaseOFSResponse):
     """Activity key identifiers"""
+
     activityId: Optional[int] = None
     apptNumber: Optional[str] = None
     customerNumber: Optional[str] = None
@@ -136,18 +143,21 @@ class ActivityKeys(BaseOFSResponse):
 
 class BulkUpdateError(BaseOFSResponse):
     """Error information for bulk update operations"""
+
     errorDetail: Optional[str] = None
     operation: Optional[str] = None
 
 
 class BulkUpdateWarning(BaseOFSResponse):
     """Warning information for bulk update operations"""
+
     code: Optional[int] = None
     message: Optional[int] = None
 
 
 class BulkUpdateResult(BaseOFSResponse):
     """Result of bulk update operations"""
+
     activityKeys: Optional[ActivityKeys] = None
     errors: Optional[List[BulkUpdateError]] = None
     operationsFailed: Optional[List[str]] = None
@@ -157,12 +167,14 @@ class BulkUpdateResult(BaseOFSResponse):
 
 class BulkUpdateResponse(BaseOFSResponse):
     """Response for bulk update operations"""
+
     results: Optional[List[BulkUpdateResult]] = None
 
 
 # Users
 class User(BaseOFSResponse):
     """User definition and configuration"""
+
     login: str
     status: Optional[str] = "active"
     language: Optional[str] = None
@@ -182,14 +194,16 @@ class User(BaseOFSResponse):
     userType: Optional[str] = None
     model_config = ConfigDict(extra="allow")
 
+
 class BaseUser(BaseOFSResponse):
     """Base user model for simple use cases"""
+
     login: str
 
 
 class ResourceUsersListResponse(OFSResponseList[BaseUser]):
     """Response for resource user lists"""
-    
+
     @property
     def users(self) -> List[str]:
         return [item.login for item in self.items]
@@ -197,6 +211,7 @@ class ResourceUsersListResponse(OFSResponseList[BaseUser]):
 
 class ResourcePosition(BaseOFSResponse):
     """Resource position information"""
+
     resourceId: str
     errorMessage: Optional[str] = None
     latitude: Optional[float] = None
@@ -208,12 +223,14 @@ class ResourcePosition(BaseOFSResponse):
 
 class ResourcePositionListResponse(OFSResponseList[ResourcePosition]):
     """Response for resource position lists"""
+
     pass
 
 
 # Calendar and Scheduling
 class RecurrenceType(str, Enum):
     """Recurrence type enumeration for calendar events"""
+
     daily = "daily"
     weekly = "weekly"
     everyday = "everyday"
@@ -222,6 +239,7 @@ class RecurrenceType(str, Enum):
 
 class WeekDay(str, Enum):
     """Week day enumeration"""
+
     Sunday = "Sun"
     Monday = "Mon"
     Tuesday = "Tue"
@@ -233,6 +251,7 @@ class WeekDay(str, Enum):
 
 class Recurrence(BaseOFSResponse):
     """Recurrence configuration for calendar events"""
+
     dayFrom: Optional[date] = None
     dayTo: Optional[date] = None
     recurEvery: int = Field(ge=1, le=255)
@@ -252,6 +271,7 @@ class Recurrence(BaseOFSResponse):
 
 class CalendarViewItemRecordType(str, Enum):
     """Calendar view item record type enumeration"""
+
     schedule = "schedule"
     shift = "shift"
     extra_shift = "extra_shift"
@@ -263,6 +283,7 @@ class CalendarViewItemRecordType(str, Enum):
 
 class CalendarViewItem(BaseOFSResponse):
     """Calendar view item configuration"""
+
     comments: Optional[str] = None
     nonWorkingReason: Optional[str] = None
     points: Optional[int] = None
@@ -275,7 +296,7 @@ class CalendarViewItem(BaseOFSResponse):
 
 class CalendarViewList(RootModel[List[CalendarViewItem]]):
     """List of calendar view items"""
-    
+
     def __iter__(self):
         return iter(self.root)
 
@@ -285,6 +306,7 @@ class CalendarViewList(RootModel[List[CalendarViewItem]]):
 
 class CalendarViewShift(BaseOFSResponse):
     """Calendar view shift configuration"""
+
     regular: Optional[CalendarViewItem] = Field(default=None)
     on_call: Optional[CalendarViewItem] = Field(
         default=None, validation_alias=AliasChoices("onCall", "on-call")
@@ -293,7 +315,7 @@ class CalendarViewShift(BaseOFSResponse):
 
 class CalendarView(RootModel[Dict[str, CalendarViewShift]]):
     """Calendar view with shift assignments"""
-    
+
     def __iter__(self):
         return iter(self.root)
 
@@ -304,6 +326,7 @@ class CalendarView(RootModel[Dict[str, CalendarViewShift]]):
 # Resource Work Schedule
 class ResourceWorkScheduleItem(BaseOFSResponse):
     """Resource work schedule item configuration"""
+
     comments: Optional[str] = None
     endDate: Optional[date] = None
     isWorking: Optional[bool] = None
@@ -323,7 +346,7 @@ class ResourceWorkScheduleItem(BaseOFSResponse):
 
 class ResourceWorkScheduleResponseList(RootModel[List[ResourceWorkScheduleItem]]):
     """List of resource work schedule items"""
-    
+
     def __iter__(self):
         return iter(self.root)
 
@@ -333,12 +356,14 @@ class ResourceWorkScheduleResponseList(RootModel[List[ResourceWorkScheduleItem]]
 
 class ResourceWorkScheduleResponse(OFSResponseList[ResourceWorkScheduleItem]):
     """Paginated response for resource work schedules"""
+
     pass
 
 
 # Locations
 class Location(BaseOFSResponse):
     """Location definition and configuration"""
+
     label: str
     postalCode: Optional[str] = ""
     city: Optional[str] = ""
@@ -353,7 +378,7 @@ class Location(BaseOFSResponse):
 
 class LocationList(RootModel[List[Location]]):
     """List of locations"""
-    
+
     def __iter__(self):
         return iter(self.root)
 
@@ -363,6 +388,7 @@ class LocationList(RootModel[List[Location]]):
 
 class AssignedLocation(BaseOFSResponse):
     """Assigned location configuration"""
+
     start: Optional[int] = None
     end: Optional[int] = None
     homeZoneCenter: Optional[int] = None
@@ -370,6 +396,7 @@ class AssignedLocation(BaseOFSResponse):
 
 class AssignedLocationsResponse(BaseOFSResponse):
     """Response for assigned locations by day of week"""
+
     mon: Optional[AssignedLocation] = None
     tue: Optional[AssignedLocation] = None
     wed: Optional[AssignedLocation] = None
@@ -382,12 +409,14 @@ class AssignedLocationsResponse(BaseOFSResponse):
 
 class LocationListResponse(OFSResponseList[Location]):
     """Paginated response for location lists"""
+
     pass
 
 
 # Daily Extracts
 class Link(BaseOFSResponse):
     """Link model for daily extract files"""
+
     href: AnyHttpUrl
     rel: str
     mediaType: Optional[str] = None
@@ -395,6 +424,7 @@ class Link(BaseOFSResponse):
 
 class DailyExtractItem(BaseOFSResponse):
     """Daily extract item configuration"""
+
     name: str
     bytes: Optional[int] = None
     mediaType: Optional[str] = None
@@ -403,16 +433,42 @@ class DailyExtractItem(BaseOFSResponse):
 
 class DailyExtractItemList(BaseOFSResponse):
     """List of daily extract items"""
+
     items: list[DailyExtractItem] = []
 
 
 class DailyExtractFolders(BaseOFSResponse):
     """Daily extract folders configuration"""
+
     name: str = "folders"
     folders: Optional[DailyExtractItemList] = None
 
 
 class DailyExtractFiles(BaseOFSResponse):
     """Daily extract files configuration"""
+
     name: str = "files"
     files: Optional[DailyExtractItemList] = None
+
+
+class Subscription(BaseOFSResponse):
+    """Subscription definition and configuration"""
+
+    subscriptionId: Optional[str] = None
+    name: str
+    description: Optional[str] = None
+    status: str = "active"
+    organization: str = "default"
+
+
+class SubscriptionList(BaseOFSResponse):
+    totalResults: int = 0
+    items: list[dict[str, Any]] = Field(default_factory=list, alias="subscriptions")
+
+
+class UserListResponse(OFSResponseList[User]):
+    """Paginated response for user lists"""
+
+    @property
+    def users(self) -> List[User]:
+        return [item for item in self.items] if self.items else []

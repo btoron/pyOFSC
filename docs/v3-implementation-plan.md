@@ -137,25 +137,59 @@ This document provides a detailed implementation plan for the OFSC Python Wrappe
 - Circuit breaker prevents cascade failures
 - All errors include request context
 
-#### 1.6 API Endpoint Implementation
+#### 1.6 API Endpoint Implementation (Split into 5 Subphases)
 
+**1.6.1 Metadata API GET Endpoints**
 **Tasks:**
-- [ ] Migrate Core API endpoints to new architecture
-- [ ] Migrate Metadata API endpoints to new architecture
-- [ ] Migrate Capacity API endpoints to new architecture
-- [ ] Implement request parameter validation (internal)
-- [ ] Update all methods to return Pydantic models
+- [ ] Migrate Metadata API GET endpoints to new architecture (get_properties, get_workskills, etc.)
+- [ ] Implement internal request parameter validation for Metadata GET methods
+- [ ] Update Metadata GET methods to return Pydantic models
+- [ ] Add comprehensive validation tests for Metadata GET endpoints
+- [ ] Verify backwards compatibility for Metadata GET methods
+
+**1.6.2 Capacity API GET Endpoints**
+**Tasks:**
+- [ ] Migrate Capacity API GET endpoints to new architecture (get_capacity, get_capacity_areas, etc.)
+- [ ] Implement internal request parameter validation for Capacity GET methods
+- [ ] Update Capacity GET methods to return Pydantic models
+- [ ] Add comprehensive validation tests for Capacity GET endpoints
+- [ ] Verify backwards compatibility for Capacity GET methods
+
+**1.6.3 Core API GET Endpoints**
+**Tasks:**
+- [ ] Migrate Core API GET endpoints to new architecture (get_activities, get_resources, get_users, etc.)
+- [ ] Implement internal request parameter validation for Core GET methods
+- [ ] Update Core GET methods to return Pydantic models
+- [ ] Add comprehensive validation tests for Core GET endpoints
+- [ ] Verify backwards compatibility for Core GET methods
+
+**1.6.4 All APIs Non-GET Endpoints (POST/PUT/PATCH/DELETE)**
+**Tasks:**
+- [ ] Migrate all POST/PUT/PATCH/DELETE endpoints across Core, Metadata, and Capacity APIs
+- [ ] Implement comprehensive request body validation using Pydantic models
+- [ ] Update all modification methods to return appropriate Pydantic response models
+- [ ] Add validation tests for all non-GET endpoint request/response cycles
+- [ ] Verify backwards compatibility for all modification methods
+
+**1.6.5 Integration Finalization and Testing**
+**Tasks:**
+- [ ] Complete end-to-end integration testing of all migrated endpoints
+- [ ] Validate that all API methods work with both sync and async clients
+- [ ] Ensure all methods properly use fault tolerance (retry + circuit breaker)
+- [ ] Complete comprehensive API coverage testing against real OFSC environments
+- [ ] Finalize backwards compatibility validation for entire API surface
 
 **Deliverables:**
 - All API endpoints working with new architecture
-- Internal request validation
-- Model-based responses
+- Internal request validation for all endpoint types
+- Model-based responses for all API calls
+- Comprehensive test coverage for all endpoints
 
 **Acceptance Criteria:**
-- All existing functionality preserved
-- New methods return typed models
-- Request validation catches errors early
-- Both sync and async variants work
+- All existing functionality preserved across all API endpoints
+- New methods return typed Pydantic models for all responses
+- Internal request validation catches errors early before API calls
+- Both sync and async variants work identically for all endpoints
 
 ### Phase 2: Enhanced Features (Weeks 5-7)
 
@@ -521,24 +555,26 @@ This document provides a detailed implementation plan for the OFSC Python Wrappe
 | 2 | 1.3 | Auth system |
 | 3 | 1.4.0-1.4.2 | Model reorganization, Metadata & Core model adaptation |
 | 4 | 1.4.3-1.4.4, 1.5 | Capacity models, integration, Error handling |
-| 5 | 1.6 | Complete Phase 1, API endpoints migration |
-| 6 | 2.1-2.2 | Configuration, logging/monitoring |
-| 7 | 2.3-2.4 | Security, extensibility |
-| 8 | 2.5 | Request handling, Phase 2 complete |
-| 9 | 3.1-3.2 | Testing suite, type safety |
-| 10 | 3.3-3.4 | Config testing, security testing |
-| 11 | 3.5 | Extensibility testing, Phase 3 complete |
-| 12 | 4.1-4.2 | Documentation, backwards compatibility |
-| 13 | 4.3-4.5 | Examples, release preparation |
+| 5 | 1.6.1-1.6.2 | Metadata & Capacity GET endpoints migration |
+| 6 | 1.6.3-1.6.4 | Core GET endpoints, Non-GET methods migration |
+| 7 | 1.6.5, Phase 1 Complete | API integration finalization, testing |
+| 8 | 2.1-2.2 | Configuration, logging/monitoring |
+| 9 | 2.3-2.4 | Security, extensibility |
+| 10 | 2.5 | Request handling, Phase 2 complete |
+| 11 | 3.1-3.2 | Testing suite, type safety |
+| 12 | 3.3-3.4 | Config testing, security testing |
+| 13 | 3.5 | Extensibility testing, Phase 3 complete |
+| 14 | 4.1-4.2 | Documentation, backwards compatibility |
+| 15 | 4.3-4.5 | Examples, release preparation |
 
 ## Acceptance Criteria Summary
 
 ### Phase 1 Complete When:
-- [ ] All API endpoints work with httpx
-- [ ] Both sync and async clients functional
-- [ ] Pydantic models replace all dict responses
-- [ ] Authentication system migrated
-- [ ] Error handling implemented
+- [ ] All API endpoints work with httpx (Phase 1.6.1-1.6.5)
+- [x] Both sync and async clients functional
+- [x] Pydantic models replace all dict responses  
+- [x] Authentication system migrated
+- [x] Error handling implemented
 
 ### Phase 2 Complete When:
 - [ ] Configuration system fully functional
@@ -564,7 +600,7 @@ This document provides a detailed implementation plan for the OFSC Python Wrappe
 ## Final Release Criteria
 
 The v3.0 release is ready when:
-1. All 202 tasks completed (covering all 16 requirements R1-R16)
+1. All 222 tasks completed (covering all 16 requirements R1-R16)
 2. All acceptance criteria met
 3. 80% test coverage achieved
 4. mypy strict mode passes

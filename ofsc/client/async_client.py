@@ -6,13 +6,14 @@ from typing import Optional
 import httpx
 from pydantic import HttpUrl
 
-from .base import BaseOFSClient, ConnectionConfig
 from ofsc.auth import BaseAuth
+
+from .base import BaseOFSClient, ConnectionConfig
 
 
 class AsyncOFSC(BaseOFSClient):
     """Asynchronous OFSC client using httpx.AsyncClient."""
-    
+
     def __init__(
         self,
         instance: Optional[str] = None,
@@ -23,10 +24,10 @@ class AsyncOFSC(BaseOFSClient):
         auto_raise: bool = True,
         auto_model: bool = True,
         connection_config: Optional[ConnectionConfig] = None,
-        auth: Optional[BaseAuth] = None
+        auth: Optional[BaseAuth] = None,
     ):
         """Initialize the async OFSC client.
-        
+
         Args:
             instance: OFSC instance name (can be loaded from OFSC_INSTANCE env var)
             client_id: Client ID for authentication (can be loaded from OFSC_CLIENT_ID env var)
@@ -47,99 +48,112 @@ class AsyncOFSC(BaseOFSClient):
             auto_raise=auto_raise,
             auto_model=auto_model,
             connection_config=connection_config,
-            auth=auth
+            auth=auth,
         )
-        
-        # Initialize API modules (will be implemented in later phases)
+
+        # Initialize API modules (will be implemented in phases)
         # self._core = AsyncOFSCore(self)
-        # self._metadata = AsyncOFSMetadata(self)
+        self._metadata = None  # Will be initialized on first access
         # self._capacity = AsyncOFSCapacity(self)
         # self._oauth = AsyncOFSOauth(self)
-    
+
     def _create_client(self) -> httpx.AsyncClient:
         """Create an async httpx client with proper configuration."""
         return httpx.AsyncClient(
             limits=self._get_limits(),
             timeout=self._get_timeout(),
+            base_url=self.base_url,
             headers=self._get_auth_headers(),
-            follow_redirects=True
+            follow_redirects=True,
         )
-    
+
     async def __aenter__(self):
         """Async context manager entry."""
         self._client = self._create_client()
         logging.info(f"Async OFSC client connected to {self.base_url}")
         return self
-    
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Async context manager exit."""
         await self.close()
-    
+
     async def close(self):
         """Close the async HTTP client and clean up resources."""
         if self._client and not self._client.is_closed:
             await self._client.aclose()
             logging.info("Async OFSC client closed")
-    
+
     @property
     def client(self) -> httpx.AsyncClient:
         """Get the underlying httpx.AsyncClient instance."""
         if self._client is None:
-            raise RuntimeError("Client not initialized. Use 'async with' context manager.")
+            raise RuntimeError(
+                "Client not initialized. Use 'async with' context manager."
+            )
         return self._client
-    
-    async def request(
-        self,
-        method: str,
-        endpoint: str,
-        **kwargs
-    ) -> httpx.Response:
+
+    async def request(self, method: str, endpoint: str, **kwargs) -> httpx.Response:
         """Make an async HTTP request.
-        
+
         Args:
             method: HTTP method (GET, POST, PUT, DELETE)
             endpoint: API endpoint path
             **kwargs: Additional arguments for httpx request
-            
+
         Returns:
             httpx.Response object
         """
         url = self._build_url(endpoint)
         response = await self.client.request(method, url, **kwargs)
-        
+
         if self._config.auto_raise and response.status_code >= 400:
             response.raise_for_status()
-        
+
         return response
-    
+
     # Properties for API modules (will be implemented in later phases)
     @property
     def core(self):
         """Get the Core API interface."""
         if self._core is None:
-            raise NotImplementedError("Core API not yet implemented in Phase 1.2")
+            from .core_api import OFSCoreAPI
+
+            if self._client is None:
+                raise RuntimeError(
+                    "Client not initialized. Use async with statement or call __aenter__() first."
+                )
+            self._core = OFSCoreAPI(self._client)
         return self._core
-    
+
     @property
     def metadata(self):
         """Get the Metadata API interface."""
         if self._metadata is None:
-            raise NotImplementedError("Metadata API not yet implemented in Phase 1.2")
+            from .metadata_api import OFSMetadataAPI
+
+            if self._client is None:
+                raise RuntimeError(
+                    "Client not initialized. Use async with statement or call __aenter__() first."
+                )
+            # TODO: Check why would we have to send the base_url and auth headers again
+            self._metadata = OFSMetadataAPI(
+                self._client, str(self.base_url), self._get_auth_headers()
+            )
         return self._metadata
-    
+
     @property
     def capacity(self):
         """Get the Capacity API interface."""
         if self._capacity is None:
             raise NotImplementedError("Capacity API not yet implemented in Phase 1.2")
         return self._capacity
-    
+
     @property
     def oauth(self):
         """Get the OAuth API interface."""
         if self._oauth is None:
             raise NotImplementedError("OAuth API not yet implemented in Phase 1.2")
         return self._oauth
-    
+
     def __str__(self) -> str:
         return f"AsyncOFSC(instance={self._config.instance}, base_url={self.base_url})"

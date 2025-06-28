@@ -50,9 +50,9 @@ class OFSC(BaseOFSClient):
             auth=auth
         )
         
-        # Initialize API modules (will be implemented in later phases)
+        # Initialize API modules (will be implemented in phases)
         # self._core = OFSCore(self)
-        # self._metadata = OFSMetadata(self)
+        self._metadata = None  # Will be initialized on first access
         # self._capacity = OFSCapacity(self)
         # self._oauth = OFSOauth(self)
     
@@ -127,7 +127,10 @@ class OFSC(BaseOFSClient):
     def metadata(self):
         """Get the Metadata API interface."""
         if self._metadata is None:
-            raise NotImplementedError("Metadata API not yet implemented in Phase 1.2")
+            from .metadata_api import OFSMetadataAPI
+            if self._client is None:
+                raise RuntimeError("Client not initialized. Use with statement or call __enter__() first.")
+            self._metadata = OFSMetadataAPI(self._client, str(self.base_url), self._get_auth_headers())
         return self._metadata
     
     @property

@@ -10,7 +10,7 @@ This module contains Pydantic models for OFSC Capacity API endpoints:
 
 from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, RootModel, field_validator
+from pydantic import ConfigDict, Field, RootModel, field_validator
 from typing_extensions import Annotated
 
 from .base import BaseOFSResponse, CsvList, OFSResponseList, TranslationList
@@ -19,12 +19,14 @@ from .base import BaseOFSResponse, CsvList, OFSResponseList, TranslationList
 # Capacity Areas
 class CapacityAreaParent(BaseOFSResponse):
     """Parent capacity area reference"""
+
     label: str
     name: Optional[str] = None
 
 
 class CapacityAreaConfiguration(BaseOFSResponse):
     """Configuration settings for capacity areas"""
+
     isTimeSlotBase: bool
     byCapacityCategory: str
     byDay: str
@@ -35,6 +37,7 @@ class CapacityAreaConfiguration(BaseOFSResponse):
 
 class CapacityArea(BaseOFSResponse):
     """Capacity area definition and configuration"""
+
     label: str
     name: Optional[str] = None
     type: Optional[str] = "area"
@@ -42,7 +45,6 @@ class CapacityArea(BaseOFSResponse):
     configuration: CapacityAreaConfiguration = None
     parentLabel: Optional[str] = None
     parent: Annotated[Optional[CapacityAreaParent], Field(alias="parent")] = None
-    status: str
     translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
         None
     )
@@ -51,7 +53,7 @@ class CapacityArea(BaseOFSResponse):
 
 class CapacityAreaList(RootModel[List[CapacityArea]]):
     """List of capacity areas"""
-    
+
     def __iter__(self):
         return iter(self.root)
 
@@ -61,19 +63,21 @@ class CapacityAreaList(RootModel[List[CapacityArea]]):
 
 class CapacityAreaListResponse(OFSResponseList[CapacityArea]):
     """Paginated response for capacity area lists"""
+
     pass
 
 
 # Capacity Categories
 class Item(BaseOFSResponse):
     """Generic item model for capacity categories"""
+
     label: str
     name: Optional[str] = None
 
 
 class ItemList(RootModel[List[Item]]):
     """List of generic items"""
-    
+
     def __iter__(self):
         return iter(self.root)
 
@@ -83,6 +87,7 @@ class ItemList(RootModel[List[Item]]):
 
 class CapacityCategory(BaseOFSResponse):
     """Capacity category definition and configuration"""
+
     label: str
     name: str
     timeSlots: Optional[ItemList] = None
@@ -97,6 +102,7 @@ class CapacityCategory(BaseOFSResponse):
 
 class CapacityCategoryListResponse(OFSResponseList[CapacityCategory]):
     """Paginated response for capacity category lists"""
+
     pass
 
 
