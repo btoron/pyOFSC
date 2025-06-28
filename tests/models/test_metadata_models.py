@@ -168,6 +168,14 @@ class TestMetadataModels:
             if "items" in data and data["items"]:
                 for item in data["items"][:3]:  # Test first 3 items
                     try:
+                        # Check if this is an ActivityType or ActivityTypeGroup
+                        # ActivityTypeGroup has only label, name, active
+                        # ActivityType has additional required fields like defaultDuration
+                        if filename == "1_get_activity_type_groups.json":
+                            # Skip ActivityType validation for activity type groups file
+                            # This file contains ActivityTypeGroup objects, not ActivityType
+                            continue
+                            
                         activity_type = ActivityType.model_validate(item)
                         assert activity_type.label is not None
                         assert activity_type.name is not None
@@ -222,6 +230,9 @@ class TestMetadataModels:
                         for link in workskill.links:
                             assert link.rel is not None
                             assert link.href is not None
+                            # href is AnyHttpUrl, convert to string for validation
+                            href_str = str(link.href)
+                            assert href_str  # Just ensure it's not empty
                             
                     print(f"✅ Validated work skill: {workskill.label} (sharing: {workskill.sharing})")
                 except ValidationError as e:
@@ -350,8 +361,10 @@ class TestMetadataModels:
                             link = Link.model_validate(link_data)
                             assert link.rel is not None
                             assert link.href is not None
-                            assert link.href.startswith("https://")
-                            print(f"✅ Validated link: {link.rel} -> {link.href}")
+                            # href is AnyHttpUrl object, need to convert to string
+                            href_str = str(link.href)
+                            assert href_str.startswith("https://")
+                            print(f"✅ Validated link: {link.rel} -> {href_str}")
                         except ValidationError as e:
                             pytest.fail(f"Link validation failed: {e}")
                     break  # Only test first item with links
