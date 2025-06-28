@@ -153,7 +153,7 @@ class OAuth2Auth(BaseAuth):
             self._token_expires_at = datetime.now(timezone.utc) + timedelta(seconds=self._token.expires_in)
         else:
             # Default to 1 hour if no expires_in provided
-            self._token_expires_at = datetime.utcnow() + timedelta(hours=1)
+            self._token_expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
         
         return self._token
     
@@ -189,6 +189,18 @@ class OAuth2Auth(BaseAuth):
             logger.error(f"OAuth2 token request error: {e}")
             raise AuthenticationError(f"OAuth2 token request failed: {e}")
     
+    def get_token(self) -> OAuth2TokenResponse:
+        """Get a valid OAuth2 token (simplified interface for compatibility).
+        
+        This method provides a simplified interface that's compatible with
+        the legacy oauth.py implementation while using the modern token
+        management system internally.
+        
+        Returns:
+            OAuth2TokenResponse with access token and metadata
+        """
+        return self._get_valid_token()
+    
     def refresh_token(self) -> OAuth2TokenResponse:
         """Manually refresh the OAuth2 token."""
         logger.info("Manually refreshing OAuth2 token")
@@ -197,7 +209,7 @@ class OAuth2Auth(BaseAuth):
         if self._token.expires_in:
             self._token_expires_at = datetime.now(timezone.utc) + timedelta(seconds=self._token.expires_in)
         else:
-            self._token_expires_at = datetime.utcnow() + timedelta(hours=1)
+            self._token_expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
         
         return self._token
     

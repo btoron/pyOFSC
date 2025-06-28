@@ -9,16 +9,19 @@ This module contains models related to:
 
 import base64
 from abc import ABC
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from pydantic import BaseModel, ConfigDict, ValidationInfo, field_validator
+
+if TYPE_CHECKING:
+    from ..auth import BaseAuth, BasicAuth, OAuth2Auth
 
 
 class OFSConfig(BaseModel):
     """Configuration model for OFSC client credentials and settings.
     
-    Note: This is the legacy v2 configuration model. For v3.0, this will be
-    replaced with the new configuration system in client/base.py
+    Enhanced to internally manage auth objects for backward compatibility
+    while using the modern authentication system.
     """
     clientID: str
     secret: str
@@ -28,20 +31,49 @@ class OFSConfig(BaseModel):
     baseURL: Optional[str] = None
     auto_raise: bool = True
     auto_model: bool = True
+    
+    # Private field to cache auth instance
+    _auth_instance: Optional['BaseAuth'] = None
 
     @property
     def basicAuthString(self):
-        """Generate Basic Auth string for HTTP headers"""
+        """Generate Basic Auth string for HTTP headers (legacy compatibility)"""
         return base64.b64encode(
             bytes(self.clientID + "@" + self.companyName + ":" + self.secret, "utf-8")
         )
 
-    model_config = ConfigDict(validate_assignment=True)
+    model_config = ConfigDict(validate_assignment=True, arbitrary_types_allowed=True)
 
     @field_validator("baseURL")
     def set_base_URL(cls, url, info: ValidationInfo):
         """Auto-generate base URL from company name if not provided"""
         return url or f"https://{info.data['companyName']}.fs.ocs.oraclecloud.com"
+    
+    def _get_auth_instance(self) -> 'BaseAuth':
+        """Get or create appropriate auth instance based on configuration."""
+        if self._auth_instance is None:
+            # Import here to avoid circular imports
+            from ..auth import BasicAuth, OAuth2Auth
+            
+            if self.useToken:
+                self._auth_instance = OAuth2Auth(
+                    instance=self.companyName,
+                    client_id=self.clientID,
+                    client_secret=self.secret,
+                    base_url=self.baseURL
+                )
+            else:
+                self._auth_instance = BasicAuth(
+                    instance=self.companyName,
+                    client_id=self.clientID,
+                    client_secret=self.secret
+                )
+        
+        return self._auth_instance
+    
+    def get_auth_headers(self) -> dict:
+        """Get authentication headers using modern auth system."""
+        return self._get_auth_instance().get_headers()
 
 
 class OFSOAuthRequest(BaseModel):
@@ -84,22 +116,9 @@ class OFSApi(ABC):
     
     @property
     def headers(self) -> dict:
-        """Get headers for API requests.
+        """Get headers for API requests using modern auth system.
         
-        Default implementation for backward compatibility.
-        Subclasses can override this for custom behavior.
+        Now uses the internal auth objects managed by OFSConfig
+        for both Basic Auth and OAuth2 authentication.
         """
-        _headers = {}
-        _headers["Content-Type"] = "application/json;charset=UTF-8"
-
-        if not self._config.useToken:
-            _headers["Authorization"] = (
-                "Basic " + self._config.basicAuthString.decode("utf-8")
-            )
-        else:
-            # Token-based auth would require actual HTTP implementation
-            raise NotImplementedError(
-                "Token-based authentication requires HTTP functionality. "
-                "This will be implemented in Phase 1.6 with httpx migration."
-            )
-        return _headers
+        return self._config.get_auth_headers()
