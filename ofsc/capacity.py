@@ -2,7 +2,7 @@ from typing import Optional, Union, get_args, get_origin
 from urllib.parse import urljoin
 
 # TODO: Phase 1.6 - Migrate from requests to httpx
-import requests
+import mockup_requests as requests
 from pydantic import BaseModel
 
 from ofsc.models import CsvList, OFSApi

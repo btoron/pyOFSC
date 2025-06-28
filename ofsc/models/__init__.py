@@ -17,6 +17,7 @@ Usage:
 
 # Base models and infrastructure
 from .base import (
+    BaseOFSResponse,
     CsvList,
     EntityEnum,
     OFSResponseList,
@@ -53,6 +54,7 @@ from .metadata import (
     InventoryType,
     InventoryTypeList,
     InventoryTypeListResponse,
+    Link,
     Organization,
     OrganizationList,
     OrganizationListResponse,
@@ -140,6 +142,7 @@ from .capacity import (
 # Ensure all exports are available
 __all__ = [
     # Base models
+    "BaseOFSResponse",
     "CsvList",
     "EntityEnum", 
     "OFSResponseList",
@@ -172,6 +175,7 @@ __all__ = [
     "InventoryType",
     "InventoryTypeList",
     "InventoryTypeListResponse",
+    "Link",
     "Organization",
     "OrganizationList", 
     "OrganizationListResponse",

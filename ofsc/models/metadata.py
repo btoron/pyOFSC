@@ -10,12 +10,23 @@ This module contains Pydantic models for OFSC Metadata API endpoints:
 - Inventory types and related metadata
 """
 
-from typing import Any, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, RootModel, field_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, RootModel, field_validator
 from typing_extensions import Annotated
 
-from .base import EntityEnum, OFSResponseList, SharingEnum, Translation, TranslationList
+from .base import BaseOFSResponse, EntityEnum, OFSResponseList, SharingEnum, Translation, TranslationList
+
+if TYPE_CHECKING:
+    import httpx
+
+
+# Common models
+class Link(BaseModel):
+    """Hyperlink reference for API resources"""
+    rel: str
+    href: str
+    mediaType: Optional[str] = None
 
 
 # Work Skills
@@ -26,6 +37,9 @@ class Workskill(BaseModel):
     name: str = ""
     sharing: SharingEnum
     translations: Annotated[Optional[TranslationList], Field(validate_default=True)] = None
+    links: Optional[List[Link]] = None
+    
+    model_config = ConfigDict(extra="allow")
 
     @field_validator("translations")
     def set_default(cls, field_value, values):
@@ -37,11 +51,25 @@ class Workskill(BaseModel):
 class WorkskillList(RootModel[List[Workskill]]):
     """List of work skills"""
     
+    _raw_response: Optional['httpx.Response'] = PrivateAttr(default=None)
+    
     def __iter__(self):
         return iter(self.root)
 
     def __getitem__(self, item):
         return self.root[item]
+    
+    @classmethod
+    def from_response(cls, response: 'httpx.Response'):
+        """Create instance from httpx response."""
+        instance = cls.model_validate(response.json())
+        instance._raw_response = response
+        return instance
+    
+    @property
+    def raw_response(self) -> Optional['httpx.Response']:
+        """Access the raw httpx response object."""
+        return self._raw_response
 
 
 class Condition(BaseModel):
@@ -101,6 +129,7 @@ class Property(BaseModel):
     entity: Optional[EntityEnum] = None
     gui: Optional[str] = None
     translations: Annotated[TranslationList, Field(validate_default=True)] = []
+    links: Optional[List[Link]] = None
 
     @field_validator("translations")
     def set_default(cls, field_value, values):
@@ -126,7 +155,7 @@ class Property(BaseModel):
             raise ValueError(f"{v} is not a valid GUI value")
         return v
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="allow")
 
 
 class PropertyList(RootModel[List[Property]]):
@@ -222,6 +251,9 @@ class ActivityType(BaseModel):
     segmentMinDuration: Optional[int] = None
     timeSlots: Optional[List[ActivityTypeTimeSlots]] = None
     translations: TranslationList
+    links: Optional[List[Link]] = None
+    
+    model_config = ConfigDict(extra="allow")
 
 
 class ActivityTypeList(RootModel[List[ActivityType]]):

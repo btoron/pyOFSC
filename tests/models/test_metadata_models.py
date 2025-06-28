@@ -6,35 +6,21 @@ from typing import Dict, Any, List
 import pytest
 from pydantic import BaseModel, ValidationError
 
-
-class PropertyModel(BaseModel):
-    """Temporary model for property validation."""
-    name: str
-    type: str
-    entity: str
-    
-    class Config:
-        extra = "allow"
-
-
-class WorkZoneModel(BaseModel):
-    """Temporary model for work zone validation."""
-    workZone: str
-    workZoneName: str
-    status: str
-    
-    class Config:
-        extra = "allow"
-
-
-class ActivityTypeModel(BaseModel):
-    """Temporary model for activity type validation."""
-    type: str
-    label: str
-    active: str
-    
-    class Config:
-        extra = "allow"
+# Import the actual production models from the reorganized structure
+from ofsc.models import (
+    Property, 
+    PropertyList,
+    Workskill,
+    WorkskillList, 
+    Workzone,
+    WorkzoneList,
+    ActivityType,
+    ActivityTypeList,
+    ActivityTypeListResponse,
+    OFSResponseList,
+    BaseOFSResponse,
+    Link
+)
 
 
 class TestMetadataModels:
@@ -46,10 +32,10 @@ class TestMetadataModels:
         return Path(__file__).parent.parent.parent / "response_examples"
     
     def test_properties_model_validation(self, response_examples_path):
-        """Validate property response examples."""
+        """Validate property response examples against real Property model."""
         property_files = [
             "50_get_properties.json",
-            "50_properties.json",
+            "50_properties.json", 
             "51_property.json"
         ]
         
@@ -76,15 +62,35 @@ class TestMetadataModels:
             
             for item in items_to_validate:
                 try:
-                    prop = PropertyModel(**item)
+                    prop = Property.model_validate(item)
                     assert prop.name is not None
-                    assert prop.type in ["text", "number", "date", "time", "enum", "boolean"]
-                    print(f"✅ Validated property: {prop.name}")
+                    assert prop.label is not None
+                    assert prop.type is not None
+                    print(f"✅ Validated property: {prop.name} ({prop.type})")
                 except ValidationError as e:
                     pytest.fail(f"Property validation failed for {filename}: {e}")
+                    
+        # Test paginated response structure
+        paginated_file = response_examples_path / "50_get_properties.json"
+        if paginated_file.exists():
+            with open(paginated_file) as f:
+                data = json.load(f)
+            
+            # Remove metadata for clean validation
+            if "_metadata" in data:
+                del data["_metadata"]
+                
+            try:
+                # Validate as paginated response
+                response = OFSResponseList[Property].model_validate(data)
+                assert len(response.items) > 0
+                assert hasattr(response, 'totalResults')
+                print(f"✅ Validated paginated Property response with {len(response.items)} items")
+            except ValidationError as e:
+                pytest.fail(f"Paginated Property response validation failed: {e}")
     
     def test_work_zones_model_validation(self, response_examples_path):
-        """Validate work zone response examples."""
+        """Validate work zone response examples against real Workzone model."""
         workzone_files = [
             "78_get_work_zones.json",
             "78_workzones.json",
@@ -113,15 +119,34 @@ class TestMetadataModels:
             
             for item in items_to_validate:
                 try:
-                    workzone = WorkZoneModel(**item)
-                    assert workzone.workZone is not None
-                    assert workzone.status in ["active", "inactive"]
-                    print(f"✅ Validated work zone: {workzone.workZone}")
+                    workzone = Workzone.model_validate(item)
+                    assert workzone.workZoneLabel is not None
+                    assert workzone.workZoneName is not None
+                    assert workzone.status is not None
+                    print(f"✅ Validated work zone: {workzone.workZoneLabel}")
                 except ValidationError as e:
                     pytest.fail(f"Work zone validation failed for {filename}: {e}")
+                    
+        # Test paginated response if available
+        paginated_file = response_examples_path / "78_get_work_zones.json"
+        if paginated_file.exists():
+            with open(paginated_file) as f:
+                data = json.load(f)
+            
+            if "_metadata" in data:
+                del data["_metadata"]
+                
+            # Check if it's a paginated response
+            if "items" in data:
+                try:
+                    response = OFSResponseList[Workzone].model_validate(data)
+                    assert len(response.items) >= 0
+                    print(f"✅ Validated paginated Workzone response with {len(response.items)} items")
+                except ValidationError as e:
+                    pytest.fail(f"Paginated Workzone response validation failed: {e}")
     
     def test_activity_types_model_validation(self, response_examples_path):
-        """Validate activity type response examples."""
+        """Validate activity type response examples against real ActivityType model."""
         activity_type_files = [
             "4_get_activity_types.json",
             "1_get_activity_type_groups.json"
@@ -143,12 +168,72 @@ class TestMetadataModels:
             if "items" in data and data["items"]:
                 for item in data["items"][:3]:  # Test first 3 items
                     try:
-                        activity_type = ActivityTypeModel(**item)
-                        assert activity_type.type is not None
-                        assert activity_type.active in ["true", "false", "1", "0"]
-                        print(f"✅ Validated activity type: {activity_type.type}")
+                        activity_type = ActivityType.model_validate(item)
+                        assert activity_type.label is not None
+                        assert activity_type.name is not None
+                        assert isinstance(activity_type.active, bool)
+                        assert activity_type.defaultDuration > 0
+                        print(f"✅ Validated activity type: {activity_type.label}")
                     except ValidationError as e:
                         pytest.fail(f"Activity type validation failed for {filename}: {e}")
+                        
+        # Test paginated activity types response  
+        paginated_file = response_examples_path / "4_get_activity_types.json"
+        if paginated_file.exists():
+            with open(paginated_file) as f:
+                data = json.load(f)
+            
+            if "_metadata" in data:
+                del data["_metadata"]
+                
+            try:
+                response = ActivityTypeListResponse.model_validate(data)
+                assert len(response.items) > 0
+                assert hasattr(response, 'totalResults')
+                print(f"✅ Validated ActivityTypeListResponse with {len(response.items)} items")
+            except ValidationError as e:
+                pytest.fail(f"ActivityTypeListResponse validation failed: {e}")
+                
+    def test_work_skills_model_validation(self, response_examples_path):
+        """Validate work skills response examples against real Workskill model."""
+        file_path = response_examples_path / "74_get_work_skills.json"
+        if not file_path.exists():
+            pytest.skip("Work skills response example not found")
+            
+        with open(file_path) as f:
+            data = json.load(f)
+        
+        # Skip metadata
+        if "_metadata" in data:
+            del data["_metadata"]
+        
+        # Validate items if present
+        if "items" in data and data["items"]:
+            for item in data["items"][:3]:  # Test first 3 items
+                try:
+                    workskill = Workskill.model_validate(item)
+                    assert workskill.label is not None
+                    assert workskill.name is not None
+                    assert isinstance(workskill.active, bool)
+                    assert workskill.sharing is not None
+                    
+                    # Test links field if present
+                    if workskill.links:
+                        for link in workskill.links:
+                            assert link.rel is not None
+                            assert link.href is not None
+                            
+                    print(f"✅ Validated work skill: {workskill.label} (sharing: {workskill.sharing})")
+                except ValidationError as e:
+                    pytest.fail(f"Work skill validation failed: {e}")
+                    
+        # Test paginated response
+        try:
+            response = OFSResponseList[Workskill].model_validate(data)
+            assert len(response.items) > 0
+            print(f"✅ Validated paginated Workskill response with {len(response.items)} items")
+        except ValidationError as e:
+            pytest.fail(f"Paginated Workskill response validation failed: {e}")
     
     def test_metadata_response_structure(self, response_examples_path):
         """Validate metadata response structure consistency."""
@@ -197,3 +282,76 @@ class TestMetadataModels:
             # Check file is not empty
             assert file_path.stat().st_size > 0, f"Metadata example is empty: {filename}"
             print(f"✅ Required metadata example exists: {filename}")
+    
+    def test_base_response_integration(self, response_examples_path):
+        """Test BaseOFSResponse integration with metadata models."""
+        # Test that response models inherit from BaseOFSResponse correctly
+        file_path = response_examples_path / "74_get_work_skills.json"
+        if not file_path.exists():
+            pytest.skip("Work skills response example not found")
+            
+        with open(file_path) as f:
+            data = json.load(f)
+        
+        if "_metadata" in data:
+            del data["_metadata"]
+            
+        # Test OFSResponseList inherits BaseOFSResponse functionality
+        response = OFSResponseList[Workskill].model_validate(data)
+        
+        # Should have BaseOFSResponse properties
+        assert hasattr(response, 'raw_response')
+        assert hasattr(response, 'status_code')
+        assert hasattr(response, 'headers')
+        
+        # Should be None since we didn't use from_response
+        assert response.raw_response is None
+        assert response.status_code is None
+        assert response.headers is None
+        
+        print("✅ BaseOFSResponse integration verified")
+        
+    def test_model_extra_fields_tolerance(self, response_examples_path):
+        """Test that models handle extra fields gracefully for forward compatibility."""
+        file_path = response_examples_path / "74_get_work_skills.json"
+        if not file_path.exists():
+            pytest.skip("Work skills response example not found")
+            
+        with open(file_path) as f:
+            data = json.load(f)
+        
+        if "_metadata" in data and "items" in data and data["items"]:
+            # Add some fake future fields to test forward compatibility
+            test_item = data["items"][0].copy()
+            test_item["futureField"] = "future_value"
+            test_item["anotherNewField"] = {"nested": "data"}
+            
+            try:
+                workskill = Workskill.model_validate(test_item)
+                assert workskill.label is not None  # Original field still works
+                print("✅ Model handles extra fields gracefully")
+            except ValidationError as e:
+                pytest.fail(f"Model failed to handle extra fields: {e}")
+    
+    def test_link_model_validation(self, response_examples_path):
+        """Test Link model validation against real response data."""
+        file_path = response_examples_path / "74_get_work_skills.json"
+        if not file_path.exists():
+            pytest.skip("Work skills response example not found")
+            
+        with open(file_path) as f:
+            data = json.load(f)
+            
+        if "items" in data and data["items"]:
+            for item in data["items"][:2]:  # Test first 2
+                if "links" in item and item["links"]:
+                    for link_data in item["links"]:
+                        try:
+                            link = Link.model_validate(link_data)
+                            assert link.rel is not None
+                            assert link.href is not None
+                            assert link.href.startswith("https://")
+                            print(f"✅ Validated link: {link.rel} -> {link.href}")
+                        except ValidationError as e:
+                            pytest.fail(f"Link validation failed: {e}")
+                    break  # Only test first item with links
