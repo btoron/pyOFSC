@@ -9,6 +9,10 @@ from ofsc.models import CsvList, OFSApi
 
 from .common import OBJ_RESPONSE, wrap_return
 from .models import (
+    CapacityArea,
+    CapacityAreaListResponse,
+    CapacityCategory,
+    CapacityCategoryListResponse,
     CapacityRequest,
     GetCapacityResponse,
     GetQuotaRequest,

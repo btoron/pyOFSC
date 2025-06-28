@@ -13,17 +13,17 @@ from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, Field, RootModel, field_validator
 from typing_extensions import Annotated
 
-from .base import CsvList, OFSResponseList, Translation, TranslationList
+from .base import BaseOFSResponse, CsvList, OFSResponseList, TranslationList
 
 
 # Capacity Areas
-class CapacityAreaParent(BaseModel):
+class CapacityAreaParent(BaseOFSResponse):
     """Parent capacity area reference"""
     label: str
     name: Optional[str] = None
 
 
-class CapacityAreaConfiguration(BaseModel):
+class CapacityAreaConfiguration(BaseOFSResponse):
     """Configuration settings for capacity areas"""
     isTimeSlotBase: bool
     byCapacityCategory: str
@@ -33,7 +33,7 @@ class CapacityAreaConfiguration(BaseModel):
     definitionLevel: List[str]
 
 
-class CapacityArea(BaseModel):
+class CapacityArea(BaseOFSResponse):
     """Capacity area definition and configuration"""
     label: str
     name: Optional[str] = None
@@ -65,7 +65,7 @@ class CapacityAreaListResponse(OFSResponseList[CapacityArea]):
 
 
 # Capacity Categories
-class Item(BaseModel):
+class Item(BaseOFSResponse):
     """Generic item model for capacity categories"""
     label: str
     name: Optional[str] = None
@@ -81,7 +81,7 @@ class ItemList(RootModel[List[Item]]):
         return self.root[item]
 
 
-class CapacityCategory(BaseModel):
+class CapacityCategory(BaseOFSResponse):
     """Capacity category definition and configuration"""
     label: str
     name: str
@@ -101,7 +101,7 @@ class CapacityCategoryListResponse(OFSResponseList[CapacityCategory]):
 
 
 # Capacity Request and Response Models
-class CapacityRequest(BaseModel):
+class CapacityRequest(BaseOFSResponse):
     """Request model for capacity queries with CsvList support for string arrays
 
     Accepts list[str], CsvList, or str for string array parameters but converts internally to CsvList
@@ -153,14 +153,14 @@ class CapacityRequest(BaseModel):
         return self.fields.to_list() if self.fields is not None else []
 
 
-class CapacityMetrics(BaseModel):
+class CapacityMetrics(BaseOFSResponse):
     """Model for capacity metrics with count and optional minutes arrays"""
 
     count: List[int] = []
     minutes: Optional[List[int]] = None
 
 
-class CapacityCategoryItem(BaseModel):
+class CapacityCategoryItem(BaseOFSResponse):
     """Model for capacity category items with metrics"""
 
     label: str
@@ -168,7 +168,7 @@ class CapacityCategoryItem(BaseModel):
     available: Optional[CapacityMetrics] = None
 
 
-class CapacityAreaResponseItem(BaseModel):
+class CapacityAreaResponseItem(BaseOFSResponse):
     """Model for capacity area response with proper nested structure"""
 
     label: str
@@ -178,21 +178,21 @@ class CapacityAreaResponseItem(BaseModel):
     categories: List[CapacityCategoryItem] = []
 
 
-class CapacityResponseItem(BaseModel):
+class CapacityResponseItem(BaseOFSResponse):
     """Model for individual capacity response item by date"""
 
     date: str
     areas: List[CapacityAreaResponseItem] = []
 
 
-class GetCapacityResponse(BaseModel):
+class GetCapacityResponse(BaseOFSResponse):
     """Model for complete capacity response"""
 
     items: List[CapacityResponseItem] = []
 
 
 # Quota Models
-class QuotaTimeInterval(BaseModel):
+class QuotaTimeInterval(BaseOFSResponse):
     """Model for quota time interval data"""
 
     timeFrom: str
@@ -204,7 +204,7 @@ class QuotaTimeInterval(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
-class QuotaCategoryItem(BaseModel):
+class QuotaCategoryItem(BaseOFSResponse):
     """Model for quota category items with category-specific quota fields"""
 
     label: Optional[str] = None
@@ -222,7 +222,7 @@ class QuotaCategoryItem(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
-class QuotaAreaItem(BaseModel):
+class QuotaAreaItem(BaseOFSResponse):
     """Model for quota area items with quota-specific fields"""
 
     label: Optional[str] = None
@@ -242,20 +242,20 @@ class QuotaAreaItem(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
-class QuotaResponseItem(BaseModel):
+class QuotaResponseItem(BaseOFSResponse):
     """Model for individual quota response item by date"""
 
     date: str
     areas: List[QuotaAreaItem] = []
 
 
-class GetQuotaResponse(BaseModel):
+class GetQuotaResponse(BaseOFSResponse):
     """Model for complete quota response"""
 
     items: List[QuotaResponseItem] = []
 
 
-class GetQuotaRequest(BaseModel):
+class GetQuotaRequest(BaseOFSResponse):
     """Request model for quota queries with comprehensive parameters
 
     Accepts list[str] or CsvList for string array parameters but converts internally to CsvList

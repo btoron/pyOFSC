@@ -17,16 +17,13 @@ from typing import Any, Dict, List, Optional
 from pydantic import (
     AliasChoices,
     AnyHttpUrl,
-    BaseModel,
     ConfigDict,
     Field,
     RootModel,
-    field_validator,
     model_validator,
 )
-from typing_extensions import Annotated
 
-from .base import BaseOFSResponse, OFSResponseList, Translation, TranslationList
+from .base import BaseOFSResponse, OFSResponseList
 
 
 # Resources
@@ -93,7 +90,6 @@ class GetActivityRequest(BaseOFSResponse):
     def check_date_range(self):
         if self.dateFrom and self.dateTo and self.dateFrom > self.dateTo:
             raise ValueError("dateFrom must be before dateTo")
-        return self
         if not self.includeNonScheduled:
             if self.dateFrom is None or self.dateTo is None:
                 raise ValueError(
@@ -314,7 +310,7 @@ class ResourceWorkScheduleItem(BaseOFSResponse):
     nonWorkingReason: Optional[str] = None
     points: Optional[int] = None
     recordType: CalendarViewItemRecordType
-    recurrence: Optional[Recurrence] = Recurrence(recurEvery=1, recurrenceType="daily")
+    recurrence: Optional[Recurrence] = None
     scheduleItemId: Optional[int] = None
     scheduleLabel: Optional[str] = None
     scheduleShifts: Optional[List[CalendarViewItem]] = None
