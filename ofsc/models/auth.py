@@ -13,11 +13,13 @@ from typing import Optional, TYPE_CHECKING
 
 from pydantic import BaseModel, ConfigDict, ValidationInfo, field_validator
 
+from .base import BaseOFSResponse
+
 if TYPE_CHECKING:
     from ..auth import BaseAuth, BasicAuth, OAuth2Auth
 
 
-class OFSConfig(BaseModel):
+class OFSConfig(BaseOFSResponse):
     """Configuration model for OFSC client credentials and settings.
     
     Enhanced to internally manage auth objects for backward compatibility
@@ -76,14 +78,14 @@ class OFSConfig(BaseModel):
         return self._get_auth_instance().get_headers()
 
 
-class OFSOAuthRequest(BaseModel):
+class OFSOAuthRequest(BaseOFSResponse):
     """OAuth2 authentication request model"""
     assertion: Optional[str] = None
     grant_type: str = "client_credentials"
     # ofs_dynamic_scope: Optional[str] = None
 
 
-class OFSAPIError(BaseModel):
+class OFSAPIError(BaseOFSResponse):
     """Model for OFSC API error responses"""
     type: str
     title: str

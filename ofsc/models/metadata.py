@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 
 # Common models
-class Link(BaseModel):
+class Link(BaseOFSResponse):
     """Hyperlink reference for API resources"""
     rel: str
     href: str
@@ -30,7 +30,7 @@ class Link(BaseModel):
 
 
 # Work Skills
-class Workskill(BaseModel):
+class Workskill(BaseOFSResponse):
     """Work skill definition with internationalization support"""
     label: str
     active: bool = True
@@ -72,7 +72,7 @@ class WorkskillList(RootModel[List[Workskill]]):
         return self._raw_response
 
 
-class Condition(BaseModel):
+class Condition(BaseOFSResponse):
     """Condition definition for work skill requirements"""
     label: str
     function: str
@@ -80,7 +80,7 @@ class Condition(BaseModel):
     valueList: list = []
 
 
-class WorkskillCondition(BaseModel):
+class WorkskillCondition(BaseOFSResponse):
     """Work skill condition with requirements and dependencies"""
     internalId: int
     label: str
@@ -101,7 +101,7 @@ class WorskillConditionList(RootModel[List[WorkskillCondition]]):
 
 
 # Work Zones
-class Workzone(BaseModel):
+class Workzone(BaseOFSResponse):
     """Work zone definition with geographical boundaries"""
     workZoneLabel: str
     workZoneName: str
@@ -121,7 +121,7 @@ class WorkzoneList(RootModel[List[Workzone]]):
 
 
 # Properties
-class Property(BaseModel):
+class Property(BaseOFSResponse):
     """Property definition for custom fields and attributes"""
     label: str
     name: str
@@ -169,7 +169,7 @@ class PropertyList(RootModel[List[Property]]):
 
 
 # Resource Types
-class ResourceType(BaseModel):
+class ResourceType(BaseOFSResponse):
     """Resource type definition and configuration"""
     label: str
     name: str
@@ -189,7 +189,7 @@ class ResourceTypeList(RootModel[List[ResourceType]]):
 
 
 # Activity Types and Groups
-class ActivityTypeColors(BaseModel):
+class ActivityTypeColors(BaseOFSResponse):
     """Color scheme configuration for activity types"""
     cancelled: Annotated[Optional[str], Field(alias="cancelled")]
     completed: Annotated[Optional[str], Field(alias="completed")]
@@ -201,7 +201,7 @@ class ActivityTypeColors(BaseModel):
     warning: Annotated[Optional[str], Field(alias="warning")]
 
 
-class ActivityTypeFeatures(BaseModel):
+class ActivityTypeFeatures(BaseOFSResponse):
     """Feature flags and capabilities for activity types"""
     model_config = ConfigDict(extra="allow")
     allowCreationInBuckets: Optional[bool] = False
@@ -233,12 +233,12 @@ class ActivityTypeFeatures(BaseModel):
     supportOfWorkZones: Optional[bool] = False
 
 
-class ActivityTypeTimeSlots(BaseModel):
+class ActivityTypeTimeSlots(BaseOFSResponse):
     """Time slot configuration for activity types"""
     label: str
 
 
-class ActivityType(BaseModel):
+class ActivityType(BaseOFSResponse):
     """Activity type definition with features and configuration"""
     active: bool
     colors: Optional[ActivityTypeColors]
@@ -271,7 +271,7 @@ class ActivityTypeListResponse(OFSResponseList[ActivityType]):
     pass
 
 
-class ActivityTypeGroup(BaseModel):
+class ActivityTypeGroup(BaseOFSResponse):
     """Activity type group for organization and categorization"""
     label: str
     name: str
@@ -295,7 +295,7 @@ class ActivityTypeGroupListResponse(OFSResponseList[ActivityTypeGroup]):
 
 
 # Inventory Types
-class InventoryType(BaseModel):
+class InventoryType(BaseOFSResponse):
     """Inventory type definition and configuration"""
     internalId: Optional[int] = None
     label: str
@@ -328,13 +328,13 @@ class InventoryTypeListResponse(OFSResponseList[InventoryType]):
 
 
 # Work Skill Groups
-class WorksSkillAssignments(BaseModel):
+class WorksSkillAssignments(BaseOFSResponse):
     """Work skill assignment configuration"""
     workSkillLabel: str
     level: int
 
 
-class WorkSkillGroup(BaseModel):
+class WorkSkillGroup(BaseOFSResponse):
     """Work skill group definition and assignments"""
     label: str
     name: str
@@ -370,7 +370,7 @@ class WorkSkillGroupListResponse(OFSResponseList[WorkSkillGroup]):
 
 
 # Enumeration Values
-class EnumerationValue(BaseModel):
+class EnumerationValue(BaseOFSResponse):
     """Enumeration value for dropdown and selection fields"""
     label: str
     name: str
@@ -384,13 +384,13 @@ class EnumerationValueList(OFSResponseList[EnumerationValue]):
 
 
 # Applications
-class ApplicationsResourcestoAllow(BaseModel):
+class ApplicationsResourcestoAllow(BaseOFSResponse):
     """Resource access configuration for applications"""
     userType: str
     resourceTypes: List[str]
 
 
-class Application(BaseModel):
+class Application(BaseOFSResponse):
     """Application definition and configuration"""
     label: str
     name: str
@@ -406,7 +406,7 @@ class ApplicationListResponse(OFSResponseList[Application]):
 
 
 # Organizations
-class Organization(BaseModel):
+class Organization(BaseOFSResponse):
     """Organization definition and hierarchy"""
     label: str
     name: str
