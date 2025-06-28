@@ -12,8 +12,7 @@ from dotenv import load_dotenv
 from .config import load_test_config, TestEnvironmentConfig
 
 # Import v3.0 modules using standard imports
-from ofsc.client.sync_client import OFSC
-from ofsc.client.async_client import AsyncOFSC
+from ofsc.client import OFSC
 from ofsc.auth import BasicAuth, OAuth2Auth
 
 # Load environment variables from .env file
@@ -91,39 +90,19 @@ def mock_httpx_client():
 
 # Client fixtures
 @pytest.fixture
-def sync_client(test_credentials):
-    """Sync OFSC client for unit testing."""
-    return OFSC(
-        instance=test_credentials["instance"],
-        client_id=test_credentials["client_id"],
-        client_secret=test_credentials["client_secret"]
-    )
-
-
-@pytest.fixture
 def async_client(test_credentials):
     """Async OFSC client for unit testing."""
-    return AsyncOFSC(
+    return OFSC(
         instance=test_credentials["instance"],
         client_id=test_credentials["client_id"],
         client_secret=test_credentials["client_secret"]
-    )
-
-
-@pytest.fixture
-def live_sync_client(live_credentials):
-    """Live sync OFSC client for integration tests."""
-    return OFSC(
-        instance=live_credentials["instance"],
-        client_id=live_credentials["client_id"],
-        client_secret=live_credentials["client_secret"]
     )
 
 
 @pytest.fixture
 def live_async_client(live_credentials):
     """Live async OFSC client for integration tests."""
-    return AsyncOFSC(
+    return OFSC(
         instance=live_credentials["instance"],
         client_id=live_credentials["client_id"],
         client_secret=live_credentials["client_secret"]
@@ -132,27 +111,13 @@ def live_async_client(live_credentials):
 
 # Environment-specific client fixtures
 @pytest.fixture
-def dev_sync_client(test_config):
-    """Sync client for dev environment."""
-    env_config = test_config.environments.get("dev")
-    if not env_config:
-        pytest.skip("Dev environment not configured")
-    
-    return OFSC(
-        instance=env_config.instance,
-        client_id=env_config.client_id,
-        client_secret=env_config.client_secret
-    )
-
-
-@pytest.fixture
 def dev_async_client(test_config):
     """Async client for dev environment."""
     env_config = test_config.environments.get("dev")
     if not env_config:
         pytest.skip("Dev environment not configured")
     
-    return AsyncOFSC(
+    return OFSC(
         instance=env_config.instance,
         client_id=env_config.client_id,
         client_secret=env_config.client_secret
@@ -245,14 +210,11 @@ def run_live_tests(request):
     return request.config.getoption("--live")
 
 
-# Parametrized client fixtures for testing both sync and async
-@pytest.fixture(params=["sync", "async"])
-def both_clients(request, sync_client, async_client):
-    """Parametrized fixture to test both sync and async clients."""
-    if request.param == "sync":
-        return sync_client
-    else:
-        return async_client
+# Parametrized client fixtures for async-only testing
+@pytest.fixture
+def client(async_client):
+    """Client fixture for async-only testing."""
+    return async_client
 
 
 # Error handling and debugging

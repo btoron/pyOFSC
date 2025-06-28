@@ -8,8 +8,7 @@ import httpx
 
 # Import v3.0 modules using standard imports
 from ofsc.auth import BasicAuth, OAuth2Auth, create_auth
-from ofsc.client.sync_client import OFSC
-from ofsc.client.async_client import AsyncOFSC
+from ofsc.client import OFSC
 from ofsc.exceptions import OFSAuthenticationException, OFSConfigurationException
 
 
@@ -131,9 +130,10 @@ class TestClientAuthentication:
     """Test authentication integration with clients."""
     
     @pytest.mark.unit
-    def test_sync_client_basic_auth(self, test_credentials):
-        """Test sync client with Basic Auth."""
-        with OFSC(
+    @pytest.mark.asyncio
+    async def test_async_client_basic_auth(self, test_credentials):
+        """Test async client with Basic Auth."""
+        async with OFSC(
             instance=test_credentials["instance"],
             client_id=test_credentials["client_id"],
             client_secret=test_credentials["client_secret"]
@@ -146,38 +146,24 @@ class TestClientAuthentication:
             assert headers["Authorization"].startswith("Basic ")
     
     @pytest.mark.unit
-    def test_sync_client_custom_auth(self, test_credentials, basic_auth):
-        """Test sync client with custom auth instance."""
-        with OFSC(
+    @pytest.mark.asyncio
+    async def test_async_client_custom_auth(self, test_credentials, basic_auth):
+        """Test async client with custom auth instance."""
+        async with OFSC(
             instance="ignored",
             client_id="ignored", 
             client_secret="ignored",
             auth=basic_auth
         ) as client:
             assert client.auth is basic_auth
-    
-    @pytest.mark.unit
-    @pytest.mark.asyncio
-    async def test_async_client_basic_auth(self, test_credentials):
-        """Test async client with Basic Auth."""
-        async with AsyncOFSC(
-            instance=test_credentials["instance"],
-            client_id=test_credentials["client_id"],
-            client_secret=test_credentials["client_secret"]
-        ) as client:
-            assert isinstance(client.auth, BasicAuth)
-            assert client.auth.is_valid()
-            
-            headers = client.auth.get_headers()
-            assert "Authorization" in headers
-            assert headers["Authorization"].startswith("Basic ")
 
 
 class TestEnvironmentVariables:
     """Test environment variable loading."""
     
     @pytest.mark.unit
-    def test_env_var_loading(self):
+    @pytest.mark.asyncio
+    async def test_env_var_loading(self):
         """Test loading credentials from environment variables."""
         test_env = {
             'OFSC_INSTANCE': 'env_test_instance',
@@ -186,13 +172,14 @@ class TestEnvironmentVariables:
         }
         
         with patch.dict(os.environ, test_env):
-            with OFSC() as client:
+            async with OFSC() as client:
                 assert client.config.instance == 'env_test_instance'
                 assert client.config.client_id == 'env_test_client'
                 assert client.config.client_secret == 'env_test_secret'
     
     @pytest.mark.unit
-    def test_explicit_params_override_env_vars(self):
+    @pytest.mark.asyncio
+    async def test_explicit_params_override_env_vars(self):
         """Test that explicit parameters override environment variables."""
         test_env = {
             'OFSC_INSTANCE': 'env_instance',
@@ -201,7 +188,7 @@ class TestEnvironmentVariables:
         }
         
         with patch.dict(os.environ, test_env):
-            with OFSC(
+            async with OFSC(
                 instance="explicit_instance",
                 client_id="explicit_client",
                 client_secret="explicit_secret"
@@ -228,20 +215,6 @@ class TestEnvironmentVariables:
 
 class TestLiveAuthentication:
     """Live tests using real credentials from .env file."""
-    
-    @pytest.mark.integration
-    def test_live_basic_auth_sync(self, live_sync_client):
-        """Test Basic Auth with live credentials (sync)."""
-        with live_sync_client as client:
-            assert isinstance(client.auth, BasicAuth)
-            assert client.auth.is_valid()
-            
-            # Test that we can get auth headers
-            headers = client.auth.get_headers()
-            assert "Authorization" in headers
-            assert headers["Authorization"].startswith("Basic ")
-            
-            print(f"✅ Live sync client authenticated to: {client.base_url}")
     
     @pytest.mark.integration
     @pytest.mark.asyncio
@@ -279,10 +252,11 @@ class TestLiveAuthentication:
             print(f"✅ OAuth2Auth created for: {auth.base_url}")
     
     @pytest.mark.integration
-    def test_live_env_var_loading(self, live_credentials):
+    @pytest.mark.asyncio
+    async def test_live_env_var_loading(self, live_credentials):
         """Test loading live credentials from environment variables."""
         # This test verifies the .env file is properly configured
-        with OFSC() as client:
+        async with OFSC() as client:
             assert client.config.instance == live_credentials["instance"]
             assert client.config.client_id == live_credentials["client_id"]
             assert client.config.client_secret == live_credentials["client_secret"]

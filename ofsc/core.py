@@ -19,13 +19,9 @@ from .models import (
     LocationListResponse,
     OFSApi,
     OFSResponseList,
-    Resource,
-    ResourcePosition,
-    ResourcePositionListResponse,
     ResourceUsersListResponse,
     ResourceWorkScheduleItem,
     ResourceWorkScheduleResponse,
-    User,
 )
 
 

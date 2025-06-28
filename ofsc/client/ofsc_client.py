@@ -1,4 +1,4 @@
-"""Async OFSC client implementation using httpx.AsyncClient."""
+"""OFSC client implementation using httpx.AsyncClient (async-only)."""
 
 import logging
 from typing import Optional
@@ -11,8 +11,8 @@ from ofsc.auth import BaseAuth
 from .base import BaseOFSClient, ConnectionConfig
 
 
-class AsyncOFSC(BaseOFSClient):
-    """Asynchronous OFSC client using httpx.AsyncClient."""
+class OFSC(BaseOFSClient):
+    """OFSC client using httpx.AsyncClient (async-only architecture)."""
 
     def __init__(
         self,
@@ -26,7 +26,7 @@ class AsyncOFSC(BaseOFSClient):
         connection_config: Optional[ConnectionConfig] = None,
         auth: Optional[BaseAuth] = None,
     ):
-        """Initialize the async OFSC client.
+        """Initialize the OFSC client (async-only).
 
         Args:
             instance: OFSC instance name (can be loaded from OFSC_INSTANCE env var)
@@ -135,10 +135,7 @@ class AsyncOFSC(BaseOFSClient):
                 raise RuntimeError(
                     "Client not initialized. Use async with statement or call __aenter__() first."
                 )
-            # TODO: Check why would we have to send the base_url and auth headers again
-            self._metadata = OFSMetadataAPI(
-                self._client, str(self.base_url), self._get_auth_headers()
-            )
+            self._metadata = OFSMetadataAPI(self._client)
         return self._metadata
 
     @property
@@ -156,4 +153,4 @@ class AsyncOFSC(BaseOFSClient):
         return self._oauth
 
     def __str__(self) -> str:
-        return f"AsyncOFSC(instance={self._config.instance}, base_url={self.base_url})"
+        return f"OFSC(instance={self._config.instance}, base_url={self.base_url})"

@@ -13,12 +13,12 @@ import random
 import time
 import logging
 from enum import Enum
-from typing import Optional, Callable, Any, Union, TYPE_CHECKING
+from typing import Optional, Callable, Any, TYPE_CHECKING
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 
 if TYPE_CHECKING:
-    import httpx
+    import httpx  # noqa: F401
 
 from .exceptions import (
     OFSException,
@@ -63,7 +63,7 @@ class CircuitBreakerConfig:
     
     failure_threshold: int = 5
     timeout_seconds: float = 60.0
-    expected_exception: type = OFSException
+    expected_exception: type[Exception] = OFSException
     name: str = "default"
 
 
@@ -124,7 +124,7 @@ class CircuitBreaker:
             result = func(*args, **kwargs)
             self._on_success()
             return result
-        except self.config.expected_exception as e:
+        except self.config.expected_exception as e:  # type: ignore[misc]
             self._on_failure(e)
             raise
     
@@ -143,7 +143,7 @@ class CircuitBreaker:
             result = await func(*args, **kwargs)
             self._on_success()
             return result
-        except self.config.expected_exception as e:
+        except self.config.expected_exception as e:  # type: ignore[misc]
             self._on_failure(e)
             raise
     

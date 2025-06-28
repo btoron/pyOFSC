@@ -4,8 +4,7 @@ import logging
 
 from config import Config
 
-import ofsc
-from ofsc import FULL_RESPONSE, OBJ_RESPONSE, OFSC
+from ofsc import OFSC, OBJ_RESPONSE
 
 
 def init_script():

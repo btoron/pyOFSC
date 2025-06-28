@@ -1,7 +1,7 @@
 # OFSC Python Wrapper v3.0 Requirements
 
 ## Overview
-The OFSC Python Wrapper v3.0 is a comprehensive Python library for interacting with Oracle Field Service (OFS) APIs. This version introduces async support, migration to httpx, and mandatory use of Pydantic models for all responses.
+The OFSC Python Wrapper v3.0 is a comprehensive Python library for interacting with Oracle Field Service (OFS) APIs. This version is **async-only**, uses httpx.AsyncClient, and mandates Pydantic models for all responses.
 
 ## Core Requirements
 
@@ -10,11 +10,11 @@ The OFSC Python Wrapper v3.0 is a comprehensive Python library for interacting w
 - **R1.2**: The library SHALL be tested against Python 3.12 and 3.13
 - **R1.3**: The library SHALL use Python 3.12+ features where appropriate
 
-### R2: Dual Client Support
-- **R2.1**: The library SHALL provide both synchronous and asynchronous clients
-- **R2.2**: The synchronous client SHALL be named `OFSC` using httpx.Client()
-- **R2.3**: The asynchronous client SHALL be named `AsyncOFSC` using httpx.AsyncClient()
-- **R2.4**: Both clients SHALL have identical API surfaces (except for async/await)
+### R2: Async-Only Client Architecture
+- **R2.1**: The library SHALL provide ONLY asynchronous clients
+- **R2.2**: The asynchronous client SHALL be named `OFSC` using httpx.AsyncClient()
+- **R2.3**: All API methods SHALL be async and require await
+- **R2.4**: The library SHALL be designed from the ground up for async/await patterns
 
 ### R3: HTTP Client Migration
 - **R3.1**: The library SHALL use `httpx` as the HTTP client library
@@ -59,7 +59,7 @@ The OFSC Python Wrapper v3.0 is a comprehensive Python library for interacting w
 ### R9: Testing
 - **R9.1**: The library SHALL maintain 80% test coverage
 - **R9.2**: Tests SHALL include unit, integration, and model validation tests
-- **R9.3**: Tests SHALL support both sync and async clients
+- **R9.3**: All tests SHALL be async and use pytest-asyncio
 - **R9.4**: Tests SHALL use pytest as the testing framework
 - **R9.5**: Tests SHALL include model validation tests
 
@@ -110,7 +110,7 @@ The OFSC Python Wrapper v3.0 is a comprehensive Python library for interacting w
 ## Implementation Priorities
 
 ### Phase 1: Core Features (Breaking Changes)
-1. Implement async client with httpx (R2, R3)
+1. Implement async-only client with httpx.AsyncClient (R2, R3)
 2. Create Pydantic models for all responses (R4)
 3. Implement new error handling (R7)
 4. Update authentication system (R5)
@@ -129,8 +129,8 @@ The OFSC Python Wrapper v3.0 is a comprehensive Python library for interacting w
 ## Test Mapping
 
 ### Authentication Tests
-- R5.1: test_basic_auth_sync, test_basic_auth_async
-- R5.2: test_oauth2_sync, test_oauth2_async
+- R5.1: test_basic_auth_async
+- R5.2: test_oauth2_async
 - R5.3: test_token_refresh
 - R5.4: test_env_var_auth
 
@@ -197,7 +197,7 @@ The OFSC Python Wrapper v3.0 is a comprehensive Python library for interacting w
 ## Success Criteria
 
 1. All tests pass with 80% coverage
-2. Async operations work correctly with httpx
-3. Migration from v2 is smooth with clear documentation
+2. Async-only operations work correctly with httpx.AsyncClient
+3. Migration from v2 is documented with async/await examples
 4. Type checking passes in strict mode
-5. No breaking changes without compatibility layer
+5. Clear documentation about async-only requirement

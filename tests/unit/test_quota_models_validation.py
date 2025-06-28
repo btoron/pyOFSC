@@ -1,8 +1,7 @@
 """Validation tests for quota-related models in OFSC v3.0."""
 
 import pytest
-from datetime import datetime, date
-from typing import List, Optional
+# Remove unused imports
 
 from ofsc.models.capacity import (
     GetQuotaRequest,
@@ -286,7 +285,7 @@ class TestQuotaModelsValidation:
         )
         
         request_dict = request.model_dump()
-        expected_keys = {"dates", "areas", "categories", "timeIntervals"}
+        # expected_keys = {"dates", "areas", "categories", "timeIntervals"}
         assert "dates" in request_dict
         assert "areas" in request_dict
         # CsvList fields serialize as {"value": "csv,string"}

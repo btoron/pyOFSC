@@ -1,13 +1,11 @@
-"""OFSC Client module for v3.0 architecture."""
+"""OFSC Client module for v3.0 async-only architecture."""
 
-from .async_client import AsyncOFSC
+from .ofsc_client import OFSC
 from .base import BaseOFSClient, ConnectionConfig, OFSConfig
-from .sync_client import OFSC
 from .response_handler import ResponseHandler, parse_response, parse_list_response
 
 __all__ = [
     "OFSC",
-    "AsyncOFSC", 
     "BaseOFSClient",
     "OFSConfig",
     "ConnectionConfig",

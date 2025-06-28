@@ -1,26 +1,29 @@
 import logging
+from typing import TYPE_CHECKING
 
 import httpx
 
 from ofsc.models.core import SubscriptionList, UserListResponse
 
+if TYPE_CHECKING:
+    from httpx import Response
+
 
 class OFSCoreAPI:
     """
-    Interface for the OFS Core API.
-    This class provides methods to interact with the core functionalities of the OFS system.
+    Interface for the OFS Core API (async-only).
+    This class provides async methods to interact with the core functionalities of the OFS system.
+    
+    All methods are async and must be awaited.
     """
 
-    def __init__(self, client):
+    def __init__(self, client: httpx.AsyncClient):
         self.client = client
-        self._is_async = isinstance(client, httpx.AsyncClient)
         logging.debug(
-            f"OFSCoreAPI initialized with client: {self.client} (async: {self._is_async} base_url: {self.client.base_url})"
+            f"OFSCoreAPI initialized with async client: {self.client} (base_url: {self.client.base_url})"
         )
 
-    async def get_subscriptions(
-        self, allSubscriptions: bool = False
-    ) -> SubscriptionList:
+    async def get_subscriptions(self, allSubscriptions: bool = False) -> SubscriptionList:
         """
         Get subscriptions from the OFS Core API.
 
@@ -36,18 +39,19 @@ class OFSCoreAPI:
         )
         params = {"all": str(allSubscriptions).lower()} if allSubscriptions else {}
 
-        if self._is_async:
-            response = await self.client.get(endpoint, params=params)
-        else:
-            response = self.client.get(endpoint, params=params)
+        response: "Response" = await self.client.get(endpoint, params=params)
         return SubscriptionList.from_response(response)
 
     async def get_users(self, offset: int = 0, limit: int = 100) -> UserListResponse:
         """
         Get users from the OFS Core API.
 
+        Args:
+            offset: Starting record offset (default: 0)
+            limit: Maximum records to return (default: 100)
+
         Returns:
-            UsersList: The response object containing user data.
+            UserListResponse: The response object containing user data.
         """
         endpoint = "/rest/ofscCore/v1/users"
         params = {"offset": offset, "limit": limit}
@@ -55,8 +59,5 @@ class OFSCoreAPI:
             f"Fetching users from endpoint: {endpoint} and base URL: {self.client.base_url}"
         )
 
-        if self._is_async:
-            response = await self.client.get(endpoint, params=params)
-        else:
-            response = self.client.get(endpoint, params=params)
+        response: "Response" = await self.client.get(endpoint, params=params)
         return UserListResponse.from_response(response)

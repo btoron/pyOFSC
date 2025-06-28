@@ -1,10 +1,8 @@
 import base64
-import logging
 from abc import ABC
 from datetime import date
 from enum import Enum
 from typing import Any, Dict, Generic, List, Optional, TypeVar
-from urllib.parse import urljoin
 
 from pydantic import (
     AliasChoices,

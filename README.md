@@ -1,6 +1,20 @@
 ## OFSC
 
-A simple Python wrapper for Oracle OFS REST API
+A simple Python async wrapper for Oracle OFS REST API
+
+⚠️ **v3.0 Breaking Change**: Starting with version 3.0, this library provides **async-only** functionality. All API methods must be awaited and the client must be used within an async context.
+
+🔄 **Migration Help**: For existing v2.x code, use our backward compatibility wrapper:
+```python
+# Quick migration - change only the import!
+from ofsc.compat import OFSC  # was: from ofsc import OFSC
+
+# All your existing code works unchanged
+client = OFSC(instance="demo", client_id="id", client_secret="secret")
+users = client.get_users()  # No await needed
+```
+
+See [Backward Compatibility Guide](docs/backward-compatibility.md) for details.
 
 ## Models
 
@@ -194,49 +208,83 @@ The models are based on the Pydantic BaseModel, so it is possible to build an en
 
 ## Usage Examples
 
-### Capacity API
+### Basic Async Usage
 ```python
+import asyncio
+from ofsc import OFSC
+
+async def main():
+    # Initialize async connection
+    async with OFSC(
+        instance="your_instance",
+        client_id="your_client_id",
+        client_secret="your_client_secret"
+    ) as ofsc_client:
+        
+        # Get subscriptions
+        subscriptions = await ofsc_client.core.get_subscriptions()
+        print(f"Found {subscriptions.totalResults} subscriptions")
+        
+        # Get users
+        users = await ofsc_client.core.get_users(limit=50)
+        print(f"Found {users.totalResults} users")
+        
+        # Get properties
+        properties = await ofsc_client.metadata.get_properties()
+        print(f"Property: {properties.label}")
+
+# Run the async function
+asyncio.run(main())
+```
+
+### Capacity API (Async)
+```python
+import asyncio
 from ofsc import OFSC
 from ofsc.models import CsvList
 
-# Initialize connection
-ofsc_instance = OFSC(
-    clientID="your_client_id",
-    secret="your_secret", 
-    companyName="your_company"
-)
+async def get_capacity_data():
+    # Initialize async connection
+    async with OFSC(
+        instance="your_instance",
+        client_id="your_client_id",
+        client_secret="your_client_secret"
+    ) as ofsc_client:
+        
+        # Get capacity data with individual parameters
+        response = await ofsc_client.capacity.getAvailableCapacity(
+            dates=["2025-06-25", "2025-06-26"],  # Required
+            areas=["Atlantic", "Pacific"],       # Required
+            availableTimeIntervals="all",        # Optional
+            calendarTimeIntervals="all"          # Optional
+        )
 
-# Get capacity data with individual parameters
-response = ofsc_instance.capacity.getAvailableCapacity(
-    dates=["2025-06-25", "2025-06-26"],  # Required
-    areas=["Atlantic", "Pacific"],       # Required
-    availableTimeIntervals="all",        # Optional
-    calendarTimeIntervals="all"          # Optional
-)
+        # Access response data
+        for item in response.items:
+            print(f"Date: {item.date}")
+            for area in item.areas:
+                print(f"  Area: {area.label}")
+                print(f"  Calendar count: {area.calendar.count}")
+                if area.available:
+                    print(f"  Available count: {area.available.count}")
 
-# Access response data
-for item in response.items:
-    print(f"Date: {item.date}")
-    for area in item.areas:
-        print(f"  Area: {area.label}")
-        print(f"  Calendar count: {area.calendar.count}")
-        if area.available:
-            print(f"  Available count: {area.available.count}")
+        # Alternative input formats also work:
+        # CSV string format
+        response = await ofsc_client.capacity.getAvailableCapacity(
+            dates="2025-06-25,2025-06-26",
+            areas="Atlantic,Pacific",
+            categories="Install,Repair"
+        )
 
-# Alternative input formats also work:
-# CSV string format
-response = ofsc_instance.capacity.getAvailableCapacity(
-    dates="2025-06-25,2025-06-26",
-    areas="Atlantic,Pacific",
-    categories="Install,Repair"
-)
+        # CsvList format
+        response = await ofsc_client.capacity.getAvailableCapacity(
+            dates=CsvList.from_list(["2025-06-25"]),
+            areas=CsvList.from_list(["Atlantic"]),
+            aggregateResults=True
+        )
 
-# CsvList format
-response = ofsc_instance.capacity.getAvailableCapacity(
-    dates=CsvList.from_list(["2025-06-25"]),
-    areas=CsvList.from_list(["Atlantic"]),
-    aggregateResults=True
-)
+# Run the async function
+asyncio.run(get_capacity_data())
 ```
 
 ### Quota API with CsvList
@@ -272,38 +320,43 @@ areas_list = quota_request.get_areas_list()  # ["Atlantic", "Pacific"]
 categories_list = quota_request.get_categories_list()  # ["Install", "Repair"]
 ```
 
-### Quota API Function
+### Quota API Function (Async)
 ```python
+import asyncio
 from ofsc import OFSC
 
-# Initialize connection
-ofsc_instance = OFSC(
-    clientID="your_client_id",
-    secret="your_secret", 
-    companyName="your_company"
-)
+async def get_quota_data():
+    # Initialize async connection
+    async with OFSC(
+        instance="your_instance",
+        client_id="your_client_id",
+        client_secret="your_client_secret"
+    ) as ofsc_client:
 
-# Simple quota request with individual parameters
-quota_response = ofsc_instance.capacity.getQuota(
-    dates=["2025-06-25", "2025-06-26"],  # Required
-    areas=["Atlantic", "Pacific"],       # Optional
-    aggregateResults=True,               # Optional
-    categoryLevel=False                  # Optional
-)
+        # Simple quota request with individual parameters
+        quota_response = await ofsc_client.capacity.getQuota(
+            dates=["2025-06-25", "2025-06-26"],  # Required
+            areas=["Atlantic", "Pacific"],       # Optional
+            aggregateResults=True,               # Optional
+            categoryLevel=False                  # Optional
+        )
 
-# Minimal quota request (only required dates)
-minimal_quota = ofsc_instance.capacity.getQuota(
-    dates=["2025-06-27"]
-    # All other parameters default to None
-)
+        # Minimal quota request (only required dates)
+        minimal_quota = await ofsc_client.capacity.getQuota(
+            dates=["2025-06-27"]
+            # All other parameters default to None
+        )
 
-# Mixed input types
-mixed_quota = ofsc_instance.capacity.getQuota(
-    dates="2025-06-28,2025-06-29",      # CSV string
-    areas=["Europe", "Asia"],            # List
-    categories="Install,Repair",         # CSV string
-    returnStatuses=True
-)
+        # Mixed input types
+        mixed_quota = await ofsc_client.capacity.getQuota(
+            dates="2025-06-28,2025-06-29",      # CSV string
+            areas=["Europe", "Asia"],            # List
+            categories="Install,Repair",         # CSV string
+            returnStatuses=True
+        )
+
+# Run the async function
+asyncio.run(get_quota_data())
 ```
     
 ## Test History
@@ -333,10 +386,35 @@ It will be required to use the right API module:
 
 During the transition period a DeprecationWarning will be raised if the functions are used in the old way
 
-## What's new in OFSC 2.0
+## What's new in OFSC 3.0
 
-- All metadata functions now use models, when available
-- All functions are now using the API name (Core or Metadata)
-- All functions return a python object by default. If there is an available model it will be used, otherwise a dict will be returned (see `response_type` parameter and `auto_model` parameter)
-- Errors during API calls can raise exceptions and will by default when returning an object (see `auto_raise` parameter)
-- OBJ_RESPONS and TEXT_RESPONSE are now deprecated. Use `response_type` parameter to control the response type
+**🚨 Breaking Changes:**
+- **Async-only architecture**: All API methods are now async and must be awaited
+- **Context manager required**: Client must be used with `async with` 
+- **Removed sync client**: No more blocking/synchronous operations
+- **Updated imports**: Import `OFSC` directly from `ofsc.client`
+
+**New Features:**
+- Built from the ground up for async/await patterns
+- Improved performance with httpx.AsyncClient
+- Better resource management with automatic connection pooling
+- Enhanced type safety with Pydantic models
+- Comprehensive async testing suite
+
+**Migration Options:**
+
+1. **Quick Migration (Backward Compatibility)**:
+```python
+# Change ONLY the import - everything else stays the same
+from ofsc.compat import OFSC  # was: from ofsc import OFSC
+client = OFSC(instance="...", client_id="...", client_secret="...")
+response = client.get_users()  # Works exactly like v2.x
+```
+
+2. **Full Migration (Recommended for new code)**:
+```python
+# New v3.x async code for better performance:
+from ofsc import OFSC
+async with OFSC(instance="...", client_id="...", client_secret="...") as client:
+    response = await client.core.get_users()
+```

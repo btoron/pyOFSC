@@ -12,7 +12,7 @@ This module contains Pydantic models for OFSC Metadata API endpoints:
 
 from typing import TYPE_CHECKING, Any, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, RootModel, field_validator
+from pydantic import ConfigDict, Field, PrivateAttr, RootModel, field_validator
 from typing_extensions import Annotated
 
 from .base import BaseOFSResponse, EntityEnum, OFSResponseList, SharingEnum, Translation, TranslationList
@@ -128,7 +128,7 @@ class Property(BaseOFSResponse):
     type: str
     entity: Optional[EntityEnum] = None
     gui: Optional[str] = None
-    translations: Annotated[TranslationList, Field(validate_default=True)] = []
+    translations: Annotated[TranslationList, Field(validate_default=True)] = TranslationList([])
     links: Optional[List[Link]] = None
 
     @field_validator("translations")

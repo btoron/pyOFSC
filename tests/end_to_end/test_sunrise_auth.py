@@ -3,7 +3,7 @@ import os
 
 import pytest
 
-from ofsc.client.async_client import AsyncOFSC
+from ofsc.client import OFSC
 from ofsc.models.core import SubscriptionList, User, UserListResponse
 
 
@@ -32,14 +32,14 @@ class TestSunriseAuthentication:
     @pytest.fixture
     def async_client_basic_auth(self, live_credentials):
         """Async OFSC client with Basic Auth for live testing."""
-        return AsyncOFSC(
+        return OFSC(
             instance=live_credentials["instance"],
             client_id=live_credentials["client_id"],
             client_secret=live_credentials["client_secret"],
             use_token=False,  # Use Basic Auth
         )
 
-    def test_async_client(self, async_client_basic_auth: AsyncOFSC):
+    def test_async_client(self, async_client_basic_auth: OFSC):
         async def test_async_client_basic_auth(async_client_basic_auth):
             async with async_client_basic_auth as client:
                 # Test if the client can fetch subscriptions

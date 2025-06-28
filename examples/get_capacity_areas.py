@@ -66,7 +66,7 @@ def get_capacity_info():
     result = instance.metadata.get_capacity_areas()
     response = result.json()
     if "items" in response.keys():
-        response_count = len(response["items"])
+        # response_count = len(response["items"])  # Not used
         original_items = response["items"]
         items = []
         # Reduce structure and get extra info

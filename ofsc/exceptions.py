@@ -9,7 +9,6 @@ Requirements covered:
 - R7.3: Always raise exceptions on errors
 """
 
-import logging
 from typing import Optional, Dict, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:

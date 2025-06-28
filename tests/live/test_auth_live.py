@@ -10,8 +10,7 @@ from datetime import datetime, timezone
 import asyncio
 
 # Import v3.0 client classes and authentication
-from ofsc.client.sync_client import OFSC
-from ofsc.client.async_client import AsyncOFSC
+from ofsc.client import OFSC
 from ofsc.auth import BasicAuth, OAuth2Auth
 from ofsc.exceptions import (
     OFSAuthenticationException,
@@ -41,29 +40,9 @@ class TestLiveAuthentication:
         }
     
     @pytest.fixture
-    def sync_client_basic_auth(self, live_credentials):
-        """Sync OFSC client with Basic Auth for live testing."""
-        return OFSC(
-            instance=live_credentials["instance"],
-            client_id=live_credentials["client_id"],
-            client_secret=live_credentials["client_secret"],
-            use_token=False  # Use Basic Auth
-        )
-    
-    @pytest.fixture
-    def sync_client_oauth2(self, live_credentials):
-        """Sync OFSC client with OAuth2 for live testing."""
-        return OFSC(
-            instance=live_credentials["instance"],
-            client_id=live_credentials["client_id"],
-            client_secret=live_credentials["client_secret"],
-            use_token=True  # Use OAuth2
-        )
-    
-    @pytest.fixture
     def async_client_basic_auth(self, live_credentials):
         """Async OFSC client with Basic Auth for live testing."""
-        return AsyncOFSC(
+        return OFSC(
             instance=live_credentials["instance"],
             client_id=live_credentials["client_id"],
             client_secret=live_credentials["client_secret"],
@@ -73,42 +52,12 @@ class TestLiveAuthentication:
     @pytest.fixture
     def async_client_oauth2(self, live_credentials):
         """Async OFSC client with OAuth2 for live testing."""
-        return AsyncOFSC(
+        return OFSC(
             instance=live_credentials["instance"],
             client_id=live_credentials["client_id"],
             client_secret=live_credentials["client_secret"],
             use_token=True  # Use OAuth2
         )
-    
-    def test_sync_basic_auth_client_creation(self, sync_client_basic_auth):
-        """Test sync client creation with Basic Auth."""
-        client = sync_client_basic_auth
-        
-        # Verify client configuration
-        assert client.config.instance is not None
-        assert client.auth is not None
-        assert isinstance(client.auth, BasicAuth)
-        assert client.base_url.endswith(".fs.ocs.oraclecloud.com")
-        
-        print("✅ Sync Basic Auth client created successfully")
-        print(f"   Instance: {client.config.instance}")
-        print(f"   Base URL: {client.base_url}")
-        print(f"   Auth type: {type(client.auth).__name__}")
-    
-    def test_sync_oauth2_client_creation(self, sync_client_oauth2):
-        """Test sync client creation with OAuth2."""
-        client = sync_client_oauth2
-        
-        # Verify client configuration
-        assert client.config.instance is not None
-        assert client.auth is not None
-        assert isinstance(client.auth, OAuth2Auth)
-        assert client.base_url.endswith(".fs.ocs.oraclecloud.com")
-        
-        print("✅ Sync OAuth2 client created successfully")
-        print(f"   Instance: {client.config.instance}")
-        print(f"   Base URL: {client.base_url}")
-        print(f"   Auth type: {type(client.auth).__name__}")
     
     def test_async_basic_auth_client_creation(self, async_client_basic_auth):
         """Test async client creation with Basic Auth."""
@@ -176,32 +125,6 @@ class TestLiveAuthentication:
         print(f"   Token length: {len(token_response_1.access_token)} characters")
         print(f"   Caching: {'✅ Same token returned' if token_response_1.access_token == token_response_2.access_token else '❌ Different tokens'}")
     
-    def test_sync_client_with_oauth2_api_call(self, sync_client_oauth2):
-        """Test sync client OAuth2 authentication with actual API call."""
-        client = sync_client_oauth2
-        
-        try:
-            # Make a simple API call that requires authentication
-            # Using events/subscriptions as it's a lightweight endpoint
-            with client:
-                # Get the auth headers to verify OAuth2 token is being used
-                auth_headers = client.auth.get_headers()
-                
-                # Verify we have a Bearer token
-                assert "Authorization" in auth_headers
-                assert auth_headers["Authorization"].startswith("Bearer ")
-                
-                # Extract token for validation
-                token = auth_headers["Authorization"].split("Bearer ")[1]
-                assert len(token) > 0
-                
-                print("✅ Sync OAuth2 client authentication successful")
-                print(f"   Auth header: Authorization: Bearer {token[:20]}...")
-                print("   API call preparation successful")
-                
-        except Exception as e:
-            pytest.fail(f"Sync OAuth2 client authentication failed: {e}")
-    
     def test_async_client_with_oauth2_api_call(self, async_client_oauth2):
         """Test async client OAuth2 authentication with actual API call."""
         async def run_test():
@@ -231,9 +154,9 @@ class TestLiveAuthentication:
         # Run the async test
         asyncio.run(run_test())
     
-    def test_basic_auth_headers(self, sync_client_basic_auth):
+    def test_basic_auth_headers(self, async_client_basic_auth):
         """Test Basic Auth header generation."""
-        client = sync_client_basic_auth
+        client = async_client_basic_auth
         
         # Get auth headers
         auth_headers = client.auth.get_headers()
@@ -270,14 +193,8 @@ class TestLiveAuthentication:
         print("✅ OAuth2 invalid credentials properly handled")
         print(f"   Error: {str(exc_info.value)}")
     
-    def test_client_context_managers(self, sync_client_oauth2, async_client_oauth2):
+    def test_client_context_managers(self, async_client_oauth2):
         """Test client context manager functionality."""
-        # Test sync client context manager
-        sync_client = sync_client_oauth2
-        with sync_client as client:
-            assert not client._client.is_closed
-            assert client.auth is not None
-        
         # Test async client context manager
         async def test_async_context():
             async_client = async_client_oauth2
@@ -288,7 +205,6 @@ class TestLiveAuthentication:
         asyncio.run(test_async_context())
         
         print("✅ Client context managers working correctly")
-        print("   Sync context manager: ✅")
         print("   Async context manager: ✅")
     
     def test_oauth2_token_refresh_mechanism(self, live_credentials):

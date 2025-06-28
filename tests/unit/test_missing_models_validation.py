@@ -2,10 +2,10 @@
 
 import pytest
 from datetime import datetime, date
-from typing import List, Optional
+# Remove unused typing imports
 
 from ofsc.models.base import CsvList, Translation, TranslationList
-from ofsc.models.capacity import GetQuotaRequest, GetQuotaResponse
+from ofsc.models.capacity import GetQuotaRequest
 from ofsc.models.core import GetActivityRequest, BulkUpdateRequest, BulkUpdateParameters, BulkUpdateActivityItem
 
 

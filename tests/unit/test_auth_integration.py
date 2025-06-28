@@ -4,8 +4,7 @@ import pytest
 from unittest.mock import patch, Mock
 
 from ofsc.auth import BasicAuth, OAuth2Auth
-from ofsc.client.sync_client import OFSC
-from ofsc.client.async_client import AsyncOFSC
+from ofsc.client import OFSC
 from ofsc.exceptions import (
     OFSAuthenticationException,
     OFSConfigurationException,
@@ -45,7 +44,7 @@ class TestAuthenticationIntegration:
         assert auth.client_id == "test_client"
         assert auth.client_secret == "test_secret"
     
-    def test_sync_client_creation_with_basic_auth(self):
+    def test_async_client_creation_with_basic_auth(self):
         """Test OFSC client creation with Basic Auth."""
         client = OFSC(
             instance="test_instance",
@@ -58,35 +57,9 @@ class TestAuthenticationIntegration:
         assert isinstance(client.auth, BasicAuth)
         assert client.base_url == "https://test_instance.fs.ocs.oraclecloud.com"
     
-    def test_sync_client_creation_with_oauth2(self):
+    def test_async_client_creation_with_oauth2(self):
         """Test OFSC client creation with OAuth2."""
         client = OFSC(
-            instance="test_instance",
-            client_id="test_client",
-            client_secret="test_secret",
-            use_token=True
-        )
-        
-        assert client.config.instance == "test_instance"
-        assert isinstance(client.auth, OAuth2Auth)
-        assert client.base_url == "https://test_instance.fs.ocs.oraclecloud.com"
-    
-    def test_async_client_creation_with_basic_auth(self):
-        """Test AsyncOFSC client creation with Basic Auth."""
-        client = AsyncOFSC(
-            instance="test_instance",
-            client_id="test_client",
-            client_secret="test_secret",
-            use_token=False
-        )
-        
-        assert client.config.instance == "test_instance"
-        assert isinstance(client.auth, BasicAuth)
-        assert client.base_url == "https://test_instance.fs.ocs.oraclecloud.com"
-    
-    def test_async_client_creation_with_oauth2(self):
-        """Test AsyncOFSC client creation with OAuth2."""
-        client = AsyncOFSC(
             instance="test_instance",
             client_id="test_client",
             client_secret="test_secret",
@@ -109,13 +82,13 @@ class TestAuthenticationIntegration:
                 del os.environ[var]
         
         try:
-            with pytest.raises(OFSConfigurationException, match="instance must be provided or set OFSC_INSTANCE"):
+            with pytest.raises(OFSConfigurationException, match="instance must be provided"):
                 OFSC(client_id="test", client_secret="test")  # Missing instance
             
-            with pytest.raises(OFSConfigurationException, match="client_id must be provided or set OFSC_CLIENT_ID"):
+            with pytest.raises(OFSConfigurationException, match="client_id must be provided"):
                 OFSC(instance="test", client_secret="test")  # Missing client_id
             
-            with pytest.raises(OFSConfigurationException, match="client_secret must be provided or set OFSC_CLIENT_SECRET"):
+            with pytest.raises(OFSConfigurationException, match="client_secret must be provided"):
                 OFSC(instance="test", client_id="test")  # Missing client_secret
         
         finally:
@@ -200,27 +173,20 @@ class TestAuthenticationIntegration:
     
     def test_context_manager_support(self):
         """Test that clients work as context managers."""
-        sync_client = OFSC(
+        async_client = OFSC(
             instance="test",
             client_id="test",
             client_secret="test"
         )
         
-        # Test sync context manager
-        with sync_client as client:
-            assert client is sync_client
-            assert hasattr(client, '_client')
+        # Test async context manager
+        async def test_async_context():
+            async with async_client as client:
+                assert client is async_client
+                assert hasattr(client, '_client')
         
-        # Test that context manager properly sets up the client
-        async_client = AsyncOFSC(
-            instance="test",
-            client_id="test",
-            client_secret="test"
-        )
-        
-        # For async, we would need an async test, but we can at least check setup
-        assert hasattr(async_client, '__aenter__')
-        assert hasattr(async_client, '__aexit__')
+        import asyncio
+        asyncio.run(test_async_context())
     
     def test_auth_headers_generation(self):
         """Test authentication header generation."""
@@ -252,16 +218,20 @@ class TestAuthenticationIntegration:
         import os
         
         # Test with environment variables set
-        with patch.dict(os.environ, {
-            'OFSC_INSTANCE': 'env_test',
-            'OFSC_CLIENT_ID': 'env_client',
-            'OFSC_CLIENT_SECRET': 'env_secret'
-        }):
-            client = OFSC()  # No parameters, should load from env
-            
-            assert client.config.instance == 'env_test'
-            assert client.auth.client_id == 'env_client'
-            assert client.auth.client_secret == 'env_secret'
+        async def test_async_env_loading():
+            with patch.dict(os.environ, {
+                'OFSC_INSTANCE': 'env_test',
+                'OFSC_CLIENT_ID': 'env_client',
+                'OFSC_CLIENT_SECRET': 'env_secret'
+            }):
+                client = OFSC()  # No parameters, should load from env
+                
+                assert client.config.instance == 'env_test'
+                assert client.auth.client_id == 'env_client'
+                assert client.auth.client_secret == 'env_secret'
+        
+        import asyncio
+        asyncio.run(test_async_env_loading())
     
     def test_client_string_representation(self):
         """Test client string representation."""

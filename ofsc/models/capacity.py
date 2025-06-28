@@ -42,7 +42,7 @@ class CapacityArea(BaseOFSResponse):
     name: Optional[str] = None
     type: Optional[str] = "area"
     status: Optional[str] = "active"
-    configuration: CapacityAreaConfiguration = None
+    configuration: Optional[CapacityAreaConfiguration] = None
     parentLabel: Optional[str] = None
     parent: Annotated[Optional[CapacityAreaParent], Field(alias="parent")] = None
     translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
@@ -144,7 +144,7 @@ class CapacityRequest(BaseOFSResponse):
 
     def get_areas_list(self) -> List[str]:
         """Get areas as a list of strings"""
-        return self.areas.to_list()
+        return self.areas.to_list() if self.areas is not None else []
 
     def get_categories_list(self) -> List[str]:
         """Get categories as a list of strings"""

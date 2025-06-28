@@ -18,8 +18,7 @@ from pydantic import BaseModel, ValidationError
 from ..models.base import OFSResponseList
 from ..exceptions import (
     create_exception_from_response,
-    OFSValidationException,
-    OFSAPIException
+    OFSValidationException
 )
 
 T = TypeVar('T', bound=BaseModel)

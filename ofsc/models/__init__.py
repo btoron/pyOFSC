@@ -99,7 +99,6 @@ from .core import (
     DailyExtractItem,
     DailyExtractItemList,
     GetActivityRequest,
-    Link,
     Location,
     LocationList,
     LocationListResponse,

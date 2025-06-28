@@ -11,12 +11,12 @@ import base64
 from abc import ABC
 from typing import Optional, TYPE_CHECKING
 
-from pydantic import BaseModel, ConfigDict, ValidationInfo, field_validator
+from pydantic import ConfigDict, ValidationInfo, field_validator
 
 from .base import BaseOFSResponse
 
 if TYPE_CHECKING:
-    from ..auth import BaseAuth, BasicAuth, OAuth2Auth
+    from ..auth import BaseAuth, BasicAuth, OAuth2Auth  # noqa: F401
 
 
 class OFSConfig(BaseOFSResponse):

@@ -1,9 +1,8 @@
 """Tests for retry logic and circuit breaker functionality."""
 
-import asyncio
 import time
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 from ofsc.retry import (
     RetryConfig,

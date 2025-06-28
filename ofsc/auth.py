@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional
 
 import httpx
-from cachetools import TTLCache, cached
+from cachetools import TTLCache
 from pydantic import BaseModel, ConfigDict
 
 from .exceptions import OFSAuthenticationException, OFSConnectionException

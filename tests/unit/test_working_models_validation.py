@@ -1,11 +1,10 @@
 """Working validation tests for models that need test coverage."""
 
 import pytest
-from datetime import datetime, date
-from typing import List, Optional
+from datetime import date
 
 from ofsc.models.base import CsvList, Translation, TranslationList, BaseOFSResponse
-from ofsc.models.capacity import GetQuotaRequest, GetQuotaResponse
+from ofsc.models.capacity import GetQuotaRequest
 from ofsc.models.core import GetActivityRequest, BulkUpdateRequest, BulkUpdateParameters, BulkUpdateActivityItem
 
 
