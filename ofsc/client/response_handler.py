@@ -16,6 +16,11 @@ except ImportError:
 from pydantic import BaseModel, ValidationError
 
 from ..models.base import OFSResponseList
+from ..exceptions import (
+    create_exception_from_response,
+    OFSValidationException,
+    OFSAPIException
+)
 
 T = TypeVar('T', bound=BaseModel)
 
@@ -44,15 +49,19 @@ class ResponseHandler:
             OFSAPIError: If response indicates an API error
             ValidationError: If response data doesn't match model schema
         """
-        # Check for HTTP errors first
+        # Check for HTTP errors first - always raise exceptions (R7.3)
         if response.status_code >= 400:
-            ResponseHandler._handle_error_response(response)
+            raise create_exception_from_response(response)
         
         try:
             # Parse JSON response
             data = response.json()
         except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON response: {e}")
+            raise OFSValidationException(
+                f"Invalid JSON response: {e}",
+                response=response,
+                request_details={'url': str(response.url), 'method': response.request.method if response.request else None}
+            )
         
         # Remove metadata if present (API metadata, not model data)
         if isinstance(data, dict) and "_metadata" in data:
@@ -70,7 +79,12 @@ class ResponseHandler:
                 return instance
                 
         except ValidationError as e:
-            raise ValidationError(f"Response validation failed for {model_class.__name__}: {e}")
+            raise OFSValidationException(
+                f"Response validation failed for {model_class.__name__}: {e}",
+                validation_errors=e.errors() if hasattr(e, 'errors') else [],
+                response=response,
+                request_details={'url': str(response.url), 'method': response.request.method if response.request else None}
+            )
     
     @staticmethod
     def parse_list_response(
@@ -93,14 +107,18 @@ class ResponseHandler:
             OFSAPIError: If response indicates an API error
             ValidationError: If response data doesn't match expected schema
         """
-        # Check for HTTP errors first
+        # Check for HTTP errors first - always raise exceptions (R7.3)
         if response.status_code >= 400:
-            ResponseHandler._handle_error_response(response)
+            raise create_exception_from_response(response)
         
         try:
             data = response.json()
         except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON response: {e}")
+            raise OFSValidationException(
+                f"Invalid JSON response: {e}",
+                response=response,
+                request_details={'url': str(response.url), 'method': response.request.method if response.request else None}
+            )
         
         # Remove metadata if present
         if isinstance(data, dict) and "_metadata" in data:
@@ -112,39 +130,14 @@ class ResponseHandler:
             return list_class.from_response(response)
             
         except ValidationError as e:
-            raise ValidationError(f"List response validation failed for {item_model_class.__name__}: {e}")
+            raise OFSValidationException(
+                f"List response validation failed for {item_model_class.__name__}: {e}",
+                validation_errors=e.errors() if hasattr(e, 'errors') else [],
+                response=response,
+                request_details={'url': str(response.url), 'method': response.request.method if response.request else None}
+            )
     
-    @staticmethod
-    def _handle_error_response(response: 'httpx.Response') -> None:
-        """
-        Handle error responses from the API.
-        
-        Args:
-            response: The httpx response object with error status
-            
-        Raises:
-            OFSAPIError: Always raises with appropriate error details
-        """
-        try:
-            error_data = response.json()
-            
-            # Extract error details if available
-            if isinstance(error_data, dict):
-                message = error_data.get('message', error_data.get('error', 'API request failed'))
-                error_code = error_data.get('code', error_data.get('errorCode'))
-                details = error_data.get('details', error_data.get('errorDetails'))
-            else:
-                message = 'API request failed'
-                error_code = None
-                details = None
-                
-        except (json.JSONDecodeError, AttributeError):
-            # Fallback if response isn't valid JSON
-            message = f"HTTP {response.status_code}: {response.reason_phrase}"
-            error_code = None
-            details = None
-        
-        raise ValueError(f"API Error {response.status_code}: {message}")
+    # Note: _handle_error_response removed - now using create_exception_from_response directly
     
     @staticmethod
     def is_paginated_response(data: Dict[str, Any]) -> bool:

@@ -2,7 +2,6 @@
 
 import json
 from pathlib import Path
-from typing import Dict, Any, List
 import pytest
 from pydantic import ValidationError
 
@@ -78,13 +77,9 @@ class TestCoreModels:
                 try:
                     user = User(**item)
                     assert user.login is not None
-                    # active field might be boolean in User model
-                    if hasattr(user, 'active'):
-                        # Handle both string and boolean values
-                        if isinstance(user.active, str):
-                            assert user.active in ["true", "false", "1", "0"]
-                        else:
-                            assert isinstance(user.active, bool)
+                    # User model has 'status' field, not 'active'
+                    if hasattr(user, 'status') and user.status is not None:
+                        assert user.status in ["active", "inactive", "suspended"]
                     print(f"✅ Validated user: {user.login}")
                 except ValidationError as e:
                     pytest.fail(f"User validation failed: {e}")

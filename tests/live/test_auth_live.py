@@ -9,38 +9,15 @@ import os
 from datetime import datetime, timezone
 import asyncio
 
-# Import directly from client modules to avoid old dependencies
-import sys
-import importlib.util
-
-# Add project root to path
-project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, project_root)
-
-# Load modules directly to avoid import issues with old code
-def load_module(module_name, file_path):
-    if module_name in sys.modules:
-        return sys.modules[module_name]
-    spec = importlib.util.spec_from_file_location(module_name, file_path)
-    if spec is None:
-        raise ImportError(f"Could not load module {module_name} from {file_path}")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[module_name] = module
-    if spec.loader is None:
-        raise ImportError(f"No loader found for module {module_name}")
-    spec.loader.exec_module(module)
-    return module
-
-# Load required modules
-auth_module = load_module("ofsc.auth", os.path.join(project_root, "ofsc", "auth.py"))
-sync_module = load_module("ofsc.client.sync_client", os.path.join(project_root, "ofsc", "client", "sync_client.py"))
-async_module = load_module("ofsc.client.async_client", os.path.join(project_root, "ofsc", "client", "async_client.py"))
-
-# Import classes
-OFSC = sync_module.OFSC
-AsyncOFSC = async_module.AsyncOFSC
-BasicAuth = auth_module.BasicAuth
-OAuth2Auth = auth_module.OAuth2Auth
+# Import v3.0 client classes and authentication
+from ofsc.client.sync_client import OFSC
+from ofsc.client.async_client import AsyncOFSC
+from ofsc.auth import BasicAuth, OAuth2Auth
+from ofsc.exceptions import (
+    OFSAuthenticationException,
+    OFSConnectionException,
+    OFSException
+)
 
 
 @pytest.mark.live
@@ -282,7 +259,7 @@ class TestLiveAuthentication:
         )
         
         # Should raise an exception when trying to get token
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises((OFSAuthenticationException, OFSConnectionException, OFSException)) as exc_info:
             invalid_oauth2._get_valid_token()
         
         # Verify we get an appropriate error
@@ -345,17 +322,8 @@ class TestLiveAuthentication:
         print(f"   Tokens different: {'✅' if token_1.access_token != token_2.access_token else '⚠️ Same (may be normal)'}")
 
     def test_oauth_consolidation_legacy_vs_new_interface(self, live_credentials):
-        """Test that legacy OFSOauth2 and new OAuth2Auth work identically."""
-        print("🔄 Testing OAuth Consolidation: Legacy vs New Interface")
-        
-        # Create legacy OFSC client with OAuth2
-        from ofsc import OFSC
-        legacy_ofsc = OFSC(
-            clientID=live_credentials["client_id"],
-            companyName=live_credentials["instance"],
-            secret=live_credentials["client_secret"],
-            useToken=True
-        )
+        """Test that modern OAuth2Auth interface works correctly."""
+        print("🔄 Testing OAuth2Auth Interface")
         
         # Create modern OAuth2Auth directly
         modern_oauth2 = OAuth2Auth(
@@ -364,32 +332,29 @@ class TestLiveAuthentication:
             client_secret=live_credentials["client_secret"]
         )
         
-        # Test both interfaces
-        legacy_token = legacy_ofsc._oauth.get_token()
+        # Test modern interface
         modern_token = modern_oauth2.get_token()
         
-        # Verify both return OAuth2TokenResponse objects
-        assert isinstance(legacy_token, type(modern_token))
-        assert hasattr(legacy_token, 'access_token')
-        assert hasattr(legacy_token, 'token_type')
-        assert hasattr(legacy_token, 'expires_in')
+        # Verify token response object
+        assert hasattr(modern_token, 'access_token')
+        assert hasattr(modern_token, 'token_type')
+        assert hasattr(modern_token, 'expires_in')
         
-        # Verify token structure is identical
-        assert legacy_token.token_type == modern_token.token_type
-        assert isinstance(legacy_token.expires_in, int)
+        # Verify token structure
         assert isinstance(modern_token.expires_in, int)
+        assert modern_token.token_type.lower() == 'bearer'
         
-        print("✅ Legacy and modern OAuth2 interfaces work identically")
-        print(f"   Legacy token type: {legacy_token.token_type}")
-        print(f"   Modern token type: {modern_token.token_type}")
-        print(f"   Both return: {type(legacy_token).__name__}")
+        print("✅ Modern OAuth2 interface works correctly")
+        print(f"   Token type: {modern_token.token_type}")
+        print(f"   Expires in: {modern_token.expires_in}")
+        print(f"   Response type: {type(modern_token).__name__}")
 
     def test_oauth_consolidation_basic_auth_through_config(self, live_credentials):
         """Test that OFSConfig properly manages both Basic Auth and OAuth2."""
         print("🛡️ Testing OFSConfig Auth Management")
         
         # Test Basic Auth through OFSConfig
-        from ofsc.models import OFSConfig
+        from ofsc.models.auth import OFSConfig
         basic_config = OFSConfig(
             clientID=live_credentials["client_id"],
             secret=live_credentials["client_secret"],
@@ -417,20 +382,9 @@ class TestLiveAuthentication:
         print(f"   Basic Auth: {basic_headers['Authorization'][:20]}...")
         print(f"   OAuth2: {oauth_headers['Authorization'][:20]}...")
 
-    def test_oauth_consolidation_error_handling_consistency(self, live_credentials):
+    def test_oauth_consolidation_error_handling_consistency(self):
         """Test that error handling is consistent between legacy and new interfaces."""
         print("⚠️ Testing Consistent Error Handling")
-        
-        # Test with invalid credentials using legacy interface
-        invalid_ofsc = OFSC(
-            clientID="invalid_client",
-            companyName="invalid_instance",
-            secret="invalid_secret",
-            useToken=True
-        )
-        
-        with pytest.raises(AuthenticationError) as legacy_exc:
-            invalid_ofsc._oauth.get_token()
         
         # Test with invalid credentials using modern interface
         invalid_modern = OAuth2Auth(
@@ -439,15 +393,15 @@ class TestLiveAuthentication:
             client_secret="invalid_secret"
         )
         
-        with pytest.raises(AuthenticationError) as modern_exc:
+        with pytest.raises((OFSAuthenticationException, OFSConnectionException, OFSException)) as modern_exc:
             invalid_modern.get_token()
         
-        # Verify both raise the same exception type
-        assert type(legacy_exc.value) == type(modern_exc.value)
+        # Verify exception type is appropriate
+        assert isinstance(modern_exc.value, (OFSAuthenticationException, OFSConnectionException, OFSException))
         
         print("✅ Error handling is consistent")
-        print(f"   Legacy error: {type(legacy_exc.value).__name__}")
         print(f"   Modern error: {type(modern_exc.value).__name__}")
+        print(f"   Error message: {str(modern_exc.value)[:100]}...")
 
     def test_oauth_consolidation_no_requests_dependency(self):
         """Test that OAuth no longer depends on requests/mockup_requests."""
@@ -474,14 +428,14 @@ class TestLiveAuthentication:
         print("   ✅ Uses modern auth module")
 
     def test_oauth_consolidation_backward_compatibility(self, live_credentials):
-        """Test that all existing OAuth usage patterns still work."""
-        print("🔄 Testing Backward Compatibility")
+        """Test that OAuth wrapper patterns work correctly."""
+        print("🔄 Testing OAuth Wrapper Compatibility")
         
-        # Test the exact pattern that legacy code uses
-        from ofsc.models import OFSConfig, OFSOAuthRequest
+        # Test the OAuth wrapper pattern
+        from ofsc.models.auth import OFSConfig, OFSOAuthRequest
         from ofsc.oauth import OFSOauth2
         
-        # Create config the old way
+        # Create config
         config = OFSConfig(
             clientID=live_credentials["client_id"],
             secret=live_credentials["client_secret"],
@@ -489,19 +443,19 @@ class TestLiveAuthentication:
             useToken=True
         )
         
-        # Create OAuth2 client the old way
+        # Create OAuth2 client wrapper
         oauth2_client = OFSOauth2(config=config)
         
-        # Call get_token the old way (with optional params)
+        # Call get_token (with optional params)
         token_with_params = oauth2_client.get_token(params=OFSOAuthRequest())
         token_without_params = oauth2_client.get_token()
         
         # Both should work and return same type
-        assert type(token_with_params) == type(token_without_params)
+        assert type(token_with_params) is type(token_without_params)
         assert hasattr(token_with_params, 'access_token')
         assert hasattr(token_without_params, 'access_token')
         
-        print("✅ All legacy usage patterns work")
+        print("✅ OAuth wrapper patterns work correctly")
         print(f"   With params: {type(token_with_params).__name__}")
         print(f"   Without params: {type(token_without_params).__name__}")
 

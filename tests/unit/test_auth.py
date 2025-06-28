@@ -6,38 +6,11 @@ import base64
 from unittest.mock import Mock, patch
 import httpx
 
-# Import directly using sys.path manipulation to avoid old dependencies
-import sys
-import os
-import importlib.util
-
-# Add project root to path
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, project_root)
-
-# Load modules directly
-def load_module(module_name, file_path):
-    if module_name in sys.modules:
-        return sys.modules[module_name]
-    spec = importlib.util.spec_from_file_location(module_name, file_path)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[module_name] = module
-    spec.loader.exec_module(module)
-    return module
-
-# Load required modules
-auth_module = load_module("ofsc.auth", os.path.join(project_root, "ofsc", "auth.py"))
-base_module = load_module("ofsc.client.base", os.path.join(project_root, "ofsc", "client", "base.py"))
-sync_module = load_module("ofsc.client.sync_client", os.path.join(project_root, "ofsc", "client", "sync_client.py"))
-async_module = load_module("ofsc.client.async_client", os.path.join(project_root, "ofsc", "client", "async_client.py"))
-
-# Import classes
-BasicAuth = auth_module.BasicAuth
-OAuth2Auth = auth_module.OAuth2Auth
-create_auth = auth_module.create_auth
-AuthenticationError = auth_module.AuthenticationError
-OFSC = sync_module.OFSC
-AsyncOFSC = async_module.AsyncOFSC
+# Import v3.0 modules using standard imports
+from ofsc.auth import BasicAuth, OAuth2Auth, create_auth
+from ofsc.client.sync_client import OFSC
+from ofsc.client.async_client import AsyncOFSC
+from ofsc.exceptions import OFSAuthenticationException, OFSConfigurationException
 
 
 class TestBasicAuth:
@@ -249,7 +222,7 @@ class TestEnvironmentVariables:
                 if var in os.environ:
                     del os.environ[var]
             
-            with pytest.raises(ValueError, match="instance must be provided"):
+            with pytest.raises(OFSConfigurationException, match="instance must be provided"):
                 OFSC()
 
 

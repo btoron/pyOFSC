@@ -11,35 +11,10 @@ from dotenv import load_dotenv
 # Import test configuration
 from .config import load_test_config, TestEnvironmentConfig
 
-# Import directly from client modules to avoid old dependencies
-import sys
-import importlib.util
-
-# Add project root to path
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, project_root)
-
-# Load modules directly to avoid import issues with old code
-def load_module(module_name, file_path):
-    if module_name in sys.modules:
-        return sys.modules[module_name]
-    spec = importlib.util.spec_from_file_location(module_name, file_path)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[module_name] = module
-    spec.loader.exec_module(module)
-    return module
-
-# Load required modules
-auth_module = load_module("ofsc.auth", os.path.join(project_root, "ofsc", "auth.py"))
-base_module = load_module("ofsc.client.base", os.path.join(project_root, "ofsc", "client", "base.py"))
-sync_module = load_module("ofsc.client.sync_client", os.path.join(project_root, "ofsc", "client", "sync_client.py"))
-async_module = load_module("ofsc.client.async_client", os.path.join(project_root, "ofsc", "client", "async_client.py"))
-
-# Import classes
-OFSC = sync_module.OFSC
-AsyncOFSC = async_module.AsyncOFSC
-BasicAuth = auth_module.BasicAuth
-OAuth2Auth = auth_module.OAuth2Auth
+# Import v3.0 modules using standard imports
+from ofsc.client.sync_client import OFSC
+from ofsc.client.async_client import AsyncOFSC
+from ofsc.auth import BasicAuth, OAuth2Auth
 
 # Load environment variables from .env file
 load_dotenv()
@@ -197,13 +172,8 @@ def test_data_path():
     return Path(__file__).parent / "data"
 
 
-# Async test configuration
-@pytest.fixture
-def event_loop():
-    """Create event loop for async tests."""
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
+# Async test configuration using the modern approach
+# Note: Removed event_loop fixture to use pytest-asyncio's default
 
 
 # Test isolation fixtures

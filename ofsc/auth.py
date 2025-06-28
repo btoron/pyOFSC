@@ -10,15 +10,12 @@ import httpx
 from cachetools import TTLCache, cached
 from pydantic import BaseModel, ConfigDict
 
+from .exceptions import OFSAuthenticationException, OFSConnectionException
+
 logger = logging.getLogger(__name__)
 
 
-class AuthenticationError(Exception):
-    """Raised when authentication fails."""
-    pass
-
-
-class TokenExpiredError(AuthenticationError):
+class TokenExpiredError(OFSAuthenticationException):
     """Raised when OAuth2 token has expired."""
     pass
 
@@ -184,10 +181,10 @@ class OAuth2Auth(BaseAuth):
             
         except httpx.HTTPStatusError as e:
             logger.error(f"OAuth2 token request failed: {e.response.status_code} - {e.response.text}")
-            raise AuthenticationError(f"Failed to obtain OAuth2 token: {e.response.status_code}")
+            raise OFSAuthenticationException(f"Failed to obtain OAuth2 token: {e.response.status_code}")
         except Exception as e:
             logger.error(f"OAuth2 token request error: {e}")
-            raise AuthenticationError(f"OAuth2 token request failed: {e}")
+            raise OFSConnectionException(f"OAuth2 token request failed: {e}")
     
     def get_token(self) -> OAuth2TokenResponse:
         """Get a valid OAuth2 token (simplified interface for compatibility).

@@ -10,6 +10,8 @@ import httpx
 from pydantic import BaseModel, ConfigDict, field_validator, ValidationInfo, HttpUrl
 
 from ofsc.auth import BaseAuth, create_auth
+from ofsc.retry import RetryConfig, CircuitBreakerConfig, with_fault_tolerance
+from ofsc.exceptions import OFSConfigurationException
 
 
 class OFSConfig(BaseModel):
@@ -56,9 +58,19 @@ class ConnectionConfig(BaseModel):
     max_keepalive_connections: int = 10
     keepalive_expiry: float = 30.0
     timeout: float = 30.0
-    retries: int = 3
-    retry_delay: float = 1.0
-    max_retry_delay: float = 10.0
+    
+    # Retry configuration (R7.4)
+    enable_retries: bool = True
+    max_retry_attempts: int = 3
+    initial_retry_delay: float = 1.0
+    max_retry_delay: float = 60.0
+    retry_exponential_base: float = 2.0
+    retry_jitter: bool = True
+    
+    # Circuit breaker configuration (R7.5)
+    enable_circuit_breaker: bool = True
+    circuit_breaker_failure_threshold: int = 5
+    circuit_breaker_timeout: float = 60.0
 
 
 class BaseOFSClient(ABC):
@@ -95,11 +107,11 @@ class BaseOFSClient(ABC):
         client_secret = client_secret or os.getenv('OFSC_CLIENT_SECRET')
         
         if not instance:
-            raise ValueError("instance must be provided or set OFSC_INSTANCE environment variable")
+            raise OFSConfigurationException("instance must be provided or set OFSC_INSTANCE environment variable")
         if not client_id:
-            raise ValueError("client_id must be provided or set OFSC_CLIENT_ID environment variable")
+            raise OFSConfigurationException("client_id must be provided or set OFSC_CLIENT_ID environment variable")
         if not client_secret:
-            raise ValueError("client_secret must be provided or set OFSC_CLIENT_SECRET environment variable")
+            raise OFSConfigurationException("client_secret must be provided or set OFSC_CLIENT_SECRET environment variable")
         
         self._config = OFSConfig(
             instance=instance,
@@ -131,6 +143,9 @@ class BaseOFSClient(ABC):
         self._metadata = None
         self._capacity = None
         self._oauth = None
+        
+        # Initialize fault tolerance components
+        self._setup_fault_tolerance()
     
     @property
     def config(self) -> OFSConfig:
@@ -179,6 +194,35 @@ class BaseOFSClient(ABC):
     def close(self):
         """Close the HTTP client and clean up resources."""
         pass
+    
+    def _setup_fault_tolerance(self):
+        """Setup retry and circuit breaker configurations."""
+        if self._connection_config.enable_retries:
+            self._retry_config = RetryConfig(
+                max_attempts=self._connection_config.max_retry_attempts,
+                initial_delay=self._connection_config.initial_retry_delay,
+                max_delay=self._connection_config.max_retry_delay,
+                exponential_base=self._connection_config.retry_exponential_base,
+                jitter=self._connection_config.retry_jitter
+            )
+        else:
+            self._retry_config = None
+        
+        if self._connection_config.enable_circuit_breaker:
+            self._circuit_breaker_config = CircuitBreakerConfig(
+                failure_threshold=self._connection_config.circuit_breaker_failure_threshold,
+                timeout_seconds=self._connection_config.circuit_breaker_timeout,
+                name=f"ofsc_{self._config.instance}"
+            )
+        else:
+            self._circuit_breaker_config = None
+    
+    def _apply_fault_tolerance(self, func):
+        """Apply fault tolerance decorators to a function."""
+        return with_fault_tolerance(
+            retry_config=self._retry_config,
+            circuit_breaker_config=self._circuit_breaker_config
+        )(func)
     
     def __str__(self) -> str:
         return f"BaseOFSClient(instance={self._config.instance}, base_url={self.base_url})"

@@ -9,7 +9,8 @@ as a compatibility wrapper to maintain existing API contracts.
 
 from typing import TYPE_CHECKING
 
-from .auth import AuthenticationError, OAuth2Auth
+from .auth import OAuth2Auth
+from .exceptions import OFSAuthenticationException
 from .models import OFSApi, OFSOAuthRequest
 
 if TYPE_CHECKING:
@@ -37,13 +38,13 @@ class OFSOauth2(OFSApi):
             OAuth2TokenResponse containing access_token, token_type, expires_in, etc.
             
         Raises:
-            AuthenticationError: If token request fails or OAuth2 not configured
+            OFSAuthenticationException: If token request fails or OAuth2 not configured
         """
         # Get OAuth2Auth instance from OFSConfig
         oauth2_auth = self._config._get_auth_instance()
         
         if not isinstance(oauth2_auth, OAuth2Auth):
-            raise AuthenticationError(
+            raise OFSAuthenticationException(
                 "OAuth2 authentication not enabled. Set useToken=True in configuration."
             )
         
