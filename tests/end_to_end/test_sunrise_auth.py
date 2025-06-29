@@ -19,6 +19,8 @@ from ofsc.models.metadata import (
     OrganizationListResponse,
     Property,
     PropertyListResponse,
+    ResourceType,
+    ResourceTypeListResponse,
     TimeSlotListResponse,
 )
 
@@ -208,5 +210,29 @@ class TestSunriseAuthentication:
                     assert prop.type is not None
                     assert prop.gui is not None
                     assert isinstance(prop.translations, TranslationList)
+
+        asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
+
+    def test_sunrise_client_resource_types(self, async_client_basic_auth: OFSC):
+        async def test_async_client_basic_auth(async_client_basic_auth):
+            async with async_client_basic_auth as client:
+                response_resource_types = await client.metadata.get_resource_types()
+                assert isinstance(response_resource_types, ResourceTypeListResponse)
+                assert response_resource_types.totalResults > 0
+                for resource_type in response_resource_types.items:
+                    assert isinstance(resource_type, ResourceType)
+                    assert resource_type.label is not None
+                    assert resource_type.name is not None
+                    assert resource_type.active is not None
+                    assert resource_type.role is not None
+                    # THIS TEST IS CRITICAL TO DETECT CHANGES IN RESOURCE ROLES
+                    assert resource_type.role in {
+                        "field_resource",
+                        "bucket",
+                        "organization_unit",
+                        "vehicle",
+                        "warehouse",
+                    }
+                    assert isinstance(resource_type.translations, TranslationList)
 
         asyncio.run(test_async_client_basic_auth(async_client_basic_auth))

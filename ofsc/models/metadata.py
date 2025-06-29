@@ -296,9 +296,11 @@ class ResourceType(BaseOFSResponse):
 
     label: str
     name: str
-    features: Optional[dict] = None
-
-    model_config = ConfigDict(extra="allow")
+    active: bool
+    role: str
+    translations: Annotated[TranslationList, Field(validate_default=True)] = (
+        TranslationList([])
+    )
 
 
 class ResourceTypeListResponse(OFSResponseList[ResourceType]):
