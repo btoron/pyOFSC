@@ -4,14 +4,11 @@
 
 from ofsc.models.metadata import (
     ResourceType,
-    ResourceTypeList,
+    ResourceTypeListResponse,
     InventoryType,
-    InventoryTypeList,
     InventoryTypeListResponse,
     WorksSkillAssignments,
     WorkSkillGroup,
-    WorkSkillAssignmentsList,
-    WorkSkillGroupList,
     WorkSkillGroupListResponse,
     EnumerationValue,
     EnumerationValueList,
@@ -49,23 +46,27 @@ class TestResourceManagementModelsValidation:
         assert minimal_type.features is None
     
     def test_resource_type_list_validation(self):
-        """Test ResourceTypeList model validation."""
-        resource_types = ResourceTypeList([
-            ResourceType(
-                label="Senior Technician",
-                name="SENIOR_TECH"
-            ),
-            ResourceType(
-                label="Junior Technician", 
-                name="JUNIOR_TECH"
-            )
-        ])
+        """Test ResourceTypeListResponse model validation."""
+        resource_types = ResourceTypeListResponse(
+            items=[
+                ResourceType(
+                    label="Senior Technician",
+                    name="SENIOR_TECH"
+                ),
+                ResourceType(
+                    label="Junior Technician", 
+                    name="JUNIOR_TECH"
+                )
+            ],
+            totalResults=2,
+            hasMore=False
+        )
         
-        assert len(resource_types.root) == 2
-        assert resource_types.root[0].label == "Senior Technician"
-        assert resource_types.root[0].name == "SENIOR_TECH"
-        assert resource_types.root[1].label == "Junior Technician"
-        assert resource_types.root[1].name == "JUNIOR_TECH"
+        assert len(resource_types.items) == 2
+        assert resource_types.items[0].label == "Senior Technician"
+        assert resource_types.items[0].name == "SENIOR_TECH"
+        assert resource_types.items[1].label == "Junior Technician"
+        assert resource_types.items[1].name == "JUNIOR_TECH"
     
     def test_inventory_type_validation(self):
         """Test InventoryType model validation."""
@@ -84,25 +85,29 @@ class TestResourceManagementModelsValidation:
         assert inventory_type.quantityRequired is False
     
     def test_inventory_type_list_validation(self):
-        """Test InventoryTypeList model validation."""
-        inventory_types = InventoryTypeList([
-            InventoryType(
-                label="Cables",
-                name="CABLES",
-                unitOfMeasure="meter"
-            ),
-            InventoryType(
-                label="Connectors",
-                name="CONNECTORS", 
-                unitOfMeasure="piece"
-            )
-        ])
+        """Test InventoryTypeListResponse model validation."""
+        inventory_types = InventoryTypeListResponse(
+            items=[
+                InventoryType(
+                    label="Cables",
+                    name="CABLES",
+                    unitOfMeasure="meter"
+                ),
+                InventoryType(
+                    label="Connectors",
+                    name="CONNECTORS", 
+                    unitOfMeasure="piece"
+                )
+            ],
+            totalResults=2,
+            hasMore=False
+        )
         
-        assert len(inventory_types.root) == 2
-        assert inventory_types.root[0].label == "Cables"
-        assert inventory_types.root[0].unitOfMeasure == "meter"
-        assert inventory_types.root[1].label == "Connectors"
-        assert inventory_types.root[1].unitOfMeasure == "piece"
+        assert len(inventory_types.items) == 2
+        assert inventory_types.items[0].label == "Cables"
+        assert inventory_types.items[0].unitOfMeasure == "meter"
+        assert inventory_types.items[1].label == "Connectors"
+        assert inventory_types.items[1].unitOfMeasure == "piece"
     
     def test_inventory_type_list_response_validation(self):
         """Test InventoryTypeListResponse model validation."""
@@ -154,45 +159,58 @@ class TestResourceManagementModelsValidation:
         assert skill_group.assignedWorkSkills[0].workSkillLabel == "Wiring"
         assert skill_group.active is True
     
-    def test_work_skill_assignments_list_validation(self):
-        """Test WorkSkillAssignmentsList model validation."""
-        assignments_list = WorkSkillAssignmentsList([
-            WorksSkillAssignments(
-                workSkillLabel="Plumbing",
-                level=3
-            ),
-            WorksSkillAssignments(
-                workSkillLabel="HVAC",
-                level=4
-            )
-        ])
+    def test_work_skill_assignments_validation(self):
+        """Test WorksSkillAssignments model validation."""
+        # Test individual assignment
+        assignment1 = WorksSkillAssignments(
+            workSkillLabel="Plumbing",
+            level=3
+        )
+        assignment2 = WorksSkillAssignments(
+            workSkillLabel="HVAC",
+            level=4
+        )
         
-        assert len(assignments_list.root) == 2
-        assert assignments_list.root[0].workSkillLabel == "Plumbing"
-        assert assignments_list.root[0].level == 3
-        assert assignments_list.root[1].workSkillLabel == "HVAC"
-        assert assignments_list.root[1].level == 4
+        assert assignment1.workSkillLabel == "Plumbing"
+        assert assignment1.level == 3
+        assert assignment2.workSkillLabel == "HVAC"
+        assert assignment2.level == 4
+        
+        # Test as part of WorkSkillGroup
+        skill_group = WorkSkillGroup(
+            label="Technical Group",
+            name="TECH_GROUP",
+            assignedWorkSkills=[assignment1, assignment2]
+        )
+        
+        assert len(skill_group.assignedWorkSkills) == 2
+        assert skill_group.assignedWorkSkills[0].workSkillLabel == "Plumbing"
+        assert skill_group.assignedWorkSkills[1].workSkillLabel == "HVAC"
     
     def test_work_skill_group_list_validation(self):
-        """Test WorkSkillGroupList model validation."""
-        group_list = WorkSkillGroupList([
-            WorkSkillGroup(
-                label="Safety Skills",
-                name="SAFETY",
-                active=True
-            ),
-            WorkSkillGroup(
-                label="Technical Skills",
-                name="TECHNICAL",
-                active=True
-            )
-        ])
+        """Test WorkSkillGroupListResponse model validation."""
+        group_list = WorkSkillGroupListResponse(
+            items=[
+                WorkSkillGroup(
+                    label="Safety Skills",
+                    name="SAFETY",
+                    active=True
+                ),
+                WorkSkillGroup(
+                    label="Technical Skills",
+                    name="TECHNICAL",
+                    active=True
+                )
+            ],
+            totalResults=2,
+            hasMore=False
+        )
         
-        assert len(group_list.root) == 2
-        assert group_list.root[0].label == "Safety Skills"
-        assert group_list.root[0].name == "SAFETY"
-        assert group_list.root[1].label == "Technical Skills"
-        assert group_list.root[1].name == "TECHNICAL"
+        assert len(group_list.items) == 2
+        assert group_list.items[0].label == "Safety Skills"
+        assert group_list.items[0].name == "SAFETY"
+        assert group_list.items[1].label == "Technical Skills"
+        assert group_list.items[1].name == "TECHNICAL"
     
     def test_work_skill_group_list_response_validation(self):
         """Test WorkSkillGroupListResponse model validation."""
