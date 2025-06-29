@@ -64,6 +64,14 @@ class CsvList(BaseModel):
         return f"CsvList(value='{self.value}', list={self.to_list()})"
 
 
+class Link(BaseModel):
+    """Hyperlink reference for API resources"""
+
+    rel: str
+    href: str
+    mediaType: Optional[str] = None
+
+
 class BaseOFSResponse(BaseModel):
     """Base class for all OFSC API responses that provides raw response access.
 
@@ -72,9 +80,10 @@ class BaseOFSResponse(BaseModel):
     while still providing the convenience of validated model fields.
     """
 
-    model_config = ConfigDict(arbitrary_types_allowed=True, extra="ignore")
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     _raw_response: Optional["httpx.Response"] = PrivateAttr(default=None)
+    links: Optional[List[Link]] = None
 
     @property
     def raw_response(self) -> Optional["httpx.Response"]:
@@ -134,13 +143,12 @@ class OFSResponseList(BaseOFSResponse, Generic[T]):
             pass
     """
 
-    model_config = ConfigDict(extra="allow")
-
     items: List[T] = []
     offset: Annotated[Optional[int], Field(alias="offset")] = None
     limit: Annotated[Optional[int], Field(alias="limit")] = None
     hasMore: Annotated[Optional[bool], Field(alias="hasMore")] = False
     totalResults: int = -1
+    links: Optional[List[Link]] = None
 
     @model_validator(mode="after")
     def check_coherence(self):

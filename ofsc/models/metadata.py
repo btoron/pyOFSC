@@ -18,6 +18,7 @@ from typing_extensions import Annotated
 from .base import (
     BaseOFSResponse,
     EntityEnum,
+    Link,
     OFSResponseList,
     SharingEnum,
     Translation,
@@ -26,15 +27,6 @@ from .base import (
 
 if TYPE_CHECKING:
     pass
-
-
-# Links (Common utility model used by other models)
-class Link(BaseOFSResponse):
-    """Hyperlink reference for API resources"""
-
-    rel: str
-    href: str
-    mediaType: Optional[str] = None
 
 
 # Activity Types and Groups
@@ -49,6 +41,7 @@ class ActivityTypeColors(BaseOFSResponse):
     started: Annotated[Optional[str], Field(alias="started")]
     suspended: Annotated[Optional[str], Field(alias="suspended")]
     warning: Annotated[Optional[str], Field(alias="warning")]
+    enroute: Annotated[Optional[str], Field(alias="enroute")]
 
 
 class ActivityTypeFeatures(BaseOFSResponse):
@@ -147,6 +140,8 @@ class ApplicationsResourcestoAllow(BaseOFSResponse):
 class Application(BaseOFSResponse):
     """Application definition and configuration"""
 
+    # TODO: Improve the model
+    model_config = ConfigDict(extra="allow")
     label: str
     name: str
     activityTypes: List[str] = []
@@ -169,6 +164,11 @@ class Condition(BaseOFSResponse):
     function: str
     value: Any = None
     valueList: list = []
+    last_updated_by: Optional[str] = None
+    last_update_date: Optional[str] = None
+    last_update_login: Optional[str] = None
+    created_by: Optional[str] = None
+    creation_date: Optional[str] = None
 
 
 # Enumeration Values
@@ -319,9 +319,6 @@ class TimeSlot(BaseOFSResponse):
     isAllDay: bool = False
     timeStart: Optional[str] = None
     timeEnd: Optional[str] = None
-    links: Optional[List[Link]] = None
-
-    model_config = ConfigDict(extra="allow")
 
 
 class TimeSlotListResponse(OFSResponseList[TimeSlot]):
@@ -341,9 +338,6 @@ class Workskill(BaseOFSResponse):
     translations: Annotated[Optional[TranslationList], Field(validate_default=True)] = (
         None
     )
-    links: Optional[List[Link]] = None
-
-    model_config = ConfigDict(extra="allow")
 
     @field_validator("translations")
     def set_default(cls, field_value, values):
@@ -386,12 +380,12 @@ class WorksSkillAssignments(BaseOFSResponse):
 class WorkSkillGroup(BaseOFSResponse):
     """Work skill group definition and assignments"""
 
+    model_config = ConfigDict(extra="allow")
+
     label: str
     name: str
     assignedWorkSkills: List[WorksSkillAssignments] = []
     active: bool = True
-
-    model_config = ConfigDict(extra="allow")
 
 
 class WorkSkillGroupListResponse(OFSResponseList[WorkSkillGroup]):

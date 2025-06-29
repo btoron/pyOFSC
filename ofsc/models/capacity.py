@@ -63,6 +63,13 @@ class Item(BaseOFSResponse):
 
     label: str
     name: Optional[str] = None
+    last_updated_by: Optional[str] = None
+    last_update_date: Optional[str] = None
+    last_update_login: Optional[str] = None
+    created_by: Optional[str] = None
+    creation_date: Optional[str] = None
+    ratio: Optional[float] = None
+    startDate: Optional[str] = None
 
 
 class ItemList(RootModel[List[Item]]):

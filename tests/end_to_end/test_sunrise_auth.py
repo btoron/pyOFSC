@@ -25,6 +25,8 @@ from ofsc.models.metadata import (
     TimeSlotListResponse,
     WorkskillCondition,
     WorkskillConditionListResponse,
+    WorkSkillGroup,
+    WorkSkillGroupListResponse,
 )
 
 
@@ -232,7 +234,7 @@ class TestSunriseAuthentication:
             async with async_client_basic_auth as client:
                 response_timeslots = await client.metadata.get_timeslots()
                 assert isinstance(response_timeslots, TimeSlotListResponse)
-                assert response_timeslots.totalResults >= 0
+                assert response_timeslots.totalResults > 0
                 for timeslot in response_timeslots.items:
                     assert isinstance(timeslot, TimeSlot)
                     assert timeslot.isAllDay is not None
@@ -256,11 +258,26 @@ class TestSunriseAuthentication:
                 assert isinstance(
                     response_workskill_conditions, WorkskillConditionListResponse
                 )
-                assert response_workskill_conditions.totalResults >= 0
+                assert response_workskill_conditions.totalResults > 0
                 for condition in response_workskill_conditions.items:
                     assert isinstance(condition, WorkskillCondition)
                     assert condition.label is not None
                     assert condition.requiredLevel is not None
                     assert condition.preferableLevel is not None
+
+        asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
+
+    def test_sunrise_client_workskill_groups(self, async_client_basic_auth: OFSC):
+        async def test_async_client_basic_auth(async_client_basic_auth):
+            async with async_client_basic_auth as client:
+                response_workskill_groups = await client.metadata.get_workskill_groups()
+                assert isinstance(response_workskill_groups, WorkSkillGroupListResponse)
+                # TODO: the SUNRISE Environment does not have a workskill group
+                assert response_workskill_groups.totalResults > 0
+                for group in response_workskill_groups.items:
+                    assert isinstance(group, WorkSkillGroup)
+                    assert group.label is not None
+                    assert group.name is not None
+                    assert group.active is not None
 
         asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
