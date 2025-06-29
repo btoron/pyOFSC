@@ -10,6 +10,7 @@ import mockup_requests as requests
 from .common import FILE_RESPONSE, FULL_RESPONSE, OBJ_RESPONSE, wrap_return
 from .models import (
     Activity,
+    AssignedLocationsRequest,
     AssignedLocationsResponse,
     BulkUpdateRequest,
     CalendarView,
@@ -411,7 +412,7 @@ class OFSCore(OFSApi):
         response_type=OBJ_RESPONSE, expected=[200], model=AssignedLocationsResponse
     )
     def set_assigned_locations(
-        self, resource_id: str, data: AssignedLocationsResponse
+        self, resource_id: str, data: AssignedLocationsRequest
     ) -> requests.Response:
         url = urljoin(
             self.baseUrl,

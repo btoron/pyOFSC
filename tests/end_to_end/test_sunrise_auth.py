@@ -5,6 +5,7 @@ import pytest
 
 from ofsc.client import OFSC
 from ofsc.models.core import SubscriptionList, User, UserListResponse
+from ofsc.models.metadata import TimeSlotListResponse
 
 
 @pytest.mark.live
@@ -52,5 +53,18 @@ class TestSunriseAuthentication:
                 assert response.totalResults == 100
                 for user in response.users:
                     assert isinstance(user, User)
+                response_timeslots = await client.metadata.get_timeslots()
+                assert isinstance(response_timeslots, TimeSlotListResponse)
+                assert response_timeslots.totalResults >= 0
+                for timeslot in response_timeslots.items:
+                    assert timeslot.isAllDay is not None
+                    if timeslot.isAllDay:
+                        # All-day slots should have no time bounds
+                        assert timeslot.timeStart is None
+                        assert timeslot.timeEnd is None
+                    else:
+                        # Timed slots should have both time bounds
+                        assert timeslot.timeStart is not None
+                        assert timeslot.timeEnd is not None
 
         asyncio.run(test_async_client_basic_auth(async_client_basic_auth))

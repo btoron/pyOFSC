@@ -51,16 +51,6 @@ class CapacityArea(BaseOFSResponse):
     # Note: as of 24A the additional fields returned are just HREFs so we won't include them here
 
 
-class CapacityAreaList(RootModel[List[CapacityArea]]):
-    """List of capacity areas"""
-
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
 class CapacityAreaListResponse(OFSResponseList[CapacityArea]):
     """Paginated response for capacity area lists"""
 

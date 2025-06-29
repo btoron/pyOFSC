@@ -34,12 +34,17 @@ from ofsc.models.metadata import (
     Organization,
     OrganizationListResponse,
     Property,
+    PropertyListResponse,
     ResourceType,
+    ResourceTypeListResponse,
+    TimeSlot,
+    TimeSlotListResponse,
+    Workskill,
+    WorkskillConditionListResponse,
+    WorkskillListResponse,
     WorkSkillGroup,
     WorkSkillGroupListResponse,
-    Workskill,
-    WorskillConditionList,
-    Workzone,
+    WorkzoneListResponse,
 )
 
 if TYPE_CHECKING:
@@ -69,8 +74,12 @@ class LabelParam(BaseModel):
 class CapacityAreasParams(BaseModel):
     """Internal validation for capacity areas parameters."""
 
-    expandParent: bool = Field(default=False, description="Expand parent area information")
-    fields: List[str] = Field(default=["label"], description="Fields to include in response")
+    expandParent: bool = Field(
+        default=False, description="Expand parent area information"
+    )
+    fields: List[str] = Field(
+        default=["label"], description="Fields to include in response"
+    )
     activeOnly: bool = Field(default=False, description="Return only active areas")
     areasOnly: bool = Field(default=False, description="Return only area type entries")
 
@@ -109,7 +118,7 @@ class OFSMetadataAPI:
             raise OFSValidationException(f"Parameter validation failed: {e}")
 
     # Properties API
-    async def get_properties(self, offset: int = 0, limit: int = 100) -> Property:
+    async def get_properties(self, offset: int = 0, limit: int = 100) -> PropertyListResponse:
         """Get properties list.
 
         Args:
@@ -117,7 +126,7 @@ class OFSMetadataAPI:
             limit: Maximum records to return (default: 100, max: 1000)
 
         Returns:
-            Property response model with list of properties
+            PropertyListResponse response model with list of properties
 
         Raises:
             OFSValidationException: If parameters are invalid
@@ -129,9 +138,9 @@ class OFSMetadataAPI:
         logging.info(
             f"Fetching properties from endpoint: {endpoint} and base URL: {self.client.base_url}"
         )
-        
+
         response: "Response" = await self.client.get(endpoint, params=params)
-        return Property.from_response(response)
+        return PropertyListResponse.from_response(response)
 
     async def get_property(self, label: str) -> Property:
         """Get single property by label.
@@ -153,7 +162,7 @@ class OFSMetadataAPI:
         return Property.from_response(response)
 
     # Work Skills API
-    async def get_workskills(self, offset: int = 0, limit: int = 100) -> Workskill:
+    async def get_workskills(self, offset: int = 0, limit: int = 100) -> WorkskillListResponse:
         """Get work skills list.
 
         Args:
@@ -161,7 +170,7 @@ class OFSMetadataAPI:
             limit: Maximum records to return (default: 100, max: 1000)
 
         Returns:
-            Workskill response model with list of work skills
+            WorkskillListResponse response model with list of work skills
         """
         params = self._validate_params(PaginationParams, offset=offset, limit=limit)
 
@@ -169,9 +178,9 @@ class OFSMetadataAPI:
         logging.info(
             f"Fetching workskills from endpoint: {endpoint} and base URL: {self.client.base_url}"
         )
-        
+
         response: "Response" = await self.client.get(endpoint, params=params)
-        return Workskill.from_response(response)
+        return WorkskillListResponse.from_response(response)
 
     async def get_workskill(self, label: str) -> Workskill:
         """Get single work skill by label."""
@@ -199,43 +208,47 @@ class OFSMetadataAPI:
         endpoint = f"/rest/ofscMetadata/v1/activityTypes/{label}"
         response: "Response" = await self.client.get(endpoint)
         return ActivityType.from_response(response)
-    
+
     # Additional Metadata API endpoints
-    async def get_enumeration_values(self, label: str, offset: int = 0, limit: int = 100) -> EnumerationValueList:
+    async def get_enumeration_values(
+        self, label: str, offset: int = 0, limit: int = 100
+    ) -> EnumerationValueList:
         """Get enumeration values for a property."""
         self._validate_params(LabelParam, label=label)
         params = self._validate_params(PaginationParams, offset=offset, limit=limit)
-        
+
         endpoint = f"/rest/ofscMetadata/v1/properties/{label}/enumerationList"
         response: "Response" = await self.client.get(endpoint, params=params)
         return EnumerationValueList.from_response(response)
-    
-    # Resource Types API  
-    async def get_resource_types(self) -> ResourceType:
+
+    # Resource Types API
+    async def get_resource_types(self) -> ResourceTypeListResponse:
         """Get resource types list."""
         endpoint = "/rest/ofscMetadata/v1/resourceTypes"
         response: "Response" = await self.client.get(endpoint)
-        return ResourceType.from_response(response)
-    
+        return ResourceTypeListResponse.from_response(response)
+
     # Activity Type Groups API
-    async def get_activity_type_groups(self, offset: int = 0, limit: int = 100) -> ActivityTypeGroupListResponse:
+    async def get_activity_type_groups(
+        self, offset: int = 0, limit: int = 100
+    ) -> ActivityTypeGroupListResponse:
         """Get activity type groups list."""
         params = self._validate_params(PaginationParams, offset=offset, limit=limit)
-        
+
         endpoint = "/rest/ofscMetadata/v1/activityTypeGroups"
         response: "Response" = await self.client.get(endpoint, params=params)
         return ActivityTypeGroupListResponse.from_response(response)
-    
+
     async def get_activity_type_group(self, label: str) -> ActivityTypeGroup:
         """Get single activity type group by label."""
         self._validate_params(LabelParam, label=label)
-        
+
         endpoint = f"/rest/ofscMetadata/v1/activityTypeGroups/{label}"
         response: "Response" = await self.client.get(endpoint)
         return ActivityTypeGroup.from_response(response)
 
     # Work Zones API
-    async def get_workzones(self, offset: int = 0, limit: int = 100):
+    async def get_workzones(self, offset: int = 0, limit: int = 100) -> WorkzoneListResponse:
         """Get work zones list.
 
         Args:
@@ -243,7 +256,7 @@ class OFSMetadataAPI:
             limit: Maximum records to return (default: 100, max: 1000)
 
         Returns:
-            JSON response with list of work zones
+            WorkzoneListResponse response model with list of work zones
 
         Raises:
             OFSValidationException: If parameters are invalid
@@ -254,24 +267,24 @@ class OFSMetadataAPI:
         logging.info(
             f"Fetching work zones from endpoint: {endpoint} and base URL: {self.client.base_url}"
         )
-        
+
         response: "Response" = await self.client.get(endpoint, params=params)
-        return response.json()
+        return WorkzoneListResponse.from_response(response)
 
     # Work Skill Conditions API
-    async def get_workskill_conditions(self):
+    async def get_workskill_conditions(self) -> WorkskillConditionListResponse:
         """Get work skill conditions list.
 
         Returns:
-            JSON response with work skill conditions
+            WorkskillConditionListResponse response model with work skill conditions
         """
         endpoint = "/rest/ofscMetadata/v1/workSkillConditions"
         logging.info(
             f"Fetching work skill conditions from endpoint: {endpoint} and base URL: {self.client.base_url}"
         )
-        
+
         response: "Response" = await self.client.get(endpoint)
-        return response.json()
+        return WorkskillConditionListResponse.from_response(response)
 
     # Work Skill Groups API
     async def get_workskill_groups(self) -> WorkSkillGroupListResponse:
@@ -284,7 +297,7 @@ class OFSMetadataAPI:
         logging.info(
             f"Fetching work skill groups from endpoint: {endpoint} and base URL: {self.client.base_url}"
         )
-        
+
         response: "Response" = await self.client.get(endpoint)
         return WorkSkillGroupListResponse.from_response(response)
 
@@ -339,7 +352,9 @@ class OFSMetadataAPI:
         # Build query parameters according to v2.x implementation
         params = {
             "expand": "parent" if validated_params["expandParent"] else None,
-            "fields": ",".join(validated_params["fields"]) if validated_params["fields"] else None,
+            "fields": ",".join(validated_params["fields"])
+            if validated_params["fields"]
+            else None,
             "status": "active" if validated_params["activeOnly"] else None,
             "type": "area" if validated_params["areasOnly"] else None,
         }
@@ -350,7 +365,7 @@ class OFSMetadataAPI:
         logging.info(
             f"Fetching capacity areas from endpoint: {endpoint} and base URL: {self.client.base_url}"
         )
-        
+
         response: "Response" = await self.client.get(endpoint, params=params)
         return CapacityAreaListResponse.from_response(response)
 
@@ -374,7 +389,9 @@ class OFSMetadataAPI:
         return CapacityArea.from_response(response)
 
     # Capacity Categories API
-    async def get_capacity_categories(self, offset: int = 0, limit: int = 100) -> CapacityCategoryListResponse:
+    async def get_capacity_categories(
+        self, offset: int = 0, limit: int = 100
+    ) -> CapacityCategoryListResponse:
         """Get capacity categories list.
 
         Args:
@@ -393,7 +410,7 @@ class OFSMetadataAPI:
         logging.info(
             f"Fetching capacity categories from endpoint: {endpoint} and base URL: {self.client.base_url}"
         )
-        
+
         response: "Response" = await self.client.get(endpoint, params=params)
         return CapacityCategoryListResponse.from_response(response)
 
@@ -427,7 +444,7 @@ class OFSMetadataAPI:
         logging.info(
             f"Fetching inventory types from endpoint: {endpoint} and base URL: {self.client.base_url}"
         )
-        
+
         response: "Response" = await self.client.get(endpoint)
         return InventoryTypeListResponse.from_response(response)
 
@@ -461,7 +478,7 @@ class OFSMetadataAPI:
         logging.info(
             f"Fetching applications from endpoint: {endpoint} and base URL: {self.client.base_url}"
         )
-        
+
         response: "Response" = await self.client.get(endpoint)
         return ApplicationListResponse.from_response(response)
 
@@ -533,7 +550,7 @@ class OFSMetadataAPI:
         logging.info(
             f"Fetching organizations from endpoint: {endpoint} and base URL: {self.client.base_url}"
         )
-        
+
         response: "Response" = await self.client.get(endpoint)
         return OrganizationListResponse.from_response(response)
 
@@ -554,3 +571,27 @@ class OFSMetadataAPI:
         endpoint = f"/rest/ofscMetadata/v1/organizations/{label}"
         response: "Response" = await self.client.get(endpoint)
         return Organization.from_response(response)
+
+    # Time Slots API
+    async def get_timeslots(self, offset: int = 0, limit: int = 100) -> TimeSlotListResponse:
+        """Get time slots list.
+
+        Args:
+            offset: Starting record offset (default: 0)
+            limit: Maximum records to return (default: 100, max: 1000)
+
+        Returns:
+            TimeSlotListResponse response model with list of time slots
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        params = self._validate_params(PaginationParams, offset=offset, limit=limit)
+
+        endpoint = "/rest/ofscMetadata/v1/timeSlots"
+        logging.info(
+            f"Fetching time slots from endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return TimeSlotListResponse.from_response(response)

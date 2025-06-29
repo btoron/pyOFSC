@@ -119,7 +119,19 @@ class OFSResponseList(BaseOFSResponse, Generic[T]):
     """Generic response list model for paginated OFSC API responses.
 
     This class handles the standard OFSC list response format with pagination
-    metadata and provides list-like access to the contained items.
+    metadata and provides list-like access to the contained items. It is the
+    standard pattern for all v3.0 API list responses, replacing the older
+    RootModel[List[T]] pattern.
+
+    Usage:
+        - Used ONLY as return types from API methods that return lists
+        - Never use as input parameters - use List[T] or specific request models instead
+        - Provides automatic pagination metadata (offset, limit, hasMore, totalResults)
+        - Supports iteration and indexing like a regular list via the 'items' field
+
+    Example:
+        class PropertyListResponse(OFSResponseList[Property]):
+            pass
     """
 
     model_config = ConfigDict(extra="allow")

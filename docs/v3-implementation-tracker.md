@@ -607,6 +607,23 @@
   - Integrated fault tolerance, retry logic, and connection pooling from Phase 1.5 error handling system
   - **MILESTONE**: First complete API module migration - proves v3.0 architecture works end-to-end
   - Endpoints: get_properties, get_property, get_workskills, get_workskill, get_activity_types, get_activity_type, get_enumeration_values, get_resource_types, get_activity_type_groups, get_activity_type_group
+- **June 28, 2025**: Enhanced Phase 1.6.1 - Added get_timeslots endpoint
+  - Implemented get_timeslots method in Metadata API v3.0 architecture following established patterns
+  - Created TimeSlot and TimeSlotListResponse models with support for both timed and all-day slots  
+  - Added comprehensive test coverage including model validation against response examples
+  - Validated against endpoint #67 response examples with 8 timeslot records
+  - Integrated with existing parameter validation (PaginationParams) and error handling
+  - Added to models/__init__.py exports for backward compatibility
+  - **Total Metadata GET endpoints**: 11 (original 10 + get_timeslots)
+- **June 28, 2025**: Model Architecture Cleanup - Removed Obsolete RootModel Collections
+  - Removed 12 obsolete RootModel[List[T]] classes that were replaced by OFSResponseList[T] pattern
+  - **Metadata models removed**: WorkskillList, WorkzoneList, PropertyList, ResourceTypeList, ActivityTypeList, ActivityTypeGroupList, InventoryTypeList, WorkSkillGroupList, OrganizationList, TimeSlotList, WorskillConditionList, WorkSkillAssignmentsList
+  - **Core models removed**: ResourceList, LocationList, ResourceWorkScheduleResponseList
+  - **Capacity models removed**: CapacityAreaList
+  - **Preserved essential RootModel classes**: TranslationList (base infrastructure), CalendarView/CalendarViewList (specialized calendar types), ItemList (used as field type)
+  - Fixed incorrect usage of Response models as input parameters (WorkskillConditionListResponse → List[WorkskillCondition], AssignedLocationsResponse → AssignedLocationsRequest)
+  - Added comprehensive Model Usage Guidelines to README.md documenting proper separation of request/response models
+  - **MILESTONE**: Achieved cleaner architecture with proper model separation and consistent use of OFSResponseList pattern
 
 ### Blockers and Dependencies
 - List any blockers encountered
@@ -614,6 +631,6 @@
 - Note resolution status
 
 ## Last Updated
-**Date:** December 28, 2024  
+**Date:** June 28, 2025  
 **Updated By:** Claude  
-**Changes:** Completed Phase 1.5 - Error Handling. Implemented comprehensive typed exception hierarchy, retry logic with exponential backoff, circuit breaker pattern, and always-raise error handling. All Phase 1.5 acceptance criteria met.
+**Changes:** Model Architecture Cleanup - Removed 12 obsolete RootModel collections, fixed incorrect usage of Response models as parameters, added Model Usage Guidelines to README, and documented architectural improvements.

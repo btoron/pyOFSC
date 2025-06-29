@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import (
     AliasChoices,
     AnyHttpUrl,
+    BaseModel,
     ConfigDict,
     Field,
     RootModel,
@@ -53,16 +54,6 @@ class Resource(BaseOFSResponse):
     workZones: Optional[Dict[str, Any]] = None
     workSkills: Optional[Dict[str, Any]] = None
     model_config = ConfigDict(extra="allow")
-
-
-class ResourceList(RootModel[List[Resource]]):
-    """List of resources"""
-
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
 
 
 # Activities
@@ -344,16 +335,6 @@ class ResourceWorkScheduleItem(BaseOFSResponse):
     workTimeStart: Optional[str] = None
 
 
-class ResourceWorkScheduleResponseList(RootModel[List[ResourceWorkScheduleItem]]):
-    """List of resource work schedule items"""
-
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
 class ResourceWorkScheduleResponse(OFSResponseList[ResourceWorkScheduleItem]):
     """Paginated response for resource work schedules"""
 
@@ -376,22 +357,25 @@ class Location(BaseOFSResponse):
     status: Optional[str] = None
 
 
-class LocationList(RootModel[List[Location]]):
-    """List of locations"""
-
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
 class AssignedLocation(BaseOFSResponse):
     """Assigned location configuration"""
 
     start: Optional[int] = None
     end: Optional[int] = None
     homeZoneCenter: Optional[int] = None
+
+
+class AssignedLocationsRequest(BaseModel):
+    """Request model for setting assigned locations by day of week"""
+
+    mon: Optional[AssignedLocation] = None
+    tue: Optional[AssignedLocation] = None
+    wed: Optional[AssignedLocation] = None
+    thu: Optional[AssignedLocation] = None
+    fri: Optional[AssignedLocation] = None
+    sat: Optional[AssignedLocation] = None
+    sun: Optional[AssignedLocation] = None
+    model_config = ConfigDict(extra="allow")
 
 
 class AssignedLocationsResponse(BaseOFSResponse):

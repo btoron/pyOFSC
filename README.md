@@ -81,6 +81,28 @@ The models are based on the Pydantic BaseModel, so it is possible to build an en
 - **Translation**: Multi-language translation support
 - **OFSAPIError**: Standardized API error responses
 
+## Model Usage Guidelines
+
+### Response Models
+- **`*Response` models** (e.g., `PropertyListResponse`, `UserListResponse`) are exclusively for API return types
+- **`*ListResponse` models** extend `OFSResponseList[T]` for paginated API responses
+- Response models inherit from `BaseOFSResponse` to provide access to raw httpx response data
+- Never use Response models as input parameters for API methods
+
+### Request Models and Input Parameters
+- For single object inputs: Use the base model directly (e.g., `property: Property`)
+- For collections: Use `List[Model]` or `Tuple[Model, ...]` (e.g., `data: List[WorkskillCondition]`)
+- For complex requests: Create dedicated Request models (e.g., `AssignedLocationsRequest`)
+- Request models should inherit from `pydantic.BaseModel`, not `BaseOFSResponse`
+
+### Model Architecture Changes (v3.0)
+- **Removed obsolete RootModel collections**: Replaced 12 `RootModel[List[T]]` classes with `OFSResponseList[T]` pattern
+- **Remaining RootModel classes** are preserved for specific use cases:
+  - `TranslationList`: Core infrastructure for internationalization
+  - `CalendarView`: Maps day strings to shifts (uses `RootModel[Dict[str, CalendarViewShift]]`)
+  - `CalendarViewList`: List of calendar items with custom iteration
+  - `ItemList`: Used as field type within capacity models
+
 ## Functions implemented
 
 

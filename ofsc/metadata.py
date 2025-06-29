@@ -1,6 +1,6 @@
 import urllib
 from pathlib import Path
-from typing import Tuple
+from typing import List, Tuple
 from urllib.parse import urljoin
 
 # TODO: Phase 1.6 - Migrate from requests to httpx
@@ -28,7 +28,8 @@ from .models import (
     Workskill,
     WorkSkillGroup,
     WorkSkillGroupListResponse,
-    WorskillConditionList,
+    WorkskillCondition,
+    WorkskillConditionListResponse,
 )
 
 
@@ -187,10 +188,12 @@ class OFSMetadata(OFSApi):
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def replace_workskill_conditions(
-        self, data: WorskillConditionList, response_type=FULL_RESPONSE
+        self, data: List[WorkskillCondition], response_type=FULL_RESPONSE
     ):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillConditions")
-        content = '{"items":' + data.model_dump_json(exclude_none=True) + "}"
+        # Convert list of WorkskillCondition objects to JSON
+        items_json = "[" + ",".join(item.model_dump_json(exclude_none=True) for item in data) + "]"
+        content = '{"items":' + items_json + "}"
         headers = self.headers
         headers["Content-Type"] = "application/json"
         response = requests.put(url, headers=headers, data=content)

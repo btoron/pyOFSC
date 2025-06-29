@@ -12,7 +12,7 @@ This module contains Pydantic models for OFSC Metadata API endpoints:
 
 from typing import TYPE_CHECKING, Any, List, Optional
 
-from pydantic import ConfigDict, Field, PrivateAttr, RootModel, field_validator
+from pydantic import ConfigDict, Field, PrivateAttr, field_validator
 from typing_extensions import Annotated
 
 from .base import BaseOFSResponse, EntityEnum, OFSResponseList, SharingEnum, Translation, TranslationList
@@ -48,28 +48,9 @@ class Workskill(BaseOFSResponse):
         )
 
 
-class WorkskillList(RootModel[List[Workskill]]):
-    """List of work skills"""
-    
-    _raw_response: Optional['httpx.Response'] = PrivateAttr(default=None)
-    
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-    
-    @classmethod
-    def from_response(cls, response: 'httpx.Response'):
-        """Create instance from httpx response."""
-        instance = cls.model_validate(response.json())
-        instance._raw_response = response
-        return instance
-    
-    @property
-    def raw_response(self) -> Optional['httpx.Response']:
-        """Access the raw httpx response object."""
-        return self._raw_response
+class WorkskillListResponse(OFSResponseList[Workskill]):
+    """Paginated response for work skill lists"""
+    pass
 
 
 class Condition(BaseOFSResponse):
@@ -90,14 +71,9 @@ class WorkskillCondition(BaseOFSResponse):
     dependencies: Any = None
 
 
-class WorskillConditionList(RootModel[List[WorkskillCondition]]):
-    """List of work skill conditions"""
-    
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
+class WorkskillConditionListResponse(OFSResponseList[WorkskillCondition]):
+    """Paginated response for work skill condition lists"""
+    pass
 
 
 # Work Zones
@@ -110,14 +86,9 @@ class Workzone(BaseOFSResponse):
     keys: List[Any]
 
 
-class WorkzoneList(RootModel[List[Workzone]]):
-    """List of work zones"""
-    
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
+class WorkzoneListResponse(OFSResponseList[Workzone]):
+    """Paginated response for work zone lists"""
+    pass
 
 
 # Properties
@@ -158,14 +129,9 @@ class Property(BaseOFSResponse):
     model_config = ConfigDict(extra="allow")
 
 
-class PropertyList(RootModel[List[Property]]):
-    """List of properties"""
-    
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
+class PropertyListResponse(OFSResponseList[Property]):
+    """Paginated response for property lists"""
+    pass
 
 
 # Resource Types
@@ -178,14 +144,9 @@ class ResourceType(BaseOFSResponse):
     model_config = ConfigDict(extra="allow")
 
 
-class ResourceTypeList(RootModel[List[ResourceType]]):
-    """List of resource types"""
-    
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
+class ResourceTypeListResponse(OFSResponseList[ResourceType]):
+    """Paginated response for resource type lists"""
+    pass
 
 
 # Activity Types and Groups
@@ -256,16 +217,6 @@ class ActivityType(BaseOFSResponse):
     model_config = ConfigDict(extra="allow")
 
 
-class ActivityTypeList(RootModel[List[ActivityType]]):
-    """List of activity types"""
-    
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
 class ActivityTypeListResponse(OFSResponseList[ActivityType]):
     """Paginated response for activity type lists"""
     pass
@@ -277,16 +228,6 @@ class ActivityTypeGroup(BaseOFSResponse):
     name: str
     active: bool
     translations: Optional[TranslationList] = None
-
-
-class ActivityTypeGroupList(RootModel[List[ActivityTypeGroup]]):
-    """List of activity type groups"""
-    
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
 
 
 class ActivityTypeGroupListResponse(OFSResponseList[ActivityTypeGroup]):
@@ -312,16 +253,6 @@ class InventoryType(BaseOFSResponse):
     model_config = ConfigDict(extra="allow")
 
 
-class InventoryTypeList(RootModel[List[InventoryType]]):
-    """List of inventory types"""
-    
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
 class InventoryTypeListResponse(OFSResponseList[InventoryType]):
     """Paginated response for inventory type lists"""
     pass
@@ -342,26 +273,6 @@ class WorkSkillGroup(BaseOFSResponse):
     active: bool = True
     
     model_config = ConfigDict(extra="allow")
-
-
-class WorkSkillAssignmentsList(RootModel[List[WorksSkillAssignments]]):
-    """List of work skill assignments"""
-    
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
-class WorkSkillGroupList(RootModel[List[WorkSkillGroup]]):
-    """List of work skill groups"""
-    
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
 
 
 class WorkSkillGroupListResponse(OFSResponseList[WorkSkillGroup]):
@@ -417,16 +328,25 @@ class Organization(BaseOFSResponse):
     model_config = ConfigDict(extra="allow")
 
 
-class OrganizationList(RootModel[List[Organization]]):
-    """List of organizations"""
-    
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
 class OrganizationListResponse(OFSResponseList[Organization]):
     """Paginated response for organization lists"""
+    pass
+
+
+# Time Slots
+class TimeSlot(BaseOFSResponse):
+    """Time slot definition with start/end times and all-day support"""
+    label: str
+    name: str
+    active: bool = True
+    isAllDay: bool = False
+    timeStart: Optional[str] = None
+    timeEnd: Optional[str] = None
+    links: Optional[List[Link]] = None
+    
+    model_config = ConfigDict(extra="allow")
+
+
+class TimeSlotListResponse(OFSResponseList[TimeSlot]):
+    """Paginated response for time slot lists"""
     pass

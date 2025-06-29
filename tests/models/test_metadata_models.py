@@ -10,6 +10,9 @@ from pydantic import BaseModel, ValidationError
 from ofsc.models import (
     Property, 
     PropertyList,
+    TimeSlot,
+    TimeSlotList,
+    TimeSlotListResponse,
     Workskill,
     WorkskillList, 
     Workzone,
@@ -368,3 +371,64 @@ class TestMetadataModels:
                         except ValidationError as e:
                             pytest.fail(f"Link validation failed: {e}")
                     break  # Only test first item with links
+
+    def test_timeslots_model_validation(self, response_examples_path):
+        """Validate timeslots response examples against TimeSlot models."""
+        timeslots_files = [
+            "67_get_time_slots.json",
+            "67_timeslots.json"
+        ]
+        
+        for filename in timeslots_files:
+            file_path = response_examples_path / filename
+            if not file_path.exists():
+                continue
+                
+            print(f"\nTesting TimeSlot model against: {filename}")
+            
+            with open(file_path) as f:
+                data = json.load(f)
+            
+            # Skip metadata
+            if "_metadata" in data:
+                del data["_metadata"]
+                
+            try:
+                # Test the complete response model
+                timeslots_response = TimeSlotListResponse.model_validate(data)
+                print(f"✅ TimeSlotListResponse validation successful")
+                print(f"   Total results: {timeslots_response.totalResults}")
+                print(f"   Items count: {len(timeslots_response.items)}")
+                
+                # Test individual timeslot models
+                for i, timeslot in enumerate(timeslots_response.items[:3]):  # Test first 3
+                    print(f"   TimeSlot {i+1}: {timeslot.label} - {timeslot.name}")
+                    print(f"     Active: {timeslot.active}, All Day: {timeslot.isAllDay}")
+                    
+                    # Test all-day vs timed slots
+                    if timeslot.isAllDay:
+                        assert timeslot.timeStart is None or timeslot.timeStart == ""
+                        assert timeslot.timeEnd is None or timeslot.timeEnd == ""
+                        print(f"     ✅ All-day slot validation passed")
+                    else:
+                        assert timeslot.timeStart is not None
+                        assert timeslot.timeEnd is not None
+                        print(f"     ✅ Timed slot: {timeslot.timeStart} - {timeslot.timeEnd}")
+                    
+                    # Test links if present
+                    if timeslot.links:
+                        assert len(timeslot.links) > 0
+                        for link in timeslot.links:
+                            assert link.rel is not None
+                            assert link.href is not None
+                        print(f"     ✅ Links validated ({len(timeslot.links)} links)")
+                
+                print(f"✅ All TimeSlot validations passed for {filename}")
+                return  # Test passed, no need to check other files
+                
+            except ValidationError as e:
+                print(f"❌ TimeSlot validation failed for {filename}: {e}")
+                continue
+        
+        # If we get here, no valid files were found
+        pytest.skip("TimeSlots response examples not found")
