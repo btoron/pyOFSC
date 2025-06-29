@@ -191,19 +191,16 @@ class EnumerationValueList(OFSResponseList[EnumerationValue]):
 class InventoryType(BaseOFSResponse):
     """Inventory type definition and configuration"""
 
-    internalId: Optional[int] = None
     label: str
     name: str
-    trackingRequired: bool = False
-    quantityRequired: bool = False
-    unitOfMeasure: Optional[str] = None
-    minimumQuantity: Optional[int] = None
-    minimumInternalQuantity: Optional[int] = None
-    minimumModelInternalQuantity: Optional[int] = None
-    minimumModelQuantity: Optional[int] = None
-    maximumQuantity: Optional[int] = None
-
-    model_config = ConfigDict(extra="allow")
+    active: bool = True
+    translations: Annotated[TranslationList, Field(validate_default=True)] = (
+        TranslationList([])
+    )
+    modelProperty: Optional[str] = None
+    nonSerialized: bool = False
+    quantityPrecision: Optional[int] = None
+    unitOfMeasurement: Optional[str] = None
 
 
 class InventoryTypeListResponse(OFSResponseList[InventoryType]):
@@ -218,11 +215,10 @@ class Organization(BaseOFSResponse):
 
     label: str
     name: str
-    parentLabel: Optional[str] = None
-    status: str = "active"
-    organizationType: Optional[str] = None
-
-    model_config = ConfigDict(extra="allow")
+    type: str
+    translations: Annotated[TranslationList, Field(validate_default=True)] = (
+        TranslationList([])
+    )
 
 
 class OrganizationListResponse(OFSResponseList[Organization]):

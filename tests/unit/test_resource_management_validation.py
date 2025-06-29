@@ -73,16 +73,17 @@ class TestResourceManagementModelsValidation:
         inventory_type = InventoryType(
             label="Cable TV Equipment",
             name="CATV_EQUIP",
-            unitOfMeasure="piece",
-            trackingRequired=True,
-            quantityRequired=False
+            unitOfMeasurement="piece",
+            nonSerialized=True,
+            quantityPrecision=2
         )
         
         assert inventory_type.label == "Cable TV Equipment"
         assert inventory_type.name == "CATV_EQUIP"
-        assert inventory_type.unitOfMeasure == "piece"
-        assert inventory_type.trackingRequired is True
-        assert inventory_type.quantityRequired is False
+        assert inventory_type.unitOfMeasurement == "piece"
+        assert inventory_type.nonSerialized is True
+        assert inventory_type.quantityPrecision == 2
+        assert inventory_type.active is True  # Default value
     
     def test_inventory_type_list_validation(self):
         """Test InventoryTypeListResponse model validation."""
@@ -91,12 +92,12 @@ class TestResourceManagementModelsValidation:
                 InventoryType(
                     label="Cables",
                     name="CABLES",
-                    unitOfMeasure="meter"
+                    unitOfMeasurement="meter"
                 ),
                 InventoryType(
                     label="Connectors",
                     name="CONNECTORS", 
-                    unitOfMeasure="piece"
+                    unitOfMeasurement="piece"
                 )
             ],
             totalResults=2,
@@ -105,9 +106,9 @@ class TestResourceManagementModelsValidation:
         
         assert len(inventory_types.items) == 2
         assert inventory_types.items[0].label == "Cables"
-        assert inventory_types.items[0].unitOfMeasure == "meter"
+        assert inventory_types.items[0].unitOfMeasurement == "meter"
         assert inventory_types.items[1].label == "Connectors"
-        assert inventory_types.items[1].unitOfMeasure == "piece"
+        assert inventory_types.items[1].unitOfMeasurement == "piece"
     
     def test_inventory_type_list_response_validation(self):
         """Test InventoryTypeListResponse model validation."""
@@ -116,21 +117,21 @@ class TestResourceManagementModelsValidation:
                 InventoryType(
                     label="Modem",
                     name="MODEM",
-                    trackingRequired=True
+                    nonSerialized=True
                 ),
                 InventoryType(
                     label="Router", 
                     name="ROUTER",
-                    trackingRequired=True
+                    nonSerialized=True
                 )
             ]
         )
         
         assert len(inventory_response.items) == 2
         assert inventory_response.items[0].label == "Modem"
-        assert inventory_response.items[0].trackingRequired is True
+        assert inventory_response.items[0].nonSerialized is True
         assert inventory_response.items[1].label == "Router"
-        assert inventory_response.items[1].trackingRequired is True
+        assert inventory_response.items[1].nonSerialized is True
     
     def test_work_skill_assignments_validation(self):
         """Test WorksSkillAssignments model validation."""
@@ -455,32 +456,38 @@ class TestResourceManagementModelsValidation:
             InventoryType(
                 label="Ethernet Cable",
                 name="ETH_CABLE",
-                unitOfMeasure="meter",
-                trackingRequired=True
+                unitOfMeasurement="meter",
+                nonSerialized=True,
+                quantityPrecision=2
             ),
             InventoryType(
                 label="WiFi Router",
                 name="WIFI_ROUTER", 
-                unitOfMeasure="piece",
-                quantityRequired=True
+                unitOfMeasurement="piece",
+                quantityPrecision=0,
+                modelProperty="router_model"
             ),
             InventoryType(
                 label="Installation Kit",
                 name="INSTALL_KIT",
-                unitOfMeasure="kit",
-                trackingRequired=False
+                unitOfMeasurement="kit",
+                nonSerialized=False,
+                active=False
             )
         ]
         
         # Validate different inventory configurations
         cable = inventory_types[0]
-        assert cable.unitOfMeasure == "meter"
-        assert cable.trackingRequired is True
+        assert cable.unitOfMeasurement == "meter"
+        assert cable.nonSerialized is True
+        assert cable.quantityPrecision == 2
         
         router = inventory_types[1]
-        assert router.unitOfMeasure == "piece"
-        assert router.quantityRequired is True
+        assert router.unitOfMeasurement == "piece"
+        assert router.quantityPrecision == 0
+        assert router.modelProperty == "router_model"
         
         kit = inventory_types[2]
-        assert kit.unitOfMeasure == "kit"
-        assert kit.trackingRequired is False
+        assert kit.unitOfMeasurement == "kit"
+        assert kit.nonSerialized is False
+        assert kit.active is False

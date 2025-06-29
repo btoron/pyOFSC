@@ -13,6 +13,10 @@ from ofsc.models.metadata import (
     ActivityTypeGroupItem,
     ActivityTypeGroupListResponse,
     Application,
+    InventoryType,
+    InventoryTypeListResponse,
+    Organization,
+    OrganizationListResponse,
     TimeSlotListResponse,
 )
 
@@ -153,5 +157,36 @@ class TestSunriseAuthentication:
                     assert category.translations is not None
                     assert category.workSkills is not None
                     assert category.workSkillGroups is not None
+
+        asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
+
+    def test_sunrise_client_inventory_types(self, async_client_basic_auth: OFSC):
+        async def test_async_client_basic_auth(async_client_basic_auth):
+            async with async_client_basic_auth as client:
+                response_inventory = await client.metadata.get_inventory_types()
+                assert response_inventory.totalResults > 0
+                assert isinstance(response_inventory, InventoryTypeListResponse)
+                for inventory in response_inventory.items:
+                    assert isinstance(inventory, InventoryType)
+                    assert inventory.label is not None
+                    assert inventory.name is not None
+                    assert inventory.active is not None
+                    assert inventory.translations is not None
+                    assert isinstance(inventory.translations, TranslationList)
+
+        asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
+
+    def test_sunrise_client_organizations(self, async_client_basic_auth: OFSC):
+        async def test_async_client_basic_auth(async_client_basic_auth):
+            async with async_client_basic_auth as client:
+                response_orgs = await client.metadata.get_organizations()
+                assert isinstance(response_orgs, OrganizationListResponse)
+                assert response_orgs.totalResults > 0
+                for org in response_orgs.items:
+                    assert isinstance(org, Organization)
+                    assert org.label is not None
+                    assert org.name is not None
+                    assert isinstance(org.translations, TranslationList)
+                    assert org.type in {"contractor", "inhouse"}
 
         asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
