@@ -28,148 +28,13 @@ if TYPE_CHECKING:
     pass
 
 
-# Common models
+# Links (Common utility model used by other models)
 class Link(BaseOFSResponse):
     """Hyperlink reference for API resources"""
 
     rel: str
     href: str
     mediaType: Optional[str] = None
-
-
-# Work Skills
-class Workskill(BaseOFSResponse):
-    """Work skill definition with internationalization support"""
-
-    label: str
-    active: bool = True
-    name: str = ""
-    sharing: SharingEnum
-    translations: Annotated[Optional[TranslationList], Field(validate_default=True)] = (
-        None
-    )
-    links: Optional[List[Link]] = None
-
-    model_config = ConfigDict(extra="allow")
-
-    @field_validator("translations")
-    def set_default(cls, field_value, values):
-        return field_value or TranslationList(
-            [Translation(name=values.data.get("name"))]
-        )
-
-
-class WorkskillListResponse(OFSResponseList[Workskill]):
-    """Paginated response for work skill lists"""
-
-    pass
-
-
-class Condition(BaseOFSResponse):
-    """Condition definition for work skill requirements"""
-
-    label: str
-    function: str
-    value: Any = None
-    valueList: list = []
-
-
-class WorkskillCondition(BaseOFSResponse):
-    """Work skill condition with requirements and dependencies"""
-
-    internalId: int
-    label: str
-    requiredLevel: int
-    preferableLevel: int
-    conditions: List[Condition]
-    dependencies: Any = None
-
-
-class WorkskillConditionListResponse(OFSResponseList[WorkskillCondition]):
-    """Paginated response for work skill condition lists"""
-
-    pass
-
-
-# Work Zones
-class Workzone(BaseOFSResponse):
-    """Work zone definition with geographical boundaries"""
-
-    workZoneLabel: str
-    workZoneName: str
-    status: str
-    travelArea: str
-    keys: List[Any]
-
-
-class WorkzoneListResponse(OFSResponseList[Workzone]):
-    """Paginated response for work zone lists"""
-
-    pass
-
-
-# Properties
-class Property(BaseOFSResponse):
-    """Property definition for custom fields and attributes"""
-
-    label: str
-    name: str
-    type: str
-    entity: Optional[EntityEnum] = None
-    gui: Optional[str] = None
-    translations: Annotated[TranslationList, Field(validate_default=True)] = (
-        TranslationList([])
-    )
-    links: Optional[List[Link]] = None
-
-    @field_validator("translations")
-    def set_default(cls, field_value, values):
-        return field_value or [Translation(name=values.name)]
-
-    @field_validator("gui")
-    @classmethod
-    def gui_match(cls, v):
-        if v not in [
-            "text",
-            "checkbox",
-            "combobox",
-            "radiogroup",
-            "file",
-            "signature",
-            "image",
-            "url",
-            "phone",
-            "email",
-            "capture",
-            "geo",
-        ]:
-            raise ValueError(f"{v} is not a valid GUI value")
-        return v
-
-    model_config = ConfigDict(extra="allow")
-
-
-class PropertyListResponse(OFSResponseList[Property]):
-    """Paginated response for property lists"""
-
-    pass
-
-
-# Resource Types
-class ResourceType(BaseOFSResponse):
-    """Resource type definition and configuration"""
-
-    label: str
-    name: str
-    features: Optional[dict] = None
-
-    model_config = ConfigDict(extra="allow")
-
-
-class ResourceTypeListResponse(OFSResponseList[ResourceType]):
-    """Paginated response for resource type lists"""
-
-    pass
 
 
 # Activity Types and Groups
@@ -271,6 +136,57 @@ class ActivityTypeGroupListResponse(OFSResponseList[ActivityTypeGroup]):
     pass
 
 
+# Applications
+class ApplicationsResourcestoAllow(BaseOFSResponse):
+    """Resource access configuration for applications"""
+
+    userType: str
+    resourceTypes: List[str]
+
+
+class Application(BaseOFSResponse):
+    """Application definition and configuration"""
+
+    label: str
+    name: str
+    activityTypes: List[str] = []
+    resourceTypes: List[str] = []
+    resourcesAllowed: List[ApplicationsResourcestoAllow] = []
+    defaultApplication: bool = False
+
+
+class ApplicationListResponse(OFSResponseList[Application]):
+    """Paginated response for application lists"""
+
+    pass
+
+
+# Conditions (used by Work Skills)
+class Condition(BaseOFSResponse):
+    """Condition definition for work skill requirements"""
+
+    label: str
+    function: str
+    value: Any = None
+    valueList: list = []
+
+
+# Enumeration Values
+class EnumerationValue(BaseOFSResponse):
+    """Enumeration value for dropdown and selection fields"""
+
+    label: str
+    name: str
+    translations: Optional[TranslationList] = None
+    active: bool = True
+
+
+class EnumerationValueList(OFSResponseList[EnumerationValue]):
+    """Paginated response for enumeration value lists"""
+
+    pass
+
+
 # Inventory Types
 class InventoryType(BaseOFSResponse):
     """Inventory type definition and configuration"""
@@ -292,6 +208,155 @@ class InventoryType(BaseOFSResponse):
 
 class InventoryTypeListResponse(OFSResponseList[InventoryType]):
     """Paginated response for inventory type lists"""
+
+    pass
+
+
+# Organizations
+class Organization(BaseOFSResponse):
+    """Organization definition and hierarchy"""
+
+    label: str
+    name: str
+    parentLabel: Optional[str] = None
+    status: str = "active"
+    organizationType: Optional[str] = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class OrganizationListResponse(OFSResponseList[Organization]):
+    """Paginated response for organization lists"""
+
+    pass
+
+
+# Properties
+class Property(BaseOFSResponse):
+    """Property definition for custom fields and attributes"""
+
+    label: str
+    name: str
+    type: str
+    entity: Optional[EntityEnum] = None
+    gui: Optional[str] = None
+    translations: Annotated[TranslationList, Field(validate_default=True)] = (
+        TranslationList([])
+    )
+    links: Optional[List[Link]] = None
+
+    @field_validator("translations")
+    def set_default(cls, field_value, values):
+        return field_value or [Translation(name=values.name)]
+
+    @field_validator("gui")
+    @classmethod
+    def gui_match(cls, v):
+        if v not in [
+            "text",
+            "checkbox",
+            "combobox",
+            "radiogroup",
+            "file",
+            "signature",
+            "image",
+            "url",
+            "phone",
+            "email",
+            "capture",
+            "geo",
+        ]:
+            raise ValueError(f"{v} is not a valid GUI value")
+        return v
+
+    model_config = ConfigDict(extra="allow")
+
+
+class PropertyListResponse(OFSResponseList[Property]):
+    """Paginated response for property lists"""
+
+    pass
+
+
+# Resource Types
+class ResourceType(BaseOFSResponse):
+    """Resource type definition and configuration"""
+
+    label: str
+    name: str
+    features: Optional[dict] = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceTypeListResponse(OFSResponseList[ResourceType]):
+    """Paginated response for resource type lists"""
+
+    pass
+
+
+# Time Slots
+class TimeSlot(BaseOFSResponse):
+    """Time slot definition with start/end times and all-day support"""
+
+    label: str
+    name: str
+    active: bool = True
+    isAllDay: bool = False
+    timeStart: Optional[str] = None
+    timeEnd: Optional[str] = None
+    links: Optional[List[Link]] = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class TimeSlotListResponse(OFSResponseList[TimeSlot]):
+    """Paginated response for time slot lists"""
+
+    pass
+
+
+# Work Skills
+class Workskill(BaseOFSResponse):
+    """Work skill definition with internationalization support"""
+
+    label: str
+    active: bool = True
+    name: str = ""
+    sharing: SharingEnum
+    translations: Annotated[Optional[TranslationList], Field(validate_default=True)] = (
+        None
+    )
+    links: Optional[List[Link]] = None
+
+    model_config = ConfigDict(extra="allow")
+
+    @field_validator("translations")
+    def set_default(cls, field_value, values):
+        return field_value or TranslationList(
+            [Translation(name=values.data.get("name"))]
+        )
+
+
+class WorkskillListResponse(OFSResponseList[Workskill]):
+    """Paginated response for work skill lists"""
+
+    pass
+
+
+class WorkskillCondition(BaseOFSResponse):
+    """Work skill condition with requirements and dependencies"""
+
+    internalId: int
+    label: str
+    requiredLevel: int
+    preferableLevel: int
+    conditions: List[Condition]
+    dependencies: Any = None
+
+
+class WorkskillConditionListResponse(OFSResponseList[WorkskillCondition]):
+    """Paginated response for work skill condition lists"""
 
     pass
 
@@ -321,82 +386,18 @@ class WorkSkillGroupListResponse(OFSResponseList[WorkSkillGroup]):
     pass
 
 
-# Enumeration Values
-class EnumerationValue(BaseOFSResponse):
-    """Enumeration value for dropdown and selection fields"""
+# Work Zones
+class Workzone(BaseOFSResponse):
+    """Work zone definition with geographical boundaries"""
 
-    label: str
-    name: str
-    translations: Optional[TranslationList] = None
-    active: bool = True
-
-
-class EnumerationValueList(OFSResponseList[EnumerationValue]):
-    """Paginated response for enumeration value lists"""
-
-    pass
+    workZoneLabel: str
+    workZoneName: str
+    status: str
+    travelArea: str
+    keys: List[Any]
 
 
-# Applications
-class ApplicationsResourcestoAllow(BaseOFSResponse):
-    """Resource access configuration for applications"""
-
-    userType: str
-    resourceTypes: List[str]
-
-
-class Application(BaseOFSResponse):
-    """Application definition and configuration"""
-
-    label: str
-    name: str
-    activityTypes: List[str] = []
-    resourceTypes: List[str] = []
-    resourcesAllowed: List[ApplicationsResourcestoAllow] = []
-    defaultApplication: bool = False
-
-
-class ApplicationListResponse(OFSResponseList[Application]):
-    """Paginated response for application lists"""
-
-    pass
-
-
-# Organizations
-class Organization(BaseOFSResponse):
-    """Organization definition and hierarchy"""
-
-    label: str
-    name: str
-    parentLabel: Optional[str] = None
-    status: str = "active"
-    organizationType: Optional[str] = None
-
-    model_config = ConfigDict(extra="allow")
-
-
-class OrganizationListResponse(OFSResponseList[Organization]):
-    """Paginated response for organization lists"""
-
-    pass
-
-
-# Time Slots
-class TimeSlot(BaseOFSResponse):
-    """Time slot definition with start/end times and all-day support"""
-
-    label: str
-    name: str
-    active: bool = True
-    isAllDay: bool = False
-    timeStart: Optional[str] = None
-    timeEnd: Optional[str] = None
-    links: Optional[List[Link]] = None
-
-    model_config = ConfigDict(extra="allow")
-
-
-class TimeSlotListResponse(OFSResponseList[TimeSlot]):
-    """Paginated response for time slot lists"""
+class WorkzoneListResponse(OFSResponseList[Workzone]):
+    """Paginated response for work zone lists"""
 
     pass
