@@ -231,6 +231,8 @@ class OrganizationListResponse(OFSResponseList[Organization]):
 class Property(BaseOFSResponse):
     """Property definition for custom fields and attributes"""
 
+    # TODO - Add validation for combinations of entity and type for extra validation
+
     label: str
     name: str
     type: str
@@ -240,6 +242,20 @@ class Property(BaseOFSResponse):
         TranslationList([])
     )
     links: Optional[List[Link]] = None
+
+    @field_validator("type")
+    @classmethod
+    def type_match(cls, v):
+        if v not in [
+            "field",
+            "integer",
+            "string",
+            "enumeration",
+            "file",
+            "attachments",
+        ]:
+            raise ValueError(f"{v} is not a valid property type")
+        return v
 
     @field_validator("translations")
     def set_default(cls, field_value, values):
