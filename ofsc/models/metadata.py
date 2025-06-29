@@ -141,7 +141,7 @@ class Application(BaseOFSResponse):
     """Application definition and configuration"""
 
     # TODO: Improve the model
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="allow")  # Applications
     label: str
     name: str
     activityTypes: List[str] = []
@@ -380,11 +380,14 @@ class WorksSkillAssignments(BaseOFSResponse):
 class WorkSkillGroup(BaseOFSResponse):
     """Work skill group definition and assignments"""
 
-    model_config = ConfigDict(extra="allow")
-
     label: str
     name: str
-    assignedWorkSkills: List[WorksSkillAssignments] = []
+    workSkills: List[WorksSkillAssignments] = []
+    addToCapacityCategory: bool = False
+    assignToResource: bool = False
+    translations: Annotated[Optional[TranslationList], Field(validate_default=True)] = (
+        TranslationList([])  # Default to empty list if not provided
+    )
     active: bool = True
 
 
