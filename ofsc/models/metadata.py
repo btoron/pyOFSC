@@ -365,8 +365,8 @@ class WorkskillCondition(BaseOFSResponse):
     label: str
     requiredLevel: int
     preferableLevel: int
-    conditions: List[Condition]
-    dependencies: Any = None
+    conditions: Optional[List[Condition]] = None
+    dependencies: Optional[Any] = None
 
 
 class WorkskillConditionListResponse(OFSResponseList[WorkskillCondition]):

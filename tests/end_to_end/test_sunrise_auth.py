@@ -23,6 +23,8 @@ from ofsc.models.metadata import (
     ResourceTypeListResponse,
     TimeSlot,
     TimeSlotListResponse,
+    WorkskillCondition,
+    WorkskillConditionListResponse,
 )
 
 
@@ -242,5 +244,23 @@ class TestSunriseAuthentication:
                         # Timed slots should have both time bounds
                         assert timeslot.timeStart is not None
                         assert timeslot.timeEnd is not None
+
+        asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
+
+    def test_sunrise_client_workskill_conditions(self, async_client_basic_auth: OFSC):
+        async def test_async_client_basic_auth(async_client_basic_auth):
+            async with async_client_basic_auth as client:
+                response_workskill_conditions = (
+                    await client.metadata.get_workskill_conditions()
+                )
+                assert isinstance(
+                    response_workskill_conditions, WorkskillConditionListResponse
+                )
+                assert response_workskill_conditions.totalResults >= 0
+                for condition in response_workskill_conditions.items:
+                    assert isinstance(condition, WorkskillCondition)
+                    assert condition.label is not None
+                    assert condition.requiredLevel is not None
+                    assert condition.preferableLevel is not None
 
         asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
