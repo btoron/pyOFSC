@@ -4,8 +4,16 @@ import os
 import pytest
 
 from ofsc.client import OFSC
+from ofsc.models import CapacityArea
+from ofsc.models.base import TranslationList
 from ofsc.models.core import SubscriptionList, User, UserListResponse
-from ofsc.models.metadata import TimeSlotListResponse
+from ofsc.models.metadata import (
+    ActivityTypeGroup,
+    ActivityTypeGroupItem,
+    ActivityTypeGroupListResponse,
+    Application,
+    TimeSlotListResponse,
+)
 
 
 @pytest.mark.live
@@ -40,7 +48,7 @@ class TestSunriseAuthentication:
             use_token=False,  # Use Basic Auth
         )
 
-    def test_async_client(self, async_client_basic_auth: OFSC):
+    def test_full_client(self, async_client_basic_auth: OFSC):
         async def test_async_client_basic_auth(async_client_basic_auth):
             async with async_client_basic_auth as client:
                 # Test if the client can fetch subscriptions
@@ -66,5 +74,66 @@ class TestSunriseAuthentication:
                         # Timed slots should have both time bounds
                         assert timeslot.timeStart is not None
                         assert timeslot.timeEnd is not None
+
+        asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
+
+    def test_sunrise_client_activity_typegroups(self, async_client_basic_auth: OFSC):
+        async def test_async_client_basic_auth(async_client_basic_auth):
+            async with async_client_basic_auth as client:
+                response_typegroups: ActivityTypeGroupListResponse = (
+                    await client.metadata.get_activity_type_groups()
+                )
+                assert response_typegroups.totalResults >= 0
+                for group in response_typegroups.items:
+                    assert isinstance(group, ActivityTypeGroup)
+                    assert group.label is not None
+                    assert group.name is not None
+                    assert group.activityTypes is not None
+                    for activityType in group.activityTypes:
+                        assert isinstance(activityType, ActivityTypeGroupItem)
+                        assert activityType.label is not None
+
+        asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
+
+    def test_sunrise_client_activity_types(self, async_client_basic_auth: OFSC):
+        async def test_async_client_basic_auth(async_client_basic_auth):
+            async with async_client_basic_auth as client:
+                response_types = await client.metadata.get_activity_types()
+                assert response_types.totalResults > 0
+                for activity_type in response_types.items:
+                    assert activity_type.label is not None
+                    assert activity_type.name is not None
+                    assert isinstance(activity_type.translations, TranslationList)
+
+        asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
+
+    def test_sunrise_client_applications(self, async_client_basic_auth: OFSC):
+        async def test_async_client_basic_auth(async_client_basic_auth):
+            async with async_client_basic_auth as client:
+                response_apps = await client.metadata.get_applications()
+                assert response_apps.totalResults > 0
+                for app in response_apps.items:
+                    assert isinstance(app, Application)
+                    assert app.label is not None
+                    assert app.name is not None
+
+        asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
+
+    def test_sunrise_client_capacity_areas(self, async_client_basic_auth: OFSC):
+        async def test_async_client_basic_auth(async_client_basic_auth):
+            async with async_client_basic_auth as client:
+                response_areas = await client.metadata.get_capacity_areas(
+                    expandParent=True,
+                    fields="label, name, type, status, parent.name, parent.label".split(
+                        ", "
+                    ),
+                )
+                assert response_areas.totalResults > 0
+                for area in response_areas.items:
+                    assert isinstance(area, CapacityArea)
+                    assert area.label is not None
+                    assert area.name is not None
+                    assert area.type in {"area", "group"}
+                    assert area.status in {"active", "inactive"}
 
         asyncio.run(test_async_client_basic_auth(async_client_basic_auth))

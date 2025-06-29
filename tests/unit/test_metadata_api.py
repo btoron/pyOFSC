@@ -13,7 +13,12 @@ from httpx import Response
 
 from ofsc.client import OFSC
 from ofsc.exceptions import OFSValidationException
-from ofsc.models.metadata import Property, PropertyListResponse, TimeSlot, TimeSlotListResponse, Workskill, WorkskillListResponse
+from ofsc.models.metadata import (
+    Property,
+    PropertyListResponse,
+    TimeSlotListResponse,
+    WorkskillListResponse,
+)
 
 
 @pytest.fixture
@@ -70,9 +75,9 @@ def mock_timeslots_response():
                 "links": [
                     {
                         "rel": "describedby",
-                        "href": "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/metadata-catalog/timeSlots"
+                        "href": "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/metadata-catalog/timeSlots",
                     }
-                ]
+                ],
             },
             {
                 "label": "all-day",
@@ -82,10 +87,10 @@ def mock_timeslots_response():
                 "links": [
                     {
                         "rel": "describedby",
-                        "href": "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/metadata-catalog/timeSlots"
+                        "href": "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/metadata-catalog/timeSlots",
                     }
-                ]
-            }
+                ],
+            },
         ],
         "totalResults": 2,
         "limit": 100,
@@ -202,7 +207,7 @@ class TestMetadataAPIAsyncClient:
             assert isinstance(result, TimeSlotListResponse)
             assert result.totalResults == 2
             assert len(result.items) == 2
-            
+
             # Test regular timeslot
             regular_slot = result.items[0]
             assert regular_slot.label == "08-10"
@@ -212,7 +217,7 @@ class TestMetadataAPIAsyncClient:
             assert regular_slot.timeStart == "08:00"
             assert regular_slot.timeEnd == "10:00"
             assert regular_slot.links is not None and len(regular_slot.links) == 1
-            
+
             # Test all-day timeslot
             all_day_slot = result.items[1]
             assert all_day_slot.label == "all-day"
@@ -236,10 +241,8 @@ class TestMetadataAPIAsyncClient:
         ) as client:
             result = await client.metadata.get_timeslots(offset=10, limit=50)
             assert isinstance(result, TimeSlotListResponse)
-            
+
             # Verify the request was made with correct parameters
             request = route.calls[0].request
             assert "offset=10" in str(request.url)
             assert "limit=50" in str(request.url)
-
-
