@@ -134,32 +134,46 @@ class TestAllModelsIntegration:
         assert passed_tests >= 5, f"Expected at least 5 successful validations, got {passed_tests}"
     
     def test_model_extra_fields_consistency(self):
-        """Test that all models handle extra fields consistently."""
+        """Test that models handle extra fields according to their configuration."""
+        # Test models that ALLOW extra fields
+        from ofsc.models.metadata import Application, WorkSkillGroup, ActivityTypeFeatures
+        
         test_data = {
             "extraField1": "test_value",
             "customProperty": {"nested": "data"},
             "additionalInfo": ["item1", "item2"]
         }
         
-        # Test Core models
-        core_data = {"resourceType": "PR", "name": "Test", "language": "en", "timeZone": "UTC", "status": "active"}
-        core_data.update(test_data)
-        resource = Resource(**core_data)
+        # Test Application model (has extra="allow")
+        app_data = {"label": "TEST_APP", "name": "Test"}
+        app_data.update(test_data)
+        application = Application(**app_data)
+        assert application.name == "Test"
+        
+        # Test WorkSkillGroup model (has extra="allow")
+        group_data = {"label": "TEST_GROUP", "name": "Test"}
+        group_data.update(test_data)
+        work_skill_group = WorkSkillGroup(**group_data)
+        assert work_skill_group.name == "Test"
+        
+        # Test ActivityTypeFeatures model (has extra="allow")
+        features_data = {"allowCreationInBuckets": True}
+        features_data.update(test_data)
+        features = ActivityTypeFeatures(**features_data)
+        assert features.allowCreationInBuckets is True
+        
+        # Test models that FORBID extra fields (default behavior)
+        # These should only use their defined fields
+        resource = Resource(resourceType="PR", name="Test", language="en", timeZone="UTC", status="active")
         assert resource.name == "Test"
         
-        # Test Metadata models
-        metadata_data = {"label": "TEST", "name": "Test", "entity": "activity", "type": "string"}
-        metadata_data.update(test_data)
-        property_model = Property(**metadata_data)
+        property_model = Property(label="TEST", name="Test", entity="activity", type="string")
         assert property_model.name == "Test"
         
-        # Test Capacity models
-        capacity_data = {"label": "TEST", "status": "active"}
-        capacity_data.update(test_data)
-        capacity_area = CapacityArea(**capacity_data)
+        capacity_area = CapacityArea(label="TEST", status="active")
         assert capacity_area.label == "TEST"
         
-        print("✅ All models handle extra fields consistently")
+        print("✅ Models handle extra fields according to their configuration")
     
     def test_backward_compatibility_imports(self):
         """Test that all models can be imported via the main models module."""

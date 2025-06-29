@@ -398,11 +398,12 @@ class WorkSkillGroupListResponse(OFSResponseList[WorkSkillGroup]):
 class Workzone(BaseOFSResponse):
     """Work zone definition with geographical boundaries"""
 
-    workZoneLabel: str
     workZoneName: str
+    workZoneLabel: str
     status: str
     travelArea: str
-    keys: List[Any]
+    keys: Optional[List[Any]]
+    shapes: Optional[List[Any]] = []
 
 
 class WorkzoneListResponse(OFSResponseList[Workzone]):

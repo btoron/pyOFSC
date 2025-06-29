@@ -7,6 +7,7 @@ from the response_examples directory.
 import json
 import pytest
 from pathlib import Path
+from pydantic import ValidationError
 
 from ofsc.models.capacity import (
     CapacityArea,
@@ -158,24 +159,28 @@ class TestCapacityModelsValidation:
         assert area.headers is None
     
     def test_model_extra_fields_handling(self, response_examples_path):
-        """Test that models handle extra fields from API responses gracefully."""
-        # Test with extra fields
+        """Test that capacity models correctly forbid extra fields by default."""
+        # Test that capacity models follow the default extra="forbid" behavior
         test_area = {
             "label": "TEST_AREA",
-            "status": "active", 
-            "extraField1": "test_value",
-            "customProperty": {"nested": "data"},
-            "additionalInfo": ["item1", "item2"]
+            "status": "active"
         }
         
-        # Should not raise an error due to extra="allow"
+        # This should work fine with just the required fields
         area = CapacityArea(**test_area)
         assert area.label == "TEST_AREA"
         assert area.status == "active"
         
-        # Extra fields should be accessible
-        if hasattr(area, 'extraField1'):
-            assert area.extraField1 == "test_value"
+        # Test that extra fields are properly rejected
+        test_area_with_extra = {
+            "label": "TEST_AREA",
+            "status": "active",
+            "extraField": "should_be_rejected"
+        }
+        
+        # This should raise a ValidationError due to extra="forbid"
+        with pytest.raises(ValidationError):
+            CapacityArea(**test_area_with_extra)
     
     def test_capacity_request_csvlist_conversion(self):
         """Test that CapacityRequest properly handles CsvList conversion."""

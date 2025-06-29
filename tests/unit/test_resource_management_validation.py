@@ -442,16 +442,38 @@ class TestResourceManagementModelsValidation:
         assert serialized["role"] == "technician"
     
     def test_resource_management_extra_fields_handling(self):
-        """Test resource management models handle extra fields."""
-        # Test with extra fields that might come from API
+        """Test resource management models handle extra fields according to their configuration."""
+        # Test models with extra="allow" like Application and WorkSkillGroup
+        app_data = {
+            "label": "Specialist App",
+            "name": "SPECIALIST_APP",
+            "customField1": "custom_value",
+            "numericField": 42,
+            "booleanField": True
+        }
+        
+        application = Application(**app_data)
+        assert application.label == "Specialist App"
+        assert application.name == "SPECIALIST_APP"
+        
+        # Test WorkSkillGroup with extra fields
+        skill_group_data = {
+            "label": "Specialist Group",
+            "name": "SPECIALIST_GROUP",
+            "customField": "custom_value",
+            "additionalProperty": "additional_value"
+        }
+        
+        skill_group = WorkSkillGroup(**skill_group_data)
+        assert skill_group.label == "Specialist Group"
+        assert skill_group.name == "SPECIALIST_GROUP"
+        
+        # Test models without extra="allow" (like ResourceType) don't accept extra fields
         resource_data = {
             "label": "Specialist",
             "name": "SPECIALIST",
             "active": True,
-            "role": "specialist",
-            "customField1": "custom_value",
-            "numericField": 42,
-            "booleanField": True
+            "role": "specialist"
         }
         
         resource_type = ResourceType(**resource_data)
@@ -459,7 +481,6 @@ class TestResourceManagementModelsValidation:
         assert resource_type.name == "SPECIALIST"
         assert resource_type.active is True
         assert resource_type.role == "specialist"
-        # ResourceType model doesn't have extra="allow" by default, so extra fields won't be stored
     
     def test_work_skill_proficiency_levels(self):
         """Test work skill assignments with different proficiency levels."""

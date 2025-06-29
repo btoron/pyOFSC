@@ -23,10 +23,14 @@ from ofsc.models.metadata import (
     ResourceTypeListResponse,
     TimeSlot,
     TimeSlotListResponse,
+    Workskill,
     WorkskillCondition,
     WorkskillConditionListResponse,
     WorkSkillGroup,
     WorkSkillGroupListResponse,
+    WorkskillListResponse,
+    Workzone,
+    WorkzoneListResponse,
 )
 
 
@@ -279,5 +283,42 @@ class TestSunriseAuthentication:
                     assert group.label is not None
                     assert group.name is not None
                     assert group.active is not None
+
+        asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
+
+    def test_sunrise_client_workskills(self, async_client_basic_auth: OFSC):
+        async def test_async_client_basic_auth(async_client_basic_auth):
+            async with async_client_basic_auth as client:
+                response_workskills = await client.metadata.get_workskills()
+                assert isinstance(response_workskills, WorkskillListResponse)
+                assert response_workskills.totalResults > 0
+                for workskill in response_workskills.items:
+                    assert isinstance(workskill, Workskill)
+                    assert workskill.label is not None
+                    assert workskill.name is not None
+                    assert workskill.active is not None
+
+        asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
+
+    def test_sunrise_client_workzones(self, async_client_basic_auth: OFSC):
+        async def test_async_client_basic_auth(async_client_basic_auth):
+            async with async_client_basic_auth as client:
+                response_workzones = await client.metadata.get_workzones()
+                assert isinstance(response_workzones, WorkzoneListResponse)
+                assert response_workzones.totalResults > 0
+                for workzone in response_workzones.items:
+                    assert isinstance(workzone, Workzone)
+                    assert workzone.workZoneName is not None
+                    assert workzone.workZoneLabel is not None
+                    assert workzone.status is not None
+                    assert workzone.status in {"active", "inactive"}
+                    assert workzone.travelArea is not None
+                    assert isinstance(workzone.keys, list)
+                    if hasattr(workzone, "shapes"):
+                        # Check if shapes is present and is a list
+                        assert workzone.shapes is not None
+                        assert isinstance(
+                            workzone.shapes, list
+                        )  # Assuming shapes is a list
 
         asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
