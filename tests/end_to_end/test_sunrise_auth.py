@@ -21,6 +21,7 @@ from ofsc.models.metadata import (
     PropertyListResponse,
     ResourceType,
     ResourceTypeListResponse,
+    TimeSlot,
     TimeSlotListResponse,
 )
 
@@ -70,19 +71,6 @@ class TestSunriseAuthentication:
                 assert response.totalResults == 100
                 for user in response.users:
                     assert isinstance(user, User)
-                response_timeslots = await client.metadata.get_timeslots()
-                assert isinstance(response_timeslots, TimeSlotListResponse)
-                assert response_timeslots.totalResults >= 0
-                for timeslot in response_timeslots.items:
-                    assert timeslot.isAllDay is not None
-                    if timeslot.isAllDay:
-                        # All-day slots should have no time bounds
-                        assert timeslot.timeStart is None
-                        assert timeslot.timeEnd is None
-                    else:
-                        # Timed slots should have both time bounds
-                        assert timeslot.timeStart is not None
-                        assert timeslot.timeEnd is not None
 
         asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
 
@@ -234,5 +222,25 @@ class TestSunriseAuthentication:
                         "warehouse",
                     }
                     assert isinstance(resource_type.translations, TranslationList)
+
+        asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
+
+    def test_sunrise_client_timeslots(self, async_client_basic_auth: OFSC):
+        async def test_async_client_basic_auth(async_client_basic_auth):
+            async with async_client_basic_auth as client:
+                response_timeslots = await client.metadata.get_timeslots()
+                assert isinstance(response_timeslots, TimeSlotListResponse)
+                assert response_timeslots.totalResults >= 0
+                for timeslot in response_timeslots.items:
+                    assert isinstance(timeslot, TimeSlot)
+                    assert timeslot.isAllDay is not None
+                    if timeslot.isAllDay:
+                        # All-day slots should have no time bounds
+                        assert timeslot.timeStart is None
+                        assert timeslot.timeEnd is None
+                    else:
+                        # Timed slots should have both time bounds
+                        assert timeslot.timeStart is not None
+                        assert timeslot.timeEnd is not None
 
         asyncio.run(test_async_client_basic_auth(async_client_basic_auth))

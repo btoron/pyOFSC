@@ -16,7 +16,7 @@ from ofsc.models.metadata import (
     ApplicationListResponse,
     ApplicationsResourcestoAllow
 )
-from ofsc.models.base import BaseOFSResponse, OFSResponseList
+from ofsc.models.base import BaseOFSResponse, OFSResponseList, TranslationList, Translation
 
 
 class TestResourceManagementModelsValidation:
@@ -26,24 +26,37 @@ class TestResourceManagementModelsValidation:
         """Test ResourceType model validation."""
         resource_type = ResourceType(
             label="Field Technician",
-            name="FIELD_TECH"
+            name="FIELD_TECH",
+            active=True,
+            role="technician"
         )
         
         assert resource_type.label == "Field Technician"
         assert resource_type.name == "FIELD_TECH"
-        # features is optional
-        assert resource_type.features is None
+        assert resource_type.active is True
+        assert resource_type.role == "technician"
+        # translations has default value
+        assert resource_type.translations is not None
     
     def test_resource_type_optional_fields(self):
-        """Test ResourceType with optional fields."""
-        minimal_type = ResourceType(
-            label="Basic Type",
-            name="BASIC"
+        """Test ResourceType with various configurations."""
+        # Test with custom translations
+        resource_type_with_translation = ResourceType(
+            label="Supervisor",
+            name="SUPERVISOR",
+            active=False,
+            role="supervisor",
+            translations=TranslationList([
+                Translation(language="en", name="Supervisor"),
+                Translation(language="es", name="Supervisor")
+            ])
         )
         
-        assert minimal_type.label == "Basic Type"
-        assert minimal_type.name == "BASIC"
-        assert minimal_type.features is None
+        assert resource_type_with_translation.label == "Supervisor"
+        assert resource_type_with_translation.name == "SUPERVISOR"
+        assert resource_type_with_translation.active is False
+        assert resource_type_with_translation.role == "supervisor"
+        assert len(resource_type_with_translation.translations.root) == 2
     
     def test_resource_type_list_validation(self):
         """Test ResourceTypeListResponse model validation."""
@@ -51,11 +64,15 @@ class TestResourceManagementModelsValidation:
             items=[
                 ResourceType(
                     label="Senior Technician",
-                    name="SENIOR_TECH"
+                    name="SENIOR_TECH",
+                    active=True,
+                    role="technician"
                 ),
                 ResourceType(
                     label="Junior Technician", 
-                    name="JUNIOR_TECH"
+                    name="JUNIOR_TECH",
+                    active=True,
+                    role="technician"
                 )
             ],
             totalResults=2,
@@ -65,8 +82,10 @@ class TestResourceManagementModelsValidation:
         assert len(resource_types.items) == 2
         assert resource_types.items[0].label == "Senior Technician"
         assert resource_types.items[0].name == "SENIOR_TECH"
+        assert resource_types.items[0].role == "technician"
         assert resource_types.items[1].label == "Junior Technician"
         assert resource_types.items[1].name == "JUNIOR_TECH"
+        assert resource_types.items[1].active is True
     
     def test_inventory_type_validation(self):
         """Test InventoryType model validation."""
@@ -344,6 +363,7 @@ class TestResourceManagementModelsValidation:
     def test_list_response_models_inherit_ofs_response_list(self):
         """Test that list response models inherit from OFSResponseList."""
         list_models_to_test = [
+            ResourceTypeListResponse,
             InventoryTypeListResponse,
             WorkSkillGroupListResponse,
             EnumerationValueList,
@@ -406,14 +426,20 @@ class TestResourceManagementModelsValidation:
         """Test resource management model serialization."""
         resource_type = ResourceType(
             label="Mobile Technician",
-            name="MOBILE_TECH"
+            name="MOBILE_TECH",
+            active=True,
+            role="technician"
         )
         
         serialized = resource_type.model_dump()
         assert "label" in serialized
         assert "name" in serialized
+        assert "active" in serialized
+        assert "role" in serialized
         assert serialized["label"] == "Mobile Technician"
         assert serialized["name"] == "MOBILE_TECH"
+        assert serialized["active"] is True
+        assert serialized["role"] == "technician"
     
     def test_resource_management_extra_fields_handling(self):
         """Test resource management models handle extra fields."""
@@ -421,6 +447,8 @@ class TestResourceManagementModelsValidation:
         resource_data = {
             "label": "Specialist",
             "name": "SPECIALIST",
+            "active": True,
+            "role": "specialist",
             "customField1": "custom_value",
             "numericField": 42,
             "booleanField": True
@@ -429,8 +457,9 @@ class TestResourceManagementModelsValidation:
         resource_type = ResourceType(**resource_data)
         assert resource_type.label == "Specialist"
         assert resource_type.name == "SPECIALIST"
-        # Extra fields should be accessible through model_extra
-        assert hasattr(resource_type, 'model_extra')
+        assert resource_type.active is True
+        assert resource_type.role == "specialist"
+        # ResourceType model doesn't have extra="allow" by default, so extra fields won't be stored
     
     def test_work_skill_proficiency_levels(self):
         """Test work skill assignments with different proficiency levels."""
