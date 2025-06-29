@@ -6,6 +6,7 @@ import pytest
 from ofsc.client import OFSC
 from ofsc.models import CapacityArea
 from ofsc.models.base import TranslationList
+from ofsc.models.capacity import CapacityCategory
 from ofsc.models.core import SubscriptionList, User, UserListResponse
 from ofsc.models.metadata import (
     ActivityTypeGroup,
@@ -135,5 +136,22 @@ class TestSunriseAuthentication:
                     assert area.name is not None
                     assert area.type in {"area", "group"}
                     assert area.status in {"active", "inactive"}
+
+        asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
+
+    def test_sunrise_client_capacity_categories(self, async_client_basic_auth: OFSC):
+        async def test_async_client_basic_auth(async_client_basic_auth):
+            async with async_client_basic_auth as client:
+                response_categories = await client.metadata.get_capacity_categories()
+                assert response_categories.totalResults > 0
+                for category in response_categories.items:
+                    assert isinstance(category, CapacityCategory)
+                    assert category.label is not None
+                    assert category.name is not None
+                    assert category.active is not None
+                    assert category.timeSlots is not None
+                    assert category.translations is not None
+                    assert category.workSkills is not None
+                    assert category.workSkillGroups is not None
 
         asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
