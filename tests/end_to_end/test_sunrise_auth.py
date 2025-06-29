@@ -17,6 +17,8 @@ from ofsc.models.metadata import (
     InventoryTypeListResponse,
     Organization,
     OrganizationListResponse,
+    Property,
+    PropertyListResponse,
     TimeSlotListResponse,
 )
 
@@ -188,5 +190,23 @@ class TestSunriseAuthentication:
                     assert org.name is not None
                     assert isinstance(org.translations, TranslationList)
                     assert org.type in {"contractor", "inhouse"}
+
+        asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
+
+    def test_sunrise_client_properties(self, async_client_basic_auth: OFSC):
+        async def test_async_client_basic_auth(async_client_basic_auth):
+            async with async_client_basic_auth as client:
+                response_properties = await client.metadata.get_properties()
+                assert isinstance(response_properties, PropertyListResponse)
+                assert response_properties.totalResults >= 100
+                for prop in response_properties.items:
+                    assert isinstance(prop, Property)
+                    # Ensure all required fields are present
+                    assert prop.label is not None
+                    assert prop.name is not None
+                    assert prop.entity is not None
+                    assert prop.type is not None
+                    assert prop.gui is not None
+                    assert isinstance(prop.translations, TranslationList)
 
         asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
