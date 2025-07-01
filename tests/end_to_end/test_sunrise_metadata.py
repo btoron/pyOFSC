@@ -25,7 +25,10 @@ from ofsc.models.metadata import (
     ActivityTypeGroup,
     ActivityTypeGroupItem,
     ActivityTypeGroupListResponse,
+    ApiAccessStatus,
     Application,
+    ApplicationApiAccess,
+    ApplicationApiAccessListResponse,
     EnumerationValueList,
     Form,
     FormListResponse,
@@ -974,17 +977,34 @@ class TestSunriseGetCollectionsMetadata:
                     if identifier == "":
                         continue
                     response = await client.metadata.get_application_api_accesses(identifier)
-                    assert isinstance(response, dict)
-                    assert "items" in response
-                    assert isinstance(response["items"], list)
-                    assert len(response["items"]) > 0  # Expect at least some API accesses
+                    assert isinstance(response, ApplicationApiAccessListResponse)
+                    assert response.totalResults > 0  # Expect at least some API accesses
                     
-                    for api_access in response["items"]:
-                        assert "label" in api_access
-                        assert "name" in api_access
-                        assert "status" in api_access
-                        assert api_access["status"] in {"active", "inactive"}
-                        assert "links" in api_access
-                        assert isinstance(api_access["links"], list)
+                    for api_access in response.items:
+                        assert isinstance(api_access, ApplicationApiAccess)
+                        assert api_access.label is not None
+                        assert api_access.name is not None
+                        # Validate enum constraints
+                        assert api_access.status in {ApiAccessStatus.ACTIVE, ApiAccessStatus.INACTIVE}
+                        assert isinstance(api_access.links, list)
+
+        asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
+
+    def test_sunrise_client_application_api_access_individual(self, async_client_basic_auth: OFSC):
+        """Test endpoint ID 11: GET /rest/ofscMetadata/v1/applications/{label}/apiAccess/{apiLabel} - Get individual API access."""
+
+        async def test_async_client_basic_auth(async_client_basic_auth):
+            async with async_client_basic_auth as client:
+                application_identifiers = get_test_data("application")
+                for identifier in application_identifiers:
+                    if identifier == "":
+                        continue
+                    # Test with a known API access label
+                    api_access = await client.metadata.get_application_api_access(identifier, "metadataAPI")
+                    assert isinstance(api_access, ApplicationApiAccess)
+                    assert api_access.label == "metadataAPI"
+                    assert api_access.name is not None
+                    assert api_access.status in {ApiAccessStatus.ACTIVE, ApiAccessStatus.INACTIVE}
+                    assert isinstance(api_access.links, list)
 
         asyncio.run(test_async_client_basic_auth(async_client_basic_auth))

@@ -32,6 +32,8 @@ from ofsc.models.metadata import (
     ActivityTypeGroupListResponse,
     ActivityTypeListResponse,
     Application,
+    ApplicationApiAccess,
+    ApplicationApiAccessListResponse,
     ApplicationListResponse,
     EnumerationValueList,
     Form,
@@ -522,14 +524,14 @@ class OFSMetadataAPI:
         response: "Response" = await self.client.get(endpoint)
         return Application.from_response(response)
 
-    async def get_application_api_accesses(self, label: str):
+    async def get_application_api_accesses(self, label: str) -> ApplicationApiAccessListResponse:
         """Get application API accesses by application label.
 
         Args:
             label: Application label identifier
 
         Returns:
-            API access response model
+            ApplicationApiAccessListResponse: Typed response with API access list
 
         Raises:
             OFSValidationException: If label is invalid
@@ -538,28 +540,28 @@ class OFSMetadataAPI:
 
         endpoint = f"/rest/ofscMetadata/v1/applications/{label}/apiAccess"
         response: "Response" = await self.client.get(endpoint)
-        # Note: Using generic response parsing as specific model not defined in original
-        return response.json()
+        return ApplicationApiAccessListResponse.from_response(response)
 
-    async def get_application_api_access(self, label: str, accessId: str):
-        """Get specific application API access by application label and access ID.
+    async def get_application_api_access(self, label: str, api_label: str) -> ApplicationApiAccess:
+        """Get specific application API access by application label and API access label.
 
         Args:
             label: Application label identifier
-            accessId: API access ID
+            api_label: API access label (e.g., 'metadataAPI', 'coreAPI')
 
         Returns:
-            API access response model
+            ApplicationApiAccess: Individual API access configuration
 
         Raises:
-            OFSValidationException: If label is invalid
+            OFSValidationException: If parameters are invalid
         """
         self._validate_params(LabelParam, label=label)
+        # URL encode the api_label to handle special characters
+        encoded_api_label = urllib.parse.quote_plus(api_label)
 
-        endpoint = f"/rest/ofscMetadata/v1/applications/{label}/apiAccess/{accessId}"
+        endpoint = f"/rest/ofscMetadata/v1/applications/{label}/apiAccess/{encoded_api_label}"
         response: "Response" = await self.client.get(endpoint)
-        # Note: Using generic response parsing as specific model not defined in original
-        return response.json()
+        return ApplicationApiAccess.from_response(response)
 
     # Organizations API
     async def get_organizations(self) -> OrganizationListResponse:

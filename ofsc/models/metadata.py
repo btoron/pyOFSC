@@ -10,7 +10,8 @@ This module contains Pydantic models for OFSC Metadata API endpoints:
 - Inventory types and related metadata
 """
 
-from typing import TYPE_CHECKING, Any, List, Optional
+from enum import Enum
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing_extensions import Annotated
@@ -27,6 +28,39 @@ from .base import (
 
 if TYPE_CHECKING:
     pass
+
+
+# API Access Enums
+class ApiAccessStatus(str, Enum):
+    """Status values for API access configuration"""
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+
+
+class ApiAccessLabel(str, Enum):
+    """Standard API access labels available in OFSC"""
+    PARTS_CATALOG_API = "partsCatalogAPI"
+    CAPACITY_API = "capacityAPI" 
+    CORE_API = "coreAPI"
+    FIELD_COLLABORATION_API = "fieldCollaborationAPI"
+    INBOUND_API = "inboundAPI"
+    METADATA_API = "metadataAPI"
+    OUTBOUND_API = "outboundAPI"
+    STATISTICS_API = "statisticsAPI"
+
+
+class ApiAccessVisibility(str, Enum):
+    """Visibility levels for API access entities"""
+    READ_ONLY = "ReadOnly"
+    READ_WRITE = "ReadWrite" 
+    MANDATORY = "Mandatory"
+    HIDDEN = "Hidden"
+
+
+class ApiMethodStatus(str, Enum):
+    """Status for API methods"""
+    ON = "on"
+    OFF = "off"
 
 
 # Activity Types and Groups
@@ -150,6 +184,53 @@ class Application(BaseOFSResponse):
 class ApplicationListResponse(OFSResponseList[Application]):
     """Paginated response for application lists"""
 
+    pass
+
+
+# Application API Access Models
+class ApplicationApiAccessMethod(BaseOFSResponse):
+    """API method configuration for capacity API"""
+    
+    label: str = Field(min_length=1, max_length=80)
+    status: ApiMethodStatus
+
+
+class ApplicationApiAccessEntity(BaseOFSResponse):
+    """API entity configuration for core/metadata APIs"""
+    
+    label: str = Field(min_length=1, max_length=80)
+    access: ApiAccessVisibility
+
+
+class ApplicationApiAccessContext(BaseOFSResponse):
+    """Field visibility configuration for inbound API"""
+    
+    label: str = Field(min_length=1, max_length=255)
+    visibilities: Optional[List[Dict[str, Any]]] = []
+    valuesVisibility: Optional[List[Dict[str, Any]]] = []
+
+
+class ApplicationApiAccess(BaseOFSResponse):
+    """Individual API access configuration for an application"""
+    
+    label: str = Field(min_length=1, max_length=255)
+    name: str = Field(min_length=1, max_length=255)
+    status: ApiAccessStatus
+    links: Optional[List[Link]] = []
+    
+    # Optional detailed configuration (present in individual access endpoint)
+    apiMethods: Optional[List[ApplicationApiAccessMethod]] = []
+    apiEntities: Optional[List[ApplicationApiAccessEntity]] = []
+    activityFields: Optional[List[ApplicationApiAccessContext]] = []
+    inventoryFields: Optional[List[ApplicationApiAccessContext]] = []
+    providerFields: Optional[List[ApplicationApiAccessContext]] = []
+    userFields: Optional[List[Dict[str, Any]]] = []  # Complex nested structure
+    requestFields: Optional[List[ApplicationApiAccessContext]] = []
+
+
+class ApplicationApiAccessListResponse(OFSResponseList[ApplicationApiAccess]):
+    """Response for application API access list endpoint (ID 10)"""
+    
     pass
 
 

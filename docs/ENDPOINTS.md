@@ -28,8 +28,8 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 7 | `/rest/ofscMetadata/v1/applications` | GET | metadata | v3.0.0-dev | `async def get_applications(self) -> ApplicationListResponse` |
 | 8 | `/rest/ofscMetadata/v1/applications/{label}` | GET | metadata | v3.0.0-dev | `async def get_application(self, label: str) -> Application` |
 | 9 | `/rest/ofscMetadata/v1/applications/{label}` | PUT | metadata | | |
-| 10 | `/rest/ofscMetadata/v1/applications/{label}/apiAccess` | GET | metadata | v3.0.0-dev | `async def get_application_api_accesses(self, label: str) -> dict` |
-| 11 | `/rest/ofscMetadata/v1/applications/{label}/apiAccess/{apiLabel}` | GET | metadata | v3.0.0-dev | `async def get_application_api_access(self, label: str, accessId: str) -> dict` |
+| 10 | `/rest/ofscMetadata/v1/applications/{label}/apiAccess` | GET | metadata | v3.0.0-dev | `async def get_application_api_accesses(self, label: str) -> ApplicationApiAccessListResponse` |
+| 11 | `/rest/ofscMetadata/v1/applications/{label}/apiAccess/{apiLabel}` | GET | metadata | v3.0.0-dev | `async def get_application_api_access(self, label: str, api_label: str) -> ApplicationApiAccess` |
 | 12 | `/rest/ofscMetadata/v1/applications/{label}/apiAccess/{apiLabel}` | PATCH | metadata | | |
 | 13 | `/rest/ofscMetadata/v1/applications/{label}/custom-actions/generateClientSecret` | POST | metadata | | |
 | 14 | `/rest/ofscMetadata/v1/capacityAreas` | GET | metadata | v3.0.0-dev | `async def get_capacity_areas(self, expandParent: bool = False, fields: List[str] = ["label"], activeOnly: bool = False, areasOnly: bool = False) -> CapacityAreaListResponse` |
