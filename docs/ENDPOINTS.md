@@ -3,11 +3,11 @@
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints available in the pyOFSC Python Wrapper v3.0.
 
 **Total Endpoints:** 242  
-**Implemented in v3.0:** 45 (18.6%)
+**Implemented in v3.0:** 50 (20.6%)
 
 ## Implementation Coverage by Module
 
-- **metadata**: 43/86 endpoints (50.0%) ✅
+- **metadata**: 48/86 endpoints (55.8%) ✅
 - **core**: 2/127 endpoints (1.6%) ⚠️  
 - **capacity**: 0/11 endpoints (0%) ❌
 - **statistics**: 0/6 endpoints (0%) ❌
@@ -42,9 +42,9 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 21 | `/rest/ofscMetadata/v1/capacityAreas/{label}/organizations` | GET | metadata | v3.0.0-dev | `async def get_capacity_area_organizations(self, area_label: str, offset: int = 0, limit: int = 100) -> CapacityAreaOrganizationListResponse` |
 | 22 | `/rest/ofscMetadata/v1/capacityAreas/{label}/children` | GET | metadata | | |
 | 23 | `/rest/ofscMetadata/v1/capacityCategories` | GET | metadata | v3.0.0-dev | `async def get_capacity_categories(self, offset: int = 0, limit: int = 100) -> CapacityCategoryListResponse` |
-| 24 | `/rest/ofscMetadata/v1/capacityCategories/{label}` | GET | metadata | v3.0.0-dev | `async def get_capacity_category(self, label: str) -> CapacityCategory` |
-| 25 | `/rest/ofscMetadata/v1/capacityCategories/{label}` | PUT | metadata | | |
-| 26 | `/rest/ofscMetadata/v1/capacityCategories/{label}` | DELETE | metadata | | |
+| 24 | `/rest/ofscMetadata/v1/capacityCategories/{label}` | GET | metadata | v3.0.0-dev | `async def get_capacity_category(self, label: str) -> CapacityCategoryResponse` |
+| 25 | `/rest/ofscMetadata/v1/capacityCategories/{label}` | PUT | metadata | v3.0.0-dev | `async def create_or_replace_capacity_category(self, label: str, capacity_category: CapacityCategoryRequest) -> CapacityCategoryResponse` |
+| 26 | `/rest/ofscMetadata/v1/capacityCategories/{label}` | DELETE | metadata | v3.0.0-dev | `async def delete_capacity_category(self, label: str) -> None` |
 | 27 | `/rest/ofscMetadata/v1/forms` | GET | metadata | v3.0.0-dev | `async def get_forms(self, offset: int = 0, limit: int = 100) -> FormListResponse` |
 | 28 | `/rest/ofscMetadata/v1/forms/{label}` | GET | metadata | v3.0.0-dev | `async def get_form(self, label: str) -> Form` |
 | 29 | `/rest/ofscMetadata/v1/forms/{label}` | PUT | metadata | | |

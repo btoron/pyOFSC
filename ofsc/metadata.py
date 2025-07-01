@@ -15,7 +15,7 @@ from .models import (
     ApplicationListResponse,
     CapacityArea,
     CapacityAreaListResponse,
-    CapacityCategory,
+    CapacityCategoryResponse,
     CapacityCategoryListResponse,
     EnumerationValue,
     EnumerationValueList,
@@ -294,7 +294,7 @@ class OFSMetadata(OFSApi):
         response = requests.get(url, headers=self.headers, params=params)
         return response
 
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=CapacityCategory)
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=CapacityCategoryResponse)
     def get_capacity_category(self, label: str):
         encoded_label = urllib.parse.quote_plus(label)
         url = urljoin(

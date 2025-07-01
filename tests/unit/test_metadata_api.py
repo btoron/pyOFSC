@@ -27,6 +27,8 @@ from ofsc.models.capacity import (
     CapacityAreaWorkzoneListResponse,
     CapacityAreaCategoryListResponse,
     CapacityAreaOrganizationListResponse,
+    CapacityCategoryRequest,
+    CapacityCategoryResponse,
 )
 
 
@@ -634,3 +636,224 @@ class TestActivityTypeGroupAPI:
             # The client should raise an appropriate exception for HTTP errors
             with pytest.raises(Exception):  # Should raise OFS exception for HTTP errors
                 await client.metadata.create_or_replace_activity_type_group("error_test", None)
+
+
+@pytest.fixture
+def mock_capacity_category_response():
+    """Mock capacity category API response."""
+    return {
+        "label": "TEST_CAT",
+        "name": "Test Category",
+        "active": True,
+        "timeSlots": [],
+        "workSkills": [],
+        "workSkillGroups": [],
+        "translations": [
+            {
+                "language": "en",
+                "name": "Test Category",
+                "languageISO": "en-US"
+            }
+        ],
+        "links": [
+            {
+                "rel": "canonical",
+                "href": "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityCategories/TEST_CAT"
+            }
+        ]
+    }
+
+
+@pytest.fixture
+def mock_capacity_category_request():
+    """Mock capacity category request data."""
+    return CapacityCategoryRequest(
+        label="TEST_CAT",
+        name="Test Category",
+        active=True,
+        timeSlots=[],
+        workSkills=[],
+        workSkillGroups=[]
+    )
+
+
+@pytest.mark.asyncio
+class TestCapacityCategoryAPI:
+    """Test Capacity Category API endpoints including create/replace and delete."""
+
+    @respx.mock
+    async def test_create_or_replace_capacity_category_success(self, mock_capacity_category_response, mock_capacity_category_request):
+        """Test successful creation/replacement of capacity category."""
+        route = respx.put(
+            "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityCategories/TEST_CAT"
+        )
+        route.mock(return_value=Response(200, json=mock_capacity_category_response))
+
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            result = await client.metadata.create_or_replace_capacity_category("TEST_CAT", mock_capacity_category_request)
+            
+            assert isinstance(result, CapacityCategoryResponse)
+            assert result.label == "TEST_CAT"
+            assert result.name == "Test Category"
+            assert result.active is True
+
+    @respx.mock
+    async def test_create_or_replace_capacity_category_request_body(self, mock_capacity_category_request):
+        """Test that request body is properly serialized."""
+        route = respx.put(
+            "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityCategories/BODY_TEST"
+        )
+        route.mock(return_value=Response(200, json={"label": "BODY_TEST", "name": "Test", "active": True}))
+
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            await client.metadata.create_or_replace_capacity_category("BODY_TEST", mock_capacity_category_request)
+            
+            # Verify the request was made with correct JSON body
+            assert len(route.calls) == 1
+            request_call = route.calls[0]
+            assert request_call.request.method == "PUT"
+            
+            # Check request body contains expected fields
+            request_json = request_call.request.content.decode('utf-8')
+            assert '"label":"TEST_CAT"' in request_json
+            assert '"name":"Test Category"' in request_json
+            assert '"active":true' in request_json
+
+    async def test_create_or_replace_capacity_category_label_validation(self):
+        """Test label parameter validation."""
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            mock_request = CapacityCategoryRequest(
+                label="TEST",
+                name="Test",
+                active=True
+            )
+            
+            # Test empty label
+            with pytest.raises(OFSValidationException):
+                await client.metadata.create_or_replace_capacity_category("", mock_request)
+
+    @respx.mock
+    async def test_create_or_replace_capacity_category_http_error(self):
+        """Test handling of HTTP errors."""
+        route = respx.put(
+            "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityCategories/ERROR_TEST"
+        )
+        route.mock(return_value=Response(400, json={"error": "Bad Request"}))
+
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            mock_request = CapacityCategoryRequest(
+                label="ERROR_TEST",
+                name="Error Test",
+                active=True
+            )
+            
+            # The client should raise an appropriate exception for HTTP errors
+            with pytest.raises(Exception):  # Should raise OFS exception for HTTP errors
+                await client.metadata.create_or_replace_capacity_category("ERROR_TEST", mock_request)
+
+    @respx.mock
+    async def test_delete_capacity_category_success(self):
+        """Test successful deletion of capacity category."""
+        route = respx.delete(
+            "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityCategories/DELETE_TEST"
+        )
+        route.mock(return_value=Response(204))  # HTTP 204 No Content for successful deletion
+
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            # Should not raise any exception
+            await client.metadata.delete_capacity_category("DELETE_TEST")
+            
+            # Verify the request was made
+            assert len(route.calls) == 1
+            request_call = route.calls[0]
+            assert request_call.request.method == "DELETE"
+
+    async def test_delete_capacity_category_label_validation(self):
+        """Test label parameter validation for delete."""
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            # Test empty label
+            with pytest.raises(OFSValidationException):
+                await client.metadata.delete_capacity_category("")
+
+    @respx.mock
+    async def test_delete_capacity_category_http_error(self):
+        """Test handling of HTTP errors for delete."""
+        route = respx.delete(
+            "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityCategories/NOT_FOUND"
+        )
+        route.mock(return_value=Response(404, json={"error": "Not Found"}))
+
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            # The client should raise an appropriate exception for HTTP errors
+            with pytest.raises(Exception):  # Should raise OFS exception for HTTP errors
+                await client.metadata.delete_capacity_category("NOT_FOUND")
+
+    @respx.mock
+    async def test_create_or_replace_capacity_category_with_optional_fields(self):
+        """Test creation with all optional fields."""
+        full_response = {
+            "label": "FULL_TEST",
+            "name": "Full Test Category",
+            "active": True,
+            "timeSlots": [{"label": "08-10", "name": "08-10"}],
+            "workSkills": [{"label": "EST", "name": "Estimation"}],
+            "workSkillGroups": [{"label": "TECH", "name": "Technical"}],
+            "translations": [
+                {
+                    "language": "en",
+                    "name": "Full Test Category",
+                    "languageISO": "en-US"
+                },
+                {
+                    "language": "es", 
+                    "name": "Categoría de Prueba Completa",
+                    "languageISO": "es-ES"
+                }
+            ]
+        }
+        
+        route = respx.put(
+            "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityCategories/FULL_TEST"
+        )
+        route.mock(return_value=Response(200, json=full_response))
+
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            full_request = CapacityCategoryRequest(
+                label="FULL_TEST",
+                name="Full Test Category",
+                active=True,
+                timeSlots=[{"label": "08-10", "name": "08-10"}],
+                workSkills=[{"label": "EST", "name": "Estimation"}],
+                workSkillGroups=[{"label": "TECH", "name": "Technical"}],
+                translations=TranslationList([
+                    Translation(language="en", name="Full Test Category", languageISO="en-US"),
+                    Translation(language="es", name="Categoría de Prueba Completa", languageISO="es-ES")
+                ])
+            )
+            
+            result = await client.metadata.create_or_replace_capacity_category("FULL_TEST", full_request)
+            
+            assert isinstance(result, CapacityCategoryResponse)
+            assert result.label == "FULL_TEST"
+            assert result.name == "Full Test Category"
+            assert result.active is True
+            assert result.timeSlots is not None
+            assert result.workSkills is not None
+            assert result.workSkillGroups is not None
+            assert result.translations is not None

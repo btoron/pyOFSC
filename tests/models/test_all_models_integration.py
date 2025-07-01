@@ -11,7 +11,7 @@ from pathlib import Path
 # Import models from all modules
 from ofsc.models.core import Resource, User, Activity, Location
 from ofsc.models.metadata import Property, Workskill, ActivityType, Organization, ActivityTypeGroup
-from ofsc.models.capacity import CapacityArea, CapacityCategory, GetCapacityResponse
+from ofsc.models.capacity import CapacityArea, CapacityCategoryResponse, GetCapacityResponse
 from ofsc.models.auth import OFSConfig, OFSOAuthRequest, OFSAPIError
 from ofsc.models.base import BaseOFSResponse
 
@@ -41,7 +41,7 @@ class TestAllModelsIntegration:
         
         # Capacity models
         assert issubclass(CapacityArea, BaseOFSResponse)
-        assert issubclass(CapacityCategory, BaseOFSResponse)
+        assert issubclass(CapacityCategoryResponse, BaseOFSResponse)
         assert issubclass(GetCapacityResponse, BaseOFSResponse)
         
         # Auth models
@@ -88,7 +88,7 @@ class TestAllModelsIntegration:
             
             # Capacity API examples
             ("14_get_capacity_areas.json", CapacityArea, "items"),
-            ("23_get_capacity_categories.json", CapacityCategory, "items"),
+            ("23_get_capacity_categories.json", CapacityCategoryResponse, "items"),
         ]
         
         passed_tests = 0
@@ -207,7 +207,7 @@ class TestAllModelsIntegration:
     def test_model_documentation_and_type_hints(self):
         """Test that all models have proper documentation and type hints."""
         models_to_check = [
-            Resource, User, Property, Workskill, CapacityArea, CapacityCategory, OFSConfig
+            Resource, User, Property, Workskill, CapacityArea, CapacityCategoryResponse, OFSConfig
         ]
         
         for model in models_to_check:

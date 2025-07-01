@@ -23,7 +23,8 @@ from ofsc.models.capacity import (
     CapacityAreaTimeIntervalListResponse,
     CapacityAreaTimeSlotListResponse,
     CapacityAreaWorkzoneListResponse,
-    CapacityCategory,
+    CapacityCategoryRequest,
+    CapacityCategoryResponse,
     CapacityCategoryListResponse,
 )
 from ofsc.models.metadata import (
@@ -490,14 +491,14 @@ class OFSMetadataAPI:
         response: "Response" = await self.client.get(endpoint, params=params)
         return CapacityCategoryListResponse.from_response(response)
 
-    async def get_capacity_category(self, label: str) -> CapacityCategory:
+    async def get_capacity_category(self, label: str) -> CapacityCategoryResponse:
         """Get single capacity category by label.
 
         Args:
             label: Capacity category label identifier
 
         Returns:
-            CapacityCategory response model
+            CapacityCategoryResponse response model
 
         Raises:
             OFSValidationException: If label is invalid
@@ -507,7 +508,61 @@ class OFSMetadataAPI:
         encoded_label = urllib.parse.quote_plus(label)
         endpoint = f"/rest/ofscMetadata/v1/capacityCategories/{encoded_label}"
         response: "Response" = await self.client.get(endpoint)
-        return CapacityCategory.from_response(response)
+        return CapacityCategoryResponse.from_response(response)
+
+    async def create_or_replace_capacity_category(
+        self, label: str, capacity_category: CapacityCategoryRequest
+    ) -> CapacityCategoryResponse:
+        """Create or replace capacity category.
+
+        Args:
+            label: Capacity category label identifier
+            capacity_category: CapacityCategoryRequest model with category data
+
+        Returns:
+            CapacityCategoryResponse response model
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        self._validate_params(LabelParam, label=label)
+
+        encoded_label = urllib.parse.quote_plus(label)
+        endpoint = f"/rest/ofscMetadata/v1/capacityCategories/{encoded_label}"
+        
+        # Prepare request data
+        request_data = capacity_category.model_dump(exclude_none=True)
+        
+        logging.info(
+            f"Creating/replacing capacity category at endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.put(endpoint, json=request_data)
+        return CapacityCategoryResponse.from_response(response)
+
+    async def delete_capacity_category(self, label: str) -> None:
+        """Delete capacity category.
+
+        Args:
+            label: Capacity category label identifier
+
+        Raises:
+            OFSValidationException: If label is invalid
+        """
+        self._validate_params(LabelParam, label=label)
+
+        encoded_label = urllib.parse.quote_plus(label)
+        endpoint = f"/rest/ofscMetadata/v1/capacityCategories/{encoded_label}"
+        
+        logging.info(
+            f"Deleting capacity category at endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.delete(endpoint)
+        # For delete operations, we typically check status code but don't return content
+        if response.status_code >= 400:
+            from ..exceptions import create_exception_from_response
+            raise create_exception_from_response(response)
 
     # Inventory Types API
     async def get_inventory_types(self) -> InventoryTypeListResponse:

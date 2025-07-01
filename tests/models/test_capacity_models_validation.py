@@ -11,7 +11,7 @@ from pydantic import ValidationError
 
 from ofsc.models.capacity import (
     CapacityArea,
-    CapacityCategory,
+    CapacityCategoryResponse,
     GetCapacityResponse,
     CapacityMetrics,
     CapacityAreaTimeInterval,
@@ -81,7 +81,7 @@ class TestCapacityModelsValidation:
         # Test individual category items
         if "items" in data and data["items"]:
             for item in data["items"][:3]:  # Test first 3 items
-                category = CapacityCategory(**item)
+                category = CapacityCategoryResponse(**item)
                 assert category.label is not None
                 assert category.name is not None
                 assert isinstance(category.active, bool)

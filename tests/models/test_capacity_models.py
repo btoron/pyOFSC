@@ -6,7 +6,7 @@ import pytest
 from pydantic import ValidationError
 
 # Import the actual models
-from ofsc.models.capacity import CapacityArea, CapacityCategory, GetCapacityResponse
+from ofsc.models.capacity import CapacityArea, CapacityCategoryResponse, GetCapacityResponse
 
 
 class TestCapacityModels:
@@ -64,9 +64,9 @@ class TestCapacityModels:
         if "items" in data and data["items"]:
             for item in data["items"][:3]:  # Test first 3 items
                 try:
-                    capacity_category = CapacityCategory(**item)
-                    assert capacity_category.label is not None  # CapacityCategory uses 'label', not 'name'
-                    # CapacityCategory model has 'active' field instead of 'status'
+                    capacity_category = CapacityCategoryResponse(**item)
+                    assert capacity_category.label is not None  # CapacityCategoryResponse uses 'label', not 'name'
+                    # CapacityCategoryResponse model has 'active' field instead of 'status'
                     assert isinstance(capacity_category.active, bool)
                     # timeSlotCapacity is not in the actual model, but timeSlots exists
                     if hasattr(capacity_category, 'timeSlots'):

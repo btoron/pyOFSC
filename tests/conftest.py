@@ -108,6 +108,17 @@ def live_async_client(live_credentials):
     )
 
 
+@pytest.fixture
+def async_client_basic_auth(live_credentials):
+    """Async OFSC client with Basic Auth for live testing."""
+    return OFSC(
+        instance=live_credentials["instance"],
+        client_id=live_credentials["client_id"],
+        client_secret=live_credentials["client_secret"],
+        use_token=False,  # Use Basic Auth
+    )
+
+
 # Environment-specific client fixtures
 @pytest.fixture
 def dev_async_client(test_config):

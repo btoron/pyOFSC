@@ -8,9 +8,9 @@ This module contains Pydantic models for OFSC Capacity API endpoints:
 - Time intervals and capacity calculations
 """
 
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
-from pydantic import AnyHttpUrl, ConfigDict, Field, RootModel, field_validator
+from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, RootModel, field_validator
 from typing_extensions import Annotated
 
 from .base import BaseOFSResponse, CsvList, OFSResponseList, TranslationList
@@ -94,7 +94,7 @@ class ItemList(RootModel[List[Item]]):
         return self.root[item]
 
 
-class CapacityCategory(BaseOFSResponse):
+class CapacityCategoryResponse(BaseOFSResponse):
     """Capacity category definition and configuration"""
 
     label: str
@@ -106,10 +106,21 @@ class CapacityCategory(BaseOFSResponse):
     workSkillGroups: Optional[ItemList] = None
     workSkills: Optional[ItemList] = None
     active: bool
-    model_config = ConfigDict(extra="allow")
 
 
-class CapacityCategoryListResponse(OFSResponseList[CapacityCategory]):
+class CapacityCategoryRequest(BaseModel):
+    """Request model for creating or updating capacity categories"""
+    
+    label: str
+    name: str
+    active: bool = True
+    timeSlots: Optional[List[Dict[str, str]]] = None  # List of {"label": "value"}
+    workSkills: Optional[List[Dict[str, Any]]] = None  # List with label, ratio, startDate
+    workSkillGroups: Optional[List[Dict[str, str]]] = None
+    translations: Optional[TranslationList] = None
+
+
+class CapacityCategoryListResponse(OFSResponseList[CapacityCategoryResponse]):
     """Paginated response for capacity category lists"""
 
     pass

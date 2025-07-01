@@ -1,5 +1,10 @@
+"""End-to-end tests for Sunrise metadata GET operations.
+
+This module contains all read-only tests for the metadata API endpoints.
+These tests are safe to run repeatedly without side effects.
+"""
+
 import asyncio
-import os
 
 import pytest
 
@@ -17,12 +22,13 @@ from ofsc.models.capacity import (
     CapacityAreaTimeSlotListResponse,
     CapacityAreaWorkzone,
     CapacityAreaWorkzoneListResponse,
-    CapacityCategory,
+    CapacityCategoryResponse,
 )
 from ofsc.models.core import SubscriptionList, User, UserListResponse
 from ofsc.models.metadata import (
     ActivityType,
     ActivityTypeGroup,
+    ActivityTypeGroupItem,
     ActivityTypeGroupListResponse,
     ApiAccessStatus,
     Application,
@@ -67,45 +73,8 @@ from ofsc.models.metadata import (
     WorkzoneListResponse,
 )
 
-
-def get_test_data(collection: str, version: str = "25A") -> list:
-    return (
-        TEST_DATA.get(collection, [])
-        if isinstance(TEST_DATA.get(collection), list)
-        else [TEST_DATA.get(collection, "")]
-    )
-
-
-TEST_DATA = {
-    # Existing with real IDs confirmed from response_examples
-    "application": "demoauth",
-    "activity_type_group": "customer",
-    "activity_type": [
-        "LU",
-        "01",
-        "03",
-        "05",
-    ],  # From 4_get_activity_types.json, first item
-    "capacity_area": [
-        "FLUSA",
-        "CAUSA",
-    ],  # From 14_get_capacity_areas.json, confirmed in existing array
-    # New real IDs extracted from response_examples
-    "capacity_category": "EST",  # From 23_get_capacity_categories.json
-    "inventory_type": "FIT5000",  # From 31_get_inventory_types.json
-    "organization": "default",  # From 46_get_organizations.json
-    "property": "wie_wo_operation_id",  # From 50_get_properties.json
-    "enumerated_property": "complete_code",  # From 54_get_property_enumeration.json
-    "workskill_group": "",  # From 70_get_work_skill_groups.json - totalResults: 0, will skip
-    "workskill": "EST",  # From 74_get_work_skills.json
-    # New endpoints from collected responses
-    "form": "mobile_provider_request#8#",  # From 27_get_forms.json
-    "link_template": "start-after",  # From 35_get_link_templates.json
-    "routing_profile": "MaintenanceRoutingProfile",  # From 57_get_routing_profiles.json
-    "routing_plan": "Optimization",  # From 58_get_routingProfiles_MaintenanceRoutingProfile_plans.json
-    "shift": "20-05",  # From 64_get_shift.json (individual response)
-    "workzone": "ALTAMONTE_SPRINGS",  # From 82_get_workzone.json
-}
+# Import shared test data and fixtures
+from conftest_sunrise_metadata import get_test_data, TEST_DATA
 
 
 @pytest.mark.live
@@ -120,34 +89,6 @@ class TestSunriseGetMetadata:
     Note: These endpoints are implemented in the client but not covered by end-to-end tests.
     Consider adding tests for these endpoints in future test coverage improvements.
     """
-
-    @pytest.fixture
-    def live_credentials(self):
-        """Get live credentials from environment variables."""
-        instance = os.getenv("OFSC_INSTANCE")
-        client_id = os.getenv("OFSC_CLIENT_ID")
-        client_secret = os.getenv("OFSC_CLIENT_SECRET")
-
-        if not all([instance, client_id, client_secret]):
-            pytest.skip(
-                "Live credentials not available. Set OFSC_INSTANCE, OFSC_CLIENT_ID, OFSC_CLIENT_SECRET"
-            )
-
-        return {
-            "instance": instance,
-            "client_id": client_id,
-            "client_secret": client_secret,
-        }
-
-    @pytest.fixture
-    def async_client_basic_auth(self, live_credentials):
-        """Async OFSC client with Basic Auth for live testing."""
-        return OFSC(
-            instance=live_credentials["instance"],
-            client_id=live_credentials["client_id"],
-            client_secret=live_credentials["client_secret"],
-            use_token=False,  # Use Basic Auth
-        )
 
     def test_full_client(self, async_client_basic_auth: OFSC):
         """Test basic client functionality with subscriptions and users."""
@@ -244,7 +185,7 @@ class TestSunriseGetMetadata:
                 response_categories = await client.metadata.get_capacity_categories()
                 assert response_categories.totalResults > 0
                 for category in response_categories.items:
-                    assert isinstance(category, CapacityCategory)
+                    assert isinstance(category, CapacityCategoryResponse)
                     assert category.label is not None
                     assert category.name is not None
                     assert category.active is not None
@@ -731,7 +672,7 @@ class TestSunriseGetMetadata:
                     if identifier == "":
                         continue
                     category = await client.metadata.get_capacity_category(identifier)
-                    assert isinstance(category, CapacityCategory)
+                    assert isinstance(category, CapacityCategoryResponse)
                     assert category.label == identifier
                     assert category.name is not None
 
@@ -1151,76 +1092,5 @@ class TestSunriseGetMetadata:
                         ApiAccessStatus.INACTIVE,
                     }
                     assert isinstance(api_access.links, list)
-
-        asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
-
-
-@pytest.mark.live
-class TestSunrisePutMetadata:
-    @pytest.fixture
-    def live_credentials(self):
-        """Get live credentials from environment variables."""
-        instance = os.getenv("OFSC_INSTANCE")
-        client_id = os.getenv("OFSC_CLIENT_ID")
-        client_secret = os.getenv("OFSC_CLIENT_SECRET")
-
-        if not all([instance, client_id, client_secret]):
-            pytest.skip(
-                "Live credentials not available. Set OFSC_INSTANCE, OFSC_CLIENT_ID, OFSC_CLIENT_SECRET"
-            )
-
-        return {
-            "instance": instance,
-            "client_id": client_id,
-            "client_secret": client_secret,
-        }
-
-    @pytest.fixture
-    def async_client_basic_auth(self, live_credentials):
-        """Async OFSC client with Basic Auth for live testing."""
-        return OFSC(
-            instance=live_credentials["instance"],
-            client_id=live_credentials["client_id"],
-            client_secret=live_credentials["client_secret"],
-            use_token=False,  # Use Basic Auth
-        )
-
-    def test_sunrise_client_create_or_replace_activity_type_group(
-        self, async_client_basic_auth: OFSC
-    ):
-        """Test endpoint ID 3: PUT /rest/ofscMetadata/v1/activityTypeGroups/{label} - Create or replace activity type group."""
-
-        async def test_async_client_basic_auth(async_client_basic_auth):
-            async with async_client_basic_auth as client:
-                from ofsc.models.base import Translation, TranslationList
-                
-                # Test 1: Create with no translations (empty request)
-                response = await client.metadata.create_or_replace_activity_type_group(
-                    "testGroup", None
-                )
-                assert isinstance(response, ActivityTypeGroup)
-                assert response.label == "testGroup"
-
-                # Test 2: Update with custom translations
-                translations = TranslationList([
-                    Translation(language="en", name="Test Group Updated", languageISO="en-US"),
-                    Translation(language="es", name="Grupo de Prueba", languageISO="es-ES")
-                ])
-                response = await client.metadata.create_or_replace_activity_type_group(
-                    "testGroup", translations
-                )
-                assert isinstance(response, ActivityTypeGroup)
-                assert response.label == "testGroup"
-                # Verify translations were applied
-                assert response.translations is not None
-                assert len(response.translations.root) >= 1  # Should have at least the translations we sent
-
-                # Test 3: Update with empty translations list
-                empty_translations = TranslationList([])
-                response = await client.metadata.create_or_replace_activity_type_group(
-                    "testGroup", empty_translations
-                )
-                assert isinstance(response, ActivityTypeGroup)
-                assert response.label == "testGroup"
 
         asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
