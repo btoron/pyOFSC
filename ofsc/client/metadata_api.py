@@ -47,7 +47,8 @@ from ofsc.models.metadata import (
     NonWorkingReasonListResponse,
     Organization,
     OrganizationListResponse,
-    Property,
+    PropertyRequest,
+    PropertyResponse,
     PropertyListResponse,
     ResourceTypeListResponse,
     RoutingProfileListResponse,
@@ -165,14 +166,14 @@ class OFSMetadataAPI:
         response: "Response" = await self.client.get(endpoint, params=params)
         return PropertyListResponse.from_response(response)
 
-    async def get_property(self, label: str) -> Property:
+    async def get_property(self, label: str) -> PropertyResponse:
         """Get single property by label.
 
         Args:
             label: Property label identifier
 
         Returns:
-            Property response model
+            PropertyResponse response model
 
         Raises:
             OFSValidationException: If label is invalid
@@ -182,7 +183,34 @@ class OFSMetadataAPI:
 
         endpoint = f"/rest/ofscMetadata/v1/properties/{label}"
         response: "Response" = await self.client.get(endpoint)
-        return Property.from_response(response)
+        return PropertyResponse.from_response(response)
+
+    async def create_or_replace_property(
+        self, label: str, property_request: PropertyRequest
+    ) -> PropertyResponse:
+        """Create or replace property.
+
+        Args:
+            label: Property label identifier
+            property_request: PropertyRequest model with property data
+
+        Returns:
+            PropertyResponse response model
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        self._validate_params(LabelParam, label=label)
+        encoded_label = urllib.parse.quote_plus(label)
+        endpoint = f"/rest/ofscMetadata/v1/properties/{encoded_label}"
+        request_data = property_request.model_dump(exclude_none=True)
+        
+        logging.info(
+            f"Creating/replacing property '{label}' at endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+        
+        response: "Response" = await self.client.put(endpoint, json=request_data)
+        return PropertyResponse.from_response(response)
 
     # Work Skills API
     async def get_workskills(

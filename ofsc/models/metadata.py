@@ -343,7 +343,52 @@ class OrganizationListResponse(OFSResponseList[Organization]):
 
 
 # Properties
-class Property(BaseOFSResponse):
+class PropertyRequest(BaseModel):
+    """Request model for creating or updating properties"""
+    
+    label: str
+    name: str
+    type: str
+    entity: Optional[EntityEnum] = None
+    gui: Optional[str] = None
+    translations: Optional[TranslationList] = None
+
+    @field_validator("type")
+    @classmethod
+    def type_match(cls, v):
+        if v not in [
+            "field",
+            "integer", 
+            "string",
+            "enumeration",
+            "file",
+            "attachments",
+        ]:
+            raise ValueError(f"{v} is not a valid property type")
+        return v
+
+    @field_validator("gui")
+    @classmethod
+    def gui_match(cls, v):
+        if v is not None and v not in [
+            "text",
+            "checkbox",
+            "combobox", 
+            "radiogroup",
+            "file",
+            "signature",
+            "image",
+            "url",
+            "phone",
+            "email",
+            "capture",
+            "geo",
+        ]:
+            raise ValueError(f"{v} is not a valid GUI value")
+        return v
+
+
+class PropertyResponse(BaseOFSResponse):
     """Property definition for custom fields and attributes"""
 
     # TODO - Add validation for combinations of entity and type for extra validation
@@ -399,7 +444,7 @@ class Property(BaseOFSResponse):
     model_config = ConfigDict(extra="allow")  # Properties
 
 
-class PropertyListResponse(OFSResponseList[Property]):
+class PropertyListResponse(OFSResponseList[PropertyResponse]):
     """Paginated response for property lists"""
 
     pass

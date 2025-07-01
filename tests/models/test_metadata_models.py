@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 # Import the actual production models from the reorganized structure
 from ofsc.models import (
-    Property, 
+    PropertyResponse, 
     TimeSlotListResponse,
     Workskill,
     Workzone,
@@ -57,7 +57,7 @@ class TestMetadataModels:
             
             for item in items_to_validate:
                 try:
-                    prop = Property.model_validate(item)
+                    prop = PropertyResponse.model_validate(item)
                     assert prop.name is not None
                     assert prop.label is not None
                     assert prop.type is not None
@@ -77,7 +77,7 @@ class TestMetadataModels:
                 
             try:
                 # Validate as paginated response
-                response = OFSResponseList[Property].model_validate(data)
+                response = OFSResponseList[PropertyResponse].model_validate(data)
                 assert len(response.items) > 0
                 assert hasattr(response, 'totalResults')
                 print(f"✅ Validated paginated Property response with {len(response.items)} items")

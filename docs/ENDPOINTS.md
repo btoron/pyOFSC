@@ -3,11 +3,11 @@
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints available in the pyOFSC Python Wrapper v3.0.
 
 **Total Endpoints:** 242  
-**Implemented in v3.0:** 50 (20.6%)
+**Implemented in v3.0:** 51 (21.1%)
 
 ## Implementation Coverage by Module
 
-- **metadata**: 48/86 endpoints (55.8%) ✅
+- **metadata**: 49/86 endpoints (57.0%) ✅
 - **core**: 2/127 endpoints (1.6%) ⚠️  
 - **capacity**: 0/11 endpoints (0%) ❌
 - **statistics**: 0/6 endpoints (0%) ❌
@@ -69,8 +69,8 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 48 | `/rest/ofscMetadata/v1/plugins/custom-actions/import` | POST | metadata | | |
 | 49 | `/rest/ofscMetadata/v1/plugins/{pluginLabel}/custom-actions/install` | POST | metadata | | |
 | 50 | `/rest/ofscMetadata/v1/properties` | GET | metadata | v3.0.0-dev | `async def get_properties(self, offset: int = 0, limit: int = 100) -> PropertyListResponse` |
-| 51 | `/rest/ofscMetadata/v1/properties/{label}` | GET | metadata | v3.0.0-dev | `async def get_property(self, label: str) -> Property` |
-| 52 | `/rest/ofscMetadata/v1/properties/{label}` | PUT | metadata | | |
+| 51 | `/rest/ofscMetadata/v1/properties/{label}` | GET | metadata | v3.0.0-dev | `async def get_property(self, label: str) -> PropertyResponse` |
+| 52 | `/rest/ofscMetadata/v1/properties/{label}` | PUT | metadata | v3.0.0-dev | `async def create_or_replace_property(self, label: str, property_request: PropertyRequest) -> PropertyResponse` |
 | 53 | `/rest/ofscMetadata/v1/properties/{label}` | PATCH | metadata | | |
 | 54 | `/rest/ofscMetadata/v1/properties/{label}/enumerationList` | GET | metadata | v3.0.0-dev | `async def get_enumeration_values(self, label: str, offset: int = 0, limit: int = 100) -> EnumerationValueList` |
 | 55 | `/rest/ofscMetadata/v1/properties/{label}/enumerationList` | PUT | metadata | | |

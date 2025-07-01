@@ -10,7 +10,7 @@ from pathlib import Path
 
 # Import models from all modules
 from ofsc.models.core import Resource, User, Activity, Location
-from ofsc.models.metadata import Property, Workskill, ActivityType, Organization, ActivityTypeGroup
+from ofsc.models.metadata import PropertyResponse, Workskill, ActivityType, Organization, ActivityTypeGroup
 from ofsc.models.capacity import CapacityArea, CapacityCategoryResponse, GetCapacityResponse
 from ofsc.models.auth import OFSConfig, OFSOAuthRequest, OFSAPIError
 from ofsc.models.base import BaseOFSResponse
@@ -33,7 +33,7 @@ class TestAllModelsIntegration:
         assert issubclass(Location, BaseOFSResponse)
         
         # Metadata models
-        assert issubclass(Property, BaseOFSResponse)
+        assert issubclass(PropertyResponse, BaseOFSResponse)
         assert issubclass(Workskill, BaseOFSResponse)
         assert issubclass(ActivityType, BaseOFSResponse)
         assert issubclass(Organization, BaseOFSResponse)
@@ -55,7 +55,7 @@ class TestAllModelsIntegration:
         """Test that all models have BaseOFSResponse attributes."""
         # Create instances of different models
         resource = Resource(resourceType='PR', name='Test', language='en', timeZone='UTC', status='active')
-        property_model = Property(label='TEST', name='Test', entity='activity', type='string')
+        property_model = PropertyResponse(label='TEST', name='Test', entity='activity', type='string')
         capacity_area = CapacityArea(label='TEST', status='active')
         config = OFSConfig(clientID='test', secret='test', companyName='test')
         
@@ -81,7 +81,7 @@ class TestAllModelsIntegration:
             ("219_get_users.json", User, "items"),
             
             # Metadata API examples  
-            ("50_get_properties.json", Property, "items"),
+            ("50_get_properties.json", PropertyResponse, "items"),
             ("74_get_work_skills.json", Workskill, "items"),
             ("1_get_activity_type_groups.json", ActivityTypeGroup, "items"),
             ("46_get_organizations.json", Organization, "items"),
@@ -150,11 +150,10 @@ class TestAllModelsIntegration:
         application = Application(**app_data)
         assert application.name == "Test"
         
-        # Test Property model (has extra="allow")
-        from ofsc.models.metadata import Property
+        # Test PropertyResponse model (has extra="allow")
         property_data = {"label": "TEST_PROP", "name": "Test", "type": "string"}
         property_data.update(test_data)
-        property_model = Property(**property_data)
+        property_model = PropertyResponse(**property_data)
         assert property_model.name == "Test"
         
         # Test ActivityTypeFeatures model (has extra="allow")
@@ -168,7 +167,7 @@ class TestAllModelsIntegration:
         resource = Resource(resourceType="PR", name="Test", language="en", timeZone="UTC", status="active")
         assert resource.name == "Test"
         
-        property_model = Property(label="TEST", name="Test", entity="activity", type="string")
+        property_model = PropertyResponse(label="TEST", name="Test", entity="activity", type="string")
         assert property_model.name == "Test"
         
         capacity_area = CapacityArea(label="TEST", status="active")
@@ -179,12 +178,13 @@ class TestAllModelsIntegration:
     def test_backward_compatibility_imports(self):
         """Test that all models can be imported via the main models module."""
         from ofsc.models import (
-            Resource, Property, CapacityArea, OFSConfig  # Auth
+            Resource, Property, PropertyResponse, CapacityArea, OFSConfig  # Auth
         )
         
         # Test that imports work and classes are correct
         assert Resource.__name__ == "Resource"
-        assert Property.__name__ == "Property"
+        assert Property is PropertyResponse  # Test backward compatibility alias
+        assert PropertyResponse.__name__ == "PropertyResponse"
         assert CapacityArea.__name__ == "CapacityArea"
         assert OFSConfig.__name__ == "OFSConfig"
         
@@ -207,7 +207,7 @@ class TestAllModelsIntegration:
     def test_model_documentation_and_type_hints(self):
         """Test that all models have proper documentation and type hints."""
         models_to_check = [
-            Resource, User, Property, Workskill, CapacityArea, CapacityCategoryResponse, OFSConfig
+            Resource, User, PropertyResponse, Workskill, CapacityArea, CapacityCategoryResponse, OFSConfig
         ]
         
         for model in models_to_check:

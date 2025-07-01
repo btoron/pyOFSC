@@ -147,7 +147,7 @@ class TestAPIAccess:
 class TestMethodExecution:
     """Test actual method execution with mocked async calls."""
     
-    @patch('ofsc.compat.wrapper.AsyncOFSC')
+    @patch('ofsc.compat.generators.AsyncOFSC')
     def test_get_users_execution(self, mock_async_ofsc):
         """Test that get_users method executes properly."""
         # Setup mock

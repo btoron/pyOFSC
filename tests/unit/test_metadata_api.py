@@ -15,7 +15,7 @@ from ofsc.client import OFSC
 from ofsc.exceptions import OFSValidationException
 from ofsc.models.metadata import (
     ActivityTypeGroup,
-    Property,
+    PropertyResponse,
     PropertyListResponse,
     TimeSlotListResponse,
     WorkskillListResponse,
@@ -173,7 +173,7 @@ class TestMetadataAPIAsyncClient:
             instance="demo", client_id="test_id", client_secret="test_secret"
         ) as client:
             result = await client.metadata.get_property("test_prop")
-            assert isinstance(result, Property)
+            assert isinstance(result, PropertyResponse)
             assert result.label == "test_property"
 
     @respx.mock

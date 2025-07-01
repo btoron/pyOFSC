@@ -10,7 +10,7 @@ Usage:
     from ofsc.models import OFSConfig, OFSResponseList
     
     # New submodule imports are also available
-    from ofsc.models.metadata import Property
+    from ofsc.models.metadata import PropertyResponse as Property
     from ofsc.models.core import Activity  
     from ofsc.models.capacity import CapacityArea
 """
@@ -54,7 +54,8 @@ from .metadata import (
     Link,
     Organization,
     OrganizationListResponse,
-    Property,
+    PropertyRequest,
+    PropertyResponse,
     PropertyListResponse,
     ResourceType,
     ResourceTypeListResponse,
@@ -139,6 +140,9 @@ from .capacity import (
     QuotaTimeInterval,
 )
 
+# Backward compatibility alias
+Property = PropertyResponse
+
 # Ensure all exports are available
 __all__ = [
     # Base models
@@ -175,7 +179,9 @@ __all__ = [
     "Link",
     "Organization",
     "OrganizationListResponse",
-    "Property",
+    "Property",  # Backward compatibility alias for PropertyResponse
+    "PropertyRequest", 
+    "PropertyResponse",
     "PropertyListResponse",
     "ResourceType",
     "ResourceTypeListResponse",

@@ -48,7 +48,7 @@ from ofsc.models.metadata import (
     NonWorkingReasonListResponse,
     Organization,
     OrganizationListResponse,
-    Property,
+    PropertyResponse,
     PropertyListResponse,
     ResourceType,
     ResourceTypeListResponse,
@@ -240,7 +240,7 @@ class TestSunriseGetMetadata:
                 assert isinstance(response_properties, PropertyListResponse)
                 assert response_properties.totalResults >= 100
                 for prop in response_properties.items:
-                    assert isinstance(prop, Property)
+                    assert isinstance(prop, PropertyResponse)
                     # Ensure all required fields are present
                     assert prop.label is not None
                     assert prop.name is not None
@@ -728,7 +728,7 @@ class TestSunriseGetMetadata:
                     if identifier == "":
                         continue
                     property_obj = await client.metadata.get_property(identifier)
-                    assert isinstance(property_obj, Property)
+                    assert isinstance(property_obj, PropertyResponse)
                     assert property_obj.label == identifier
                     assert property_obj.name is not None
                     assert isinstance(property_obj.translations, TranslationList)
