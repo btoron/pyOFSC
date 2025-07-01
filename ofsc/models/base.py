@@ -108,8 +108,19 @@ class BaseOFSResponse(BaseModel):
 
         Raises:
             ValidationError: If the response JSON doesn't match the model schema
+            OFSException: If the response indicates an HTTP error (4xx/5xx)
         """
-        instance = cls.model_validate(response.json(), **kwargs)
+        # Check for HTTP errors first - always raise exceptions (R7.3)
+        if response.status_code >= 400:
+            from ..exceptions import create_exception_from_response
+            raise create_exception_from_response(response)
+        
+        # Remove metadata if present (API metadata, not model data)
+        data = response.json()
+        if isinstance(data, dict) and "_metadata" in data:
+            data = {k: v for k, v in data.items() if k != "_metadata"}
+        
+        instance = cls.model_validate(data, **kwargs)
         instance._raw_response = response
         return instance
 

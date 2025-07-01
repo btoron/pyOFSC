@@ -3,11 +3,11 @@
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints available in the pyOFSC Python Wrapper v3.0.
 
 **Total Endpoints:** 242  
-**Implemented in v3.0:** 43 (17.8%)
+**Implemented in v3.0:** 45 (18.6%)
 
 ## Implementation Coverage by Module
 
-- **metadata**: 41/86 endpoints (47.7%) ✅
+- **metadata**: 43/86 endpoints (50.0%) ✅
 - **core**: 2/127 endpoints (1.6%) ⚠️  
 - **capacity**: 0/11 endpoints (0%) ❌
 - **statistics**: 0/6 endpoints (0%) ❌
@@ -21,7 +21,7 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |----|---------------|--------|---------|---------------|-----------|
 | 1 | `/rest/ofscMetadata/v1/activityTypeGroups` | GET | metadata | v3.0.0-dev | `async def get_activity_type_groups(self, offset: int = 0, limit: int = 100) -> ActivityTypeGroupListResponse` |
 | 2 | `/rest/ofscMetadata/v1/activityTypeGroups/{label}` | GET | metadata | v3.0.0-dev | `async def get_activity_type_group(self, label: str) -> ActivityTypeGroup` |
-| 3 | `/rest/ofscMetadata/v1/activityTypeGroups/{label}` | PUT | metadata | | |
+| 3 | `/rest/ofscMetadata/v1/activityTypeGroups/{label}` | PUT | metadata | v3.0.0-dev | `async def create_or_replace_activity_type_group(self, label: str, translations: Optional[TranslationList] = None) -> ActivityTypeGroup` |
 | 4 | `/rest/ofscMetadata/v1/activityTypes` | GET | metadata | v3.0.0-dev | `async def get_activity_types(self, offset: int = 0, limit: int = 100) -> ActivityTypeListResponse` |
 | 5 | `/rest/ofscMetadata/v1/activityTypes/{label}` | GET | metadata | v3.0.0-dev | `async def get_activity_type(self, label: str) -> ActivityType` |
 | 6 | `/rest/ofscMetadata/v1/activityTypes/{label}` | PUT | metadata | | |
@@ -104,7 +104,7 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 83 | `/rest/ofscMetadata/v1/workZones/{label}` | PUT | metadata | | |
 | 84 | `/rest/ofscMetadata/v1/workZones/custom-actions/populateShapes/{downloadId}` | GET | metadata | | |
 | 85 | `/rest/ofscMetadata/v1/workZones/custom-actions/populateShapes` | POST | metadata | | |
-| 86 | `/rest/ofscMetadata/v1/workZoneKey` | GET | metadata | | |
+| 86 | `/rest/ofscMetadata/v1/workZoneKey` | GET | metadata | v3.0.0-dev | `async def get_work_zone_key(self) -> WorkZoneKeyResponse` |
 | 87 | `/rest/ofscStatistics/v1/activityDurationStats` | GET | statistics | | |
 | 88 | `/rest/ofscStatistics/v1/activityDurationStats` | PATCH | statistics | | |
 | 89 | `/rest/ofscStatistics/v1/activityTravelStats` | GET | statistics | | |

@@ -13,7 +13,7 @@ This module contains Pydantic models for OFSC Metadata API endpoints:
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from typing_extensions import Annotated
 
 from .base import (
@@ -166,6 +166,35 @@ class ActivityTypeGroupListResponse(OFSResponseList[ActivityTypeGroup]):
     """Paginated response for activity type group lists"""
 
     pass
+
+
+class ActivityTypeGroupRequest(BaseModel):
+    """Request model for creating or updating activity type groups.
+    
+    DEPRECATED: This model is no longer used by the create_or_replace_activity_type_group
+    method, which now takes label and optional translations directly.
+    """
+
+    name: str = Field(min_length=1, max_length=255, description="Display name of the activity type group")
+    activityTypes: Optional[List[ActivityTypeGroupItem]] = Field(
+        default=None, description="List of activity types to include in the group"
+    )
+    translations: Optional[TranslationList] = Field(
+        default=None, description="Multi-language translations for the group name"
+    )
+
+    @model_validator(mode='after')
+    def ensure_translations(self):
+        """Auto-generate default English translation from name if no translations provided."""
+        if not self.translations or (self.translations and len(self.translations.root) == 0):
+            # Generate default English translation from name
+            default_translation = Translation(
+                language="en",
+                name=self.name,
+                languageISO="en-US"
+            )
+            self.translations = TranslationList([default_translation])
+        return self
 
 
 # Applications
@@ -499,6 +528,25 @@ class WorkzoneListResponse(OFSResponseList[Workzone]):
     """Paginated response for work zone lists"""
 
     pass
+
+
+# Work Zone Key Configuration
+class WorkZoneKeyField(BaseOFSResponse):
+    """Work zone key field definition"""
+
+    label: str = Field(description="Field label identifier")
+    length: int = Field(description="Maximum length for this field")
+    function: str = Field(description="Function applied to the field (e.g., 'caseInsensitive')")
+    order: int = Field(description="Order of this field in the key")
+    apiParameterName: str = Field(description="API parameter name for this field")
+
+
+class WorkZoneKeyResponse(BaseOFSResponse):
+    """Work zone key configuration response"""
+
+    current: List[WorkZoneKeyField] = Field(default=[], description="Current work zone key fields")
+    pending: List[WorkZoneKeyField] = Field(default=[], description="Pending work zone key fields")
+    links: Optional[List[Link]] = Field(default=[], description="Related links")
 
 
 # Languages

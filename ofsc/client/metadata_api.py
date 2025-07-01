@@ -63,7 +63,9 @@ from ofsc.models.metadata import (
     WorkskillListResponse,
     Workzone,
     WorkzoneListResponse,
+    WorkZoneKeyResponse,
 )
+from ofsc.models.base import TranslationList
 
 if TYPE_CHECKING:
     from httpx import Response
@@ -267,6 +269,56 @@ class OFSMetadataAPI:
 
         endpoint = f"/rest/ofscMetadata/v1/activityTypeGroups/{label}"
         response: "Response" = await self.client.get(endpoint)
+        return ActivityTypeGroup.from_response(response)
+
+    async def create_or_replace_activity_type_group(
+        self, label: str, translations: Optional[TranslationList] = None
+    ) -> ActivityTypeGroup:
+        """Create or replace an activity type group.
+
+        This method implements endpoint 3: PUT /rest/ofscMetadata/v1/activityTypeGroups/{label}
+        Updates the translations for an activity type group. The API requires at least a name,
+        so if no translations are provided, we get the existing group name first.
+
+        Args:
+            label: Activity type group label identifier
+            translations: Optional translations for the group
+
+        Returns:
+            ActivityTypeGroup response model with the updated group
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        # Validate parameters
+        self._validate_params(LabelParam, label=label)
+
+        # Build request data - API requires at least a name field
+        request_data = {}
+        
+        if translations is not None and len(translations.root) > 0:
+            # Use provided translations
+            request_data["translations"] = [t.model_dump() for t in translations.root]
+            # Use the first translation name as the group name
+            request_data["name"] = translations.root[0].name
+        else:
+            # No translations provided, get existing group to preserve name
+            try:
+                existing_group = await self.get_activity_type_group(label)
+                request_data["name"] = existing_group.name
+                # Preserve existing translations if any
+                if existing_group.translations and len(existing_group.translations.root) > 0:
+                    request_data["translations"] = [t.model_dump() for t in existing_group.translations.root]
+            except Exception:
+                # If group doesn't exist, use label as name
+                request_data["name"] = label
+
+        endpoint = f"/rest/ofscMetadata/v1/activityTypeGroups/{label}"
+        logging.info(
+            f"Creating/replacing activity type group '{label}' at endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.put(endpoint, json=request_data)
         return ActivityTypeGroup.from_response(response)
 
     # Work Zones API
@@ -1072,3 +1124,20 @@ class OFSMetadataAPI:
 
         response: "Response" = await self.client.get(endpoint)
         return Workzone.from_response(response)
+
+    async def get_work_zone_key(self) -> WorkZoneKeyResponse:
+        """Get work zone key configuration.
+
+        Returns:
+            WorkZoneKeyResponse response model with current and pending work zone key fields
+
+        Raises:
+            OFSValidationException: If request fails
+        """
+        endpoint = "/rest/ofscMetadata/v1/workZoneKey"
+        logging.info(
+            f"Fetching work zone key configuration from endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.get(endpoint)
+        return WorkZoneKeyResponse.from_response(response)

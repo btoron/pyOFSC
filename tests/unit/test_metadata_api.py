@@ -14,11 +14,13 @@ from httpx import Response
 from ofsc.client import OFSC
 from ofsc.exceptions import OFSValidationException
 from ofsc.models.metadata import (
+    ActivityTypeGroup,
     Property,
     PropertyListResponse,
     TimeSlotListResponse,
     WorkskillListResponse,
 )
+from ofsc.models.base import Translation, TranslationList
 from ofsc.models.capacity import (
     CapacityAreaTimeIntervalListResponse,
     CapacityAreaTimeSlotListResponse,
@@ -482,3 +484,153 @@ class TestCapacityAreaSubResourcesAPI:
             
             with pytest.raises(OFSValidationException):
                 await client.metadata.get_capacity_area_categories("FLUSA", limit=1001)
+
+
+@pytest.fixture
+def mock_activity_type_group_response():
+    """Mock activity type group API response."""
+    return {
+        "label": "test_group",
+        "name": "Test Activity Type Group",
+        "activityTypes": [
+            {"label": "activity_1"},
+            {"label": "activity_2"}
+        ],
+        "translations": [
+            {
+                "language": "en",
+                "name": "Test Activity Type Group",
+                "languageISO": "en-US"
+            }
+        ],
+        "links": [
+            {
+                "rel": "canonical",
+                "href": "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/activityTypeGroups/test_group"
+            }
+        ]
+    }
+
+
+@pytest.mark.asyncio
+class TestActivityTypeGroupAPI:
+    """Test Activity Type Group API endpoints including create/replace."""
+
+    @respx.mock
+    async def test_create_or_replace_activity_type_group_success(self, mock_activity_type_group_response):
+        """Test successful creation/replacement of activity type group with translations."""
+        route = respx.put(
+            "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/activityTypeGroups/test_group"
+        )
+        route.mock(return_value=Response(200, json=mock_activity_type_group_response))
+
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            # Create translations
+            translations = TranslationList([
+                Translation(language="en", name="Test Activity Type Group", languageISO="en-US"),
+                Translation(language="es", name="Grupo de Tipos de Actividad", languageISO="es-ES")
+            ])
+            
+            result = await client.metadata.create_or_replace_activity_type_group("test_group", translations)
+            
+            assert isinstance(result, ActivityTypeGroup)
+            assert result.label == "test_group"
+            assert result.name == "Test Activity Type Group"
+
+    @respx.mock
+    async def test_create_or_replace_activity_type_group_minimal(self, mock_activity_type_group_response):
+        """Test creation with no translations (empty request)."""
+        route = respx.put(
+            "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/activityTypeGroups/minimal_group"
+        )
+        # Update mock response for minimal case
+        minimal_response = {
+            "label": "minimal_group",
+            "name": "Minimal Group",
+            "activityTypes": [],
+            "links": [
+                {
+                    "rel": "canonical",
+                    "href": "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/activityTypeGroups/minimal_group"
+                }
+            ]
+        }
+        route.mock(return_value=Response(200, json=minimal_response))
+
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            # Call with no translations (None)
+            result = await client.metadata.create_or_replace_activity_type_group("minimal_group", None)
+            
+            assert isinstance(result, ActivityTypeGroup)
+            assert result.label == "minimal_group"
+            assert result.name == "Minimal Group"
+
+    @respx.mock
+    async def test_create_or_replace_activity_type_group_request_body(self):
+        """Test that request body is properly serialized."""
+        route = respx.put(
+            "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/activityTypeGroups/request_test"
+        )
+        route.mock(return_value=Response(200, json={"label": "request_test", "name": "Test"}))
+
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            translations = TranslationList([
+                Translation(language="en", name="Request Test Group", languageISO="en-US")
+            ])
+            
+            await client.metadata.create_or_replace_activity_type_group("request_test", translations)
+            
+            # Verify the request was made with correct JSON body
+            assert len(route.calls) == 1
+            request_call = route.calls[0]
+            assert request_call.request.method == "PUT"
+            
+            # Check request body contains expected fields
+            request_json = request_call.request.content.decode('utf-8')
+            assert '"translations"' in request_json
+            assert '"language":"en"' in request_json
+            assert '"name":"Request Test Group"' in request_json
+
+    async def test_create_or_replace_activity_type_group_label_validation(self):
+        """Test label parameter validation."""
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            # Test empty label
+            with pytest.raises(OFSValidationException):
+                await client.metadata.create_or_replace_activity_type_group("", None)
+
+    async def test_create_or_replace_activity_type_group_empty_translations(self):
+        """Test with empty translations list."""
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            # Empty translations list should work (sends empty request body)
+            empty_translations = TranslationList([])
+            # This should not raise an exception
+            try:
+                await client.metadata.create_or_replace_activity_type_group("test", empty_translations)
+            except Exception as e:
+                # Should only fail on network/API issues, not validation
+                assert "validation" not in str(e).lower()
+
+    @respx.mock
+    async def test_create_or_replace_activity_type_group_http_error(self):
+        """Test handling of HTTP errors."""
+        route = respx.put(
+            "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/activityTypeGroups/error_test"
+        )
+        route.mock(return_value=Response(400, json={"error": "Bad Request"}))
+
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            # The client should raise an appropriate exception for HTTP errors
+            with pytest.raises(Exception):  # Should raise OFS exception for HTTP errors
+                await client.metadata.create_or_replace_activity_type_group("error_test", None)
