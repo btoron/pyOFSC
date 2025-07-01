@@ -50,6 +50,8 @@ from ofsc.models.metadata import (
     RoutingProfileListResponse,
     RoutingPlan,
     RoutingPlanListResponse,
+    RoutingPlanExportResponse,
+    ExportMediaType,
     Shift,
     ShiftListResponse,
     TimeSlot,
@@ -500,6 +502,51 @@ class TestSunriseGetCollectionsMetadata:
                     assert isinstance(plan, RoutingPlan)
                     assert plan.planLabel is not None
                     assert len(plan.planLabel) > 0
+
+        asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
+
+    def test_sunrise_client_routing_profile_plan_export(self, async_client_basic_auth: OFSC):
+        """Test endpoint ID 59: GET /rest/ofscMetadata/v1/routingProfiles/{profileLabel}/plans/{planLabel}/custom-actions/export - Export routing plan configuration."""
+        profile_identifier = get_test_data("routing_profile")[0]
+        plan_identifier = get_test_data("routing_plan")[0]
+
+        async def test_async_client_basic_auth(async_client_basic_auth):
+            async with async_client_basic_auth as client:
+                # Test default behavior (no Accept header - returns export metadata)
+                response_metadata = await client.metadata.get_routing_profile_plan_export(
+                    profile_identifier, plan_identifier, media_type=None
+                )
+                assert isinstance(response_metadata, RoutingPlanExportResponse)
+                # For metadata response (no Accept header)
+                if response_metadata.mediaType is not None:
+                    # This is the export metadata response
+                    assert len(response_metadata.mediaType) > 0
+                    assert response_metadata.links is not None
+                    assert len(response_metadata.links) > 0
+                    for link in response_metadata.links:
+                        assert link.href is not None
+                        assert len(link.href) > 0
+
+                # Test with explicit octet-stream media type (returns actual data)
+                response_data = await client.metadata.get_routing_profile_plan_export(
+                    profile_identifier, plan_identifier, ExportMediaType.OCTET_STREAM
+                )
+                assert isinstance(response_data, RoutingPlanExportResponse)
+                # For data response (with Accept header)
+                if response_data.routing_plan is not None:
+                    # This is the actual routing plan data response
+                    assert isinstance(response_data.routing_plan, dict)
+                    assert len(response_data.routing_plan) > 0
+                    assert response_data.sign is not None
+                    assert response_data.version is not None
+
+                # Test with JSON media type
+                response_json = await client.metadata.get_routing_profile_plan_export(
+                    profile_identifier, plan_identifier, ExportMediaType.JSON
+                )
+                assert isinstance(response_json, RoutingPlanExportResponse)
+                # Should return actual data when Accept header is provided
+                assert response_json.routing_plan is not None or response_json.mediaType is not None
 
         asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
 

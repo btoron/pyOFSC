@@ -5,7 +5,7 @@ This script reads the endpoint information from ENDPOINTS.md and makes
 an actual API call to collect the response example.
 
 Usage:
-    python scripts/collect_endpoint_response.py <endpoint_id> [--label LABEL] [--params PARAM1 PARAM2 ...]
+    python scripts/collect_endpoint_response.py <endpoint_id> [--label LABEL] [--params PARAM1 PARAM2 ...] [--media-type MEDIA_TYPE]
     
 Examples:
     python scripts/collect_endpoint_response.py 27  # Collects response for forms endpoint
@@ -13,6 +13,7 @@ Examples:
     python scripts/collect_endpoint_response.py 54 --label "country_code"  # Get property enumeration
     python scripts/collect_endpoint_response.py 11 --params "demoauth" "metadataAPI"  # Get specific API access
     python scripts/collect_endpoint_response.py 11 --params demoauth metadataAPI  # Same as above
+    python scripts/collect_endpoint_response.py 59 --params demoauth Optimization --media-type application/json  # Export with JSON format
 """
 import argparse
 import asyncio
@@ -146,13 +147,14 @@ def replace_path_parameters(path: str, parameters: List[str]) -> str:
     return result_path
 
 
-async def collect_endpoint_response(endpoint_id: int, label: Optional[str] = None, params: Optional[List[str]] = None) -> bool:
+async def collect_endpoint_response(endpoint_id: int, label: Optional[str] = None, params: Optional[List[str]] = None, media_type: Optional[str] = None) -> bool:
     """Collect response for a specific endpoint ID.
     
     Args:
         endpoint_id: The endpoint ID from ENDPOINTS.md
         label: Optional label parameter for single-parameter endpoints (legacy)
         params: Optional list of parameters for multi-parameter endpoints
+        media_type: Optional media type for Accept header (e.g., 'application/json')
         
     Returns:
         True if successful, False otherwise
@@ -227,8 +229,14 @@ async def collect_endpoint_response(endpoint_id: int, label: Optional[str] = Non
         use_token=False  # Use Basic Auth
     ) as client:
         try:
+            # Prepare headers
+            headers = {}
+            if media_type:
+                headers["Accept"] = media_type
+                print(f"   Using Accept header: {media_type}")
+            
             # Make the API call
-            response = await client._client.get(path)
+            response = await client._client.get(path, headers=headers if headers else None)
             
             # Create response data with metadata
             response_data = {
@@ -316,6 +324,11 @@ def main():
         help="Parameters for multi-parameter endpoints (e.g., --params param1 param2)"
     )
     parser.add_argument(
+        "--media-type",
+        type=str,
+        help="Media type for Accept header (e.g., application/json, text/csv)"
+    )
+    parser.add_argument(
         "--list",
         action="store_true",
         help="List all available endpoints instead of collecting"
@@ -332,7 +345,7 @@ def main():
         return
     
     # Run the collection
-    success = asyncio.run(collect_endpoint_response(args.endpoint_id, args.label, args.params))
+    success = asyncio.run(collect_endpoint_response(args.endpoint_id, args.label, args.params, getattr(args, 'media_type', None)))
     
     if not success:
         sys.exit(1)

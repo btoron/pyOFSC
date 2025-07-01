@@ -9,7 +9,7 @@ This module implements the Metadata API endpoints using the new v3.0 architectur
 
 import logging
 import urllib.parse
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 
 import httpx
 from pydantic import BaseModel, Field, ValidationError
@@ -51,6 +51,8 @@ from ofsc.models.metadata import (
     ResourceTypeListResponse,
     RoutingProfileListResponse,
     RoutingPlanListResponse,
+    RoutingPlanExportResponse,
+    ExportMediaType,
     Shift,
     ShiftListResponse,
     TimeSlotListResponse,
@@ -1007,6 +1009,47 @@ class OFSMetadataAPI:
 
         response: "Response" = await self.client.get(endpoint, params=params)
         return RoutingPlanListResponse.from_response(response)
+
+    async def get_routing_profile_plan_export(
+        self, profile_label: str, plan_label: str, media_type: Optional[str] = ExportMediaType.OCTET_STREAM.value
+    ) -> RoutingPlanExportResponse:
+        """Export routing plan configuration for a specific routing profile and plan.
+
+        Args:
+            profile_label: Routing profile label identifier
+            plan_label: Routing plan label identifier
+            media_type: Media type for export format (default: application/octet-stream)
+                       Supported values: application/json, text/csv, application/xml, application/octet-stream
+
+        Returns:
+            RoutingPlanExportResponse response model with export download information
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        self._validate_params(LabelParam, label=profile_label)
+        self._validate_params(LabelParam, label=plan_label)
+
+        # Validate media type parameter
+        if media_type is not None and media_type not in [mt.value for mt in ExportMediaType]:
+            raise OFSValidationException(f"Invalid media type: {media_type}. Supported types: {[mt.value for mt in ExportMediaType]}")
+
+        # Set Accept header with requested media type (if specified)
+        headers = {}
+        if media_type is not None:
+            headers["Accept"] = media_type
+
+        encoded_profile_label = urllib.parse.quote_plus(profile_label)
+        encoded_plan_label = urllib.parse.quote_plus(plan_label)
+        endpoint = f"/rest/ofscMetadata/v1/routingProfiles/{encoded_profile_label}/plans/{encoded_plan_label}/custom-actions/export"
+        logging.info(
+            f"Fetching routing profile plan export from endpoint: {endpoint}"
+            + (f" with Accept: {media_type}" if media_type else " (no Accept header)")
+            + f" and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.get(endpoint, headers=headers if headers else None)
+        return RoutingPlanExportResponse.from_response(response)
 
     # Workzones API (individual endpoint)
     async def get_workzone(self, label: str) -> Workzone:

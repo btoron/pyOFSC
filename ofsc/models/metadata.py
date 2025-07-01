@@ -63,6 +63,14 @@ class ApiMethodStatus(str, Enum):
     OFF = "off"
 
 
+class ExportMediaType(str, Enum):
+    """Supported media types for export endpoints"""
+    JSON = "application/json"
+    CSV = "text/csv"
+    XML = "application/xml"
+    OCTET_STREAM = "application/octet-stream"
+
+
 # Activity Types and Groups
 class ActivityTypeColors(BaseOFSResponse):
     """Color scheme configuration for activity types"""
@@ -617,5 +625,21 @@ class RoutingPlanListResponse(OFSResponseList[RoutingPlan]):
     """Paginated response for routing plan lists"""
 
     pass
+
+
+# Routing Plan Export
+class RoutingPlanExportResponse(BaseOFSResponse):
+    """Response for routing plan export endpoint with download information or actual data"""
+
+    # For export metadata response (without Accept header)
+    mediaType: Optional[str] = Field(default=None, description="MIME type of the exported content")
+    links: Optional[List[Link]] = Field(default=[], description="Download links for the exported content")
+    
+    # For actual routing plan data response (with Accept header)
+    routing_plan: Optional[Dict[str, Any]] = Field(default=None, description="Actual routing plan configuration")
+    sign: Optional[str] = Field(default=None, description="Digital signature for the routing plan")
+    version: Optional[str] = Field(default=None, description="Version of the routing plan format")
+    
+    model_config = ConfigDict(extra="allow")  # Allow additional fields for complex routing plan data
 
 

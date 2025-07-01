@@ -3,11 +3,11 @@
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints available in the pyOFSC Python Wrapper v3.0.
 
 **Total Endpoints:** 242  
-**Implemented in v3.0:** 42 (17.4%)
+**Implemented in v3.0:** 43 (17.8%)
 
 ## Implementation Coverage by Module
 
-- **metadata**: 40/86 endpoints (46.5%) ✅
+- **metadata**: 41/86 endpoints (47.7%) ✅
 - **core**: 2/127 endpoints (1.6%) ⚠️  
 - **capacity**: 0/11 endpoints (0%) ❌
 - **statistics**: 0/6 endpoints (0%) ❌
@@ -77,7 +77,7 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 56 | `/rest/ofscMetadata/v1/resourceTypes` | GET | metadata | v3.0.0-dev | `async def get_resource_types(self) -> ResourceTypeListResponse` |
 | 57 | `/rest/ofscMetadata/v1/routingProfiles` | GET | metadata | v3.0.0-dev | `async def get_routing_profiles(self, offset: int = 0, limit: int = 100) -> RoutingProfileListResponse` |
 | 58 | `/rest/ofscMetadata/v1/routingProfiles/{profileLabel}/plans` | GET | metadata | v3.0.0-dev | `async def get_routing_profile_plans(self, profile_label: str, offset: int = 0, limit: int = 100) -> RoutingPlanListResponse` |
-| 59 | `/rest/ofscMetadata/v1/routingProfiles/{profileLabel}/plans/{planLabel}/custom-actions/export` | GET | metadata | | |
+| 59 | `/rest/ofscMetadata/v1/routingProfiles/{profileLabel}/plans/{planLabel}/custom-actions/export` | GET | metadata | v3.0.0-dev | `async def get_routing_profile_plan_export(self, profile_label: str, plan_label: str, media_type: str = "application/octet-stream") -> RoutingPlanExportResponse` |
 | 60 | `/rest/ofscMetadata/v1/routingProfiles/{profileLabel}/plans/custom-actions/import` | PUT | metadata | | |
 | 61 | `/rest/ofscMetadata/v1/routingProfiles/{profileLabel}/plans/custom-actions/forceImport` | PUT | metadata | | |
 | 62 | `/rest/ofscMetadata/v1/routingProfiles/{profileLabel}/plans/{planLabel}/{resourceExternalId}/{date}/custom-actions/start` | POST | metadata | | |
