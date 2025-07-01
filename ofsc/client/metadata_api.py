@@ -40,19 +40,17 @@ from ofsc.models.metadata import (
     FormListResponse,
     InventoryType,
     InventoryTypeListResponse,
-    Language,
     LanguageListResponse,
     LinkTemplate,
     LinkTemplateListResponse,
-    NonWorkingReason,
     NonWorkingReasonListResponse,
     Organization,
     OrganizationListResponse,
     Property,
     PropertyListResponse,
     ResourceTypeListResponse,
-    RoutingProfile,
     RoutingProfileListResponse,
+    RoutingPlanListResponse,
     Shift,
     ShiftListResponse,
     TimeSlotListResponse,
@@ -981,6 +979,34 @@ class OFSMetadataAPI:
 
         response: "Response" = await self.client.get(endpoint, params=params)
         return RoutingProfileListResponse.from_response(response)
+
+    async def get_routing_profile_plans(
+        self, profile_label: str, offset: int = 0, limit: int = 100
+    ) -> RoutingPlanListResponse:
+        """Get routing plans for a specific routing profile.
+
+        Args:
+            profile_label: Routing profile label identifier
+            offset: Starting record offset (default: 0)
+            limit: Maximum records to return (default: 100, max: 1000)
+
+        Returns:
+            RoutingPlanListResponse response model with list of routing plans
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        self._validate_params(LabelParam, label=profile_label)
+        params = self._validate_params(PaginationParams, offset=offset, limit=limit)
+
+        encoded_label = urllib.parse.quote_plus(profile_label)
+        endpoint = f"/rest/ofscMetadata/v1/routingProfiles/{encoded_label}/plans"
+        logging.info(
+            f"Fetching routing profile plans from endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return RoutingPlanListResponse.from_response(response)
 
     # Workzones API (individual endpoint)
     async def get_workzone(self, label: str) -> Workzone:

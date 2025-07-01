@@ -3,13 +3,12 @@
 import os
 import pytest
 import base64
-from unittest.mock import Mock, patch
-import httpx
+from unittest.mock import patch
 
 # Import v3.0 modules using standard imports
 from ofsc.auth import BasicAuth, OAuth2Auth, create_auth
 from ofsc.client import OFSC
-from ofsc.exceptions import OFSAuthenticationException, OFSConfigurationException
+from ofsc.exceptions import OFSConfigurationException
 
 
 class TestBasicAuth:

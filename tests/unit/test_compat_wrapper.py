@@ -9,8 +9,7 @@ import warnings
 from unittest.mock import patch, AsyncMock
 
 from ofsc.compat import OFSC
-from ofsc.models.core import UserListResponse, SubscriptionList
-from ofsc.models.metadata import Property, Workskill
+from ofsc.models.core import UserListResponse
 
 
 class TestCompatibilityWrapper:

@@ -606,3 +606,16 @@ class RoutingProfileListResponse(OFSResponseList[RoutingProfile]):
     pass
 
 
+# Routing Plans
+class RoutingPlan(BaseOFSResponse):
+    """Routing plan metadata for a routing profile"""
+
+    planLabel: str
+
+
+class RoutingPlanListResponse(OFSResponseList[RoutingPlan]):
+    """Paginated response for routing plan lists"""
+
+    pass
+
+

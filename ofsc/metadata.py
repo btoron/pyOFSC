@@ -29,7 +29,6 @@ from .models import (
     WorkSkillGroup,
     WorkSkillGroupListResponse,
     WorkskillCondition,
-    WorkskillConditionListResponse,
 )
 
 

@@ -2,24 +2,18 @@
 
 import json
 from pathlib import Path
-from typing import Dict, Any, List
 import pytest
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
 
 # Import the actual production models from the reorganized structure
 from ofsc.models import (
     Property, 
-    PropertyListResponse,
-    TimeSlot,
     TimeSlotListResponse,
     Workskill,
-    WorkskillListResponse, 
     Workzone,
-    WorkzoneListResponse,
     ActivityType,
     ActivityTypeListResponse,
     OFSResponseList,
-    BaseOFSResponse,
     Link
 )
 
@@ -397,7 +391,7 @@ class TestMetadataModels:
             try:
                 # Test the complete response model
                 timeslots_response = TimeSlotListResponse.model_validate(data)
-                print(f"✅ TimeSlotListResponse validation successful")
+                print("✅ TimeSlotListResponse validation successful")
                 print(f"   Total results: {timeslots_response.totalResults}")
                 print(f"   Items count: {len(timeslots_response.items)}")
                 
@@ -410,7 +404,7 @@ class TestMetadataModels:
                     if timeslot.isAllDay:
                         assert timeslot.timeStart is None or timeslot.timeStart == ""
                         assert timeslot.timeEnd is None or timeslot.timeEnd == ""
-                        print(f"     ✅ All-day slot validation passed")
+                        print("     ✅ All-day slot validation passed")
                     else:
                         assert timeslot.timeStart is not None
                         assert timeslot.timeEnd is not None

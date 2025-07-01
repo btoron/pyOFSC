@@ -1,7 +1,7 @@
 """Integration tests for authentication components with v3.0 error handling."""
 
 import pytest
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 
 from ofsc.auth import BasicAuth, OAuth2Auth
 from ofsc.client import OFSC

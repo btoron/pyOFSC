@@ -10,7 +10,7 @@ import os
 import sys
 from datetime import datetime, UTC
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List
 
 from dotenv import load_dotenv
 
@@ -92,7 +92,7 @@ class OFSCResponseCollector:
                     
                     # Check if it's an empty collection
                     if isinstance(api_data, dict) and api_data.get("totalResults") == 0:
-                        print(f"ℹ️  Empty collection (totalResults: 0)")
+                        print("ℹ️  Empty collection (totalResults: 0)")
                         
                 except json.JSONDecodeError:
                     response_data["raw_content"] = response.text
@@ -103,7 +103,7 @@ class OFSCResponseCollector:
                     response_data.update(response.json())
                 except:
                     response_data["error"] = response.text
-                print(f"🚫 Forbidden (403): Insufficient permissions")
+                print("🚫 Forbidden (403): Insufficient permissions")
                 print(f"   Response: {response_data}")
                 self._save_response(endpoint_id, description, response_data)
                 return False  # Stop on permission error
@@ -113,7 +113,7 @@ class OFSCResponseCollector:
                     response_data.update(response.json())
                 except:
                     response_data["error"] = response.text
-                print(f"❌ Not Found (404): Endpoint may not exist or requires valid identifier")
+                print("❌ Not Found (404): Endpoint may not exist or requires valid identifier")
                 self._save_response(endpoint_id, description, response_data)
                 return False  # Stop on not found
                 
@@ -198,7 +198,7 @@ async def main():
             shift_label = shift_labels[0]  # Use first available shift
             success = await collector.collect_response(64, f"/rest/ofscMetadata/v1/shifts/{shift_label}", "get_shift")
             if not success:
-                print(f"❌ Stopping due to error on individual shift endpoint")
+                print("❌ Stopping due to error on individual shift endpoint")
                 return
         else:
             print("⚠️  No shift labels found in existing response")
@@ -209,7 +209,7 @@ async def main():
             workzone_label = workzone_labels[0]  # Use first available workzone
             success = await collector.collect_response(82, f"/rest/ofscMetadata/v1/workZones/{workzone_label}", "get_workzone")
             if not success:
-                print(f"❌ Stopping due to error on individual workzone endpoint")
+                print("❌ Stopping due to error on individual workzone endpoint")
                 return
         else:
             print("⚠️  No workzone labels found in existing response")
@@ -223,7 +223,7 @@ async def main():
             template_label = link_template_labels[0]
             success = await collector.collect_response(36, f"/rest/ofscMetadata/v1/linkTemplates/{template_label}", "get_link_template")
             if not success:
-                print(f"❌ Could not get individual link template")
+                print("❌ Could not get individual link template")
         else:
             print("⚠️  No link template labels available for individual endpoint")
             
@@ -241,7 +241,7 @@ async def main():
                 layer_label = map_layer_labels[0]
                 success = await collector.collect_response(41, f"/rest/ofscMetadata/v1/mapLayers/{layer_label}", "get_map_layer")
                 if not success:
-                    print(f"❌ Could not get individual map layer")
+                    print("❌ Could not get individual map layer")
         else:
             print("⚠️  No map layers available for individual endpoint (empty collection)")
             

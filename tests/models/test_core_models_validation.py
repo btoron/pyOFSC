@@ -12,8 +12,6 @@ from ofsc.models.core import (
     Resource,
     User,
     ResourcePosition,
-    ResourceUsersListResponse,
-    ResourcePositionListResponse,
 )
 
 

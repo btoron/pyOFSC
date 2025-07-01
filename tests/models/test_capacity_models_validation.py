@@ -12,13 +12,8 @@ from pydantic import ValidationError
 from ofsc.models.capacity import (
     CapacityArea,
     CapacityCategory,
-    CapacityAreaResponseItem,
-    CapacityResponseItem,
     GetCapacityResponse,
     CapacityMetrics,
-    CapacityCategoryItem,
-    CapacityAreaListResponse,
-    CapacityCategoryListResponse,
     CapacityAreaTimeInterval,
     CapacityAreaTimeIntervalListResponse,
     CapacityAreaTimeSlot,

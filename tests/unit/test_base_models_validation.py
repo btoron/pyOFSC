@@ -1,7 +1,6 @@
 """Validation tests for base models in OFSC v3.0."""
 
 import pytest
-from typing import List, Optional, Any, Dict
 from pydantic import ValidationError
 
 from ofsc.models.base import (

@@ -1,7 +1,7 @@
 """Validation tests for models that were identified as missing tests."""
 
 import pytest
-from datetime import datetime, date
+from datetime import date
 # Remove unused typing imports
 
 from ofsc.models.base import CsvList, Translation, TranslationList

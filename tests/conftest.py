@@ -2,18 +2,17 @@
 
 import os
 import pytest
-import asyncio
 from unittest.mock import Mock
 from pathlib import Path
 import httpx
 from dotenv import load_dotenv
 
 # Import test configuration
-from .config import load_test_config, TestEnvironmentConfig
+from .config import load_test_config
 
 # Import v3.0 modules using standard imports
 from ofsc.client import OFSC
-from ofsc.auth import BasicAuth, OAuth2Auth
+from ofsc.auth import BasicAuth
 
 # Load environment variables from .env file
 load_dotenv()

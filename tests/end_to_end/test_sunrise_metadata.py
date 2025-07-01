@@ -48,6 +48,8 @@ from ofsc.models.metadata import (
     ResourceTypeListResponse,
     RoutingProfile,
     RoutingProfileListResponse,
+    RoutingPlan,
+    RoutingPlanListResponse,
     Shift,
     ShiftListResponse,
     TimeSlot,
@@ -92,6 +94,7 @@ TEST_DATA = {
     "form": "mobile_provider_request#8#",  # From 27_get_forms.json
     "link_template": "start-after",  # From 35_get_link_templates.json
     "routing_profile": "MaintenanceRoutingProfile",  # From 57_get_routing_profiles.json
+    "routing_plan": "Optimization",  # From 58_get_routingProfiles_MaintenanceRoutingProfile_plans.json
     "shift": "20-05",  # From 64_get_shift.json (individual response)
     "workzone": "ALTAMONTE_SPRINGS",  # From 82_get_workzone.json
 }
@@ -481,6 +484,22 @@ class TestSunriseGetCollectionsMetadata:
                 for profile in response_profiles.items:
                     assert isinstance(profile, RoutingProfile)
                     assert profile.profileLabel is not None
+
+        asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
+
+    def test_sunrise_client_routing_profile_plans(self, async_client_basic_auth: OFSC):
+        """Test endpoint ID 58: GET /rest/ofscMetadata/v1/routingProfiles/{profileLabel}/plans - Get routing plans for a routing profile."""
+        identifier = get_test_data("routing_profile")[0]
+
+        async def test_async_client_basic_auth(async_client_basic_auth):
+            async with async_client_basic_auth as client:
+                response_plans = await client.metadata.get_routing_profile_plans(identifier)
+                assert isinstance(response_plans, RoutingPlanListResponse)
+                assert response_plans.totalResults > 0
+                for plan in response_plans.items:
+                    assert isinstance(plan, RoutingPlan)
+                    assert plan.planLabel is not None
+                    assert len(plan.planLabel) > 0
 
         asyncio.run(test_async_client_basic_auth(async_client_basic_auth))
 

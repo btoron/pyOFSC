@@ -8,12 +8,10 @@ import asyncio
 import atexit
 import logging
 import warnings
-from typing import Any, Dict, Optional
+from typing import Optional
 from concurrent.futures import ThreadPoolExecutor
 
-from ..client import OFSC as AsyncOFSC
 from .method_mappings import get_all_methods
-from .generators import apply_method_mappings, create_property_methods
 
 
 class OFSC:

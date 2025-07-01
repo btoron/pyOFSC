@@ -13,7 +13,7 @@ from ofsc.models.core import Resource, User, Activity, Location
 from ofsc.models.metadata import Property, Workskill, ActivityType, Organization, ActivityTypeGroup
 from ofsc.models.capacity import CapacityArea, CapacityCategory, GetCapacityResponse
 from ofsc.models.auth import OFSConfig, OFSOAuthRequest, OFSAPIError
-from ofsc.models.base import BaseOFSResponse, OFSResponseList
+from ofsc.models.base import BaseOFSResponse
 
 
 class TestAllModelsIntegration:
@@ -136,7 +136,7 @@ class TestAllModelsIntegration:
     def test_model_extra_fields_consistency(self):
         """Test that models handle extra fields according to their configuration."""
         # Test models that ALLOW extra fields
-        from ofsc.models.metadata import Application, WorkSkillGroup, ActivityTypeFeatures
+        from ofsc.models.metadata import Application, ActivityTypeFeatures
         
         test_data = {
             "extraField1": "test_value",
@@ -179,10 +179,7 @@ class TestAllModelsIntegration:
     def test_backward_compatibility_imports(self):
         """Test that all models can be imported via the main models module."""
         from ofsc.models import (
-            Resource, User, Activity, Location,  # Core
-            Property, Workskill, ActivityType, Organization,  # Metadata
-            CapacityArea, CapacityCategory,  # Capacity
-            OFSConfig, OFSOAuthRequest  # Auth
+            Resource, Property, CapacityArea, OFSConfig  # Auth
         )
         
         # Test that imports work and classes are correct

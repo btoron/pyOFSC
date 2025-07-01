@@ -4,10 +4,8 @@ This module provides utilities to dynamically generate synchronous wrapper metho
 that internally call the async v3.0 API methods.
 """
 
-import asyncio
 import inspect
-from typing import Any, Callable, Dict, List, Optional
-from functools import wraps
+from typing import Any, Callable, Dict
 
 from ..client import OFSC as AsyncOFSC
 

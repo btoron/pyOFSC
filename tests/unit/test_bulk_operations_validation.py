@@ -1,8 +1,7 @@
 """Validation tests for bulk operation models in OFSC v3.0."""
 
 import pytest
-from datetime import datetime, date
-from typing import List, Optional, Dict, Any
+from datetime import date
 
 from ofsc.models.core import (
     GetActivityRequest,
@@ -23,7 +22,6 @@ class TestBulkOperationModelsValidation:
     
     def test_get_activity_request_validation(self):
         """Test GetActivityRequest model validation."""
-        from datetime import date
         
         # Test minimal request (resources and dates are required when includeNonScheduled=False)
         request = GetActivityRequest(

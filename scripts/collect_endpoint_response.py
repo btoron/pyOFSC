@@ -250,11 +250,11 @@ async def collect_endpoint_response(endpoint_id: int, label: Optional[str] = Non
                     
                     # Check if it's an empty collection
                     if isinstance(api_data, dict) and api_data.get("totalResults") == 0:
-                        print(f"ℹ️  Empty collection (totalResults: 0)")
+                        print("ℹ️  Empty collection (totalResults: 0)")
                         
                 except json.JSONDecodeError:
                     response_data["raw_content"] = response.text
-                    print(f"⚠️  Non-JSON response")
+                    print("⚠️  Non-JSON response")
             else:
                 try:
                     response_data.update(response.json())

@@ -2,7 +2,6 @@
 
 import json
 from pathlib import Path
-from typing import Dict, Any, List
 import pytest
 from pydantic import ValidationError
 
@@ -94,7 +93,7 @@ class TestCapacityModels:
         # This is a complex nested structure, just validate it parses correctly
         try:
             capacity = GetCapacityResponse(**data)
-            print(f"✅ Available capacity model validation passed")
+            print("✅ Available capacity model validation passed")
         except ValidationError as e:
             pytest.fail(f"Available capacity validation failed: {e}")
     

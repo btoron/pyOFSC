@@ -4,7 +4,7 @@ This module defines all the API methods that need to be wrapped for backward com
 including their parameters, defaults, and expected behavior.
 """
 
-from typing import Dict, List, Any, Optional
+from typing import Dict, Any
 
 # Core API Methods Mapping
 CORE_METHODS = {
