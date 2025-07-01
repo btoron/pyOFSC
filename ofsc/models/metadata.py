@@ -173,7 +173,7 @@ class EnumerationValue(BaseOFSResponse):
     """Enumeration value for dropdown and selection fields"""
 
     label: str
-    name: str
+    name: Optional[str] = None  # Not present in API response, derived from translations
     translations: Optional[TranslationList] = None
     active: bool = True
 
@@ -473,6 +473,7 @@ class Form(BaseOFSResponse):
     name: str
     translations: Optional[TranslationList] = []
     links: Optional[List[Link]] = []
+    content: Optional[str] = None  # Individual form endpoint includes full form content
 
 
 class FormListResponse(OFSResponseList[Form]):
@@ -487,19 +488,19 @@ class LinkTemplateTranslation(BaseOFSResponse):
 
     language: str
     name: str
-    reverseName: str
+    reverseName: Optional[str] = None  # Not all templates have reverse names
 
 
 class LinkTemplate(BaseOFSResponse):
     """Link template metadata and configuration"""
 
     label: str
-    reverseLabel: str
+    reverseLabel: Optional[str] = None  # Not all templates have reverse labels
     active: bool
-    linkType: str
-    minInterval: str
-    maxInterval: str
-    minIntervalValue: int
+    linkType: Optional[str] = None  # Some templates don't have link types
+    minInterval: Optional[str] = None  # Some templates don't have intervals
+    maxInterval: Optional[str] = None
+    minIntervalValue: Optional[int] = None
     maxIntervalValue: Optional[int] = None
     translations: Optional[List[LinkTemplateTranslation]] = []
     links: Optional[List[Link]] = []

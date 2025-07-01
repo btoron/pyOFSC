@@ -5,10 +5,12 @@ This script reads the endpoint information from ENDPOINTS.md and makes
 an actual API call to collect the response example.
 
 Usage:
-    python scripts/collect_endpoint_response.py <endpoint_id>
+    python scripts/collect_endpoint_response.py <endpoint_id> [--label LABEL]
     
-Example:
+Examples:
     python scripts/collect_endpoint_response.py 27  # Collects response for forms endpoint
+    python scripts/collect_endpoint_response.py 28 --label "mobile_provider_request#8#"  # Get specific form
+    python scripts/collect_endpoint_response.py 54 --label "country_code"  # Get property enumeration
 """
 import argparse
 import asyncio
@@ -98,11 +100,12 @@ def get_description_from_path(path: str) -> str:
     return description
 
 
-async def collect_endpoint_response(endpoint_id: int) -> bool:
+async def collect_endpoint_response(endpoint_id: int, label: Optional[str] = None) -> bool:
     """Collect response for a specific endpoint ID.
     
     Args:
         endpoint_id: The endpoint ID from ENDPOINTS.md
+        label: Optional label parameter for parameterized endpoints
         
     Returns:
         True if successful, False otherwise
@@ -133,9 +136,28 @@ async def collect_endpoint_response(endpoint_id: int) -> bool:
     
     # Handle parameterized paths
     if '{' in path:
-        print("⚠️  This endpoint requires parameters. You'll need to provide valid values.")
-        print("   For now, skipping parameterized endpoints.")
-        return False
+        if not label:
+            print("⚠️  This endpoint requires parameters. Use --label to provide a value.")
+            print(f"   Example: python scripts/collect_endpoint_response.py {endpoint_id} --label 'your_label_here'")
+            return False
+        
+        # Replace {label} with the provided label value
+        # Support common parameter patterns like {label}, {apiLabel}, {profileLabel}, etc.
+        parameterized_path = path.replace('{label}', label)
+        parameterized_path = parameterized_path.replace('{apiLabel}', label)
+        parameterized_path = parameterized_path.replace('{profileLabel}', label)
+        
+        # URL encode the label to handle special characters
+        from urllib.parse import quote_plus
+        # For safety, let's encode the entire label portion
+        path_parts = parameterized_path.split('/')
+        for i, part in enumerate(path_parts):
+            if part == label:
+                path_parts[i] = quote_plus(label)
+        path = '/'.join(path_parts)
+        
+        print(f"   Using label: {label}")
+        print(f"   Final path: {path}")
     
     async with OFSC(
         instance=OFSC_INSTANCE,
@@ -181,7 +203,12 @@ async def collect_endpoint_response(endpoint_id: int) -> bool:
                 
             # Save response
             description = get_description_from_path(path)
-            filename = f"{endpoint_id}_{description}.json"
+            # If we used a label, include it in the filename for clarity
+            if label and '{' in endpoints[endpoint_id][0]:  # Check original path had parameters
+                safe_label = re.sub(r'[^\w\-_.]', '_', label)  # Replace unsafe chars with underscores
+                filename = f"{endpoint_id}_{description}_{safe_label}.json"
+            else:
+                filename = f"{endpoint_id}_{description}.json"
             filepath = RESPONSE_DIR / filename
             
             # Ensure response directory exists
@@ -209,6 +236,11 @@ def main():
         help="The endpoint ID from ENDPOINTS.md"
     )
     parser.add_argument(
+        "--label",
+        type=str,
+        help="Label parameter for parameterized endpoints (e.g., resource label, property name)"
+    )
+    parser.add_argument(
         "--list",
         action="store_true",
         help="List all available endpoints instead of collecting"
@@ -225,7 +257,7 @@ def main():
         return
     
     # Run the collection
-    success = asyncio.run(collect_endpoint_response(args.endpoint_id))
+    success = asyncio.run(collect_endpoint_response(args.endpoint_id, args.label))
     
     if not success:
         sys.exit(1)
