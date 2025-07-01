@@ -19,6 +19,13 @@ from ofsc.models.metadata import (
     TimeSlotListResponse,
     WorkskillListResponse,
 )
+from ofsc.models.capacity import (
+    CapacityAreaTimeIntervalListResponse,
+    CapacityAreaTimeSlotListResponse,
+    CapacityAreaWorkzoneListResponse,
+    CapacityAreaCategoryListResponse,
+    CapacityAreaOrganizationListResponse,
+)
 
 
 @pytest.fixture
@@ -246,3 +253,232 @@ class TestMetadataAPIAsyncClient:
             request = route.calls[0].request
             assert "offset=10" in str(request.url)
             assert "limit=50" in str(request.url)
+
+
+@pytest.fixture
+def mock_capacity_area_categories_response():
+    """Mock capacity area categories API response."""
+    return {
+        "items": [
+            {
+                "label": "EST",
+                "name": "Estimation"
+            }
+        ],
+        "totalResults": 1,
+        "limit": 100,
+        "offset": 0,
+        "hasMore": False,
+    }
+
+
+@pytest.fixture
+def mock_capacity_area_workzones_v2_response():
+    """Mock capacity area work zones v2 API response."""
+    return {
+        "items": [
+            {
+                "workZoneLabel": "ALTAMONTE_SPRINGS",
+                "workZoneName": "ALTAMONTE SPRINGS"
+            }
+        ],
+        "totalResults": 1,
+        "limit": 100,
+        "offset": 0,
+        "hasMore": False,
+    }
+
+
+@pytest.fixture
+def mock_capacity_area_timeslots_response():
+    """Mock capacity area time slots API response."""
+    return {
+        "items": [
+            {
+                "label": "08-10",
+                "name": "08-10",
+                "timeFrom": "08:00:00",
+                "timeTo": "10:00:00"
+            }
+        ],
+        "totalResults": 1,
+        "limit": 100,
+        "offset": 0,
+        "hasMore": False,
+    }
+
+
+@pytest.fixture
+def mock_capacity_area_timeintervals_response():
+    """Mock capacity area time intervals API response."""
+    return {
+        "items": [
+            {
+                "timeFrom": "00",
+                "timeTo": "08"
+            },
+            {
+                "timeFrom": "08"
+            }
+        ],
+        "totalResults": 2,
+        "limit": 100,
+        "offset": 0,
+        "hasMore": False,
+    }
+
+
+@pytest.fixture
+def mock_capacity_area_organizations_response():
+    """Mock capacity area organizations API response."""
+    return {
+        "items": [
+            {
+                "label": "default",
+                "name": "Supremo Fitness Organization",
+                "type": "inhouse"
+            }
+        ],
+        "totalResults": 1,
+        "limit": 100,
+        "offset": 0,
+        "hasMore": False,
+    }
+
+
+@pytest.mark.asyncio
+class TestCapacityAreaSubResourcesAPI:
+    """Test Capacity Area Sub-Resource API endpoints (16-21)."""
+
+    @respx.mock
+    async def test_get_capacity_area_categories(self, mock_capacity_area_categories_response):
+        """Test get_capacity_area_categories endpoint."""
+        route = respx.get(
+            "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/FLUSA/capacityCategories"
+        )
+        route.mock(return_value=Response(200, json=mock_capacity_area_categories_response))
+
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            result = await client.metadata.get_capacity_area_categories("FLUSA")
+            assert isinstance(result, CapacityAreaCategoryListResponse)
+            assert result.totalResults == 1
+            assert len(result.items) == 1
+            assert result.items[0].label == "EST"
+            assert result.items[0].name == "Estimation"
+
+    @respx.mock
+    async def test_get_capacity_area_workzones(self, mock_capacity_area_workzones_v2_response):
+        """Test get_capacity_area_workzones endpoint."""
+        route = respx.get(
+            "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v2/capacityAreas/FLUSA/workZones"
+        )
+        route.mock(return_value=Response(200, json=mock_capacity_area_workzones_v2_response))
+
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            result = await client.metadata.get_capacity_area_workzones("FLUSA")
+            assert isinstance(result, CapacityAreaWorkzoneListResponse)
+            assert result.totalResults == 1
+            assert len(result.items) == 1
+            assert result.items[0].workZoneLabel == "ALTAMONTE_SPRINGS"
+            assert result.items[0].workZoneName == "ALTAMONTE SPRINGS"
+
+    @respx.mock
+    async def test_get_capacity_area_timeslots(self, mock_capacity_area_timeslots_response):
+        """Test get_capacity_area_timeslots endpoint."""
+        route = respx.get(
+            "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/FLUSA/timeSlots"
+        )
+        route.mock(return_value=Response(200, json=mock_capacity_area_timeslots_response))
+
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            result = await client.metadata.get_capacity_area_timeslots("FLUSA")
+            assert isinstance(result, CapacityAreaTimeSlotListResponse)
+            assert result.totalResults == 1
+            assert len(result.items) == 1
+            assert result.items[0].label == "08-10"
+            assert result.items[0].name == "08-10"
+            assert result.items[0].timeFrom == "08:00:00"
+            assert result.items[0].timeTo == "10:00:00"
+
+    @respx.mock
+    async def test_get_capacity_area_timeintervals(self, mock_capacity_area_timeintervals_response):
+        """Test get_capacity_area_timeintervals endpoint."""
+        route = respx.get(
+            "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/FLUSA/timeIntervals"
+        )
+        route.mock(return_value=Response(200, json=mock_capacity_area_timeintervals_response))
+
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            result = await client.metadata.get_capacity_area_timeintervals("FLUSA")
+            assert isinstance(result, CapacityAreaTimeIntervalListResponse)
+            assert result.totalResults == 2
+            assert len(result.items) == 2
+            assert result.items[0].timeFrom == "00"
+            assert result.items[0].timeTo == "08"
+            assert result.items[1].timeFrom == "08"
+            assert result.items[1].timeTo is None  # Some intervals only have timeFrom
+
+    @respx.mock
+    async def test_get_capacity_area_organizations(self, mock_capacity_area_organizations_response):
+        """Test get_capacity_area_organizations endpoint."""
+        route = respx.get(
+            "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/FLUSA/organizations"
+        )
+        route.mock(return_value=Response(200, json=mock_capacity_area_organizations_response))
+
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            result = await client.metadata.get_capacity_area_organizations("FLUSA")
+            assert isinstance(result, CapacityAreaOrganizationListResponse)
+            assert result.totalResults == 1
+            assert len(result.items) == 1
+            assert result.items[0].label == "default"
+            assert result.items[0].name == "Supremo Fitness Organization"
+            assert result.items[0].type == "inhouse"
+
+    @respx.mock
+    async def test_capacity_area_label_validation(self):
+        """Test label validation for capacity area sub-resource methods."""
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            # Test empty label for all methods
+            with pytest.raises(OFSValidationException):
+                await client.metadata.get_capacity_area_categories("")
+            
+            with pytest.raises(OFSValidationException):
+                await client.metadata.get_capacity_area_workzones("")
+            
+            with pytest.raises(OFSValidationException):
+                await client.metadata.get_capacity_area_timeslots("")
+            
+            with pytest.raises(OFSValidationException):
+                await client.metadata.get_capacity_area_timeintervals("")
+            
+            with pytest.raises(OFSValidationException):
+                await client.metadata.get_capacity_area_organizations("")
+
+    @respx.mock
+    async def test_capacity_area_pagination_validation(self):
+        """Test pagination parameter validation for capacity area sub-resource methods."""
+        async with OFSC(
+            instance="demo", client_id="test_id", client_secret="test_secret"
+        ) as client:
+            # Test invalid pagination for one method (they all use same validation)
+            with pytest.raises(OFSValidationException):
+                await client.metadata.get_capacity_area_categories("FLUSA", offset=-1)
+            
+            with pytest.raises(OFSValidationException):
+                await client.metadata.get_capacity_area_categories("FLUSA", limit=0)
+            
+            with pytest.raises(OFSValidationException):
+                await client.metadata.get_capacity_area_categories("FLUSA", limit=1001)

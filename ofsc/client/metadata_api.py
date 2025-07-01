@@ -17,7 +17,12 @@ from pydantic import BaseModel, Field, ValidationError
 from ofsc.exceptions import OFSValidationException
 from ofsc.models.capacity import (
     CapacityArea,
+    CapacityAreaCategoryListResponse,
     CapacityAreaListResponse,
+    CapacityAreaOrganizationListResponse,
+    CapacityAreaTimeIntervalListResponse,
+    CapacityAreaTimeSlotListResponse,
+    CapacityAreaWorkzoneListResponse,
     CapacityCategory,
     CapacityCategoryListResponse,
 )
@@ -35,15 +40,13 @@ from ofsc.models.metadata import (
     OrganizationListResponse,
     Property,
     PropertyListResponse,
-    ResourceType,
     ResourceTypeListResponse,
-    TimeSlot,
     TimeSlotListResponse,
     Workskill,
     WorkskillConditionListResponse,
-    WorkskillListResponse,
     WorkSkillGroup,
     WorkSkillGroupListResponse,
+    WorkskillListResponse,
     WorkzoneListResponse,
 )
 
@@ -118,7 +121,9 @@ class OFSMetadataAPI:
             raise OFSValidationException(f"Parameter validation failed: {e}")
 
     # Properties API
-    async def get_properties(self, offset: int = 0, limit: int = 100) -> PropertyListResponse:
+    async def get_properties(
+        self, offset: int = 0, limit: int = 100
+    ) -> PropertyListResponse:
         """Get properties list.
 
         Args:
@@ -162,7 +167,9 @@ class OFSMetadataAPI:
         return Property.from_response(response)
 
     # Work Skills API
-    async def get_workskills(self, offset: int = 0, limit: int = 100) -> WorkskillListResponse:
+    async def get_workskills(
+        self, offset: int = 0, limit: int = 100
+    ) -> WorkskillListResponse:
         """Get work skills list.
 
         Args:
@@ -248,7 +255,9 @@ class OFSMetadataAPI:
         return ActivityTypeGroup.from_response(response)
 
     # Work Zones API
-    async def get_workzones(self, offset: int = 0, limit: int = 100) -> WorkzoneListResponse:
+    async def get_workzones(
+        self, offset: int = 0, limit: int = 100
+    ) -> WorkzoneListResponse:
         """Get work zones list.
 
         Args:
@@ -573,7 +582,9 @@ class OFSMetadataAPI:
         return Organization.from_response(response)
 
     # Time Slots API
-    async def get_timeslots(self, offset: int = 0, limit: int = 100) -> TimeSlotListResponse:
+    async def get_timeslots(
+        self, offset: int = 0, limit: int = 100
+    ) -> TimeSlotListResponse:
         """Get time slots list.
 
         Args:
@@ -595,3 +606,146 @@ class OFSMetadataAPI:
 
         response: "Response" = await self.client.get(endpoint, params=params)
         return TimeSlotListResponse.from_response(response)
+
+    # Capacity Area Sub-Resource APIs (Endpoints 16-21)
+    async def get_capacity_area_categories(
+        self, area_label: str, offset: int = 0, limit: int = 100
+    ) -> CapacityAreaCategoryListResponse:
+        """Get capacity categories for a specific capacity area.
+
+        Args:
+            area_label: Capacity area label identifier
+            offset: Starting record offset (default: 0)
+            limit: Maximum records to return (default: 100, max: 1000)
+
+        Returns:
+            CapacityAreaCategoryListResponse response model with list of capacity categories
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        self._validate_params(LabelParam, label=area_label)
+        params = self._validate_params(PaginationParams, offset=offset, limit=limit)
+
+        encoded_label = urllib.parse.quote_plus(area_label)
+        endpoint = (
+            f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}/capacityCategories"
+        )
+        logging.info(
+            f"Fetching capacity area categories from endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return CapacityAreaCategoryListResponse.from_response(response)
+
+    async def get_capacity_area_workzones(
+        self, area_label: str, offset: int = 0, limit: int = 100
+    ) -> CapacityAreaWorkzoneListResponse:
+        """Get work zones for a specific capacity area (v2 endpoint with detailed info).
+
+        Args:
+            area_label: Capacity area label identifier
+            offset: Starting record offset (default: 0)
+            limit: Maximum records to return (default: 100, max: 1000)
+
+        Returns:
+            CapacityAreaWorkzoneListResponse response model with list of work zones
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        self._validate_params(LabelParam, label=area_label)
+        params = self._validate_params(PaginationParams, offset=offset, limit=limit)
+
+        encoded_label = urllib.parse.quote_plus(area_label)
+        endpoint = f"/rest/ofscMetadata/v2/capacityAreas/{encoded_label}/workZones"
+        logging.info(
+            f"Fetching capacity area work zones (v2) from endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return CapacityAreaWorkzoneListResponse.from_response(response)
+
+    async def get_capacity_area_timeslots(
+        self, area_label: str, offset: int = 0, limit: int = 100
+    ) -> CapacityAreaTimeSlotListResponse:
+        """Get time slots for a specific capacity area.
+
+        Args:
+            area_label: Capacity area label identifier
+            offset: Starting record offset (default: 0)
+            limit: Maximum records to return (default: 100, max: 1000)
+
+        Returns:
+            CapacityAreaTimeSlotListResponse response model with list of time slots
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        self._validate_params(LabelParam, label=area_label)
+        params = self._validate_params(PaginationParams, offset=offset, limit=limit)
+
+        encoded_label = urllib.parse.quote_plus(area_label)
+        endpoint = f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}/timeSlots"
+        logging.info(
+            f"Fetching capacity area time slots from endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return CapacityAreaTimeSlotListResponse.from_response(response)
+
+    async def get_capacity_area_timeintervals(
+        self, area_label: str, offset: int = 0, limit: int = 100
+    ) -> CapacityAreaTimeIntervalListResponse:
+        """Get time intervals for a specific capacity area.
+
+        Args:
+            area_label: Capacity area label identifier
+            offset: Starting record offset (default: 0)
+            limit: Maximum records to return (default: 100, max: 1000)
+
+        Returns:
+            CapacityAreaTimeIntervalListResponse response model with list of time intervals
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        self._validate_params(LabelParam, label=area_label)
+        params = self._validate_params(PaginationParams, offset=offset, limit=limit)
+
+        encoded_label = urllib.parse.quote_plus(area_label)
+        endpoint = f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}/timeIntervals"
+        logging.info(
+            f"Fetching capacity area time intervals from endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return CapacityAreaTimeIntervalListResponse.from_response(response)
+
+    async def get_capacity_area_organizations(
+        self, area_label: str, offset: int = 0, limit: int = 100
+    ) -> CapacityAreaOrganizationListResponse:
+        """Get organizations for a specific capacity area.
+
+        Args:
+            area_label: Capacity area label identifier
+            offset: Starting record offset (default: 0)
+            limit: Maximum records to return (default: 100, max: 1000)
+
+        Returns:
+            CapacityAreaOrganizationListResponse response model with list of organizations
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        self._validate_params(LabelParam, label=area_label)
+        params = self._validate_params(PaginationParams, offset=offset, limit=limit)
+
+        encoded_label = urllib.parse.quote_plus(area_label)
+        endpoint = f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}/organizations"
+        logging.info(
+            f"Fetching capacity area organizations from endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return CapacityAreaOrganizationListResponse.from_response(response)

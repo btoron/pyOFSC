@@ -120,10 +120,6 @@ class TestMetadataModels:
             
             for item in items_to_validate:
                 try:
-                    # Remove fields that aren't in the current model definition
-                    if "shapes" in item:
-                        del item["shapes"]
-                    
                     workzone = Workzone.model_validate(item)
                     assert workzone.workZoneLabel is not None
                     assert workzone.workZoneName is not None
@@ -144,11 +140,6 @@ class TestMetadataModels:
             # Check if it's a paginated response
             if "items" in data:
                 try:
-                    # Remove shapes field from all items in the paginated response
-                    for item in data["items"]:
-                        if "shapes" in item:
-                            del item["shapes"]
-                    
                     response = OFSResponseList[Workzone].model_validate(data)
                     assert len(response.items) >= 0
                     print(f"✅ Validated paginated Workzone response with {len(response.items)} items")

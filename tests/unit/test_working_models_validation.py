@@ -2,6 +2,7 @@
 
 import pytest
 from datetime import date
+from pydantic import ValidationError
 
 from ofsc.models.base import CsvList, Translation, TranslationList, BaseOFSResponse
 from ofsc.models.capacity import GetQuotaRequest
@@ -225,16 +226,23 @@ class TestWorkingModelsValidation:
         assert activity_item.activityId == 12345
         assert activity_item.status == "started"
         
-        # GetQuotaRequest allows extra fields  
+        # GetQuotaRequest doesn't allow extra fields (default behavior)
         quota_data = {
             "dates": ["2024-01-15"],
-            "areas": ["AREA1"],
-            "extraField": "should be preserved"
+            "areas": ["AREA1"]
         }
         
         quota_request = GetQuotaRequest(**quota_data)
         assert quota_request.dates.to_list() == ["2024-01-15"]
         assert quota_request.areas.to_list() == ["AREA1"]
+        
+        # Test that extra fields are rejected
+        with pytest.raises(ValidationError):
+            GetQuotaRequest(
+                dates=["2024-01-15"],
+                areas=["AREA1"],
+                extraField="should be rejected"
+            )
     
     def test_model_serialization(self):
         """Test model serialization to dict."""

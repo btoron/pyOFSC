@@ -10,7 +10,7 @@ This module contains Pydantic models for OFSC Capacity API endpoints:
 
 from typing import List, Optional
 
-from pydantic import ConfigDict, Field, RootModel, field_validator
+from pydantic import AnyHttpUrl, ConfigDict, Field, RootModel, field_validator
 from typing_extensions import Annotated
 
 from .base import BaseOFSResponse, CsvList, OFSResponseList, TranslationList
@@ -35,6 +35,12 @@ class CapacityAreaConfiguration(BaseOFSResponse):
     definitionLevel: List[str]
 
 
+class CapacityAreaLink(BaseOFSResponse):
+    """Link reference for related capacity area resources"""
+
+    href: AnyHttpUrl
+
+
 class CapacityArea(BaseOFSResponse):
     """Capacity area definition and configuration"""
 
@@ -48,7 +54,13 @@ class CapacityArea(BaseOFSResponse):
     translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
         None
     )
-    # Note: as of 24A the additional fields returned are just HREFs so we won't include them here
+
+    # Relationship links (only present in individual responses)
+    workZones: Optional[CapacityAreaLink] = None
+    organizations: Optional[CapacityAreaLink] = None
+    capacityCategories: Optional[CapacityAreaLink] = None
+    timeIntervals: Optional[CapacityAreaLink] = None
+    timeSlots: Optional[CapacityAreaLink] = None
 
 
 class CapacityAreaListResponse(OFSResponseList[CapacityArea]):
@@ -256,6 +268,77 @@ class GetQuotaResponse(BaseOFSResponse):
     """Model for complete quota response"""
 
     items: List[QuotaResponseItem] = []
+
+
+# Capacity Area Sub-Resource Models
+class CapacityAreaTimeInterval(BaseOFSResponse):
+    """Time interval model for capacity area time intervals endpoint"""
+
+    timeFrom: str
+    timeTo: Optional[str] = None  # Some intervals only have timeFrom
+
+
+class CapacityAreaTimeIntervalListResponse(OFSResponseList[CapacityAreaTimeInterval]):
+    """Paginated response for capacity area time intervals"""
+
+    pass
+
+
+class CapacityAreaTimeSlot(BaseOFSResponse):
+    """Time slot model for capacity area time slots endpoint"""
+
+    label: str
+    name: str
+    timeFrom: str
+    timeTo: str
+
+
+class CapacityAreaTimeSlotListResponse(OFSResponseList[CapacityAreaTimeSlot]):
+    """Paginated response for capacity area time slots"""
+
+    pass
+
+
+class CapacityAreaWorkzone(BaseOFSResponse):
+    """Work zone model for capacity area work zones endpoint"""
+
+    # For v2 endpoint (detailed)
+    workZoneLabel: Optional[str] = None
+    workZoneName: Optional[str] = None
+
+
+class CapacityAreaWorkzoneListResponse(OFSResponseList[CapacityAreaWorkzone]):
+    """Paginated response for capacity area work zones"""
+
+    pass
+
+
+class CapacityAreaCategory(BaseOFSResponse):
+    """Capacity category model for capacity area categories endpoint"""
+
+    label: str
+    name: str
+    status: Optional[str] = None  # active/inactive status
+
+
+class CapacityAreaCategoryListResponse(OFSResponseList[CapacityAreaCategory]):
+    """Paginated response for capacity area categories"""
+
+    pass
+
+
+class CapacityAreaOrganization(BaseOFSResponse):
+    """Organization model for capacity area organizations endpoint"""
+
+    label: str
+    name: str
+    type: str
+
+
+class CapacityAreaOrganizationListResponse(OFSResponseList[CapacityAreaOrganization]):
+    """Paginated response for capacity area organizations"""
+
+    pass
 
 
 class GetQuotaRequest(BaseOFSResponse):

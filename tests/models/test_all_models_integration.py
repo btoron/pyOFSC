@@ -150,11 +150,12 @@ class TestAllModelsIntegration:
         application = Application(**app_data)
         assert application.name == "Test"
         
-        # Test WorkSkillGroup model (has extra="allow")
-        group_data = {"label": "TEST_GROUP", "name": "Test"}
-        group_data.update(test_data)
-        work_skill_group = WorkSkillGroup(**group_data)
-        assert work_skill_group.name == "Test"
+        # Test Property model (has extra="allow")
+        from ofsc.models.metadata import Property
+        property_data = {"label": "TEST_PROP", "name": "Test", "type": "string"}
+        property_data.update(test_data)
+        property_model = Property(**property_data)
+        assert property_model.name == "Test"
         
         # Test ActivityTypeFeatures model (has extra="allow")
         features_data = {"allowCreationInBuckets": True}

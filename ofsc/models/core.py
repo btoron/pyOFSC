@@ -445,9 +445,10 @@ class Subscription(BaseOFSResponse):
     organization: str = "default"
 
 
-class SubscriptionList(BaseOFSResponse):
-    totalResults: int = 0
-    items: list[dict[str, Any]] = Field(default_factory=list, alias="subscriptions")
+class SubscriptionList(OFSResponseList[Subscription]):
+    @property
+    def subscriptions(self) -> List[Subscription]:
+        return [item for item in self.items] if self.items else []
 
 
 class UserListResponse(OFSResponseList[User]):

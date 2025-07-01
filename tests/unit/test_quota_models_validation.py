@@ -1,7 +1,7 @@
 """Validation tests for quota-related models in OFSC v3.0."""
 
 import pytest
-# Remove unused imports
+from pydantic import ValidationError
 
 from ofsc.models.capacity import (
     GetQuotaRequest,
@@ -195,20 +195,27 @@ class TestQuotaModelsValidation:
             assert issubclass(model_class, BaseOFSResponse), f"{model_class.__name__} should inherit from BaseOFSResponse"
     
     def test_quota_models_with_extra_fields(self):
-        """Test quota models handle extra fields gracefully."""
-        # Test with extra fields that might come from API
+        """Test quota models properly reject extra fields."""
+        # Test that extra fields are rejected (default behavior)
         request_data = {
             "dates": ["2024-01-15"],  # Correct field name
             "areas": ["AREA1"],
-            "extraField": "should be ignored",
+            "extraField": "should be rejected",
             "anotherExtra": 123
         }
         
-        request = GetQuotaRequest(**request_data)
+        # This should raise a ValidationError due to extra="forbid"
+        with pytest.raises(ValidationError):
+            GetQuotaRequest(**request_data)
+        
+        # But without extra fields, it should work fine
+        valid_data = {
+            "dates": ["2024-01-15"],
+            "areas": ["AREA1"]
+        }
+        request = GetQuotaRequest(**valid_data)
         assert request.dates.to_list() == ["2024-01-15"]
         assert request.areas.to_list() == ["AREA1"]
-        # Extra fields should be accessible through model_extra
-        assert hasattr(request, 'model_extra')
     
     def test_nested_quota_structure_validation(self):
         """Test complex nested quota structure validation."""
@@ -280,14 +287,13 @@ class TestQuotaModelsValidation:
         request = GetQuotaRequest(
             dates=["2024-01-15"],  # Correct field name
             areas=["AREA1", "AREA2"],
-            categories=["CAT1"],
-            timeIntervals=["09:00-17:00"]
+            categories=["CAT1"]
         )
         
         request_dict = request.model_dump()
-        # expected_keys = {"dates", "areas", "categories", "timeIntervals"}
         assert "dates" in request_dict
         assert "areas" in request_dict
+        assert "categories" in request_dict
         # CsvList fields serialize as {"value": "csv,string"}
         assert request_dict["dates"]["value"] == "2024-01-15"
         assert request_dict["areas"]["value"] == "AREA1,AREA2"

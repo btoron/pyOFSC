@@ -19,6 +19,16 @@ from ofsc.models.capacity import (
     CapacityCategoryItem,
     CapacityAreaListResponse,
     CapacityCategoryListResponse,
+    CapacityAreaTimeInterval,
+    CapacityAreaTimeIntervalListResponse,
+    CapacityAreaTimeSlot,
+    CapacityAreaTimeSlotListResponse,
+    CapacityAreaWorkzone,
+    CapacityAreaWorkzoneListResponse,
+    CapacityAreaCategory,
+    CapacityAreaCategoryListResponse,
+    CapacityAreaOrganization,
+    CapacityAreaOrganizationListResponse,
 )
 
 
@@ -197,3 +207,177 @@ class TestCapacityModelsValidation:
         assert request.get_dates_list() == ["2024-01-01", "2024-01-02"]
         assert request.get_areas_list() == ["AREA1", "AREA2"]
         assert request.get_categories_list() == ["CAT1", "CAT2"]
+    
+    def test_capacity_area_categories_model_validation(self, response_examples_path):
+        """Test CapacityAreaCategory model against endpoint 16 response."""
+        response_file = response_examples_path / "16_get_capacity_area_capacity_categories.json"
+        
+        if not response_file.exists():
+            pytest.skip("Capacity area categories response example not found")
+        
+        with open(response_file) as f:
+            data = json.load(f)
+        
+        # Test individual category items
+        if "items" in data and data["items"]:
+            for item in data["items"]:
+                category = CapacityAreaCategory(**item)
+                assert category.label is not None
+                assert category.name is not None
+                
+        # Test full response structure (remove metadata first)
+        test_data = data.copy()
+        if "_metadata" in test_data:
+            del test_data["_metadata"]
+        response = CapacityAreaCategoryListResponse(**test_data)
+        assert hasattr(response, "items")
+        assert isinstance(response.items, list)
+        
+    def test_capacity_area_workzones_v2_model_validation(self, response_examples_path):
+        """Test CapacityAreaWorkzone model against endpoint 17 (v2) response."""
+        response_file = response_examples_path / "17_get_capacity_area_workzones_v2.json"
+        
+        if not response_file.exists():
+            pytest.skip("Capacity area work zones v2 response example not found")
+        
+        with open(response_file) as f:
+            data = json.load(f)
+        
+        # Test individual workzone items
+        if "items" in data and data["items"]:
+            for item in data["items"]:
+                workzone = CapacityAreaWorkzone(**item)
+                assert workzone.workZoneLabel is not None
+                assert workzone.workZoneName is not None
+                
+        # Test full response structure (remove metadata first)
+        test_data = data.copy()
+        if "_metadata" in test_data:
+            del test_data["_metadata"]
+        response = CapacityAreaWorkzoneListResponse(**test_data)
+        assert hasattr(response, "items")
+        assert isinstance(response.items, list)
+        
+    def test_capacity_area_timeslots_model_validation(self, response_examples_path):
+        """Test CapacityAreaTimeSlot model against endpoint 19 response."""
+        response_file = response_examples_path / "19_get_capacity_area_timeslots.json"
+        
+        if not response_file.exists():
+            pytest.skip("Capacity area time slots response example not found")
+        
+        with open(response_file) as f:
+            data = json.load(f)
+        
+        # Test individual timeslot items
+        if "items" in data and data["items"]:
+            for item in data["items"]:
+                timeslot = CapacityAreaTimeSlot(**item)
+                assert timeslot.label is not None
+                assert timeslot.name is not None
+                assert timeslot.timeFrom is not None
+                assert timeslot.timeTo is not None
+                
+        # Test full response structure (remove metadata first)
+        test_data = data.copy()
+        if "_metadata" in test_data:
+            del test_data["_metadata"]
+        response = CapacityAreaTimeSlotListResponse(**test_data)
+        assert hasattr(response, "items")
+        assert isinstance(response.items, list)
+        
+    def test_capacity_area_timeintervals_model_validation(self, response_examples_path):
+        """Test CapacityAreaTimeInterval model against endpoint 20 response."""
+        response_file = response_examples_path / "20_get_capacity_area_timeintervals.json"
+        
+        if not response_file.exists():
+            pytest.skip("Capacity area time intervals response example not found")
+        
+        with open(response_file) as f:
+            data = json.load(f)
+        
+        # Test individual timeinterval items
+        if "items" in data and data["items"]:
+            for item in data["items"]:
+                timeinterval = CapacityAreaTimeInterval(**item)
+                assert timeinterval.timeFrom is not None
+                # timeTo is optional - some intervals only have timeFrom
+                
+        # Test full response structure (remove metadata first)
+        test_data = data.copy()
+        if "_metadata" in test_data:
+            del test_data["_metadata"]
+        response = CapacityAreaTimeIntervalListResponse(**test_data)
+        assert hasattr(response, "items")
+        assert isinstance(response.items, list)
+        
+    def test_capacity_area_organizations_model_validation(self, response_examples_path):
+        """Test CapacityAreaOrganization model against endpoint 21 response."""
+        response_file = response_examples_path / "21_get_capacity_area_organizations.json"
+        
+        if not response_file.exists():
+            pytest.skip("Capacity area organizations response example not found")
+        
+        with open(response_file) as f:
+            data = json.load(f)
+        
+        # Test individual organization items
+        if "items" in data and data["items"]:
+            for item in data["items"]:
+                organization = CapacityAreaOrganization(**item)
+                assert organization.label is not None
+                assert organization.name is not None
+                assert organization.type is not None
+                
+        # Test full response structure (remove metadata first)
+        test_data = data.copy()
+        if "_metadata" in test_data:
+            del test_data["_metadata"]
+        response = CapacityAreaOrganizationListResponse(**test_data)
+        assert hasattr(response, "items")
+        assert isinstance(response.items, list)
+        
+    def test_capacity_area_subresource_models_extra_fields(self):
+        """Test that new capacity area sub-resource models follow extra='forbid' behavior."""
+        # Test each model individually
+        
+        # TimeInterval - should accept valid fields, reject extra
+        valid_interval = {"timeFrom": "08", "timeTo": "12"}
+        interval = CapacityAreaTimeInterval(**valid_interval)
+        assert interval.timeFrom == "08"
+        assert interval.timeTo == "12"
+        
+        with pytest.raises(ValidationError):
+            CapacityAreaTimeInterval(**{**valid_interval, "extraField": "should_fail"})
+        
+        # TimeSlot - should accept valid fields, reject extra
+        valid_timeslot = {"label": "08-10", "name": "08-10", "timeFrom": "08:00:00", "timeTo": "10:00:00"}
+        timeslot = CapacityAreaTimeSlot(**valid_timeslot)
+        assert timeslot.label == "08-10"
+        
+        with pytest.raises(ValidationError):
+            CapacityAreaTimeSlot(**{**valid_timeslot, "extraField": "should_fail"})
+        
+        # Workzone - should accept valid fields, reject extra (v2 format only)
+        valid_workzone = {"workZoneLabel": "AREA1", "workZoneName": "Area 1"}
+        workzone = CapacityAreaWorkzone(**valid_workzone)
+        assert workzone.workZoneLabel == "AREA1"
+        assert workzone.workZoneName == "Area 1"
+        
+        with pytest.raises(ValidationError):
+            CapacityAreaWorkzone(**{**valid_workzone, "extraField": "should_fail"})
+        
+        # Category - should accept valid fields, reject extra
+        valid_category = {"label": "EST", "name": "Estimation"}
+        category = CapacityAreaCategory(**valid_category)
+        assert category.label == "EST"
+        
+        with pytest.raises(ValidationError):
+            CapacityAreaCategory(**{**valid_category, "extraField": "should_fail"})
+        
+        # Organization - should accept valid fields, reject extra
+        valid_org = {"label": "default", "name": "Default Org", "type": "inhouse"}
+        org = CapacityAreaOrganization(**valid_org)
+        assert org.label == "default"
+        
+        with pytest.raises(ValidationError):
+            CapacityAreaOrganization(**{**valid_org, "extraField": "should_fail"})

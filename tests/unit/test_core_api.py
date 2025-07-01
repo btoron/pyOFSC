@@ -20,17 +20,15 @@ def mock_subscription_response():
     """Mock subscription API response."""
     return {
         "totalResults": 2,
-        "limit": 100,
-        "offset": 0,
         "items": [
             {
                 "subscriptionId": "test_sub_1",
-                "subscriptionName": "Test Subscription 1",
+                "name": "Test Subscription 1",
                 "status": "active"
             },
             {
                 "subscriptionId": "test_sub_2", 
-                "subscriptionName": "Test Subscription 2",
+                "name": "Test Subscription 2",
                 "status": "active"
             }
         ]

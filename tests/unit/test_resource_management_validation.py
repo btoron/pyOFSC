@@ -167,7 +167,7 @@ class TestResourceManagementModelsValidation:
         skill_group = WorkSkillGroup(
             label="Electrical Skills",
             name="ELECTRICAL",
-            assignedWorkSkills=[
+            workSkills=[
                 WorksSkillAssignments(workSkillLabel="Wiring", level=3)
             ],
             active=True
@@ -175,8 +175,8 @@ class TestResourceManagementModelsValidation:
         
         assert skill_group.label == "Electrical Skills"
         assert skill_group.name == "ELECTRICAL"
-        assert len(skill_group.assignedWorkSkills) == 1
-        assert skill_group.assignedWorkSkills[0].workSkillLabel == "Wiring"
+        assert len(skill_group.workSkills) == 1
+        assert skill_group.workSkills[0].workSkillLabel == "Wiring"
         assert skill_group.active is True
     
     def test_work_skill_assignments_validation(self):
@@ -200,12 +200,12 @@ class TestResourceManagementModelsValidation:
         skill_group = WorkSkillGroup(
             label="Technical Group",
             name="TECH_GROUP",
-            assignedWorkSkills=[assignment1, assignment2]
+            workSkills=[assignment1, assignment2]
         )
         
-        assert len(skill_group.assignedWorkSkills) == 2
-        assert skill_group.assignedWorkSkills[0].workSkillLabel == "Plumbing"
-        assert skill_group.assignedWorkSkills[1].workSkillLabel == "HVAC"
+        assert len(skill_group.workSkills) == 2
+        assert skill_group.workSkills[0].workSkillLabel == "Plumbing"
+        assert skill_group.workSkills[1].workSkillLabel == "HVAC"
     
     def test_work_skill_group_list_validation(self):
         """Test WorkSkillGroupListResponse model validation."""
@@ -456,15 +456,12 @@ class TestResourceManagementModelsValidation:
         assert application.label == "Specialist App"
         assert application.name == "SPECIALIST_APP"
         
-        # Test WorkSkillGroup with extra fields
-        skill_group_data = {
-            "label": "Specialist Group",
-            "name": "SPECIALIST_GROUP",
-            "customField": "custom_value",
-            "additionalProperty": "additional_value"
-        }
-        
-        skill_group = WorkSkillGroup(**skill_group_data)
+        # Test that WorkSkillGroup no longer allows extra fields (now uses default extra="forbid")
+        # Just test the basic functionality
+        skill_group = WorkSkillGroup(
+            label="Specialist Group",
+            name="SPECIALIST_GROUP"
+        )
         assert skill_group.label == "Specialist Group"
         assert skill_group.name == "SPECIALIST_GROUP"
         

@@ -47,7 +47,7 @@ class ActivityTypeColors(BaseOFSResponse):
 class ActivityTypeFeatures(BaseOFSResponse):
     """Feature flags and capabilities for activity types"""
 
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="allow")  # Activity Types Features
     allowCreationInBuckets: Optional[bool] = False
     allowMassActivities: Optional[bool] = False
     allowMoveBetweenResources: Optional[bool] = False
@@ -97,9 +97,6 @@ class ActivityType(BaseOFSResponse):
     segmentMinDuration: Optional[int] = None
     timeSlots: Optional[List[ActivityTypeTimeSlots]] = None
     translations: TranslationList
-    links: Optional[List[Link]] = None
-
-    model_config = ConfigDict(extra="allow")
 
 
 class ActivityTypeListResponse(OFSResponseList[ActivityType]):
@@ -281,7 +278,7 @@ class Property(BaseOFSResponse):
             raise ValueError(f"{v} is not a valid GUI value")
         return v
 
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="allow")  # Properties
 
 
 class PropertyListResponse(OFSResponseList[Property]):
