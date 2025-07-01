@@ -34,19 +34,32 @@ from ofsc.models.metadata import (
     Application,
     ApplicationListResponse,
     EnumerationValueList,
+    Form,
+    FormListResponse,
     InventoryType,
     InventoryTypeListResponse,
+    Language,
+    LanguageListResponse,
+    LinkTemplate,
+    LinkTemplateListResponse,
+    NonWorkingReason,
+    NonWorkingReasonListResponse,
     Organization,
     OrganizationListResponse,
     Property,
     PropertyListResponse,
     ResourceTypeListResponse,
+    RoutingProfile,
+    RoutingProfileListResponse,
+    Shift,
+    ShiftListResponse,
     TimeSlotListResponse,
     Workskill,
     WorkskillConditionListResponse,
     WorkSkillGroup,
     WorkSkillGroupListResponse,
     WorkskillListResponse,
+    Workzone,
     WorkzoneListResponse,
 )
 
@@ -749,3 +762,242 @@ class OFSMetadataAPI:
 
         response: "Response" = await self.client.get(endpoint, params=params)
         return CapacityAreaOrganizationListResponse.from_response(response)
+
+    # Languages API
+    async def get_languages(
+        self, offset: int = 0, limit: int = 100
+    ) -> LanguageListResponse:
+        """Get languages list.
+
+        Args:
+            offset: Starting record offset (default: 0)
+            limit: Maximum records to return (default: 100, max: 1000)
+
+        Returns:
+            LanguageListResponse response model with list of languages
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        params = self._validate_params(PaginationParams, offset=offset, limit=limit)
+
+        endpoint = "/rest/ofscMetadata/v1/languages"
+        logging.info(
+            f"Fetching languages from endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return LanguageListResponse.from_response(response)
+
+    # Non-Working Reasons API  
+    async def get_non_working_reasons(
+        self, offset: int = 0, limit: int = 100
+    ) -> NonWorkingReasonListResponse:
+        """Get non-working reasons list.
+
+        Args:
+            offset: Starting record offset (default: 0)
+            limit: Maximum records to return (default: 100, max: 1000)
+
+        Returns:
+            NonWorkingReasonListResponse response model with list of non-working reasons
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        params = self._validate_params(PaginationParams, offset=offset, limit=limit)
+
+        endpoint = "/rest/ofscMetadata/v1/nonWorkingReasons"
+        logging.info(
+            f"Fetching non-working reasons from endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return NonWorkingReasonListResponse.from_response(response)
+
+    # Shifts API
+    async def get_shifts(
+        self, offset: int = 0, limit: int = 100
+    ) -> ShiftListResponse:
+        """Get shifts list.
+
+        Args:
+            offset: Starting record offset (default: 0)
+            limit: Maximum records to return (default: 100, max: 1000)
+
+        Returns:
+            ShiftListResponse response model with list of shifts
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        params = self._validate_params(PaginationParams, offset=offset, limit=limit)
+
+        endpoint = "/rest/ofscMetadata/v1/shifts"
+        logging.info(
+            f"Fetching shifts from endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return ShiftListResponse.from_response(response)
+
+    async def get_shift(self, label: str) -> Shift:
+        """Get individual shift by label.
+
+        Args:
+            label: Shift label identifier
+
+        Returns:
+            Shift response model with shift details
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        encoded_label = urllib.parse.quote_plus(label)
+        endpoint = f"/rest/ofscMetadata/v1/shifts/{encoded_label}"
+        logging.info(
+            f"Fetching shift from endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.get(endpoint)
+        return Shift.from_response(response)
+
+    # Forms API
+    async def get_forms(self, offset: int = 0, limit: int = 100) -> FormListResponse:
+        """Get forms list.
+
+        Args:
+            offset: Starting record offset (default: 0)
+            limit: Maximum records to return (default: 100, max: 1000)
+
+        Returns:
+            FormListResponse response model with list of forms
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        params = self._validate_params(PaginationParams, offset=offset, limit=limit)
+
+        endpoint = "/rest/ofscMetadata/v1/forms"
+        logging.info(
+            f"Fetching forms from endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return FormListResponse.from_response(response)
+
+    async def get_form(self, label: str) -> Form:
+        """Get individual form by label.
+
+        Args:
+            label: Form label identifier
+
+        Returns:
+            Form response model with form details
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        encoded_label = urllib.parse.quote_plus(label)
+        endpoint = f"/rest/ofscMetadata/v1/forms/{encoded_label}"
+        logging.info(
+            f"Fetching form from endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.get(endpoint)
+        return Form.from_response(response)
+
+    # Link Templates API
+    async def get_link_templates(
+        self, offset: int = 0, limit: int = 100
+    ) -> LinkTemplateListResponse:
+        """Get link templates list.
+
+        Args:
+            offset: Starting record offset (default: 0)
+            limit: Maximum records to return (default: 100, max: 1000)
+
+        Returns:
+            LinkTemplateListResponse response model with list of link templates
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        params = self._validate_params(PaginationParams, offset=offset, limit=limit)
+
+        endpoint = "/rest/ofscMetadata/v1/linkTemplates"
+        logging.info(
+            f"Fetching link templates from endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return LinkTemplateListResponse.from_response(response)
+
+    async def get_link_template(self, label: str) -> LinkTemplate:
+        """Get individual link template by label.
+
+        Args:
+            label: Link template label identifier
+
+        Returns:
+            LinkTemplate response model with link template details
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        encoded_label = urllib.parse.quote_plus(label)
+        endpoint = f"/rest/ofscMetadata/v1/linkTemplates/{encoded_label}"
+        logging.info(
+            f"Fetching link template from endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.get(endpoint)
+        return LinkTemplate.from_response(response)
+
+    # Routing Profiles API
+    async def get_routing_profiles(
+        self, offset: int = 0, limit: int = 100
+    ) -> RoutingProfileListResponse:
+        """Get routing profiles list.
+
+        Args:
+            offset: Starting record offset (default: 0)
+            limit: Maximum records to return (default: 100, max: 1000)
+
+        Returns:
+            RoutingProfileListResponse response model with list of routing profiles
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        params = self._validate_params(PaginationParams, offset=offset, limit=limit)
+
+        endpoint = "/rest/ofscMetadata/v1/routingProfiles"
+        logging.info(
+            f"Fetching routing profiles from endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return RoutingProfileListResponse.from_response(response)
+
+    # Workzones API (individual endpoint)
+    async def get_workzone(self, label: str) -> Workzone:
+        """Get individual workzone by label.
+
+        Args:
+            label: Workzone label identifier
+
+        Returns:
+            Workzone response model with workzone details
+
+        Raises:
+            OFSValidationException: If parameters are invalid
+        """
+        encoded_label = urllib.parse.quote_plus(label)
+        endpoint = f"/rest/ofscMetadata/v1/workZones/{encoded_label}"
+        logging.info(
+            f"Fetching workzone from endpoint: {endpoint} and base URL: {self.client.base_url}"
+        )
+
+        response: "Response" = await self.client.get(endpoint)
+        return Workzone.from_response(response)

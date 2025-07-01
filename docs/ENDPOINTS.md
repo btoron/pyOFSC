@@ -3,11 +3,11 @@
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints available in the pyOFSC Python Wrapper v3.0.
 
 **Total Endpoints:** 242  
-**Implemented in v3.0:** 32 (13.2%)
+**Implemented in v3.0:** 41 (16.9%)
 
 ## Implementation Coverage by Module
 
-- **metadata**: 30/86 endpoints (34.9%) ✅
+- **metadata**: 39/86 endpoints (45.3%) ✅
 - **core**: 2/127 endpoints (1.6%) ⚠️  
 - **capacity**: 0/11 endpoints (0%) ❌
 - **statistics**: 0/6 endpoints (0%) ❌
@@ -45,16 +45,16 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 24 | `/rest/ofscMetadata/v1/capacityCategories/{label}` | GET | metadata | v3.0.0-dev | `async def get_capacity_category(self, label: str) -> CapacityCategory` |
 | 25 | `/rest/ofscMetadata/v1/capacityCategories/{label}` | PUT | metadata | | |
 | 26 | `/rest/ofscMetadata/v1/capacityCategories/{label}` | DELETE | metadata | | |
-| 27 | `/rest/ofscMetadata/v1/forms` | GET | metadata | | |
-| 28 | `/rest/ofscMetadata/v1/forms/{label}` | GET | metadata | | |
+| 27 | `/rest/ofscMetadata/v1/forms` | GET | metadata | v3.0.0-dev | `async def get_forms(self, offset: int = 0, limit: int = 100) -> FormListResponse` |
+| 28 | `/rest/ofscMetadata/v1/forms/{label}` | GET | metadata | v3.0.0-dev | `async def get_form(self, label: str) -> Form` |
 | 29 | `/rest/ofscMetadata/v1/forms/{label}` | PUT | metadata | | |
 | 30 | `/rest/ofscMetadata/v1/forms/{label}` | DELETE | metadata | | |
 | 31 | `/rest/ofscMetadata/v1/inventoryTypes` | GET | metadata | v3.0.0-dev | `async def get_inventory_types(self) -> InventoryTypeListResponse` |
 | 32 | `/rest/ofscMetadata/v1/inventoryTypes/{label}` | GET | metadata | v3.0.0-dev | `async def get_inventory_type(self, label: str) -> InventoryType` |
 | 33 | `/rest/ofscMetadata/v1/inventoryTypes/{label}` | PUT | metadata | | |
-| 34 | `/rest/ofscMetadata/v1/languages` | GET | metadata | | |
-| 35 | `/rest/ofscMetadata/v1/linkTemplates` | GET | metadata | | |
-| 36 | `/rest/ofscMetadata/v1/linkTemplates/{label}` | GET | metadata | | |
+| 34 | `/rest/ofscMetadata/v1/languages` | GET | metadata | v3.0.0-dev | `async def get_languages(self, offset: int = 0, limit: int = 100) -> LanguageListResponse` |
+| 35 | `/rest/ofscMetadata/v1/linkTemplates` | GET | metadata | v3.0.0-dev | `async def get_link_templates(self, offset: int = 0, limit: int = 100) -> LinkTemplateListResponse` |
+| 36 | `/rest/ofscMetadata/v1/linkTemplates/{label}` | GET | metadata | v3.0.0-dev | `async def get_link_template(self, label: str) -> LinkTemplate` |
 | 37 | `/rest/ofscMetadata/v1/linkTemplates/{label}` | POST | metadata | | |
 | 38 | `/rest/ofscMetadata/v1/linkTemplates/{label}` | PATCH | metadata | | |
 | 39 | `/rest/ofscMetadata/v1/mapLayers` | GET | metadata | | |
@@ -63,7 +63,7 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 42 | `/rest/ofscMetadata/v1/mapLayers/{label}` | PUT | metadata | | |
 | 43 | `/rest/ofscMetadata/v1/mapLayers/custom-actions/populateLayers/{downloadId}` | GET | metadata | | |
 | 44 | `/rest/ofscMetadata/v1/mapLayers/custom-actions/populateLayers` | POST | metadata | | |
-| 45 | `/rest/ofscMetadata/v1/nonWorkingReasons` | GET | metadata | | |
+| 45 | `/rest/ofscMetadata/v1/nonWorkingReasons` | GET | metadata | v3.0.0-dev | `async def get_non_working_reasons(self, offset: int = 0, limit: int = 100) -> NonWorkingReasonListResponse` |
 | 46 | `/rest/ofscMetadata/v1/organizations` | GET | metadata | v3.0.0-dev | `async def get_organizations(self) -> OrganizationListResponse` |
 | 47 | `/rest/ofscMetadata/v1/organizations/{label}` | GET | metadata | v3.0.0-dev | `async def get_organization(self, label: str) -> Organization` |
 | 48 | `/rest/ofscMetadata/v1/plugins/custom-actions/import` | POST | metadata | | |
@@ -75,14 +75,14 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 54 | `/rest/ofscMetadata/v1/properties/{label}/enumerationList` | GET | metadata | v3.0.0-dev | `async def get_enumeration_values(self, label: str, offset: int = 0, limit: int = 100) -> EnumerationValueList` |
 | 55 | `/rest/ofscMetadata/v1/properties/{label}/enumerationList` | PUT | metadata | | |
 | 56 | `/rest/ofscMetadata/v1/resourceTypes` | GET | metadata | v3.0.0-dev | `async def get_resource_types(self) -> ResourceTypeListResponse` |
-| 57 | `/rest/ofscMetadata/v1/routingProfiles` | GET | metadata | | |
+| 57 | `/rest/ofscMetadata/v1/routingProfiles` | GET | metadata | v3.0.0-dev | `async def get_routing_profiles(self, offset: int = 0, limit: int = 100) -> RoutingProfileListResponse` |
 | 58 | `/rest/ofscMetadata/v1/routingProfiles/{profileLabel}/plans` | GET | metadata | | |
 | 59 | `/rest/ofscMetadata/v1/routingProfiles/{profileLabel}/plans/{planLabel}/custom-actions/export` | GET | metadata | | |
 | 60 | `/rest/ofscMetadata/v1/routingProfiles/{profileLabel}/plans/custom-actions/import` | PUT | metadata | | |
 | 61 | `/rest/ofscMetadata/v1/routingProfiles/{profileLabel}/plans/custom-actions/forceImport` | PUT | metadata | | |
 | 62 | `/rest/ofscMetadata/v1/routingProfiles/{profileLabel}/plans/{planLabel}/{resourceExternalId}/{date}/custom-actions/start` | POST | metadata | | |
-| 63 | `/rest/ofscMetadata/v1/shifts` | GET | metadata | | |
-| 64 | `/rest/ofscMetadata/v1/shifts/{label}` | GET | metadata | | |
+| 63 | `/rest/ofscMetadata/v1/shifts` | GET | metadata | v3.0.0-dev | `async def get_shifts(self, offset: int = 0, limit: int = 100) -> ShiftListResponse` |
+| 64 | `/rest/ofscMetadata/v1/shifts/{label}` | GET | metadata | v3.0.0-dev | `async def get_shift(self, label: str) -> Shift` |
 | 65 | `/rest/ofscMetadata/v1/shifts/{label}` | DELETE | metadata | | |
 | 66 | `/rest/ofscMetadata/v1/shifts/{label}` | PUT | metadata | | |
 | 67 | `/rest/ofscMetadata/v1/timeSlots` | GET | metadata | v3.0.0-dev | `async def get_timeslots(self, offset: int = 0, limit: int = 100) -> TimeSlotListResponse` |
@@ -100,7 +100,7 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 79 | `/rest/ofscMetadata/v1/workZones` | POST | metadata | | |
 | 80 | `/rest/ofscMetadata/v1/workZones` | PUT | metadata | | |
 | 81 | `/rest/ofscMetadata/v1/workZones` | PATCH | metadata | | |
-| 82 | `/rest/ofscMetadata/v1/workZones/{label}` | GET | metadata | | |
+| 82 | `/rest/ofscMetadata/v1/workZones/{label}` | GET | metadata | v3.0.0-dev | `async def get_workzone(self, label: str) -> Workzone` |
 | 83 | `/rest/ofscMetadata/v1/workZones/{label}` | PUT | metadata | | |
 | 84 | `/rest/ofscMetadata/v1/workZones/custom-actions/populateShapes/{downloadId}` | GET | metadata | | |
 | 85 | `/rest/ofscMetadata/v1/workZones/custom-actions/populateShapes` | POST | metadata | | |

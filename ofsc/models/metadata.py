@@ -410,3 +410,117 @@ class WorkzoneListResponse(OFSResponseList[Workzone]):
     """Paginated response for work zone lists"""
 
     pass
+
+
+# Languages
+class Language(BaseOFSResponse):
+    """Language metadata and configuration"""
+
+    label: str
+    code: str
+    name: str
+    active: bool
+    translations: Optional[TranslationList] = []
+
+
+class LanguageListResponse(OFSResponseList[Language]):
+    """Paginated response for language lists"""
+
+    pass
+
+
+# Non-Working Reasons
+class NonWorkingReason(BaseOFSResponse):
+    """Non-working reason metadata"""
+
+    label: str
+    name: str
+    active: bool
+    translations: Optional[TranslationList] = []
+
+
+class NonWorkingReasonListResponse(OFSResponseList[NonWorkingReason]):
+    """Paginated response for non-working reason lists"""
+
+    pass
+
+
+# Shifts
+class Shift(BaseOFSResponse):
+    """Shift metadata and configuration"""
+
+    label: str
+    name: str
+    active: bool
+    type: str
+    points: Optional[int] = None
+    workTimeStart: Optional[str] = None
+    workTimeEnd: Optional[str] = None
+    links: Optional[List[Link]] = []
+
+
+class ShiftListResponse(OFSResponseList[Shift]):
+    """Paginated response for shift lists"""
+
+    pass
+
+
+# Forms
+class Form(BaseOFSResponse):
+    """Form metadata and configuration"""
+
+    label: str
+    name: str
+    translations: Optional[TranslationList] = []
+    links: Optional[List[Link]] = []
+
+
+class FormListResponse(OFSResponseList[Form]):
+    """Paginated response for form lists"""
+
+    pass
+
+
+# Link Templates
+class LinkTemplateTranslation(BaseOFSResponse):
+    """Translation for link template names"""
+
+    language: str
+    name: str
+    reverseName: str
+
+
+class LinkTemplate(BaseOFSResponse):
+    """Link template metadata and configuration"""
+
+    label: str
+    reverseLabel: str
+    active: bool
+    linkType: str
+    minInterval: str
+    maxInterval: str
+    minIntervalValue: int
+    maxIntervalValue: Optional[int] = None
+    translations: Optional[List[LinkTemplateTranslation]] = []
+    links: Optional[List[Link]] = []
+
+
+class LinkTemplateListResponse(OFSResponseList[LinkTemplate]):
+    """Paginated response for link template lists"""
+
+    pass
+
+
+# Routing Profiles
+class RoutingProfile(BaseOFSResponse):
+    """Routing profile metadata"""
+
+    profileLabel: str
+
+
+class RoutingProfileListResponse(OFSResponseList[RoutingProfile]):
+    """Paginated response for routing profile lists"""
+
+    pass
+
+
