@@ -10,9 +10,10 @@ on:
       test_category:
         description: 'Test category to run'
         required: false
-        default: 'all'
+        default: 'fast'
         type: choice
         options:
+          - fast
           - all
           - unit
           - models
@@ -43,7 +44,7 @@ jobs:
             CATEGORY="${{ github.event.inputs.test_category }}"
             PARALLEL="${{ github.event.inputs.parallel }}"
           else
-            CATEGORY="all"
+            CATEGORY="fast"
             PARALLEL="true"
           fi
           
@@ -57,7 +58,7 @@ jobs:
     name: Unit Tests
     runs-on: ubuntu-latest
     needs: test-strategy
-    if: needs.test-strategy.outputs.strategy == 'all' || needs.test-strategy.outputs.strategy == 'unit'
+    if: needs.test-strategy.outputs.strategy == 'all' || needs.test-strategy.outputs.strategy == 'fast' || needs.test-strategy.outputs.strategy == 'unit'
     strategy:
       fail-fast: false
       matrix:
@@ -80,13 +81,10 @@ jobs:
           uv sync --dev
 
       - name: Run unit tests
-        env:
-          PYTEST_RATE_LIMITED: ${{ needs.test-strategy.outputs.parallel == 'true' && 'true' || 'false' }}
-          PYTEST_WORKERS: ${{ needs.test-strategy.outputs.parallel == 'true' && '4' || '1' }}
         run: |
           if [ "${{ needs.test-strategy.outputs.parallel }}" = "true" ]; then
-            echo "Running unit tests in parallel with 4 workers"
-            uv run python scripts/run_tests_parallel.py --unit --workers 4 --measure
+            echo "Running unit tests in parallel with optimized distribution"
+            uv run pytest tests/unit/ -n 8 --dist loadscope -v
           else
             echo "Running unit tests sequentially"
             uv run pytest tests/unit/ -v
@@ -106,7 +104,7 @@ jobs:
     name: Model Tests
     runs-on: ubuntu-latest
     needs: test-strategy
-    if: needs.test-strategy.outputs.strategy == 'all' || needs.test-strategy.outputs.strategy == 'models'
+    if: needs.test-strategy.outputs.strategy == 'all' || needs.test-strategy.outputs.strategy == 'fast' || needs.test-strategy.outputs.strategy == 'models'
     steps:
       - uses: actions/checkout@v4
 
@@ -125,13 +123,10 @@ jobs:
           uv sync --dev
 
       - name: Run model tests
-        env:
-          PYTEST_RATE_LIMITED: ${{ needs.test-strategy.outputs.parallel == 'true' && 'true' || 'false' }}
-          PYTEST_WORKERS: ${{ needs.test-strategy.outputs.parallel == 'true' && '4' || '1' }}
         run: |
           if [ "${{ needs.test-strategy.outputs.parallel }}" = "true" ]; then
-            echo "Running model tests in parallel with 4 workers"
-            uv run python scripts/run_tests_parallel.py --models --workers 4 --measure
+            echo "Running model tests in parallel with optimized distribution"
+            uv run pytest tests/models/ -n 8 --dist loadscope -v
           else
             echo "Running model tests sequentially"
             uv run pytest tests/models/ -v
@@ -176,14 +171,13 @@ jobs:
           OFSC_CLIENT_ID: ${{ secrets.OFSC_CLIENT_ID }}
           OFSC_CLIENT_SECRET: ${{ secrets.OFSC_CLIENT_SECRET }}
           PYTEST_RATE_LIMITED: "true"  # Always enable rate limiting for E2E tests
-          PYTEST_WORKERS: ${{ needs.test-strategy.outputs.parallel == 'true' && '4' || '1' }}
         run: |
           if [ "${{ needs.test-strategy.outputs.parallel }}" = "true" ]; then
-            echo "Running end-to-end tests in parallel with rate limiting (max 4 workers)"
-            uv run python scripts/run_tests_parallel.py --end-to-end --workers 4 --measure
+            echo "Running end-to-end tests in parallel with rate limiting"
+            uv run pytest tests/end_to_end/ -n 4 -v
           else
             echo "Running end-to-end tests sequentially"
-            uv run pytest tests/end_to_end/ -v -m live
+            uv run pytest tests/end_to_end/ -v
           fi
 
       - name: Upload test results
@@ -191,6 +185,53 @@ jobs:
         if: always()
         with:
           name: e2e-test-results
+          path: |
+            test_performance_results/
+            test_debug/
+          retention-days: 7
+
+  mixed-tests:
+    name: Mixed Tests (All Categories)
+    runs-on: ubuntu-latest
+    needs: test-strategy
+    if: needs.test-strategy.outputs.strategy == 'all'
+    environment: testing
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          uv sync --dev
+
+      - name: Run all tests with optimized distribution
+        env:
+          OFSC_INSTANCE: ${{ secrets.OFSC_INSTANCE }}
+          OFSC_CLIENT_ID: ${{ secrets.OFSC_CLIENT_ID }}
+          OFSC_CLIENT_SECRET: ${{ secrets.OFSC_CLIENT_SECRET }}
+        run: |
+          if [ "${{ needs.test-strategy.outputs.parallel }}" = "true" ]; then
+            echo "Running all tests with optimized mixed distribution"
+            uv run pytest tests/ --include-e2e -n 8 --dist loadfile -v
+          else
+            echo "Running all tests sequentially"
+            uv run pytest tests/ --include-e2e -v
+          fi
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mixed-test-results
           path: |
             test_performance_results/
             test_debug/
@@ -225,7 +266,12 @@ jobs:
           OFSC_CLIENT_SECRET: ${{ secrets.OFSC_CLIENT_SECRET }}
         run: |
           echo "Measuring baseline test performance"
-          uv run python scripts/measure_test_performance.py
+          echo "=== Separate execution baseline ==="
+          time bash -c 'uv run pytest tests/end_to_end/ -n 8 > e2e.log 2>&1 & uv run pytest tests/unit tests/models -n 8 > fast.log 2>&1; wait'
+          echo "=== Mixed execution optimized ==="
+          time uv run pytest tests/ --include-e2e -n 8 --dist loadfile
+          echo "=== Mixed execution standard ==="
+          time uv run pytest tests/ --include-e2e
 
       - name: Upload performance results
         uses: actions/upload-artifact@v4
@@ -237,7 +283,7 @@ jobs:
   test-summary:
     name: Test Summary
     runs-on: ubuntu-latest
-    needs: [test-strategy, unit-tests, model-tests, end-to-end-tests]
+    needs: [test-strategy, unit-tests, model-tests, end-to-end-tests, mixed-tests]
     if: always()
     steps:
       - name: Download all test results
@@ -259,6 +305,7 @@ jobs:
           echo "| Unit Tests | ${{ needs.unit-tests.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Model Tests | ${{ needs.model-tests.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| End-to-End Tests | ${{ needs.end-to-end-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Mixed Tests (All) | ${{ needs.mixed-tests.result }} |" >> $GITHUB_STEP_SUMMARY
           
           # Check for performance results
           if [ -d "test-results/performance-baseline" ]; then
@@ -271,7 +318,8 @@ jobs:
         run: |
           if [ "${{ needs.unit-tests.result }}" = "failure" ] || 
              [ "${{ needs.model-tests.result }}" = "failure" ] || 
-             [ "${{ needs.end-to-end-tests.result }}" = "failure" ]; then
+             [ "${{ needs.end-to-end-tests.result }}" = "failure" ] ||
+             [ "${{ needs.mixed-tests.result }}" = "failure" ]; then
             echo "❌ One or more test jobs failed"
             exit 1
           else
