@@ -24,7 +24,7 @@ from pydantic import (
     model_validator,
 )
 
-from .base import BaseOFSResponse, OFSResponseList
+from .base import BaseOFSResponse, OFSResponseList, Link as BaseLink
 
 
 # Resources
@@ -412,7 +412,7 @@ class DailyExtractItem(BaseOFSResponse):
     name: str
     bytes: Optional[int] = None
     mediaType: Optional[str] = None
-    links: list[Link]
+    links: list[BaseLink]
 
 
 class DailyExtractItemList(BaseOFSResponse):

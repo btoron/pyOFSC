@@ -96,7 +96,7 @@ class BaseOFSResponse(BaseModel):
         return self._raw_response
 
     @classmethod
-    def from_response(cls, response: "httpx.Response", **kwargs):
+    def from_response(cls, response: "httpx.Response", **kwargs) -> "BaseOFSResponse":
         """Create model instance from httpx response.
 
         Args:
@@ -226,6 +226,6 @@ class TranslationList(RootModel[List[Translation]]):
     def __len__(self):
         return len(self.root)
 
-    def map(self):
+    def map(self) -> Dict[str, Translation]:
         """Create a mapping of language codes to translation objects"""
         return {translation.language: translation for translation in self.root}

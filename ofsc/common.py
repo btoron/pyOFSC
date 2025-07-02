@@ -59,9 +59,8 @@ def wrap_return(*decorator_args, **decorator_kwargs):
                             else:
                                 return data_response
                 else:
-                    if not config.auto_raise:
-                        return response.json()
-                    # Check if response.statyus code is between 400 and 499
+                    # Always raise exceptions on HTTP errors (R7.3)
+                    # Check if response.status code is between 400 and 499
                     if 400 <= response.status_code < 500:
                         logging.error(response.json())
                         raise OFSAPIException(**response.json())
@@ -72,9 +71,8 @@ def wrap_return(*decorator_args, **decorator_kwargs):
                     # We return the filed content in a bytes object
                     return response.content
                 else:
-                    if not config.auto_raise:
-                        return response.json()
-                    # Check if response.statyus code is between 400 and 499
+                    # Always raise exceptions on HTTP errors (R7.3)
+                    # Check if response.status code is between 400 and 499
                     if 400 <= response.status_code < 500:
                         logging.error(response.json())
                         raise OFSAPIException(**response.json())

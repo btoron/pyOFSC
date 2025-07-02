@@ -603,7 +603,7 @@ class Language(BaseOFSResponse):
     code: str
     name: str
     active: bool
-    translations: Optional[TranslationList] = []
+    translations: Optional[TranslationList] = None
 
 
 class LanguageListResponse(OFSResponseList[Language]):
@@ -619,7 +619,7 @@ class NonWorkingReason(BaseOFSResponse):
     label: str
     name: str
     active: bool
-    translations: Optional[TranslationList] = []
+    translations: Optional[TranslationList] = None
 
 
 class NonWorkingReasonListResponse(OFSResponseList[NonWorkingReason]):
@@ -654,7 +654,7 @@ class Form(BaseOFSResponse):
 
     label: str
     name: str
-    translations: Optional[TranslationList] = []
+    translations: Optional[TranslationList] = None
     links: Optional[List[Link]] = []
     content: Optional[str] = None  # Individual form endpoint includes full form content
 

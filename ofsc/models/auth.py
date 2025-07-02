@@ -38,7 +38,7 @@ class OFSConfig(BaseOFSResponse):
     _auth_instance: Optional['BaseAuth'] = None
 
     @property
-    def basicAuthString(self):
+    def basicAuthString(self) -> bytes:
         """Generate Basic Auth string for HTTP headers (legacy compatibility)"""
         return base64.b64encode(
             bytes(self.clientID + "@" + self.companyName + ":" + self.secret, "utf-8")
@@ -47,7 +47,8 @@ class OFSConfig(BaseOFSResponse):
     model_config = ConfigDict(validate_assignment=True, arbitrary_types_allowed=True)
 
     @field_validator("baseURL")
-    def set_base_URL(cls, url, info: ValidationInfo):
+    @classmethod
+    def set_base_URL(cls, url, info: ValidationInfo) -> str:
         """Auto-generate base URL from company name if not provided"""
         return url or f"https://{info.data['companyName']}.fs.ocs.oraclecloud.com"
     

@@ -7,6 +7,10 @@ All methods are async and return Pydantic models.
 from typing import List, Optional
 from urllib.parse import quote
 
+import httpx
+from pydantic import BaseModel, Field, ValidationError
+
+from ofsc.exceptions import OFSValidationException
 from ..models.capacity import (
     GetCapacityResponse,
     GetQuotaResponse,
@@ -15,12 +19,65 @@ from ..models.capacity import (
 )
 
 
+# Request validation models (internal use only)
+class GetCapacityParams(BaseModel):
+    """Internal validation for get capacity parameters."""
+    
+    dates: List[str] = Field(description="List of dates in YYYY-MM-DD format")
+    areas: Optional[List[str]] = Field(None, description="List of capacity area labels")
+    categories: Optional[List[str]] = Field(None, description="List of capacity category labels")
+    fields: Optional[List[str]] = Field(None, description="List of fields to include")
+    aggregateResults: bool = Field(False, description="Whether to aggregate results")
+    availableTimeIntervals: str = Field("all", description="Available time intervals filter")
+    calendarTimeIntervals: str = Field("all", description="Calendar time intervals filter")
+
+
+class GetQuotaParams(BaseModel):
+    """Internal validation for get quota parameters."""
+    
+    dates: List[str] = Field(description="List of dates in YYYY-MM-DD format")
+    areas: Optional[List[str]] = Field(None, description="List of capacity area labels")
+    categories: Optional[List[str]] = Field(None, description="List of capacity category labels")
+    aggregateResults: Optional[bool] = Field(None, description="Whether to aggregate results")
+    categoryLevel: Optional[bool] = Field(None, description="Include category-level quota")
+    intervalLevel: Optional[bool] = Field(None, description="Include interval-level quota")
+    returnStatuses: Optional[bool] = Field(None, description="Include quota status information")
+    timeSlotLevel: Optional[bool] = Field(None, description="Include time slot-level quota")
+
+
 class CapacityAPI:
     """Async client for OFSC Capacity API endpoints."""
 
-    def __init__(self, client):
-        """Initialize with base OFSC client."""
-        self._client = client
+    def __init__(self, client: httpx.AsyncClient):
+        """Initialize with httpx AsyncClient instance.
+        
+        Args:
+            client: httpx AsyncClient instance with base_url and auth headers configured
+        """
+        self.client = client
+
+    def _validate_params(self, model_class: type[BaseModel], **kwargs) -> dict:
+        """Validate request parameters using Pydantic models.
+        
+        Args:
+            model_class: Pydantic model class for validation
+            **kwargs: Parameters to validate
+            
+        Returns:
+            Validated parameters as dict
+            
+        Raises:
+            OFSValidationException: If validation fails
+        """
+        try:
+            model = model_class(**kwargs)
+            # Convert to dict, excluding None values
+            return model.model_dump(exclude_none=True)
+        except ValidationError as e:
+            raise OFSValidationException(
+                message=f"Invalid parameters for {model_class.__name__}",
+                errors=e.errors()
+            )
 
     async def get_capacity(
         self,
@@ -46,8 +103,9 @@ class CapacityAPI:
         Returns:
             GetCapacityResponse: Capacity data for the specified parameters
         """
-        # Create request model for validation
-        request_data = CapacityRequest(
+        # Validate parameters
+        validated_params = self._validate_params(
+            GetCapacityParams,
             dates=dates,
             areas=areas,
             categories=categories,
@@ -56,6 +114,9 @@ class CapacityAPI:
             availableTimeIntervals=availableTimeIntervals,
             calendarTimeIntervals=calendarTimeIntervals,
         )
+        
+        # Create request model for CSV formatting
+        request_data = CapacityRequest(**validated_params)
         
         # Build query parameters
         params = {}
@@ -77,13 +138,13 @@ class CapacityAPI:
         if request_data.calendarTimeIntervals:
             params["calendarTimeIntervals"] = request_data.calendarTimeIntervals
 
-        response = await self._client._make_request(
+        response = await self.client.request(
             method="GET",
             url="/rest/ofscCapacity/v1/capacity",
             params=params,
         )
         
-        return GetCapacityResponse.model_validate(response)
+        return GetCapacityResponse.from_response(response)
 
     async def get_quota(
         self,
@@ -111,8 +172,9 @@ class CapacityAPI:
         Returns:
             GetQuotaResponse: Quota data for the specified parameters
         """
-        # Create request model for validation
-        request_data = GetQuotaRequest(
+        # Validate parameters
+        validated_params = self._validate_params(
+            GetQuotaParams,
             dates=dates,
             areas=areas,
             categories=categories,
@@ -122,6 +184,9 @@ class CapacityAPI:
             returnStatuses=returnStatuses,
             timeSlotLevel=timeSlotLevel,
         )
+        
+        # Create request model for CSV formatting
+        request_data = GetQuotaRequest(**validated_params)
         
         # Build query parameters
         params = {}
@@ -145,13 +210,13 @@ class CapacityAPI:
         if request_data.timeSlotLevel is not None:
             params["timeSlotLevel"] = str(request_data.timeSlotLevel).lower()
 
-        response = await self._client._make_request(
+        response = await self.client.request(
             method="GET",
             url="/rest/ofscCapacity/v1/quota",
             params=params,
         )
         
-        return GetQuotaResponse.model_validate(response)
+        return GetQuotaResponse.from_response(response)
 
     async def patch_quota(
         self,
@@ -184,8 +249,9 @@ class CapacityAPI:
             This method needs the request body implementation for quota modifications.
             Currently implemented as a placeholder for the API structure.
         """
-        # Create request model for validation
-        request_data = GetQuotaRequest(
+        # Validate parameters
+        validated_params = self._validate_params(
+            GetQuotaParams,
             dates=dates,
             areas=areas,
             categories=categories,
@@ -195,6 +261,9 @@ class CapacityAPI:
             returnStatuses=returnStatuses,
             timeSlotLevel=timeSlotLevel,
         )
+        
+        # Create request model for CSV formatting
+        request_data = GetQuotaRequest(**validated_params)
         
         # Build query parameters
         params = {}
@@ -221,11 +290,11 @@ class CapacityAPI:
         # TODO: Implement request body for quota modifications
         request_body = {}
 
-        response = await self._client._make_request(
+        response = await self.client.request(
             method="PATCH",
             url="/rest/ofscCapacity/v1/quota",
             params=params,
             json=request_body,
         )
         
-        return GetQuotaResponse.model_validate(response)
+        return GetQuotaResponse.from_response(response)

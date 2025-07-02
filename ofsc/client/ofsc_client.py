@@ -34,7 +34,7 @@ class OFSC(BaseOFSClient):
             client_secret: Client secret for authentication (can be loaded from OFSC_CLIENT_SECRET env var)
             base_url: Custom base URL as HttpUrl (auto-generated if not provided)
             use_token: Whether to use OAuth2 token authentication
-            auto_raise: Whether to automatically raise exceptions on API errors
+            auto_raise: DEPRECATED - errors are always raised (R7.3)
             auto_model: Whether to automatically convert responses to models
             connection_config: Configuration for HTTP connection pooling
             auth: Custom authentication instance (overrides other auth parameters)
@@ -106,7 +106,8 @@ class OFSC(BaseOFSClient):
         url = self._build_url(endpoint)
         response = await self.client.request(method, url, **kwargs)
 
-        if self._config.auto_raise and response.status_code >= 400:
+        # Always raise exceptions on HTTP errors (R7.3)
+        if response.status_code >= 400:
             response.raise_for_status()
 
         return response
@@ -148,7 +149,7 @@ class OFSC(BaseOFSClient):
                 raise RuntimeError(
                     "Client not initialized. Use async with statement or call __aenter__() first."
                 )
-            self._capacity = CapacityAPI(self)
+            self._capacity = CapacityAPI(self._client)
         return self._capacity
 
     @property

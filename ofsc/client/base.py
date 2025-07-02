@@ -96,7 +96,7 @@ class BaseOFSClient(ABC):
             client_secret: Client secret for authentication (can be loaded from OFSC_CLIENT_SECRET env var)
             base_url: Custom base URL as HttpUrl (auto-generated if not provided)
             use_token: Whether to use OAuth2 token authentication
-            auto_raise: Whether to automatically raise exceptions on API errors
+            auto_raise: DEPRECATED - errors are always raised (R7.3)
             auto_model: Whether to automatically convert responses to models
             connection_config: Configuration for HTTP connection pooling
             auth: Custom authentication instance (overrides other auth parameters)
