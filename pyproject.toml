@@ -47,12 +47,14 @@ log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(linen
 log_cli_date_format = "%Y-%m-%d %H:%M:%S"
 asyncio_default_fixture_loop_scope = "function"
 # Parallel execution configuration - auto-parallel enabled by default
-addopts = "--maxfail=3 --dist=worksteal --timeout=180"
+addopts = "--maxfail=3 --dist=loadscope --timeout=180"
 markers = [
     "unit: marks tests as unit tests (no external dependencies)",
     "integration: marks tests as integration tests (may require live credentials)",
     "live: marks tests as live environment tests (requires real OFSC instance)",
-    "slow: marks tests as slow running tests"
+    "slow: marks tests as slow running tests",
+    "fast: marks tests as fast running tests",
+    "e2e: marks tests as end-to-end tests"
 ]
 
 [tool.pytest_env]

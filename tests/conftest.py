@@ -221,6 +221,15 @@ def pytest_configure(config):
 
     # Implement fallback strategy for parallel execution
     _implement_parallel_fallback(config)
+    
+    # NEW: Configure optimal distribution based on test mix
+    if hasattr(config.option, 'include_e2e') and config.option.include_e2e:
+        # Set environment variable for loadfile mode
+        os.environ["PYTEST_XDIST_MODE"] = "loadfile"
+        
+        # Override dist mode if not manually set
+        if hasattr(config.option, "dist") and config.option.dist == "loadscope":
+            config.option.dist = "loadfile"
 
 
 def _configure_auto_parallel(config):
@@ -290,6 +299,12 @@ def _calculate_optimal_workers(test_paths):
             return int(os.environ["PYTEST_WORKERS"])
         except ValueError:
             pass
+    
+    # Check if we're using loadfile distribution
+    # This is set when using the optimized config
+    if os.environ.get("PYTEST_XDIST_MODE") == "loadfile":
+        # Use maximum workers for loadfile distribution
+        return min(os.cpu_count() or 1, 8)
 
     # Analyze path patterns to determine test category
     categories = set()
@@ -601,6 +616,22 @@ def pytest_collection_modifyitems(config, items):
     """Modify test collection to exclude slow tests in mixed scenarios."""
     excluded_patterns = getattr(_mark_slow_tests_for_exclusion, '_excluded_patterns', [])
     
+    # NEW: Always sort tests by speed (fast first)
+    def get_test_priority(item):
+        path_str = str(item.fspath).lower()
+        # Lower number = higher priority (runs first)
+        if "unit" in path_str or "model" in path_str:
+            return 0  # Fastest
+        elif "integration" in path_str:
+            return 2  # Medium
+        elif "end_to_end" in path_str or "e2e" in path_str or "live" in path_str:
+            return 3  # Slowest
+        return 1  # Default
+    
+    # Sort all items regardless of exclusion
+    items.sort(key=get_test_priority)
+    
+    # Continue with existing exclusion logic
     if not excluded_patterns:
         return  # No exclusions needed
     
