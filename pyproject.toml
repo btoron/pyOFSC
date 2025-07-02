@@ -22,6 +22,7 @@ dev = [
     "pytest-asyncio>=0.23.0,<1",
     "pytest-xdist>=3.3.0,<4",
     "pytest-rerunfailures>=12.0,<13",
+    "pytest-timeout>=2.3.1,<3",
     "respx>=0.21.0,<1",
     "pyarmor>=7.6.0,<8",
     "Faker>=14.2.0,<15",
@@ -45,8 +46,8 @@ log_cli_level = "INFO"
 log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
 log_cli_date_format = "%Y-%m-%d %H:%M:%S"
 asyncio_default_fixture_loop_scope = "function"
-# Parallel execution configuration
-addopts = "--maxfail=3"
+# Parallel execution configuration - auto-parallel enabled by default
+addopts = "--maxfail=3 --dist=worksteal --timeout=180"
 markers = [
     "unit: marks tests as unit tests (no external dependencies)",
     "integration: marks tests as integration tests (may require live credentials)",

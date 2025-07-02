@@ -58,8 +58,8 @@ export PYTEST_MAX_RETRIES=3
 | Unit Tests | Up to 8 workers | No | CPU-bound, no external deps |
 | Model Tests | Up to 8 workers | No | CPU-bound validation |
 | Integration | Up to 4 workers | Optional | Mixed dependencies |
-| End-to-End | Max 10 workers | Yes | API rate limited |
-| Live Tests | Max 10 workers | Yes | Real OFSC instance |
+| End-to-End | Sequential (1 worker) | Yes | API rate limited, requires sequential execution |
+| Live Tests | Sequential (1 worker) | Yes | Real OFSC instance, avoid concurrent auth issues |
 
 ### Rate Limiting System
 
@@ -204,8 +204,8 @@ The parallel testing system integrates with GitHub Actions:
 |---------------|----------------|---------------|-------------|
 | Unit Tests | ~60s | ~15s | 4x faster |
 | Model Tests | ~30s | ~8s | 4x faster |
-| End-to-End Tests | ~120s | ~40s | 3x faster |
-| **Overall** | ~210s | ~63s | **3.3x faster** |
+| End-to-End Tests | ~120s | ~120s | No change (sequential for reliability) |
+| **Overall** | ~210s | ~143s | **1.5x faster** |
 
 ### Rate Limiting Impact
 
