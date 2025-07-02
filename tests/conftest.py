@@ -384,13 +384,19 @@ def _handle_mixed_test_scenario(test_paths, categories, cpu_count):
         _mark_slow_tests_for_exclusion(test_paths)
         return min(cpu_count, 8) if fast_tests > 0 else 1
 
+    # If including slow tests, use optimal parallelism (since e2e tests work with -n 8)
+    if include_slow and fast_tests > 0 and slow_tests > 0:
+        # Mixed scenario with --include-e2e: try the exact same as manual override
+        # If -n 8 works, let's use 8 workers exactly like the manual case
+        return min(cpu_count, 8)  # Use same as manual -n 8
+
     # If including slow tests or no slow tests detected
     if fast_tests > slow_tests * 3:  # 75%+ are fast tests
-        # Majority fast tests - use high parallelism but enable rate limiting
+        # Majority fast tests - use high parallelism
         return min(cpu_count, 8)
     else:
-        # Mixed or majority slow - conservative approach
-        return min(cpu_count // 2, 2)
+        # Mixed or majority slow - use optimal settings for slow tests
+        return min(cpu_count // 2, 4)
 
 
 def _should_include_slow_tests():
@@ -417,10 +423,18 @@ def _print_execution_status(test_paths, optimal_workers, enable_rate_limiting):
     # Check if any tests were excluded
     excluded_patterns = getattr(_mark_slow_tests_for_exclusion, '_excluded_patterns', [])
     
+    # Check if this is a mixed scenario with --include-e2e
+    include_slow = _should_include_slow_tests()
+    
     if excluded_patterns:
         print(f"\n🚀 Auto-parallel enabled: {optimal_workers} workers (fast tests only)")
         print("📋 Excluded end-to-end/live tests for better performance")
         print("💡 Use --include-e2e to run all tests")
+    elif include_slow and any(path.endswith("tests") or path.endswith("tests/") for path in test_paths):
+        print(f"\n🚀 Auto-parallel enabled: {optimal_workers} workers (mixed tests)")
+        print("📋 Running fast and slow tests together")
+        if enable_rate_limiting:
+            print("⚡ Rate limiting enabled for API tests")
     else:
         print(f"\n🚀 Auto-parallel enabled: {optimal_workers} workers, rate limiting: {enable_rate_limiting}")
 
@@ -439,19 +453,29 @@ def _should_enable_rate_limiting(test_paths):
 
     # Check if user explicitly wants to include slow tests
     include_slow = _should_include_slow_tests()
+    
+    if not include_slow:
+        return False
 
-    # Enable rate limiting for end-to-end, live, or mixed tests when included
+    # For mixed scenarios with --include-e2e, be smarter about rate limiting
+    # The issue might be that we're being too aggressive with rate limiting
+    # Since manual -n 8 works for e2e tests, maybe rate limiting isn't the core issue
+    
+    # Enable rate limiting only for specific e2e-heavy scenarios
     for path in paths:
         path_str = str(path).lower()
         if any(
             keyword in path_str
-            for keyword in ["end_to_end", "e2e", "live", "integration"]
+            for keyword in ["end_to_end", "e2e", "live"]
         ):
-            return include_slow
+            # Direct e2e test execution - enable rate limiting
+            return True
 
-        # Check if path contains the entire tests directory (mixed tests)
+        # For mixed scenarios (tests/), try without rate limiting first
+        # Since manual -n 8 works for e2e tests, the issue might be rate limiting config
         if path_str.endswith("tests") or path_str.endswith("tests/"):
-            return include_slow
+            # Disable rate limiting for mixed scenarios - let's see if this fixes the timeout
+            return False
 
     return False
 
@@ -532,7 +556,7 @@ def _validate_parallel_setup(config):
 
         # Set environment variables for worker coordination
         os.environ["PYTEST_PARALLEL_WORKERS"] = str(num_workers)
-        os.environ["PYTEST_RATE_LIMITED"] = "true"
+        # Don't override PYTEST_RATE_LIMITED - let the auto-parallel logic decide
 
         # Validate dependencies
         try:
