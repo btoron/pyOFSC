@@ -1,0 +1,279 @@
+name: Tests (Parallel)
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+    inputs:
+      test_category:
+        description: 'Test category to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - unit
+          - models
+          - integration
+          - end_to_end
+      parallel:
+        description: 'Run tests in parallel'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  PYTHON_VERSION: "3.12"
+  UV_VERSION: "0.4.30"
+
+jobs:
+  test-strategy:
+    name: Determine Test Strategy
+    runs-on: ubuntu-latest
+    outputs:
+      strategy: ${{ steps.strategy.outputs.strategy }}
+      parallel: ${{ steps.strategy.outputs.parallel }}
+    steps:
+      - name: Determine test strategy
+        id: strategy
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            CATEGORY="${{ github.event.inputs.test_category }}"
+            PARALLEL="${{ github.event.inputs.parallel }}"
+          else
+            CATEGORY="all"
+            PARALLEL="true"
+          fi
+          
+          echo "strategy=${CATEGORY}" >> $GITHUB_OUTPUT
+          echo "parallel=${PARALLEL}" >> $GITHUB_OUTPUT
+          
+          echo "Test category: ${CATEGORY}"
+          echo "Parallel execution: ${PARALLEL}"
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: test-strategy
+    if: needs.test-strategy.outputs.strategy == 'all' || needs.test-strategy.outputs.strategy == 'unit'
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          uv sync --dev
+
+      - name: Run unit tests
+        env:
+          PYTEST_RATE_LIMITED: ${{ needs.test-strategy.outputs.parallel == 'true' && 'true' || 'false' }}
+          PYTEST_WORKERS: ${{ needs.test-strategy.outputs.parallel == 'true' && '4' || '1' }}
+        run: |
+          if [ "${{ needs.test-strategy.outputs.parallel }}" = "true" ]; then
+            echo "Running unit tests in parallel with 4 workers"
+            uv run python scripts/run_tests_parallel.py --unit --workers 4 --measure
+          else
+            echo "Running unit tests sequentially"
+            uv run pytest tests/unit/ -v
+          fi
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-results-${{ matrix.python-version }}
+          path: |
+            test_performance_results/
+            test_debug/
+          retention-days: 7
+
+  model-tests:
+    name: Model Tests
+    runs-on: ubuntu-latest
+    needs: test-strategy
+    if: needs.test-strategy.outputs.strategy == 'all' || needs.test-strategy.outputs.strategy == 'models'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          uv sync --dev
+
+      - name: Run model tests
+        env:
+          PYTEST_RATE_LIMITED: ${{ needs.test-strategy.outputs.parallel == 'true' && 'true' || 'false' }}
+          PYTEST_WORKERS: ${{ needs.test-strategy.outputs.parallel == 'true' && '4' || '1' }}
+        run: |
+          if [ "${{ needs.test-strategy.outputs.parallel }}" = "true" ]; then
+            echo "Running model tests in parallel with 4 workers"
+            uv run python scripts/run_tests_parallel.py --models --workers 4 --measure
+          else
+            echo "Running model tests sequentially"
+            uv run pytest tests/models/ -v
+          fi
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: model-test-results
+          path: |
+            test_performance_results/
+            test_debug/
+          retention-days: 7
+
+  end-to-end-tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    needs: test-strategy
+    if: needs.test-strategy.outputs.strategy == 'all' || needs.test-strategy.outputs.strategy == 'end_to_end'
+    environment: testing
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          uv sync --dev
+
+      - name: Run end-to-end tests
+        env:
+          OFSC_INSTANCE: ${{ secrets.OFSC_INSTANCE }}
+          OFSC_CLIENT_ID: ${{ secrets.OFSC_CLIENT_ID }}
+          OFSC_CLIENT_SECRET: ${{ secrets.OFSC_CLIENT_SECRET }}
+          PYTEST_RATE_LIMITED: "true"  # Always enable rate limiting for E2E tests
+          PYTEST_WORKERS: ${{ needs.test-strategy.outputs.parallel == 'true' && '4' || '1' }}
+        run: |
+          if [ "${{ needs.test-strategy.outputs.parallel }}" = "true" ]; then
+            echo "Running end-to-end tests in parallel with rate limiting (max 4 workers)"
+            uv run python scripts/run_tests_parallel.py --end-to-end --workers 4 --measure
+          else
+            echo "Running end-to-end tests sequentially"
+            uv run pytest tests/end_to_end/ -v -m live
+          fi
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-test-results
+          path: |
+            test_performance_results/
+            test_debug/
+          retention-days: 7
+
+  performance-baseline:
+    name: Performance Baseline
+    runs-on: ubuntu-latest
+    needs: test-strategy
+    if: needs.test-strategy.outputs.strategy == 'all'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          uv sync --dev
+
+      - name: Measure baseline performance
+        env:
+          OFSC_INSTANCE: ${{ secrets.OFSC_INSTANCE }}
+          OFSC_CLIENT_ID: ${{ secrets.OFSC_CLIENT_ID }}
+          OFSC_CLIENT_SECRET: ${{ secrets.OFSC_CLIENT_SECRET }}
+        run: |
+          echo "Measuring baseline test performance"
+          uv run python scripts/measure_test_performance.py
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-baseline
+          path: test_performance_results/
+          retention-days: 30
+
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [test-strategy, unit-tests, model-tests, end-to-end-tests]
+    if: always()
+    steps:
+      - name: Download all test results
+        uses: actions/download-artifact@v4
+        with:
+          path: test-results
+
+      - name: Generate test summary
+        run: |
+          echo "# Test Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Test Strategy:** ${{ needs.test-strategy.outputs.strategy }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Parallel Execution:** ${{ needs.test-strategy.outputs.parallel }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "## Job Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Unit Tests | ${{ needs.unit-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Model Tests | ${{ needs.model-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| End-to-End Tests | ${{ needs.end-to-end-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          
+          # Check for performance results
+          if [ -d "test-results/performance-baseline" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "## Performance Results" >> $GITHUB_STEP_SUMMARY
+            echo "Performance baseline measurements are available in the artifacts." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check overall status
+        run: |
+          if [ "${{ needs.unit-tests.result }}" = "failure" ] || 
+             [ "${{ needs.model-tests.result }}" = "failure" ] || 
+             [ "${{ needs.end-to-end-tests.result }}" = "failure" ]; then
+            echo "❌ One or more test jobs failed"
+            exit 1
+          else
+            echo "✅ All test jobs passed"
+          fi

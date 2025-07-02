@@ -89,34 +89,59 @@ def mock_httpx_client():
 
 # Client fixtures
 @pytest.fixture
-def async_client(test_credentials):
+def async_client(test_credentials, rate_limiting_enabled):
     """Async OFSC client for unit testing."""
-    return OFSC(
-        instance=test_credentials["instance"],
-        client_id=test_credentials["client_id"],
-        client_secret=test_credentials["client_secret"]
-    )
+    if rate_limiting_enabled:
+        from ofsc.testing import create_test_client
+        return create_test_client(
+            instance=test_credentials["instance"],
+            client_id=test_credentials["client_id"],
+            client_secret=test_credentials["client_secret"]
+        )
+    else:
+        return OFSC(
+            instance=test_credentials["instance"],
+            client_id=test_credentials["client_id"],
+            client_secret=test_credentials["client_secret"]
+        )
 
 
 @pytest.fixture
-def live_async_client(live_credentials):
+def live_async_client(live_credentials, rate_limiting_enabled):
     """Live async OFSC client for integration tests."""
-    return OFSC(
-        instance=live_credentials["instance"],
-        client_id=live_credentials["client_id"],
-        client_secret=live_credentials["client_secret"]
-    )
+    if rate_limiting_enabled:
+        from ofsc.testing import create_test_client
+        return create_test_client(
+            instance=live_credentials["instance"],
+            client_id=live_credentials["client_id"],
+            client_secret=live_credentials["client_secret"]
+        )
+    else:
+        return OFSC(
+            instance=live_credentials["instance"],
+            client_id=live_credentials["client_id"],
+            client_secret=live_credentials["client_secret"]
+        )
 
 
 @pytest.fixture
-def async_client_basic_auth(live_credentials):
+def async_client_basic_auth(live_credentials, rate_limiting_enabled):
     """Async OFSC client with Basic Auth for live testing."""
-    return OFSC(
-        instance=live_credentials["instance"],
-        client_id=live_credentials["client_id"],
-        client_secret=live_credentials["client_secret"],
-        use_token=False,  # Use Basic Auth
-    )
+    if rate_limiting_enabled:
+        from ofsc.testing import create_test_client
+        return create_test_client(
+            instance=live_credentials["instance"],
+            client_id=live_credentials["client_id"],
+            client_secret=live_credentials["client_secret"],
+            use_token=False,  # Use Basic Auth
+        )
+    else:
+        return OFSC(
+            instance=live_credentials["instance"],
+            client_id=live_credentials["client_id"],
+            client_secret=live_credentials["client_secret"],
+            use_token=False,  # Use Basic Auth
+        )
 
 
 # Environment-specific client fixtures
@@ -169,7 +194,7 @@ def mock_server(test_config):
 
 # Test markers configuration
 def pytest_configure(config):
-    """Configure pytest markers."""
+    """Configure pytest markers and parallel execution fallback."""
     config.addinivalue_line(
         "markers", "unit: marks tests as unit tests (no external dependencies)"
     )
@@ -182,6 +207,122 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "slow: marks tests as slow running tests"
     )
+    
+    # Implement fallback strategy for parallel execution
+    _implement_parallel_fallback(config)
+
+
+def _implement_parallel_fallback(config):
+    """Implement fallback strategy when parallel execution fails."""
+    # Check if pytest-xdist is available and working
+    try:
+        import xdist
+        
+        # Check if we're running with -n flag but xdist failed to start
+        if hasattr(config.option, 'numprocesses') and config.option.numprocesses:
+            # Store original value in case we need to fall back
+            config._original_numprocesses = config.option.numprocesses
+            
+    except ImportError:
+        # pytest-xdist not available, force sequential mode
+        if hasattr(config.option, 'numprocesses'):
+            config.option.numprocesses = None
+        
+        # Set environment variable to disable parallel mode
+        os.environ['PYTEST_DISABLE_PARALLEL'] = 'true'
+        
+        print("\n⚠️  pytest-xdist not available, falling back to sequential execution")
+
+
+def pytest_sessionstart(session):
+    """Handle session start with parallel execution validation."""
+    config = session.config
+    
+    # Check for worker startup failures
+    if hasattr(config, 'workerinput'):
+        # We're running as a worker, validate setup
+        _validate_worker_setup(config)
+    else:
+        # We're the main process, validate parallel setup
+        _validate_parallel_setup(config)
+
+
+def _validate_worker_setup(config):
+    """Validate that worker setup is correct."""
+    try:
+        # Import our testing utilities to ensure they work
+        from ofsc.testing import get_global_rate_limiter
+        
+        # Test rate limiter initialization
+        rate_limiter = get_global_rate_limiter()
+        
+    except Exception as e:
+        print(f"\n❌ Worker setup validation failed: {e}")
+        print("This may indicate an issue with parallel test configuration.")
+
+
+def _validate_parallel_setup(config):
+    """Validate that parallel execution setup is correct."""
+    # Check if running with multiple workers
+    if hasattr(config.option, 'numprocesses') and config.option.numprocesses:
+        num_workers = config.option.numprocesses
+        if num_workers == 'auto':
+            num_workers = os.cpu_count()
+        
+        print(f"\n🚀 Starting parallel execution with {num_workers} workers")
+        
+        # Set environment variables for worker coordination
+        os.environ['PYTEST_PARALLEL_WORKERS'] = str(num_workers)
+        os.environ['PYTEST_RATE_LIMITED'] = 'true'
+        
+        # Validate dependencies
+        try:
+            import xdist
+            from ofsc.testing import get_global_rate_limiter
+            print("✅ Parallel execution dependencies validated")
+        except ImportError as e:
+            print(f"❌ Missing parallel execution dependency: {e}")
+            print("Falling back to sequential execution")
+            config.option.numprocesses = None
+            os.environ['PYTEST_DISABLE_PARALLEL'] = 'true'
+    else:
+        print("\n📋 Running in sequential mode")
+
+
+# Worker failure handling
+def pytest_runtest_logreport(report):
+    """Handle test reports and detect worker failures."""
+    if report.when == "call" and report.failed:
+        # Check if this is a rate limiting related failure
+        if hasattr(report, 'longrepr') and report.longrepr:
+            error_text = str(report.longrepr).lower()
+            
+            if '429' in error_text or 'rate limit' in error_text:
+                print(f"\n⚠️  Rate limiting detected in test: {report.nodeid}")
+                
+                # Could implement automatic retry or worker throttling here
+                # For now, just log the occurrence
+                
+    elif report.when == "setup" and report.failed:
+        # Setup failures might indicate worker startup issues
+        if hasattr(report, 'longrepr') and report.longrepr:
+            error_text = str(report.longrepr).lower()
+            
+            if 'worker' in error_text or 'xdist' in error_text:
+                print(f"\n❌ Possible worker setup failure: {report.nodeid}")
+
+
+def pytest_keyboard_interrupt(excinfo):
+    """Handle keyboard interrupts gracefully."""
+    print("\n🛑 Test execution interrupted by user")
+    
+    # Clean up any rate limiting resources
+    try:
+        from ofsc.testing import get_global_rate_limiter
+        rate_limiter = get_global_rate_limiter()
+        # Reset any pending requests
+    except:
+        pass
 
 
 # Debug fixtures
@@ -206,6 +347,18 @@ def pytest_addoption(parser):
         default=False,
         help="Run live tests against real OFSC instance"
     )
+    parser.addoption(
+        "--parallel",
+        action="store_true",
+        default=True,
+        help="Run tests in parallel (default)"
+    )
+    parser.addoption(
+        "--sequential",
+        action="store_true",
+        default=False,
+        help="Run tests sequentially"
+    )
 
 
 @pytest.fixture
@@ -218,6 +371,30 @@ def test_env(request):
 def run_live_tests(request):
     """Determine if live tests should be run."""
     return request.config.getoption("--live")
+
+
+@pytest.fixture
+def parallel_execution(request):
+    """Determine if tests should run in parallel."""
+    # Check command line options
+    if request.config.getoption("--sequential"):
+        return False
+    if request.config.getoption("--parallel"):
+        return True
+    
+    # Check environment variable
+    disable_parallel = os.environ.get('PYTEST_DISABLE_PARALLEL', '').lower()
+    if disable_parallel in ('true', '1', 'yes'):
+        return False
+    
+    # Default to parallel
+    return True
+
+
+@pytest.fixture
+def rate_limiting_enabled():
+    """Check if rate limiting should be enabled for this test run."""
+    return os.environ.get('PYTEST_RATE_LIMITED', '').lower() in ('true', '1', 'yes')
 
 
 # Parametrized client fixtures for async-only testing
@@ -235,8 +412,21 @@ def pytest_runtest_makereport(item, call):
     rep = outcome.get_result()
     
     if rep.when == "call" and rep.failed:
-        # Create debug directory
-        debug_dir = Path("test_debug") / item.nodeid.replace("/", "_").replace("::", "_")
+        # Create worker-safe debug directory
+        import threading
+        worker_id = getattr(item.config, 'workerinput', {}).get('workerid', 'main')
+        process_id = os.getpid()
+        thread_id = threading.get_ident()
+        
+        # Include worker ID, process ID, and timestamp for uniqueness
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        
+        debug_dir = (Path("test_debug") / 
+                    f"worker_{worker_id}" / 
+                    f"pid_{process_id}" / 
+                    f"thread_{thread_id}" /
+                    f"{timestamp}_{item.nodeid.replace('/', '_').replace('::', '_')}")
         debug_dir.mkdir(parents=True, exist_ok=True)
         
         # Save test context if debug mode is enabled

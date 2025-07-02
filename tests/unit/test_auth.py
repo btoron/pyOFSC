@@ -162,54 +162,47 @@ class TestEnvironmentVariables:
     
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_env_var_loading(self):
+    async def test_env_var_loading(self, monkeypatch):
         """Test loading credentials from environment variables."""
-        test_env = {
-            'OFSC_INSTANCE': 'env_test_instance',
-            'OFSC_CLIENT_ID': 'env_test_client',
-            'OFSC_CLIENT_SECRET': 'env_test_secret'
-        }
+        # Use monkeypatch for thread-safe environment variable testing
+        monkeypatch.setenv('OFSC_INSTANCE', 'env_test_instance')
+        monkeypatch.setenv('OFSC_CLIENT_ID', 'env_test_client')
+        monkeypatch.setenv('OFSC_CLIENT_SECRET', 'env_test_secret')
         
-        with patch.dict(os.environ, test_env):
-            async with OFSC() as client:
-                assert client.config.instance == 'env_test_instance'
-                assert client.config.client_id == 'env_test_client'
-                assert client.config.client_secret == 'env_test_secret'
+        async with OFSC() as client:
+            assert client.config.instance == 'env_test_instance'
+            assert client.config.client_id == 'env_test_client'
+            assert client.config.client_secret == 'env_test_secret'
     
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_explicit_params_override_env_vars(self):
+    async def test_explicit_params_override_env_vars(self, monkeypatch):
         """Test that explicit parameters override environment variables."""
-        test_env = {
-            'OFSC_INSTANCE': 'env_instance',
-            'OFSC_CLIENT_ID': 'env_client',
-            'OFSC_CLIENT_SECRET': 'env_secret'
-        }
+        # Use monkeypatch for thread-safe environment variable testing
+        monkeypatch.setenv('OFSC_INSTANCE', 'env_instance')
+        monkeypatch.setenv('OFSC_CLIENT_ID', 'env_client')
+        monkeypatch.setenv('OFSC_CLIENT_SECRET', 'env_secret')
         
-        with patch.dict(os.environ, test_env):
-            async with OFSC(
-                instance="explicit_instance",
-                client_id="explicit_client",
-                client_secret="explicit_secret"
-            ) as client:
-                assert client.config.instance == 'explicit_instance'
-                assert client.config.client_id == 'explicit_client'
-                assert client.config.client_secret == 'explicit_secret'
+        async with OFSC(
+            instance="explicit_instance",
+            client_id="explicit_client",
+            client_secret="explicit_secret"
+        ) as client:
+            assert client.config.instance == 'explicit_instance'
+            assert client.config.client_id == 'explicit_client'
+            assert client.config.client_secret == 'explicit_secret'
     
     @pytest.mark.unit
-    def test_missing_credentials_error(self):
+    def test_missing_credentials_error(self, monkeypatch):
         """Test error when credentials are missing."""
-        # Clear relevant env vars
+        # Use monkeypatch to ensure clean environment for testing
         env_vars_to_clear = ['OFSC_INSTANCE', 'OFSC_CLIENT_ID', 'OFSC_CLIENT_SECRET']
         
-        with patch.dict(os.environ, {}, clear=False):
-            # Remove the specific env vars we're testing
-            for var in env_vars_to_clear:
-                if var in os.environ:
-                    del os.environ[var]
-            
-            with pytest.raises(OFSConfigurationException, match="instance must be provided"):
-                OFSC()
+        for var in env_vars_to_clear:
+            monkeypatch.delenv(var, raising=False)
+        
+        with pytest.raises(OFSConfigurationException, match="instance must be provided"):
+            OFSC()
 
 
 class TestLiveAuthentication:

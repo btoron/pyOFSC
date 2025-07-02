@@ -1,7 +1,6 @@
 """Integration tests for authentication components with v3.0 error handling."""
 
 import pytest
-from unittest.mock import patch
 
 from ofsc.auth import BasicAuth, OAuth2Auth
 from ofsc.client import OFSC
@@ -213,25 +212,18 @@ class TestAuthenticationIntegration:
         # OAuth2 headers would require a token, so just verify the auth type
         assert isinstance(oauth_client.auth, OAuth2Auth)
     
-    def test_environment_variable_loading(self):
+    def test_environment_variable_loading(self, monkeypatch):
         """Test loading credentials from environment variables."""
-        import os
+        # Use monkeypatch for thread-safe environment variable testing
+        monkeypatch.setenv('OFSC_INSTANCE', 'env_test')
+        monkeypatch.setenv('OFSC_CLIENT_ID', 'env_client')
+        monkeypatch.setenv('OFSC_CLIENT_SECRET', 'env_secret')
         
-        # Test with environment variables set
-        async def test_async_env_loading():
-            with patch.dict(os.environ, {
-                'OFSC_INSTANCE': 'env_test',
-                'OFSC_CLIENT_ID': 'env_client',
-                'OFSC_CLIENT_SECRET': 'env_secret'
-            }):
-                client = OFSC()  # No parameters, should load from env
-                
-                assert client.config.instance == 'env_test'
-                assert client.auth.client_id == 'env_client'
-                assert client.auth.client_secret == 'env_secret'
+        client = OFSC()  # No parameters, should load from env
         
-        import asyncio
-        asyncio.run(test_async_env_loading())
+        assert client.config.instance == 'env_test'
+        assert client.auth.client_id == 'env_client'
+        assert client.auth.client_secret == 'env_secret'
     
     def test_client_string_representation(self):
         """Test client string representation."""
