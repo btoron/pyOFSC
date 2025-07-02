@@ -83,7 +83,6 @@ class TestSunrisePutMetadata:
             async with async_client_basic_auth as client:
                 # Get test data for work skills and workzones to use in the capacity category
                 workskill_identifiers = get_test_data("workskill")
-                workzone_identifiers = get_test_data("workzone")
 
                 # Create a test capacity category using available test data
                 test_category_label = "TEST_CAPACITY_CAT"

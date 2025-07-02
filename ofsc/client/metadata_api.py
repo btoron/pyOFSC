@@ -15,6 +15,7 @@ import httpx
 from pydantic import BaseModel, Field, ValidationError
 
 from ofsc.exceptions import OFSValidationException
+from ofsc.models.base import TranslationList
 from ofsc.models.capacity import (
     CapacityArea,
     CapacityAreaCategoryListResponse,
@@ -23,9 +24,9 @@ from ofsc.models.capacity import (
     CapacityAreaTimeIntervalListResponse,
     CapacityAreaTimeSlotListResponse,
     CapacityAreaWorkzoneListResponse,
+    CapacityCategoryListResponse,
     CapacityCategoryRequest,
     CapacityCategoryResponse,
-    CapacityCategoryListResponse,
 )
 from ofsc.models.metadata import (
     ActivityType,
@@ -37,6 +38,7 @@ from ofsc.models.metadata import (
     ApplicationApiAccessListResponse,
     ApplicationListResponse,
     EnumerationValueList,
+    ExportMediaType,
     Form,
     FormListResponse,
     InventoryType,
@@ -47,14 +49,13 @@ from ofsc.models.metadata import (
     NonWorkingReasonListResponse,
     Organization,
     OrganizationListResponse,
+    PropertyListResponse,
     PropertyRequest,
     PropertyResponse,
-    PropertyListResponse,
     ResourceTypeListResponse,
-    RoutingProfileListResponse,
-    RoutingPlanListResponse,
     RoutingPlanExportResponse,
-    ExportMediaType,
+    RoutingPlanListResponse,
+    RoutingProfileListResponse,
     Shift,
     ShiftListResponse,
     TimeSlotListResponse,
@@ -64,10 +65,9 @@ from ofsc.models.metadata import (
     WorkSkillGroupListResponse,
     WorkskillListResponse,
     Workzone,
-    WorkzoneListResponse,
     WorkZoneKeyResponse,
+    WorkzoneListResponse,
 )
-from ofsc.models.base import TranslationList
 
 if TYPE_CHECKING:
     from httpx import Response
@@ -100,7 +100,7 @@ class CapacityAreasParams(BaseModel):
         default=False, description="Expand parent area information"
     )
     fields: List[str] = Field(
-        default=["label"], description="Fields to include in response"
+        default=["label", "name"], description="Fields to include in response"
     )
     activeOnly: bool = Field(default=False, description="Return only active areas")
     areasOnly: bool = Field(default=False, description="Return only area type entries")
@@ -204,11 +204,11 @@ class OFSMetadataAPI:
         encoded_label = urllib.parse.quote_plus(label)
         endpoint = f"/rest/ofscMetadata/v1/properties/{encoded_label}"
         request_data = property_request.model_dump(exclude_none=True)
-        
+
         logging.info(
             f"Creating/replacing property '{label}' at endpoint: {endpoint} and base URL: {self.client.base_url}"
         )
-        
+
         response: "Response" = await self.client.put(endpoint, json=request_data)
         return PropertyResponse.from_response(response)
 
@@ -324,7 +324,7 @@ class OFSMetadataAPI:
 
         # Build request data - API requires at least a name field
         request_data = {}
-        
+
         if translations is not None and len(translations.root) > 0:
             # Use provided translations
             request_data["translations"] = [t.model_dump() for t in translations.root]
@@ -336,8 +336,13 @@ class OFSMetadataAPI:
                 existing_group = await self.get_activity_type_group(label)
                 request_data["name"] = existing_group.name
                 # Preserve existing translations if any
-                if existing_group.translations and len(existing_group.translations.root) > 0:
-                    request_data["translations"] = [t.model_dump() for t in existing_group.translations.root]
+                if (
+                    existing_group.translations
+                    and len(existing_group.translations.root) > 0
+                ):
+                    request_data["translations"] = [
+                        t.model_dump() for t in existing_group.translations.root
+                    ]
             except Exception:
                 # If group doesn't exist, use label as name
                 request_data["name"] = label
@@ -557,10 +562,10 @@ class OFSMetadataAPI:
 
         encoded_label = urllib.parse.quote_plus(label)
         endpoint = f"/rest/ofscMetadata/v1/capacityCategories/{encoded_label}"
-        
+
         # Prepare request data
         request_data = capacity_category.model_dump(exclude_none=True)
-        
+
         logging.info(
             f"Creating/replacing capacity category at endpoint: {endpoint} and base URL: {self.client.base_url}"
         )
@@ -581,7 +586,7 @@ class OFSMetadataAPI:
 
         encoded_label = urllib.parse.quote_plus(label)
         endpoint = f"/rest/ofscMetadata/v1/capacityCategories/{encoded_label}"
-        
+
         logging.info(
             f"Deleting capacity category at endpoint: {endpoint} and base URL: {self.client.base_url}"
         )
@@ -590,6 +595,7 @@ class OFSMetadataAPI:
         # For delete operations, we typically check status code but don't return content
         if response.status_code >= 400:
             from ..exceptions import create_exception_from_response
+
             raise create_exception_from_response(response)
 
     # Inventory Types API
@@ -659,7 +665,9 @@ class OFSMetadataAPI:
         response: "Response" = await self.client.get(endpoint)
         return Application.from_response(response)
 
-    async def get_application_api_accesses(self, label: str) -> ApplicationApiAccessListResponse:
+    async def get_application_api_accesses(
+        self, label: str
+    ) -> ApplicationApiAccessListResponse:
         """Get application API accesses by application label.
 
         Args:
@@ -677,7 +685,9 @@ class OFSMetadataAPI:
         response: "Response" = await self.client.get(endpoint)
         return ApplicationApiAccessListResponse.from_response(response)
 
-    async def get_application_api_access(self, label: str, api_label: str) -> ApplicationApiAccess:
+    async def get_application_api_access(
+        self, label: str, api_label: str
+    ) -> ApplicationApiAccess:
         """Get specific application API access by application label and API access label.
 
         Args:
@@ -694,7 +704,9 @@ class OFSMetadataAPI:
         # URL encode the api_label to handle special characters
         encoded_api_label = urllib.parse.quote_plus(api_label)
 
-        endpoint = f"/rest/ofscMetadata/v1/applications/{label}/apiAccess/{encoded_api_label}"
+        endpoint = (
+            f"/rest/ofscMetadata/v1/applications/{label}/apiAccess/{encoded_api_label}"
+        )
         response: "Response" = await self.client.get(endpoint)
         return ApplicationApiAccess.from_response(response)
 
@@ -926,7 +938,7 @@ class OFSMetadataAPI:
         response: "Response" = await self.client.get(endpoint, params=params)
         return LanguageListResponse.from_response(response)
 
-    # Non-Working Reasons API  
+    # Non-Working Reasons API
     async def get_non_working_reasons(
         self, offset: int = 0, limit: int = 100
     ) -> NonWorkingReasonListResponse:
@@ -953,9 +965,7 @@ class OFSMetadataAPI:
         return NonWorkingReasonListResponse.from_response(response)
 
     # Shifts API
-    async def get_shifts(
-        self, offset: int = 0, limit: int = 100
-    ) -> ShiftListResponse:
+    async def get_shifts(self, offset: int = 0, limit: int = 100) -> ShiftListResponse:
         """Get shifts list.
 
         Args:
@@ -1146,7 +1156,10 @@ class OFSMetadataAPI:
         return RoutingPlanListResponse.from_response(response)
 
     async def get_routing_profile_plan_export(
-        self, profile_label: str, plan_label: str, media_type: Optional[str] = ExportMediaType.OCTET_STREAM.value
+        self,
+        profile_label: str,
+        plan_label: str,
+        media_type: Optional[str] = ExportMediaType.OCTET_STREAM.value,
     ) -> RoutingPlanExportResponse:
         """Export routing plan configuration for a specific routing profile and plan.
 
@@ -1166,8 +1179,12 @@ class OFSMetadataAPI:
         self._validate_params(LabelParam, label=plan_label)
 
         # Validate media type parameter
-        if media_type is not None and media_type not in [mt.value for mt in ExportMediaType]:
-            raise OFSValidationException(f"Invalid media type: {media_type}. Supported types: {[mt.value for mt in ExportMediaType]}")
+        if media_type is not None and media_type not in [
+            mt.value for mt in ExportMediaType
+        ]:
+            raise OFSValidationException(
+                f"Invalid media type: {media_type}. Supported types: {[mt.value for mt in ExportMediaType]}"
+            )
 
         # Set Accept header with requested media type (if specified)
         headers = {}
@@ -1183,7 +1200,9 @@ class OFSMetadataAPI:
             + f" and base URL: {self.client.base_url}"
         )
 
-        response: "Response" = await self.client.get(endpoint, headers=headers if headers else None)
+        response: "Response" = await self.client.get(
+            endpoint, headers=headers if headers else None
+        )
         return RoutingPlanExportResponse.from_response(response)
 
     # Workzones API (individual endpoint)

@@ -223,6 +223,9 @@ class TranslationList(RootModel[List[Translation]]):
     def __getitem__(self, item):
         return self.root[item]
 
+    def __len__(self):
+        return len(self.root)
+
     def map(self):
         """Create a mapping of language codes to translation objects"""
         return {translation.language: translation for translation in self.root}

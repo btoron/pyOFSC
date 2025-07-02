@@ -418,8 +418,9 @@ class PropertyResponse(BaseOFSResponse):
         return v
 
     @field_validator("translations")
-    def set_default(cls, field_value, values):
-        return field_value or [Translation(name=values.name)]
+    @classmethod
+    def set_default(cls, field_value, info):
+        return field_value or []
 
     @field_validator("gui")
     @classmethod

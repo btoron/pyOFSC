@@ -52,9 +52,9 @@ class OFSC(BaseOFSClient):
         )
 
         # Initialize API modules (will be implemented in phases)
-        # self._core = AsyncOFSCore(self)
+        self._core = None  # Will be initialized on first access
         self._metadata = None  # Will be initialized on first access
-        # self._capacity = AsyncOFSCapacity(self)
+        self._capacity = None  # Will be initialized on first access
         # self._oauth = AsyncOFSOauth(self)
 
     def _create_client(self) -> httpx.AsyncClient:
@@ -142,7 +142,13 @@ class OFSC(BaseOFSClient):
     def capacity(self):
         """Get the Capacity API interface."""
         if self._capacity is None:
-            raise NotImplementedError("Capacity API not yet implemented in Phase 1.2")
+            from .capacity_api import CapacityAPI
+
+            if self._client is None:
+                raise RuntimeError(
+                    "Client not initialized. Use async with statement or call __aenter__() first."
+                )
+            self._capacity = CapacityAPI(self)
         return self._capacity
 
     @property
