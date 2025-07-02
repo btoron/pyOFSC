@@ -3,13 +3,13 @@
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints available in the pyOFSC Python Wrapper v3.0.
 
 **Total Endpoints:** 242  
-**Implemented in v3.0:** 51 (21.1%)
+**Implemented in v3.0:** 58 (24.0%)
 
 ## Implementation Coverage by Module
 
 - **metadata**: 49/86 endpoints (57.0%) ✅
 - **core**: 2/127 endpoints (1.6%) ⚠️  
-- **capacity**: 0/11 endpoints (0%) ❌
+- **capacity**: 7/11 endpoints (63.6%) ✅
 - **statistics**: 0/6 endpoints (0%) ❌
 - **partscatalog**: 0/3 endpoints (0%) ❌
 - **collaboration**: 0/7 endpoints (0%) ❌
@@ -250,15 +250,15 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 229 | `/rest/ofscCore/v1/users/{login}/collaborationGroups` | DELETE | core | | |
 | 230 | `/rest/oauthTokenService/v1/token` | POST | auth | | |
 | 231 | `/rest/oauthTokenService/v2/token` | POST | auth | | |
-| 232 | `/rest/ofscCapacity/v1/activityBookingOptions` | GET | capacity | | |
-| 233 | `/rest/ofscCapacity/v1/bookingClosingSchedule` | GET | capacity | | |
+| 232 | `/rest/ofscCapacity/v1/activityBookingOptions` | GET | capacity | v3.0.0-dev | `async def get_activity_booking_options(self, activity_id: str, date: str, duration: Optional[int] = None, travel_time: Optional[int] = None) -> ActivityBookingOptionsResponse` |
+| 233 | `/rest/ofscCapacity/v1/bookingClosingSchedule` | GET | capacity | v3.0.0-dev | `async def get_booking_closing_schedule(self, areas: Optional[List[str]] = None) -> BookingClosingScheduleListResponse` |
 | 234 | `/rest/ofscCapacity/v1/bookingClosingSchedule` | PATCH | capacity | | |
-| 235 | `/rest/ofscCapacity/v1/bookingStatuses` | GET | capacity | | |
+| 235 | `/rest/ofscCapacity/v1/bookingStatuses` | GET | capacity | v3.0.0-dev | `async def get_booking_statuses(self, dates: List[str], areas: Optional[List[str]] = None) -> BookingStatusListResponse` |
 | 236 | `/rest/ofscCapacity/v1/bookingStatuses` | PATCH | capacity | | |
-| 237 | `/rest/ofscCapacity/v1/capacity` | GET | capacity | | |
-| 238 | `/rest/ofscCapacity/v1/quota` | GET | capacity | | |
-| 239 | `/rest/ofscCapacity/v1/quota` | PATCH | capacity | | |
-| 240 | `/rest/ofscCapacity/v2/quota` | GET | capacity | | |
+| 237 | `/rest/ofscCapacity/v1/capacity` | GET | capacity | v3.0.0-dev | `async def get_capacity(self, dates: List[str], areas: Optional[List[str]] = None, categories: Optional[List[str]] = None, fields: Optional[List[str]] = None, aggregateResults: bool = False, availableTimeIntervals: str = "all", calendarTimeIntervals: str = "all") -> GetCapacityResponse` |
+| 238 | `/rest/ofscCapacity/v1/quota` | GET | capacity | v3.0.0-dev | `async def get_quota(self, dates: List[str], areas: Optional[List[str]] = None, categories: Optional[List[str]] = None, aggregateResults: Optional[bool] = None, categoryLevel: Optional[bool] = None, intervalLevel: Optional[bool] = None, returnStatuses: Optional[bool] = None, timeSlotLevel: Optional[bool] = None) -> GetQuotaResponse` |
+| 239 | `/rest/ofscCapacity/v1/quota` | PATCH | capacity | v3.0.0-dev | `async def patch_quota(self, dates: List[str], areas: Optional[List[str]] = None, categories: Optional[List[str]] = None, aggregateResults: Optional[bool] = None, categoryLevel: Optional[bool] = None, intervalLevel: Optional[bool] = None, returnStatuses: Optional[bool] = None, timeSlotLevel: Optional[bool] = None) -> GetQuotaResponse` |
+| 240 | `/rest/ofscCapacity/v2/quota` | GET | capacity | v3.0.0-dev | `async def get_quota_v2(self, dates: List[str], areas: Optional[List[str]] = None, categories: Optional[List[str]] = None, aggregateResults: Optional[bool] = None, categoryLevel: Optional[bool] = None, intervalLevel: Optional[bool] = None, returnStatuses: Optional[bool] = None, timeSlotLevel: Optional[bool] = None) -> GetQuotaV2Response` |
 | 241 | `/rest/ofscCapacity/v2/quota` | PATCH | capacity | | |
 | 242 | `/rest/ofscCapacity/v1/showBookingGrid` | POST | capacity | | |
 
@@ -268,9 +268,10 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 - **Async-Only**: All v3.0 implementations use `async def` and must be awaited
 - **Type Safety**: Full type annotations with Pydantic model return types
 - **Client Location**: v3.0 implementations are in `/ofsc/client/` directory
-  - `metadata_api.py`: Metadata API endpoints
-  - `core_api.py`: Core API endpoints
-  - No v3.0 implementations for capacity, statistics, collaboration, auth, or partscatalog modules yet
+  - `metadata_api.py`: Metadata API endpoints (49 endpoints)
+  - `core_api.py`: Core API endpoints (2 endpoints)
+  - `capacity_api.py`: Capacity API endpoints (7 endpoints)
+  - No v3.0 implementations for statistics, collaboration, auth, or partscatalog modules yet
 
 ### Method Signatures
 - All methods follow async/await pattern: `async def method_name(...) -> ReturnType`

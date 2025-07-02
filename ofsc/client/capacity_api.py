@@ -16,6 +16,10 @@ from ..models.capacity import (
     GetQuotaResponse,
     CapacityRequest,
     GetQuotaRequest,
+    ActivityBookingOptionsResponse,
+    BookingClosingScheduleListResponse,
+    BookingStatusListResponse,
+    GetQuotaV2Response,
 )
 
 
@@ -43,6 +47,28 @@ class GetQuotaParams(BaseModel):
     intervalLevel: Optional[bool] = Field(None, description="Include interval-level quota")
     returnStatuses: Optional[bool] = Field(None, description="Include quota status information")
     timeSlotLevel: Optional[bool] = Field(None, description="Include time slot-level quota")
+
+
+class GetActivityBookingOptionsParams(BaseModel):
+    """Internal validation for activity booking options parameters."""
+    
+    activityId: str = Field(description="The activity ID for booking options", min_length=1)
+    date: str = Field(description="Date in YYYY-MM-DD format", min_length=1)
+    duration: Optional[int] = Field(None, description="Expected duration in minutes", ge=1)
+    travelTime: Optional[int] = Field(None, description="Expected travel time in minutes", ge=0)
+    
+    
+class GetBookingClosingScheduleParams(BaseModel):
+    """Internal validation for booking closing schedule parameters."""
+    
+    areas: Optional[List[str]] = Field(None, description="List of capacity area labels")
+
+
+class GetBookingStatusesParams(BaseModel):
+    """Internal validation for booking statuses parameters."""
+    
+    dates: List[str] = Field(description="List of dates in YYYY-MM-DD format")
+    areas: Optional[List[str]] = Field(None, description="List of capacity area labels")
 
 
 class CapacityAPI:
@@ -298,3 +324,182 @@ class CapacityAPI:
         )
         
         return GetQuotaResponse.from_response(response)
+
+    async def get_activity_booking_options(
+        self,
+        activity_id: str,
+        date: str,
+        duration: Optional[int] = None,
+        travel_time: Optional[int] = None,
+    ) -> ActivityBookingOptionsResponse:
+        """Get booking options for a specific activity.
+        
+        Args:
+            activity_id: The activity ID for which to get booking options
+            date: Date in YYYY-MM-DD format
+            duration: Expected duration in minutes
+            travel_time: Expected travel time in minutes
+            
+        Returns:
+            ActivityBookingOptionsResponse: Available booking options for the activity
+        """
+        # Validate parameters
+        validated_params = self._validate_params(
+            GetActivityBookingOptionsParams,
+            activityId=activity_id,
+            date=date,
+            duration=duration,
+            travelTime=travel_time,
+        )
+        
+        # Build query parameters
+        params = {}
+        params["activityId"] = validated_params["activityId"]
+        params["date"] = validated_params["date"]
+        
+        if validated_params.get("duration") is not None:
+            params["duration"] = str(validated_params["duration"])
+        if validated_params.get("travelTime") is not None:
+            params["travelTime"] = str(validated_params["travelTime"])
+
+        response = await self.client.request(
+            method="GET",
+            url="/rest/ofscCapacity/v1/activityBookingOptions",
+            params=params,
+        )
+        
+        return ActivityBookingOptionsResponse.from_response(response)
+
+    async def get_booking_closing_schedule(
+        self,
+        areas: Optional[List[str]] = None,
+    ) -> BookingClosingScheduleListResponse:
+        """Get booking closing schedule configuration.
+        
+        Args:
+            areas: List of capacity area labels to filter by
+            
+        Returns:
+            BookingClosingScheduleListResponse: Booking closing schedule configuration
+        """
+        # Validate parameters
+        validated_params = self._validate_params(
+            GetBookingClosingScheduleParams,
+            areas=areas,
+        )
+        
+        # Build query parameters
+        params = {}
+        if validated_params.get("areas"):
+            # Convert to CSV format
+            params["areas"] = ",".join(validated_params["areas"])
+
+        response = await self.client.request(
+            method="GET",
+            url="/rest/ofscCapacity/v1/bookingClosingSchedule",
+            params=params,
+        )
+        
+        return BookingClosingScheduleListResponse.from_response(response)
+
+    async def get_booking_statuses(
+        self,
+        dates: List[str],
+        areas: Optional[List[str]] = None,
+    ) -> BookingStatusListResponse:
+        """Get booking statuses for specified dates and areas.
+        
+        Args:
+            dates: List of dates in YYYY-MM-DD format (required)
+            areas: List of capacity area labels to filter by
+            
+        Returns:
+            BookingStatusListResponse: Booking status information
+        """
+        # Validate parameters
+        validated_params = self._validate_params(
+            GetBookingStatusesParams,
+            dates=dates,
+            areas=areas,
+        )
+        
+        # Build query parameters
+        params = {}
+        params["dates"] = ",".join(validated_params["dates"])
+        
+        if validated_params.get("areas"):
+            params["areas"] = ",".join(validated_params["areas"])
+
+        response = await self.client.request(
+            method="GET",
+            url="/rest/ofscCapacity/v1/bookingStatuses",
+            params=params,
+        )
+        
+        return BookingStatusListResponse.from_response(response)
+
+    async def get_quota_v2(
+        self,
+        dates: List[str],
+        areas: Optional[List[str]] = None,
+        categories: Optional[List[str]] = None,
+        aggregateResults: Optional[bool] = None,
+        categoryLevel: Optional[bool] = None,
+        intervalLevel: Optional[bool] = None,
+        returnStatuses: Optional[bool] = None,
+        timeSlotLevel: Optional[bool] = None,
+    ) -> GetQuotaV2Response:
+        """Get quota information using v2 API with enhanced structure.
+        
+        Args:
+            dates: List of dates in YYYY-MM-DD format (required)
+            areas: List of capacity area labels to filter by
+            categories: List of capacity category labels to filter by
+            aggregateResults: Whether to aggregate results across areas
+            categoryLevel: Include category-level quota information
+            intervalLevel: Include interval-level quota information
+            returnStatuses: Include quota status information
+            timeSlotLevel: Include time slot-level quota information
+            
+        Returns:
+            GetQuotaV2Response: Enhanced quota data with detailed structure
+        """
+        # Validate parameters using the same validation as v1
+        validated_params = self._validate_params(
+            GetQuotaParams,
+            dates=dates,
+            areas=areas,
+            categories=categories,
+            aggregateResults=aggregateResults,
+            categoryLevel=categoryLevel,
+            intervalLevel=intervalLevel,
+            returnStatuses=returnStatuses,
+            timeSlotLevel=timeSlotLevel,
+        )
+        
+        # Build query parameters (same format as v1)
+        params = {}
+        params["dates"] = ",".join(validated_params["dates"])
+        
+        if validated_params.get("areas"):
+            params["areas"] = ",".join(validated_params["areas"])
+        if validated_params.get("categories"):
+            params["categories"] = ",".join(validated_params["categories"])
+        if validated_params.get("aggregateResults") is not None:
+            params["aggregateResults"] = str(validated_params["aggregateResults"]).lower()
+        if validated_params.get("categoryLevel") is not None:
+            params["categoryLevel"] = str(validated_params["categoryLevel"]).lower()
+        if validated_params.get("intervalLevel") is not None:
+            params["intervalLevel"] = str(validated_params["intervalLevel"]).lower()
+        if validated_params.get("returnStatuses") is not None:
+            params["returnStatuses"] = str(validated_params["returnStatuses"]).lower()
+        if validated_params.get("timeSlotLevel") is not None:
+            params["timeSlotLevel"] = str(validated_params["timeSlotLevel"]).lower()
+
+        response = await self.client.request(
+            method="GET",
+            url="/rest/ofscCapacity/v2/quota",
+            params=params,
+        )
+        
+        return GetQuotaV2Response.from_response(response)
