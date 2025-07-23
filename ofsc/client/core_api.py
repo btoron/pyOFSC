@@ -10,7 +10,9 @@ from pydantic import BaseModel, Field, field_validator
 
 from ofsc.models.core import (
     Activity, ActivityListResponse, BulkUpdateRequest, BulkUpdateResponse, 
-    Resource, ResourceListResponse, SubscriptionList, UserListResponse
+    DailyExtractFiles, DailyExtractFolders, Resource, ResourceListResponse, 
+    ResourceUsersListResponse, ResourceWorkScheduleResponse, 
+    SubscriptionList, User, UserListResponse
 )
 
 if TYPE_CHECKING:
@@ -437,3 +439,290 @@ class OFSCoreAPI:
         
         response: "Response" = await self.client.patch(endpoint, json=resource_data)
         return Resource.from_response(response)
+
+    # Daily Extract API
+    
+    async def get_daily_extract_dates(self) -> DailyExtractFolders:
+        """
+        Get available daily extract dates from the OFS Core API.
+
+        Returns:
+            DailyExtractFolders: Available extract date folders
+        """
+        endpoint = "/rest/ofscCore/v1/folders/dailyExtract/folders"
+        logging.info(f"Fetching daily extract dates from endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.get(endpoint)
+        return DailyExtractFolders.from_response(response)
+
+    async def get_daily_extract_files(self, extract_date: str) -> DailyExtractFiles:
+        """
+        Get available files for a specific daily extract date.
+
+        Args:
+            extract_date: Date in YYYY-MM-DD format
+
+        Returns:
+            DailyExtractFiles: Available files for the specified date
+        """
+        if not extract_date or not isinstance(extract_date, str):
+            raise ValueError("extract_date must be a non-empty string in YYYY-MM-DD format")
+            
+        endpoint = f"/rest/ofscCore/v1/folders/dailyExtract/folders/{extract_date}/files"
+        logging.info(f"Fetching daily extract files from endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.get(endpoint)
+        return DailyExtractFiles.from_response(response)
+
+    async def get_daily_extract_file(
+        self, 
+        extract_date: str, 
+        filename: str, 
+        media_type: str = "application/octet-stream"
+    ) -> bytes:
+        """
+        Download a specific daily extract file.
+
+        Args:
+            extract_date: Date in YYYY-MM-DD format
+            filename: Name of the file to download
+            media_type: Media type for the response (default: application/octet-stream)
+
+        Returns:
+            bytes: The file content as bytes
+        """
+        if not extract_date or not isinstance(extract_date, str):
+            raise ValueError("extract_date must be a non-empty string in YYYY-MM-DD format")
+        if not filename or not isinstance(filename, str):
+            raise ValueError("filename must be a non-empty string")
+            
+        endpoint = f"/rest/ofscCore/v1/folders/dailyExtract/folders/{extract_date}/files/{filename}"
+        
+        # Set Accept header for media type
+        headers = {"Accept": media_type}
+        
+        logging.info(f"Downloading daily extract file from endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.get(endpoint, headers=headers)
+        return response.content
+
+    # User Management (Extended)
+    
+    async def get_user(self, login: str) -> User:
+        """
+        Get a specific user by login from the OFS Core API.
+
+        Args:
+            login: The user's login identifier
+
+        Returns:
+            User: The user details
+        """
+        if not login or not isinstance(login, str):
+            raise ValueError("login must be a non-empty string")
+            
+        endpoint = f"/rest/ofscCore/v1/users/{login}"
+        logging.info(f"Fetching user from endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.get(endpoint)
+        return User.from_response(response)
+
+    async def create_user(self, login: str, user_data: dict) -> User:
+        """
+        Create a new user in the OFS Core API.
+
+        Args:
+            login: The user's login identifier
+            user_data: Dictionary containing user properties
+
+        Returns:
+            User: The created user
+        """
+        if not login or not isinstance(login, str):
+            raise ValueError("login must be a non-empty string")
+            
+        endpoint = f"/rest/ofscCore/v1/users/{login}"
+        logging.info(f"Creating user at endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.put(endpoint, json=user_data)
+        return User.from_response(response)
+
+    async def update_user(self, login: str, user_data: dict) -> User:
+        """
+        Update an existing user in the OFS Core API.
+
+        Args:
+            login: The user's login identifier
+            user_data: Dictionary containing user properties to update
+
+        Returns:
+            User: The updated user
+        """
+        if not login or not isinstance(login, str):
+            raise ValueError("login must be a non-empty string")
+            
+        endpoint = f"/rest/ofscCore/v1/users/{login}"
+        logging.info(f"Updating user at endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.patch(endpoint, json=user_data)
+        return User.from_response(response)
+
+    async def delete_user(self, login: str) -> None:
+        """
+        Delete a user from the OFS Core API.
+
+        Args:
+            login: The user's login identifier
+        """
+        if not login or not isinstance(login, str):
+            raise ValueError("login must be a non-empty string")
+            
+        endpoint = f"/rest/ofscCore/v1/users/{login}"
+        logging.info(f"Deleting user at endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.delete(endpoint)
+        if response.status_code not in [200, 204]:
+            raise ValueError(f"Failed to delete user {login}: {response.status_code}")
+
+    # Resource Management (Extended)
+    
+    async def get_resource_users(self, resource_id: str) -> ResourceUsersListResponse:
+        """
+        Get users associated with a specific resource.
+
+        Args:
+            resource_id: The unique identifier of the resource
+
+        Returns:
+            ResourceUsersListResponse: List of users associated with the resource
+        """
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+            
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/users"
+        logging.info(f"Fetching resource users from endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.get(endpoint)
+        return ResourceUsersListResponse.from_response(response)
+
+    async def set_resource_users(self, resource_id: str, user_logins: List[str]) -> ResourceUsersListResponse:
+        """
+        Set users associated with a specific resource.
+
+        Args:
+            resource_id: The unique identifier of the resource
+            user_logins: List of user login identifiers to associate
+
+        Returns:
+            ResourceUsersListResponse: Updated list of users associated with the resource
+        """
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+        if not user_logins or not isinstance(user_logins, list):
+            raise ValueError("user_logins must be a non-empty list")
+            
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/users"
+        logging.info(f"Setting resource users at endpoint: {endpoint}")
+        
+        # The API expects the user logins in a specific format
+        request_data = {"users": user_logins}
+        
+        response: "Response" = await self.client.put(endpoint, json=request_data)
+        return ResourceUsersListResponse.from_response(response)
+
+    async def delete_resource_users(self, resource_id: str) -> None:
+        """
+        Remove all users associated with a specific resource.
+
+        Args:
+            resource_id: The unique identifier of the resource
+        """
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+            
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/users"
+        logging.info(f"Deleting resource users at endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.delete(endpoint)
+        if response.status_code not in [200, 204]:
+            raise ValueError(f"Failed to delete resource users for {resource_id}: {response.status_code}")
+
+    async def get_resource_work_schedules(
+        self, 
+        resource_id: str, 
+        actual_date: Optional[date] = None
+    ) -> ResourceWorkScheduleResponse:
+        """
+        Get work schedules for a specific resource.
+
+        Args:
+            resource_id: The unique identifier of the resource
+            actual_date: Specific date to get schedules for (YYYY-MM-DD format)
+
+        Returns:
+            ResourceWorkScheduleResponse: Work schedules for the resource
+        """
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+            
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/workSchedules"
+        
+        params = {}
+        if actual_date:
+            params["actualDate"] = actual_date.isoformat()
+            
+        logging.info(f"Fetching resource work schedules from endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return ResourceWorkScheduleResponse.from_response(response)
+
+    async def get_resource_descendants(
+        self,
+        resource_id: str,
+        resource_fields: Optional[List[str]] = None,
+        offset: int = 0,
+        limit: int = 100,
+        inventories: bool = False,
+        work_skills: bool = False,
+        work_zones: bool = False,
+        work_schedules: bool = False,
+    ) -> ResourceListResponse:
+        """
+        Get descendant resources for a specific resource.
+
+        Args:
+            resource_id: The unique identifier of the parent resource
+            resource_fields: List of resource fields to return
+            offset: Starting record offset (default: 0)
+            limit: Maximum records to return (default: 100)
+            inventories: Include inventory information
+            work_skills: Include work skills information
+            work_zones: Include work zones information
+            work_schedules: Include work schedules information
+
+        Returns:
+            ResourceListResponse: List of descendant resources
+        """
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+            
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/descendants"
+        
+        # Build query parameters
+        params = {"offset": offset, "limit": limit}
+        
+        if resource_fields:
+            params["resourceFields"] = ",".join(resource_fields)
+        if inventories:
+            params["inventories"] = "true"
+        if work_skills:
+            params["workSkills"] = "true"
+        if work_zones:
+            params["workZones"] = "true"
+        if work_schedules:
+            params["workSchedules"] = "true"
+            
+        logging.info(f"Fetching resource descendants from endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return ResourceListResponse.from_response(response)

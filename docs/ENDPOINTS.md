@@ -3,12 +3,12 @@
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints available in the pyOFSC Python Wrapper v3.0.
 
 **Total Endpoints:** 242  
-**Implemented in v3.0:** 71 (29.3%)
+**Implemented in v3.0:** 83 (34.3%)
 
 ## Implementation Coverage by Module
 
 - **metadata**: 49/86 endpoints (57.0%) ✅
-- **core**: 15/127 endpoints (11.8%) 🔄  
+- **core**: 27/127 endpoints (21.3%) 🔄  
 - **capacity**: 7/11 endpoints (63.6%) ✅
 - **statistics**: 0/6 endpoints (0%) ❌
 - **partscatalog**: 0/3 endpoints (0%) ❌
@@ -162,9 +162,9 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 141 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/complete` | POST | core | v3.0.0-dev | `async def complete_activity(self, activity_id: int) -> Activity` |
 | 142 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/notDone` | POST | core | | |
 | 143 | `/rest/ofscCore/v1/whereIsMyTech` | GET | core | | |
-| 144 | `/rest/ofscCore/v1/folders/dailyExtract/folders` | GET | core | | |
-| 145 | `/rest/ofscCore/v1/folders/dailyExtract/folders/{dailyExtractDate}/files` | GET | core | | |
-| 146 | `/rest/ofscCore/v1/folders/dailyExtract/folders/{dailyExtractDate}/files/{dailyExtractFilename}` | GET | core | | |
+| 144 | `/rest/ofscCore/v1/folders/dailyExtract/folders` | GET | core | v3.0.0-dev | `async def get_daily_extract_dates(self) -> DailyExtractFolders` |
+| 145 | `/rest/ofscCore/v1/folders/dailyExtract/folders/{dailyExtractDate}/files` | GET | core | v3.0.0-dev | `async def get_daily_extract_files(self, extract_date: str) -> DailyExtractFiles` |
+| 146 | `/rest/ofscCore/v1/folders/dailyExtract/folders/{dailyExtractDate}/files/{dailyExtractFilename}` | GET | core | v3.0.0-dev | `async def get_daily_extract_file(self, extract_date: str, filename: str, media_type: str = "application/octet-stream") -> bytes` |
 | 147 | `/rest/ofscCore/v1/events/subscriptions/{subscriptionId}` | DELETE | core | | |
 | 148 | `/rest/ofscCore/v1/events/subscriptions/{subscriptionId}` | GET | core | | |
 | 149 | `/rest/ofscCore/v1/events/subscriptions` | GET | core | v3.0.0-dev | `async def get_subscriptions(self, allSubscriptions: bool = False) -> SubscriptionList` |
@@ -183,14 +183,14 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 162 | `/rest/ofscCore/v1/inventories/{inventoryId}/custom-actions/deinstall` | POST | core | | |
 | 163 | `/rest/ofscCore/v1/resources` | GET | core | v3.0.0-dev | `async def get_resources(self, offset: int = 0, limit: int = 100, fields: Optional[List[str]] = None) -> ResourceListResponse` |
 | 164 | `/rest/ofscCore/v1/resources/{resourceId}/children` | GET | core | | |
-| 165 | `/rest/ofscCore/v1/resources/{resourceId}/descendants` | GET | core | | |
+| 165 | `/rest/ofscCore/v1/resources/{resourceId}/descendants` | GET | core | v3.0.0-dev | `async def get_resource_descendants(self, resource_id: str, resource_fields: Optional[List[str]] = None, offset: int = 0, limit: int = 100, inventories: bool = False, work_skills: bool = False, work_zones: bool = False, work_schedules: bool = False) -> ResourceListResponse` |
 | 166 | `/rest/ofscCore/v1/resources/{resourceId}/assistants` | GET | core | | |
 | 167 | `/rest/ofscCore/v1/resources/{resourceId}` | GET | core | v3.0.0-dev | `async def get_resource(self, resource_id: str, inventories: bool = False, workSkills: bool = False, workZones: bool = False, workSchedules: bool = False) -> Resource` |
 | 168 | `/rest/ofscCore/v1/resources/{resourceId}` | PUT | core | | |
 | 169 | `/rest/ofscCore/v1/resources/{resourceId}` | PATCH | core | v3.0.0-dev | `async def update_resource(self, resource_id: str, resource_data: dict) -> Resource` |
-| 170 | `/rest/ofscCore/v1/resources/{resourceId}/users` | GET | core | | |
-| 171 | `/rest/ofscCore/v1/resources/{resourceId}/users` | PUT | core | | |
-| 172 | `/rest/ofscCore/v1/resources/{resourceId}/users` | DELETE | core | | |
+| 170 | `/rest/ofscCore/v1/resources/{resourceId}/users` | GET | core | v3.0.0-dev | `async def get_resource_users(self, resource_id: str) -> ResourceUsersListResponse` |
+| 171 | `/rest/ofscCore/v1/resources/{resourceId}/users` | PUT | core | v3.0.0-dev | `async def set_resource_users(self, resource_id: str, user_logins: List[str]) -> ResourceUsersListResponse` |
+| 172 | `/rest/ofscCore/v1/resources/{resourceId}/users` | DELETE | core | v3.0.0-dev | `async def delete_resource_users(self, resource_id: str) -> None` |
 | 173 | `/rest/ofscCore/v1/resources/{resourceId}/inventories` | POST | core | | |
 | 174 | `/rest/ofscCore/v1/resources/{resourceId}/inventories` | GET | core | | |
 | 175 | `/rest/ofscCore/v1/resources/{resourceId}/inventories/{inventoryId}/custom-actions/install` | POST | core | | |
@@ -200,7 +200,7 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 179 | `/rest/ofscCore/v1/resources/{resourceId}/workZones` | POST | core | | |
 | 180 | `/rest/ofscCore/v1/resources/{resourceId}/workZones` | GET | core | | |
 | 181 | `/rest/ofscCore/v1/resources/{resourceId}/workZones/{workZoneItemId}` | DELETE | core | | |
-| 182 | `/rest/ofscCore/v1/resources/{resourceId}/workSchedules` | GET | core | | |
+| 182 | `/rest/ofscCore/v1/resources/{resourceId}/workSchedules` | GET | core | v3.0.0-dev | `async def get_resource_work_schedules(self, resource_id: str, actual_date: Optional[date] = None) -> ResourceWorkScheduleResponse` |
 | 183 | `/rest/ofscCore/v1/resources/{resourceId}/workSchedules` | POST | core | | |
 | 184 | `/rest/ofscCore/v1/resources/{resourceId}/workSchedules/{scheduleItemId}` | DELETE | core | | |
 | 185 | `/rest/ofscCore/v1/resources/{resourceId}/workSchedules/calendarView` | GET | core | | |
@@ -238,10 +238,10 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 217 | `/rest/ofscCore/v1/serviceRequests` | POST | core | | |
 | 218 | `/rest/ofscCore/v1/serviceRequests/{requestId}/{propertyLabel}` | GET | core | | |
 | 219 | `/rest/ofscCore/v1/users` | GET | core | v3.0.0-dev | `async def get_users(self, offset: int = 0, limit: int = 100) -> UserListResponse` |
-| 220 | `/rest/ofscCore/v1/users/{login}` | GET | core | | |
-| 221 | `/rest/ofscCore/v1/users/{login}` | PUT | core | | |
-| 222 | `/rest/ofscCore/v1/users/{login}` | PATCH | core | | |
-| 223 | `/rest/ofscCore/v1/users/{login}` | DELETE | core | | |
+| 220 | `/rest/ofscCore/v1/users/{login}` | GET | core | v3.0.0-dev | `async def get_user(self, login: str) -> User` |
+| 221 | `/rest/ofscCore/v1/users/{login}` | PUT | core | v3.0.0-dev | `async def create_user(self, login: str, user_data: dict) -> User` |
+| 222 | `/rest/ofscCore/v1/users/{login}` | PATCH | core | v3.0.0-dev | `async def update_user(self, login: str, user_data: dict) -> User` |
+| 223 | `/rest/ofscCore/v1/users/{login}` | DELETE | core | v3.0.0-dev | `async def delete_user(self, login: str) -> None` |
 | 224 | `/rest/ofscCore/v1/users/{login}/{propertyLabel}` | PUT | core | | |
 | 225 | `/rest/ofscCore/v1/users/{login}/{propertyLabel}` | GET | core | | |
 | 226 | `/rest/ofscCore/v1/users/{login}/{propertyLabel}` | DELETE | core | | |
@@ -303,6 +303,22 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
     - `update_resource` - Update resource properties
   - All endpoints include parameter validation and return typed Pydantic models
   - Follows established async-only architecture patterns
+- **Extended Core API Implementation**: Added 12 more essential endpoints
+  - **Daily Extract API (3 endpoints)**: Complete daily extract functionality
+    - `get_daily_extract_dates` - Get available extract dates
+    - `get_daily_extract_files` - Get files for specific date
+    - `get_daily_extract_file` - Download specific extract file
+  - **Extended User Management (4 endpoints)**: Complete user lifecycle
+    - `get_user` - Get specific user by login
+    - `create_user` - Create new users
+    - `update_user` - Update user properties
+    - `delete_user` - Delete users
+  - **Extended Resource Management (5 endpoints)**: Resource relationships and schedules
+    - `get_resource_users` - Get users associated with resource
+    - `set_resource_users` - Associate users with resource
+    - `delete_resource_users` - Remove user associations
+    - `get_resource_work_schedules` - Get resource work schedules
+    - `get_resource_descendants` - Get descendant resources in hierarchy
 
 ### January 15, 2025
 - **get_timeslots** (Endpoint #67): Added support for retrieving time slot definitions from `/rest/ofscMetadata/v1/timeSlots`
@@ -325,4 +341,4 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 ---
 
 *Generated from endpoints.json data for pyOFSC Python Wrapper v3.0  
-Last updated: July 23, 2025 - Added 13 Core API endpoints with complete signatures (Activities and Resources)*
+Last updated: July 23, 2025 - Added 25 Core API endpoints with complete signatures*

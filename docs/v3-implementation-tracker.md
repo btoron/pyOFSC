@@ -3,7 +3,7 @@
 ## Project Status
 
 **Current Phase:** Phase 1 - Foundation and Breaking Changes  
-**Overall Progress:** 32% (70/222 tasks completed)  
+**Overall Progress:** 37% (82/222 tasks completed)  
 **Start Date:** December 27, 2024  
 **Target Completion:** TBD  
 **Last Review:** July 23, 2025  
@@ -12,11 +12,11 @@
 
 | Phase | Tasks | Completed | Progress | Status |
 |-------|-------|-----------|----------|---------|
-| Phase 1: Foundation | 105 | 70 | 67% | In Progress |
+| Phase 1: Foundation | 105 | 82 | 78% | In Progress |
 | Phase 2: Enhanced Features | 47 | 0 | 0% | Not Started |
 | Phase 3: Testing & QA | 42 | 0 | 0% | Not Started |
 | Phase 4: Documentation & Migration | 28 | 0 | 0% | Not Started |
-| **Total** | **222** | **70** | **32%** | **In Progress** |
+| **Total** | **222** | **82** | **37%** | **In Progress** |
 
 ## Phase 1: Foundation and Breaking Changes (Weeks 1-4)
 
@@ -247,21 +247,25 @@
 - get_booking_statuses
 
 #### 1.6.3 Core API Implementation
-**Progress: 15/127 endpoints (11.8%)**
+**Progress: 27/127 endpoints (21.3%)**
 
 **Note:** Significant progress made on Core API activities and resources endpoints.
 
-- [x] Started Core API migration (15 endpoints completed)
+- [x] Started Core API migration (27 endpoints completed)
 - [x] Implement parameter validation for completed endpoints
 - [x] Update completed methods to return Pydantic models
 - [x] Implemented core Activities API endpoints
-- [x] Implemented basic Resources API endpoints
-- [ ] Complete remaining 112 Core API endpoints
+- [x] Implemented comprehensive Resources API endpoints
+- [x] Implemented Daily Extract API endpoints
+- [x] Implemented extended User management endpoints
+- [ ] Complete remaining 100 Core API endpoints
 - [ ] Add comprehensive validation tests for all endpoints
 
 **Status:** In Progress  
 **Start Date:** July 23, 2025 19:35:43 EDT  
 **Progress Update:** July 23, 2025 19:42:00 EDT  
+**Next Phase Started:** July 23, 2025 19:46:53 EDT - Expanding Core API with essential endpoints  
+**Phase Update:** July 23, 2025 19:48:50 EDT - Added 12 more essential endpoints  
 **Implemented Endpoints:**
 - get_subscriptions
 - get_users
@@ -276,10 +280,24 @@
   - complete_activity
   - cancel_activity
   - bulk_update_activities
-- **Resources API (3 endpoints):**
+- **Resources API (7 endpoints):**
   - get_resources
   - get_resource
   - update_resource
+  - get_resource_users
+  - set_resource_users
+  - delete_resource_users
+  - get_resource_work_schedules
+  - get_resource_descendants
+- **Daily Extract API (3 endpoints):**
+  - get_daily_extract_dates
+  - get_daily_extract_files
+  - get_daily_extract_file
+- **Extended User Management (4 endpoints):**
+  - get_user
+  - create_user
+  - update_user
+  - delete_user
 
 #### 1.6.4 All APIs Non-GET Endpoints (POST/PUT/PATCH/DELETE)
 **Progress: 0/5 tasks (0%)**
