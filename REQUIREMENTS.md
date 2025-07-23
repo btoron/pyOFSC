@@ -10,11 +10,12 @@ The OFSC Python Wrapper v3.0 is a comprehensive Python library for interacting w
 - **R1.2**: The library SHALL be tested against Python 3.12 and 3.13
 - **R1.3**: The library SHALL use Python 3.12+ features where appropriate
 
-### R2: Async-Only Client Architecture
+### R2: Async-Only Client Architecture (Updated July 2025)
 - **R2.1**: The library SHALL provide ONLY asynchronous clients
 - **R2.2**: The asynchronous client SHALL be named `OFSC` using httpx.AsyncClient()
 - **R2.3**: All API methods SHALL be async and require await
 - **R2.4**: The library SHALL be designed from the ground up for async/await patterns
+- **R2.5**: Backward compatibility for sync usage SHALL be provided via `ofsc.compat` wrapper
 
 ### R3: HTTP Client Migration
 - **R3.1**: The library SHALL use `httpx` as the HTTP client library
@@ -69,13 +70,13 @@ The OFSC Python Wrapper v3.0 is a comprehensive Python library for interacting w
 - **R10.3**: The library SHALL provide migration guide from v2 to v3
 - **R10.4**: The library SHALL include troubleshooting guide
 
-### R11: Backwards Compatibility
-- **R11.1**: A compatibility layer SHALL be provided for v2 users until v4.0
-- **R11.2**: Deprecation warnings SHALL be shown for old usage patterns
-- **R11.3**: The v2 API SHALL be available as `OFSCV2` class as separate implementation
-- **R11.4**: OFSCV2 SHALL follow exact same signatures as current v2.14.1 code
-- **R11.5**: OFSCV2 SHALL support company/companyName parameter names
-- **R11.6**: Breaking changes SHALL be clearly documented
+### R11: Backwards Compatibility (Updated July 2025)
+- **R11.1**: A compatibility layer SHALL be provided for v2 users via `ofsc.compat` module
+- **R11.2**: The compatibility wrapper SHALL automatically convert sync calls to async
+- **R11.3**: Users SHALL only need to change import from `ofsc` to `ofsc.compat`
+- **R11.4**: The wrapper SHALL maintain exact same method signatures as v2.x
+- **R11.5**: The wrapper SHALL support all v2.x parameter names (instance/company)
+- **R11.6**: Breaking changes SHALL be clearly documented with migration guide
 
 ### R12: Type Safety
 - **R12.1**: The library SHALL use type hints throughout
@@ -129,6 +130,7 @@ The OFSC Python Wrapper v3.0 is a comprehensive Python library for interacting w
 ## Test Mapping
 
 ### Authentication Tests
+- R2.5: test_compat_wrapper_sync_to_async
 - R5.1: test_basic_auth_async
 - R5.2: test_oauth2_async
 - R5.3: test_token_refresh
@@ -149,10 +151,10 @@ The OFSC Python Wrapper v3.0 is a comprehensive Python library for interacting w
 - R7.5: test_circuit_breaker
 
 ### Integration Tests
-- R6.1: test_core_api_endpoints
-- R6.2: test_metadata_api_endpoints
-- R6.3: test_capacity_api_endpoints
-- R6.4: test_backwards_compatibility
+- R6.1: test_core_api_endpoints (2/127 implemented)
+- R6.2: test_metadata_api_endpoints (49/86 implemented)
+- R6.3: test_capacity_api_endpoints (7/11 implemented)
+- R11.1-R11.5: test_compat_module_backwards_compatibility
 
 ### Configuration Tests
 - R8.1: test_pydantic_settings

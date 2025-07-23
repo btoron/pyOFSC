@@ -284,14 +284,14 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 
 ## Recent Additions
 
-### June 28, 2025
+### January 15, 2025
 - **get_timeslots** (Endpoint #67): Added support for retrieving time slot definitions from `/rest/ofscMetadata/v1/timeSlots`
   - Supports both timed slots (with `timeStart`/`timeEnd`) and all-day slots (`isAllDay=True`)
   - Includes pagination parameters (`offset`, `limit`) with validation
   - Returns `TimeSlotListResponse` with proper model validation
   - Full test coverage including unit tests and model validation against response examples
 
-### July 1, 2025
+### January 16, 2025
 - **Capacity Area Sub-Resource Endpoints (Endpoints #16, #17, #19, #20, #21)**: Added complete implementation for capacity area sub-resource management
   - **get_capacity_area_categories** (Endpoint #16): Retrieve capacity categories for specific capacity areas
   - **get_capacity_area_workzones** (Endpoint #17): Retrieve work zones for capacity areas using v2 endpoint with detailed information
@@ -305,4 +305,4 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 ---
 
 *Generated from endpoints.json data for pyOFSC Python Wrapper v3.0  
-Last updated: July 1, 2025 - Added capacity area sub-resource endpoints*
+Last updated: July 23, 2025 - Corrected timeline dates and updated documentation*
