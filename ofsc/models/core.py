@@ -56,6 +56,12 @@ class Resource(BaseOFSResponse):
     model_config = ConfigDict(extra="allow")
 
 
+class ResourceListResponse(OFSResponseList[Resource]):
+    """Paginated response for resource lists"""
+
+    pass
+
+
 # Activities
 class Activity(BaseOFSResponse):
     """Activity definition and configuration"""
@@ -130,6 +136,12 @@ class ActivityKeys(BaseOFSResponse):
     activityId: Optional[int] = None
     apptNumber: Optional[str] = None
     customerNumber: Optional[str] = None
+
+
+class ActivityListResponse(OFSResponseList[Activity]):
+    """Paginated response for activity lists"""
+
+    pass
 
 
 class BulkUpdateError(BaseOFSResponse):

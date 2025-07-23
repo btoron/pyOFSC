@@ -3,12 +3,12 @@
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints available in the pyOFSC Python Wrapper v3.0.
 
 **Total Endpoints:** 242  
-**Implemented in v3.0:** 58 (24.0%)
+**Implemented in v3.0:** 71 (29.3%)
 
 ## Implementation Coverage by Module
 
 - **metadata**: 49/86 endpoints (57.0%) ✅
-- **core**: 2/127 endpoints (1.6%) ⚠️  
+- **core**: 15/127 endpoints (11.8%) 🔄  
 - **capacity**: 7/11 endpoints (63.6%) ✅
 - **statistics**: 0/6 endpoints (0%) ❌
 - **partscatalog**: 0/3 endpoints (0%) ❌
@@ -121,11 +121,11 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 100 | `/rest/ofscCollaboration/v1/chats/{chatId}/messages` | POST | collaboration | | |
 | 101 | `/rest/ofscCollaboration/v1/chats/{chatId}/participants` | GET | collaboration | | |
 | 102 | `/rest/ofscCollaboration/v1/chats/{chatId}/participants/invite` | POST | collaboration | | |
-| 103 | `/rest/ofscCore/v1/activities` | POST | core | | |
-| 104 | `/rest/ofscCore/v1/activities` | GET | core | | |
-| 105 | `/rest/ofscCore/v1/activities/{activityId}` | PATCH | core | | |
-| 106 | `/rest/ofscCore/v1/activities/{activityId}` | DELETE | core | | |
-| 107 | `/rest/ofscCore/v1/activities/{activityId}` | GET | core | | |
+| 103 | `/rest/ofscCore/v1/activities` | POST | core | v3.0.0-dev | `async def create_activity(self, activity_data: dict) -> Activity` |
+| 104 | `/rest/ofscCore/v1/activities` | GET | core | v3.0.0-dev | `async def get_activities(self, resources: List[str], dateFrom: Optional[date] = None, dateTo: Optional[date] = None, includeChildren: str = "all", q: Optional[str] = None, fields: Optional[List[str]] = None, includeNonScheduled: bool = False, offset: int = 0, limit: int = 100) -> ActivityListResponse` |
+| 105 | `/rest/ofscCore/v1/activities/{activityId}` | PATCH | core | v3.0.0-dev | `async def update_activity(self, activity_id: int, activity_data: dict) -> Activity` |
+| 106 | `/rest/ofscCore/v1/activities/{activityId}` | DELETE | core | v3.0.0-dev | `async def delete_activity(self, activity_id: int) -> None` |
+| 107 | `/rest/ofscCore/v1/activities/{activityId}` | GET | core | v3.0.0-dev | `async def get_activity(self, activity_id: int) -> Activity` |
 | 108 | `/rest/ofscCore/v1/activities/{activityId}/multidaySegments` | GET | core | | |
 | 109 | `/rest/ofscCore/v1/activities/{activityId}/{propertyLabel}` | PUT | core | | |
 | 110 | `/rest/ofscCore/v1/activities/{activityId}/{propertyLabel}` | GET | core | | |
@@ -148,18 +148,18 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 127 | `/rest/ofscCore/v1/activities/{activityId}/linkedActivities/{linkedActivityId}/linkTypes/{linkType}` | DELETE | core | | |
 | 128 | `/rest/ofscCore/v1/activities/{activityId}/linkedActivities/{linkedActivityId}/linkTypes/{linkType}` | GET | core | | |
 | 129 | `/rest/ofscCore/v1/activities/{activityId}/linkedActivities/{linkedActivityId}/linkTypes/{linkType}` | PUT | core | | |
-| 130 | `/rest/ofscCore/v1/activities/custom-actions/search` | GET | core | | |
-| 131 | `/rest/ofscCore/v1/activities/custom-actions/bulkUpdate` | POST | core | | |
+| 130 | `/rest/ofscCore/v1/activities/custom-actions/search` | GET | core | v3.0.0-dev | `async def search_activities(self, **params) -> ActivityListResponse` |
+| 131 | `/rest/ofscCore/v1/activities/custom-actions/bulkUpdate` | POST | core | v3.0.0-dev | `async def bulk_update_activities(self, bulk_data: BulkUpdateRequest) -> BulkUpdateResponse` |
 | 132 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/startPrework` | POST | core | | |
 | 133 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/reopen` | POST | core | | |
 | 134 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/delay` | POST | core | | |
-| 135 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/cancel` | POST | core | | |
-| 136 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/start` | POST | core | | |
+| 135 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/cancel` | POST | core | v3.0.0-dev | `async def cancel_activity(self, activity_id: int) -> Activity` |
+| 136 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/start` | POST | core | v3.0.0-dev | `async def start_activity(self, activity_id: int) -> Activity` |
 | 137 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/enroute` | POST | core | | |
 | 138 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/stopTravel` | POST | core | | |
 | 139 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/suspend` | POST | core | | |
 | 140 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/move` | POST | core | | |
-| 141 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/complete` | POST | core | | |
+| 141 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/complete` | POST | core | v3.0.0-dev | `async def complete_activity(self, activity_id: int) -> Activity` |
 | 142 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/notDone` | POST | core | | |
 | 143 | `/rest/ofscCore/v1/whereIsMyTech` | GET | core | | |
 | 144 | `/rest/ofscCore/v1/folders/dailyExtract/folders` | GET | core | | |
@@ -181,13 +181,13 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 160 | `/rest/ofscCore/v1/inventories/{inventoryId}/custom-actions/undoDeinstall` | POST | core | | |
 | 161 | `/rest/ofscCore/v1/inventories/{inventoryId}/custom-actions/install` | POST | core | | |
 | 162 | `/rest/ofscCore/v1/inventories/{inventoryId}/custom-actions/deinstall` | POST | core | | |
-| 163 | `/rest/ofscCore/v1/resources` | GET | core | | |
+| 163 | `/rest/ofscCore/v1/resources` | GET | core | v3.0.0-dev | `async def get_resources(self, offset: int = 0, limit: int = 100, fields: Optional[List[str]] = None) -> ResourceListResponse` |
 | 164 | `/rest/ofscCore/v1/resources/{resourceId}/children` | GET | core | | |
 | 165 | `/rest/ofscCore/v1/resources/{resourceId}/descendants` | GET | core | | |
 | 166 | `/rest/ofscCore/v1/resources/{resourceId}/assistants` | GET | core | | |
-| 167 | `/rest/ofscCore/v1/resources/{resourceId}` | GET | core | | |
+| 167 | `/rest/ofscCore/v1/resources/{resourceId}` | GET | core | v3.0.0-dev | `async def get_resource(self, resource_id: str, inventories: bool = False, workSkills: bool = False, workZones: bool = False, workSchedules: bool = False) -> Resource` |
 | 168 | `/rest/ofscCore/v1/resources/{resourceId}` | PUT | core | | |
-| 169 | `/rest/ofscCore/v1/resources/{resourceId}` | PATCH | core | | |
+| 169 | `/rest/ofscCore/v1/resources/{resourceId}` | PATCH | core | v3.0.0-dev | `async def update_resource(self, resource_id: str, resource_data: dict) -> Resource` |
 | 170 | `/rest/ofscCore/v1/resources/{resourceId}/users` | GET | core | | |
 | 171 | `/rest/ofscCore/v1/resources/{resourceId}/users` | PUT | core | | |
 | 172 | `/rest/ofscCore/v1/resources/{resourceId}/users` | DELETE | core | | |
@@ -284,6 +284,26 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 
 ## Recent Additions
 
+### July 23, 2025
+- **Core API Activities and Resources Implementation**: Added 13 new Core API endpoints
+  - **Activities API (10 endpoints)**: Complete CRUD operations plus state transitions
+    - `get_activities` - Search and list activities with filtering
+    - `create_activity` - Create new activities
+    - `get_activity` - Get specific activity by ID
+    - `update_activity` - Update activity properties (PATCH)
+    - `delete_activity` - Delete activities
+    - `search_activities` - Advanced activity search
+    - `start_activity` - Change activity status to started
+    - `complete_activity` - Change activity status to completed
+    - `cancel_activity` - Change activity status to cancelled
+    - `bulk_update_activities` - Bulk update multiple activities
+  - **Resources API (3 endpoints)**: Basic resource management
+    - `get_resources` - List resources with pagination
+    - `get_resource` - Get specific resource with optional related data
+    - `update_resource` - Update resource properties
+  - All endpoints include parameter validation and return typed Pydantic models
+  - Follows established async-only architecture patterns
+
 ### January 15, 2025
 - **get_timeslots** (Endpoint #67): Added support for retrieving time slot definitions from `/rest/ofscMetadata/v1/timeSlots`
   - Supports both timed slots (with `timeStart`/`timeEnd`) and all-day slots (`isAllDay=True`)
@@ -305,4 +325,4 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 ---
 
 *Generated from endpoints.json data for pyOFSC Python Wrapper v3.0  
-Last updated: July 23, 2025 - Corrected timeline dates and updated documentation*
+Last updated: July 23, 2025 - Added 13 Core API endpoints with complete signatures (Activities and Resources)*

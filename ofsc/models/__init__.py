@@ -76,6 +76,7 @@ from .metadata import (
 from .core import (
     Activity,
     ActivityKeys,
+    ActivityListResponse,
     AssignedLocation,
     AssignedLocationsRequest,
     AssignedLocationsResponse,
@@ -103,6 +104,7 @@ from .core import (
     Recurrence,
     RecurrenceType,
     Resource,
+    ResourceListResponse,
     ResourcePosition,
     ResourcePositionListResponse,
     ResourceUsersListResponse,
@@ -200,6 +202,7 @@ __all__ = [
     # Core models
     "Activity",
     "ActivityKeys",
+    "ActivityListResponse",
     "AssignedLocation",
     "AssignedLocationsRequest",
     "AssignedLocationsResponse",
@@ -227,6 +230,7 @@ __all__ = [
     "Recurrence",
     "RecurrenceType",
     "Resource",
+    "ResourceListResponse",
     "ResourcePosition",
     "ResourcePositionListResponse",
     "ResourceUsersListResponse",
