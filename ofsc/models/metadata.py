@@ -33,14 +33,16 @@ if TYPE_CHECKING:
 # API Access Enums
 class ApiAccessStatus(str, Enum):
     """Status values for API access configuration"""
+
     ACTIVE = "active"
     INACTIVE = "inactive"
 
 
 class ApiAccessLabel(str, Enum):
     """Standard API access labels available in OFSC"""
+
     PARTS_CATALOG_API = "partsCatalogAPI"
-    CAPACITY_API = "capacityAPI" 
+    CAPACITY_API = "capacityAPI"
     CORE_API = "coreAPI"
     FIELD_COLLABORATION_API = "fieldCollaborationAPI"
     INBOUND_API = "inboundAPI"
@@ -51,20 +53,23 @@ class ApiAccessLabel(str, Enum):
 
 class ApiAccessVisibility(str, Enum):
     """Visibility levels for API access entities"""
+
     READ_ONLY = "ReadOnly"
-    READ_WRITE = "ReadWrite" 
+    READ_WRITE = "ReadWrite"
     MANDATORY = "Mandatory"
     HIDDEN = "Hidden"
 
 
 class ApiMethodStatus(str, Enum):
     """Status for API methods"""
+
     ON = "on"
     OFF = "off"
 
 
 class ExportMediaType(str, Enum):
     """Supported media types for export endpoints"""
+
     JSON = "application/json"
     CSV = "text/csv"
     XML = "application/xml"
@@ -170,12 +175,16 @@ class ActivityTypeGroupListResponse(OFSResponseList[ActivityTypeGroup]):
 
 class ActivityTypeGroupRequest(BaseModel):
     """Request model for creating or updating activity type groups.
-    
+
     DEPRECATED: This model is no longer used by the create_or_replace_activity_type_group
     method, which now takes label and optional translations directly.
     """
 
-    name: str = Field(min_length=1, max_length=255, description="Display name of the activity type group")
+    name: str = Field(
+        min_length=1,
+        max_length=255,
+        description="Display name of the activity type group",
+    )
     activityTypes: Optional[List[ActivityTypeGroupItem]] = Field(
         default=None, description="List of activity types to include in the group"
     )
@@ -183,15 +192,15 @@ class ActivityTypeGroupRequest(BaseModel):
         default=None, description="Multi-language translations for the group name"
     )
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def ensure_translations(self):
         """Auto-generate default English translation from name if no translations provided."""
-        if not self.translations or (self.translations and len(self.translations.root) == 0):
+        if not self.translations or (
+            self.translations and len(self.translations.root) == 0
+        ):
             # Generate default English translation from name
             default_translation = Translation(
-                language="en",
-                name=self.name,
-                languageISO="en-US"
+                language="en", name=self.name, languageISO="en-US"
             )
             self.translations = TranslationList([default_translation])
         return self
@@ -227,21 +236,21 @@ class ApplicationListResponse(OFSResponseList[Application]):
 # Application API Access Models
 class ApplicationApiAccessMethod(BaseOFSResponse):
     """API method configuration for capacity API"""
-    
+
     label: str = Field(min_length=1, max_length=80)
     status: ApiMethodStatus
 
 
 class ApplicationApiAccessEntity(BaseOFSResponse):
     """API entity configuration for core/metadata APIs"""
-    
+
     label: str = Field(min_length=1, max_length=80)
     access: ApiAccessVisibility
 
 
 class ApplicationApiAccessContext(BaseOFSResponse):
     """Field visibility configuration for inbound API"""
-    
+
     label: str = Field(min_length=1, max_length=255)
     visibilities: Optional[List[Dict[str, Any]]] = []
     valuesVisibility: Optional[List[Dict[str, Any]]] = []
@@ -249,12 +258,12 @@ class ApplicationApiAccessContext(BaseOFSResponse):
 
 class ApplicationApiAccess(BaseOFSResponse):
     """Individual API access configuration for an application"""
-    
+
     label: str = Field(min_length=1, max_length=255)
     name: str = Field(min_length=1, max_length=255)
     status: ApiAccessStatus
     links: Optional[List[Link]] = []
-    
+
     # Optional detailed configuration (present in individual access endpoint)
     apiMethods: Optional[List[ApplicationApiAccessMethod]] = []
     apiEntities: Optional[List[ApplicationApiAccessEntity]] = []
@@ -267,7 +276,7 @@ class ApplicationApiAccess(BaseOFSResponse):
 
 class ApplicationApiAccessListResponse(OFSResponseList[ApplicationApiAccess]):
     """Response for application API access list endpoint (ID 10)"""
-    
+
     pass
 
 
@@ -345,7 +354,7 @@ class OrganizationListResponse(OFSResponseList[Organization]):
 # Properties
 class PropertyRequest(BaseModel):
     """Request model for creating or updating properties"""
-    
+
     label: str
     name: str
     type: str
@@ -358,7 +367,7 @@ class PropertyRequest(BaseModel):
     def type_match(cls, v):
         if v not in [
             "field",
-            "integer", 
+            "integer",
             "string",
             "enumeration",
             "file",
@@ -373,7 +382,7 @@ class PropertyRequest(BaseModel):
         if v is not None and v not in [
             "text",
             "checkbox",
-            "combobox", 
+            "combobox",
             "radiogroup",
             "file",
             "signature",
@@ -582,7 +591,9 @@ class WorkZoneKeyField(BaseOFSResponse):
 
     label: str = Field(description="Field label identifier")
     length: int = Field(description="Maximum length for this field")
-    function: str = Field(description="Function applied to the field (e.g., 'caseInsensitive')")
+    function: str = Field(
+        description="Function applied to the field (e.g., 'caseInsensitive')"
+    )
     order: int = Field(description="Order of this field in the key")
     apiParameterName: str = Field(description="API parameter name for this field")
 
@@ -590,8 +601,12 @@ class WorkZoneKeyField(BaseOFSResponse):
 class WorkZoneKeyResponse(BaseOFSResponse):
     """Work zone key configuration response"""
 
-    current: List[WorkZoneKeyField] = Field(default=[], description="Current work zone key fields")
-    pending: List[WorkZoneKeyField] = Field(default=[], description="Pending work zone key fields")
+    current: List[WorkZoneKeyField] = Field(
+        default=[], description="Current work zone key fields"
+    )
+    pending: List[WorkZoneKeyField] = Field(
+        default=[], description="Pending work zone key fields"
+    )
     links: Optional[List[Link]] = Field(default=[], description="Related links")
 
 
@@ -726,14 +741,24 @@ class RoutingPlanExportResponse(BaseOFSResponse):
     """Response for routing plan export endpoint with download information or actual data"""
 
     # For export metadata response (without Accept header)
-    mediaType: Optional[str] = Field(default=None, description="MIME type of the exported content")
-    links: Optional[List[Link]] = Field(default=[], description="Download links for the exported content")
-    
+    mediaType: Optional[str] = Field(
+        default=None, description="MIME type of the exported content"
+    )
+    links: Optional[List[Link]] = Field(
+        default=[], description="Download links for the exported content"
+    )
+
     # For actual routing plan data response (with Accept header)
-    routing_plan: Optional[Dict[str, Any]] = Field(default=None, description="Actual routing plan configuration")
-    sign: Optional[str] = Field(default=None, description="Digital signature for the routing plan")
-    version: Optional[str] = Field(default=None, description="Version of the routing plan format")
-    
-    model_config = ConfigDict(extra="allow")  # Allow additional fields for complex routing plan data
+    routing_plan: Optional[Dict[str, Any]] = Field(
+        default=None, description="Actual routing plan configuration"
+    )
+    sign: Optional[str] = Field(
+        default=None, description="Digital signature for the routing plan"
+    )
+    version: Optional[str] = Field(
+        default=None, description="Version of the routing plan format"
+    )
 
-
+    model_config = ConfigDict(
+        extra="allow"
+    )  # Allow additional fields for complex routing plan data
