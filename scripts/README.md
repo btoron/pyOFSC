@@ -196,76 +196,156 @@ uv run python scripts/compare_endpoints_sources.py > logs/comparison_$(date +%Y%
 # 4. Review discrepancies and iterate
 ```
 
-#### `generate_tests.py`
-Generates comprehensive test files for OFSC API endpoints using the swagger specification and endpoint registry.
+#### `generate_model_validation_tests.py`
+Generates comprehensive validation tests for Pydantic models using real API response examples.
 
-**Purpose:** Automatically creates complete test files with CRUD operations, parameter validation, negative tests, search/filter tests, and pagination tests.
+**Purpose:** Automatically creates model validation tests that ensure Pydantic models correctly parse real API responses, providing comprehensive coverage against authentic data.
 
 **Usage:**
 ```bash
-# Generate tests for a specific resource
-python scripts/generate_tests.py properties
+# Generate validation tests for all modules
+uv run python scripts/generate_model_validation_tests.py
 
-# Generate tests with custom output path
-python scripts/generate_tests.py activities --output tests/custom/my_tests.py
+# Generate tests for specific module only
+uv run python scripts/generate_model_validation_tests.py --module core
+uv run python scripts/generate_model_validation_tests.py --module metadata
+uv run python scripts/generate_model_validation_tests.py --module capacity
 
-# List all available resources
-python scripts/generate_tests.py --list
+# Show coverage summary report
+uv run python scripts/generate_model_validation_tests.py --summary
 
-# Dry run to preview what would be generated
-python scripts/generate_tests.py users --dry-run
-
-# Verbose output for detailed information
-python scripts/generate_tests.py properties --verbose
+# Custom output directory
+uv run python scripts/generate_model_validation_tests.py --output-dir tests/models/custom
 ```
 
-**Features:**
-- **Complete CRUD Testing**: Create, Read, Update, Delete operations
-- **Parameter Boundary Testing**: Min/max length, numeric boundaries, enum validation
-- **Negative Test Cases**: Not found, invalid parameters, malformed requests
-- **Search & Filter Testing**: Query functionality and filter combinations
-- **Pagination Testing**: Page traversal, boundary conditions, performance
-- **Performance Testing**: Response times, bulk operations, concurrent access
-- **Automatic Cleanup**: Generated tests inherit from BaseOFSCTest for resource management
+**Key Features:**
+- **Real Response Integration**: Uses saved API responses from `response_examples/` directory
+- **Intelligent Model Mapping**: Extracts return types from endpoint signatures in the registry
+- **Smart Import Resolution**: Maps model names to correct Pydantic classes automatically
+- **List vs Single Response Handling**: Correctly validates both list responses and individual models
+- **Comprehensive Coverage**: Generates tests for all models that have saved responses
+
+**Coverage Analysis:**
+```bash
+uv run python scripts/generate_model_validation_tests.py --summary
+================================================================================
+MODEL VALIDATION TEST COVERAGE REPORT
+================================================================================
+
+Total models in registry: 344
+Models with saved responses: 83 (24.1%)
+
+Coverage by module:
+  capacity: 0/15 (0.0%)
+  core: 29/77 (37.7%)
+  metadata: 45/65 (69.2%)
+  statistics: 2/9 (22.2%)
+```
 
 **Generated Test Structure:**
 ```python
-class TestPropertiesAPI(BaseOFSCTest):
-    """Comprehensive tests for Properties API endpoints."""
+class TestCoreModelsValidation:
+    """Test Core API model validation against response examples."""
     
-    # CRUD Operations
-    async def test_create_properties(self):
-    async def test_get_properties_by_id(self):
-    async def test_list_properties(self):
-    async def test_update_properties(self):
-    async def test_delete_properties(self):
-    
-    # Parameter Boundary Tests
-    async def test_get_label_boundary_length(self):
-    async def test_get_limit_boundary_numeric(self):
-    
-    # Negative Test Cases  
-    async def test_get_properties_not_found(self):
-    async def test_get_properties_invalid_params(self):
-    
-    # Search & Filter Tests
-    async def test_get_properties_search(self):
-    async def test_get_properties_filter(self):
-    
-    # Pagination Tests
-    async def test_get_properties_pagination(self):
-    
-    # Performance Tests
-    async def test_get_properties_bulk_performance(self):
-    async def test_get_properties_concurrent(self):
+    @pytest.fixture
+    def response_examples_path(self):
+        """Path to response examples directory."""
+        return Path(__file__).parent.parent.parent.parent / "response_examples"
+
+    def test_resource_validation(self, response_examples_path):
+        """Validate Resource model against saved response examples."""
+        response_files = ["167_get_resources_33015_33015.json"]
+        
+        for filename in response_files:
+            with open(response_examples_path / filename) as f:
+                data = json.load(f)
+            
+            if "_metadata" in data:
+                del data["_metadata"]
+            
+            # Validate single response
+            model_instance = Resource(**data)
+            self._validate_resource_fields(model_instance, data)
+            print(f"✅ Validated {filename}")
+
+    def test_resource_list_response_validation(self, response_examples_path):
+        """Validate ResourceListResponse model against saved response examples."""
+        response_files = [
+            "163_get_resources.json",
+            "165_get_resources_FLUSA_descendants_FLUSA.json"
+        ]
+        
+        for filename in response_files:
+            with open(response_examples_path / filename) as f:
+                data = json.load(f)
+            
+            if "_metadata" in data:
+                del data["_metadata"]
+            
+            # Validate entire list response
+            model_instance = ResourceListResponse(**data)
+            self._validate_resource_list_response_fields(model_instance, data)
+            print(f"✅ Validated {filename} as list response")
 ```
 
-**Integration with BaseOFSCTest:**
-- Automatic resource cleanup tracking
-- Built-in performance monitoring
-- Rate limiting for API compliance
-- Detailed error reporting and context
-- Unique test resource naming
+**Model Import Mapping:**
+The script includes comprehensive model mappings for all modules:
+```python
+MODEL_IMPORT_MAP = {
+    # Core models
+    "Resource": "ofsc.models.core.Resource",
+    "ResourceListResponse": "ofsc.models.core.ResourceListResponse",
+    "Activity": "ofsc.models.core.Activity",
+    "User": "ofsc.models.core.User",
+    
+    # Metadata models
+    "ActivityTypeGroup": "ofsc.models.metadata.ActivityTypeGroup",
+    "Property": "ofsc.models.metadata.Property",
+    
+    # Capacity models
+    "CapacityResponse": "ofsc.models.capacity.CapacityResponse",
+    # ... comprehensive mappings for all modules
+}
+```
+
+**Smart Response Handling:**
+- **List Responses**: Validates against `*ListResponse` models using full response data
+- **Single Models**: Validates individual items against base model classes
+- **Field Validation**: Includes model-specific field validation methods
+- **Error Handling**: Gracefully skips missing files with informative messages
+
+**Integration with Test Infrastructure:**
+- **Uses Real Data**: Leverages the 98+ saved response examples collected systematically
+- **Endpoint Context**: Maps responses back to specific endpoint IDs for traceability
+- **Path Resolution**: Correctly resolves paths from test location to response examples
+- **Pytest Integration**: Generated tests work seamlessly with existing test infrastructure
+
+**Run Generated Tests:**
+```bash
+# Run all generated model validation tests
+uv run pytest tests/models/generated/ -v
+
+# Run specific module tests
+uv run pytest tests/models/generated/test_core_models_validation.py -v
+
+# Run specific model test
+uv run pytest tests/models/generated/test_core_models_validation.py::TestCoreModelsValidation::test_resource_validation -v
+```
+
+**Development Workflow Integration:**
+```bash
+# 1. Collect API responses (already done - 98+ responses available)
+uv run python scripts/collect_endpoint_response.py 220 --params william.arndt
+
+# 2. Generate/regenerate model validation tests
+uv run python scripts/generate_model_validation_tests.py
+
+# 3. Run validation tests to ensure models work with real data
+uv run pytest tests/models/generated/ -v
+
+# 4. Check coverage and identify gaps
+uv run python scripts/generate_model_validation_tests.py --summary
+```
 
 ### ⚡ Performance & Testing Scripts
 
@@ -311,7 +391,7 @@ python scripts/run_tests_parallel.py [options]
 ### 🏗️ Development Tools
 - `extract_endpoints.py` - Swagger parsing and registry generation with implementation detection
 - `compare_endpoints_sources.py` - Registry validation and documentation comparison
-- `generate_tests.py` - Automated test generation from endpoint specifications
+- `generate_model_validation_tests.py` - Automated model validation test generation using real API responses
 
 ### ⚙️ Testing & Performance
 - `measure_test_performance.py` - Performance benchmarking
@@ -354,17 +434,18 @@ python scripts/run_tests_parallel.py [options]
 1. **API Exploration:** Use `collect_endpoint_response.py` to gather real API responses
 2. **Registry Generation:** Run `extract_endpoints.py` after swagger.json updates or implementation changes
 3. **Validation:** Use `compare_endpoints_sources.py` to verify implementation accuracy and documentation sync
-4. **Test Generation:** Generate comprehensive tests with `generate_tests.py` for new endpoints
+4. **Model Validation:** Generate model tests with `generate_model_validation_tests.py` using real responses
 5. **Test Optimization:** Use `measure_test_performance.py` to benchmark changes
 6. **CI/CD:** Use `run_tests_parallel.py` for optimized test execution
 
 ### Testing Workflow
 1. Generate endpoint registry with `extract_endpoints.py`
 2. Validate implementation accuracy with `compare_endpoints_sources.py`
-3. Collect real responses with collection scripts
-4. Generate automated tests with `generate_tests.py`
-5. Measure baseline performance with `measure_test_performance.py`
-6. Run optimized tests with `run_tests_parallel.py`
+3. Collect real responses with collection scripts for authentic test data
+4. Generate automated model validation tests with `generate_model_validation_tests.py`
+5. Run generated tests to ensure Pydantic models work with real API data
+6. Measure baseline performance with `measure_test_performance.py`
+7. Run optimized tests with `run_tests_parallel.py`
 
 ## Error Handling
 
@@ -377,7 +458,8 @@ All scripts include comprehensive error handling:
 
 ### Generated Files
 - `tests/fixtures/endpoints_registry.py` - Complete endpoint registry with implementation detection
-- `response_examples/*.json` - API response examples
+- `tests/models/generated/*.py` - Auto-generated model validation tests using real API responses
+- `response_examples/*.json` - API response examples (98+ authentic responses)
 - `logs/comparison_report_*.md` - Timestamped validation reports
 - Performance measurement logs and reports
 
@@ -406,5 +488,5 @@ When adding new scripts:
 
 ---
 
-*Last updated: January 24, 2025*  
+*Last updated: July 24, 2025*  
 *Scripts are maintained as part of the pyOFSC v3.0 development effort*
