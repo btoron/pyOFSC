@@ -1,6 +1,8 @@
 # OFSC Python Wrapper v3.0 Tests
 
-This directory contains the comprehensive test suite for OFSC Python Wrapper v3.0, following the documented multi-layered testing strategy.
+This directory contains the comprehensive test suite for OFSC Python Wrapper v3.0, following a sophisticated multi-layered testing strategy.
+
+📖 **For complete testing documentation, see [`tests/v3-testing-strategy.md`](v3-testing-strategy.md)** - the unified testing guide covering all aspects of testing including parallel execution, test generation, debugging, and best practices.
 
 ## Test Structure
 
@@ -24,11 +26,11 @@ Unit tests using mocked HTTP responses for isolated testing.
 **Purpose**: Test client logic without external dependencies
 **Tool**: `respx` for httpx mocking
 
-### 3. Integration Tests (`tests/integration/`)
-Integration tests against a custom mock server that simulates OFSC API.
+### 3. End-to-End Tests (`tests/end_to_end/`)
+End-to-end tests that may require external dependencies or simulate complex workflows.
 
-**Purpose**: Test full request/response cycle with realistic API behavior
-*Note: Mock server implementation pending - Phase 2*
+**Purpose**: Test complete workflows and integration scenarios
+**Status**: Implementation varies by endpoint
 
 ### 4. Live Tests (`tests/live/`)
 End-to-end tests against real OFSC test environments.
@@ -40,27 +42,14 @@ End-to-end tests against real OFSC test environments.
 
 ## Configuration
 
-### Test Configuration (`config.test.toml`)
-Test-specific configuration separate from main application config:
-
-```toml
-[test]
-coverage_target = 80
-debug_on_failure = true
-
-[test.environments.dev]
-url = "https://sunrise0511.fs.ocs.oraclecloud.com"
-instance = "sunrise0511"
-client_id = "demoauth"
-client_secret = "..."
-```
+### Test Configuration (Environment Variables)
+Test configuration uses environment variables with `.env` file support:
 
 ### Environment Variables
 Configuration precedence (highest to lowest):
 1. Environment variables (`OFSC_INSTANCE`, `OFSC_CLIENT_ID`, `OFSC_CLIENT_SECRET`)
 2. `.env` file
-3. `config.test.toml` file
-4. Default values
+3. Default values
 
 ## Running Tests
 
@@ -72,8 +61,8 @@ uv run pytest tests/models/ -v
 # Unit tests only
 uv run pytest tests/unit/ -v
 
-# Integration tests (when implemented)
-uv run pytest tests/integration/ -m integration -v
+# End-to-end tests
+uv run pytest tests/end_to_end/ -v
 
 # Live tests
 source .env && uv run pytest tests/live/ -m live -v
@@ -84,8 +73,8 @@ source .env && uv run pytest tests/live/ -m live -v
 # Unit tests only
 uv run pytest tests/ -m unit -v
 
-# Integration tests only  
-source .env && uv run pytest tests/ -m integration -v
+# End-to-end tests only  
+source .env && uv run pytest tests/end_to_end/ -v
 
 # All tests except live
 uv run pytest tests/ -m "not live" -v
@@ -166,13 +155,12 @@ The v2 test suite has been moved to `test_v2/` for reference but is not actively
 
 ## Testing Strategy Compliance
 
-This test structure follows the documented testing strategy in `docs/v3-testing-strategy.md`:
+This test structure follows the comprehensive testing guide in `tests/v3-testing-strategy.md`:
 
-- ✅ **4 Test Types**: Model validation, Unit, Integration, Live
-- ✅ **Configuration Management**: Separate test config with precedence
+- ✅ **4 Test Types**: Model validation, Unit, End-to-end, Live
+- ✅ **Configuration Management**: Environment variable-based configuration
 - ✅ **Fixture Organization**: Shared fixtures in conftest.py
 - ✅ **Marker System**: Proper test categorization
 - ✅ **Debug Support**: Failure debugging and context preservation
 - ✅ **Coverage Targets**: 80% coverage goal
-- 🔄 **Mock Server**: Planned for Phase 2
 - ✅ **Live Tests**: OAuth2 authentication tests implemented
