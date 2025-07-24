@@ -5428,8 +5428,8 @@ ENDPOINTS: List[EndpointInfo] = [
         ],
         request_body_schema='createResource',
         response_schema='resource',
-        implemented_in='core_api.py:OFSCoreAPI.update_resource()',
-        signature='async def update_resource(self, resource_id: str, resource_data: dict) -> Resource',
+        implemented_in='core_api.py:OFSCoreAPI.create_resource()',
+        signature='async def create_resource(self, resource_id: str, resource_data: dict) -> Resource',
         rate_limits=None,
     ),
     EndpointInfo(

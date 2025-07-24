@@ -87,8 +87,10 @@ def compare_implementation_status(registry_endpoint: EndpointInfo, doc_endpoint:
     
     # Check if implementation status matches
     registry_implemented = bool(registry_endpoint.implemented_in)
-    # For doc, check if it has a version number (not empty and not just a version like "v3.0.0-dev")
-    doc_has_version = bool(doc_endpoint.implemented_in and doc_endpoint.implemented_in != "")
+    # For doc, check if it has a version number (not empty, not "DEPRECATED", and not just a version like "v3.0.0-dev")
+    doc_has_version = bool(doc_endpoint.implemented_in and 
+                          doc_endpoint.implemented_in != "" and 
+                          doc_endpoint.implemented_in.upper() != "DEPRECATED")
     
     # Only compare implementation status, not the actual values since they represent different things
     # Registry has method references, doc has version numbers

@@ -441,6 +441,26 @@ class OFSCoreAPI:
         response: "Response" = await self.client.get(endpoint, params=params)
         return Resource.from_response(response)
 
+    async def create_resource(self, resource_id: str, resource_data: dict) -> Resource:
+        """
+        Create a new resource in the OFS Core API.
+
+        Args:
+            resource_id: The unique identifier for the new resource
+            resource_data: Dictionary containing resource properties
+
+        Returns:
+            Resource: The created resource
+        """
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+            
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}"
+        logging.info(f"Creating resource at endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.put(endpoint, json=resource_data)
+        return Resource.from_response(response)
+
     async def update_resource(self, resource_id: str, resource_data: dict) -> Resource:
         """
         Update an existing resource in the OFS Core API.

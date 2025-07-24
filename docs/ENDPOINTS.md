@@ -3,12 +3,12 @@
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints available in the pyOFSC Python Wrapper v3.0.
 
 **Total Endpoints:** 242  
-**Implemented in v3.0:** 157 (64.9%)
+**Implemented in v3.0:** 158 (65.3%)
 
 ## Implementation Coverage by Module
 
 - **metadata**: 49/86 endpoints (57.0%) ✅
-- **core**: 101/127 endpoints (79.5%) ✅  
+- **core**: 102/127 endpoints (80.3%) ✅  
 - **capacity**: 7/11 endpoints (63.6%) ✅
 - **statistics**: 0/6 endpoints (0%) ❌
 - **partscatalog**: 0/3 endpoints (0%) ❌
@@ -186,7 +186,7 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 165 | `/rest/ofscCore/v1/resources/{resourceId}/descendants` | GET | core | v3.0.0-dev | `async def get_resource_descendants(self, resource_id: str, resource_fields: Optional[List[str]] = None, offset: int = 0, limit: int = 100, inventories: bool = False, work_skills: bool = False, work_zones: bool = False, work_schedules: bool = False) -> ResourceListResponse` |
 | 166 | `/rest/ofscCore/v1/resources/{resourceId}/assistants` | GET | core | | |
 | 167 | `/rest/ofscCore/v1/resources/{resourceId}` | GET | core | v3.0.0-dev | `async def get_resource(self, resource_id: str, inventories: bool = False, workSkills: bool = False, workZones: bool = False, workSchedules: bool = False) -> Resource` |
-| 168 | `/rest/ofscCore/v1/resources/{resourceId}` | PUT | core | | |
+| 168 | `/rest/ofscCore/v1/resources/{resourceId}` | PUT | core | v3.0.0-dev | `async def create_resource(self, resource_id: str, resource_data: dict) -> Resource` |
 | 169 | `/rest/ofscCore/v1/resources/{resourceId}` | PATCH | core | v3.0.0-dev | `async def update_resource(self, resource_id: str, resource_data: dict) -> Resource` |
 | 170 | `/rest/ofscCore/v1/resources/{resourceId}/users` | GET | core | v3.0.0-dev | `async def get_resource_users(self, resource_id: str) -> ResourceUsersListResponse` |
 | 171 | `/rest/ofscCore/v1/resources/{resourceId}/users` | PUT | core | v3.0.0-dev | `async def set_resource_users(self, resource_id: str, user_logins: List[str]) -> ResourceUsersListResponse` |
