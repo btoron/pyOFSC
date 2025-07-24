@@ -178,3 +178,4 @@ test_v2
 test_v3
 test_debug
 tests/config.test.toml
+logs/

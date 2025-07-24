@@ -17,7 +17,7 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 
 ## Endpoints Table
 
-| ID | Endpoint Path | Method | Module | Implemented In | Signature |
+| ID | Endpoint Path | Method | Module | Implemented In Version | Signature |
 |----|---------------|--------|---------|---------------|-----------|
 | 1 | `/rest/ofscMetadata/v1/activityTypeGroups` | GET | metadata | v3.0.0-dev | `async def get_activity_type_groups(self, offset: int = 0, limit: int = 100) -> ActivityTypeGroupListResponse` |
 | 2 | `/rest/ofscMetadata/v1/activityTypeGroups/{label}` | GET | metadata | v3.0.0-dev | `async def get_activity_type_group(self, label: str) -> ActivityTypeGroup` |
@@ -77,7 +77,7 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 56 | `/rest/ofscMetadata/v1/resourceTypes` | GET | metadata | v3.0.0-dev | `async def get_resource_types(self) -> ResourceTypeListResponse` |
 | 57 | `/rest/ofscMetadata/v1/routingProfiles` | GET | metadata | v3.0.0-dev | `async def get_routing_profiles(self, offset: int = 0, limit: int = 100) -> RoutingProfileListResponse` |
 | 58 | `/rest/ofscMetadata/v1/routingProfiles/{profileLabel}/plans` | GET | metadata | v3.0.0-dev | `async def get_routing_profile_plans(self, profile_label: str, offset: int = 0, limit: int = 100) -> RoutingPlanListResponse` |
-| 59 | `/rest/ofscMetadata/v1/routingProfiles/{profileLabel}/plans/{planLabel}/custom-actions/export` | GET | metadata | v3.0.0-dev | `async def get_routing_profile_plan_export(self, profile_label: str, plan_label: str, media_type: str = "application/octet-stream") -> RoutingPlanExportResponse` |
+| 59 | `/rest/ofscMetadata/v1/routingProfiles/{profileLabel}/plans/{planLabel}/custom-actions/export` | GET | metadata | v3.0.0-dev | `async def get_routing_profile_plan_export(self, profile_label: str, plan_label: str, media_type: Optional[str] = "application/octet-stream") -> RoutingPlanExportResponse` |
 | 60 | `/rest/ofscMetadata/v1/routingProfiles/{profileLabel}/plans/custom-actions/import` | PUT | metadata | | |
 | 61 | `/rest/ofscMetadata/v1/routingProfiles/{profileLabel}/plans/custom-actions/forceImport` | PUT | metadata | | |
 | 62 | `/rest/ofscMetadata/v1/routingProfiles/{profileLabel}/plans/{planLabel}/{resourceExternalId}/{date}/custom-actions/start` | POST | metadata | | |
