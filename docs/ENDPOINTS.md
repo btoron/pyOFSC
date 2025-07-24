@@ -3,12 +3,12 @@
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints available in the pyOFSC Python Wrapper v3.0.
 
 **Total Endpoints:** 242  
-**Implemented in v3.0:** 83 (34.3%)
+**Implemented in v3.0:** 121 (50.0%)
 
 ## Implementation Coverage by Module
 
 - **metadata**: 49/86 endpoints (57.0%) ✅
-- **core**: 27/127 endpoints (21.3%) 🔄  
+- **core**: 65/127 endpoints (51.2%) 🔄  
 - **capacity**: 7/11 endpoints (63.6%) ✅
 - **statistics**: 0/6 endpoints (0%) ❌
 - **partscatalog**: 0/3 endpoints (0%) ❌
@@ -126,41 +126,41 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 105 | `/rest/ofscCore/v1/activities/{activityId}` | PATCH | core | v3.0.0-dev | `async def update_activity(self, activity_id: int, activity_data: dict) -> Activity` |
 | 106 | `/rest/ofscCore/v1/activities/{activityId}` | DELETE | core | v3.0.0-dev | `async def delete_activity(self, activity_id: int) -> None` |
 | 107 | `/rest/ofscCore/v1/activities/{activityId}` | GET | core | v3.0.0-dev | `async def get_activity(self, activity_id: int) -> Activity` |
-| 108 | `/rest/ofscCore/v1/activities/{activityId}/multidaySegments` | GET | core | | |
-| 109 | `/rest/ofscCore/v1/activities/{activityId}/{propertyLabel}` | PUT | core | | |
-| 110 | `/rest/ofscCore/v1/activities/{activityId}/{propertyLabel}` | GET | core | | |
-| 111 | `/rest/ofscCore/v1/activities/{activityId}/{propertyLabel}` | DELETE | core | | |
-| 112 | `/rest/ofscCore/v1/activities/{activityId}/submittedForms` | GET | core | | |
-| 113 | `/rest/ofscCore/v1/activities/{activityId}/resourcePreferences` | PUT | core | | |
-| 114 | `/rest/ofscCore/v1/activities/{activityId}/resourcePreferences` | GET | core | | |
-| 115 | `/rest/ofscCore/v1/activities/{activityId}/resourcePreferences` | DELETE | core | | |
-| 116 | `/rest/ofscCore/v1/activities/{activityId}/requiredInventories` | PUT | core | | |
-| 117 | `/rest/ofscCore/v1/activities/{activityId}/requiredInventories` | GET | core | | |
-| 118 | `/rest/ofscCore/v1/activities/{activityId}/requiredInventories` | DELETE | core | | |
-| 119 | `/rest/ofscCore/v1/activities/{activityId}/customerInventories` | POST | core | | |
-| 120 | `/rest/ofscCore/v1/activities/{activityId}/customerInventories` | GET | core | | |
-| 121 | `/rest/ofscCore/v1/activities/{activityId}/installedInventories` | GET | core | | |
-| 122 | `/rest/ofscCore/v1/activities/{activityId}/deinstalledInventories` | GET | core | | |
-| 123 | `/rest/ofscCore/v1/activities/{activityId}/linkedActivities` | GET | core | | |
-| 124 | `/rest/ofscCore/v1/activities/{activityId}/linkedActivities` | DELETE | core | | |
-| 125 | `/rest/ofscCore/v1/activities/{activityId}/linkedActivities` | POST | core | | |
-| 126 | `/rest/ofscCore/v1/activities/{activityId}/capacityCategories` | GET | core | | |
-| 127 | `/rest/ofscCore/v1/activities/{activityId}/linkedActivities/{linkedActivityId}/linkTypes/{linkType}` | DELETE | core | | |
-| 128 | `/rest/ofscCore/v1/activities/{activityId}/linkedActivities/{linkedActivityId}/linkTypes/{linkType}` | GET | core | | |
-| 129 | `/rest/ofscCore/v1/activities/{activityId}/linkedActivities/{linkedActivityId}/linkTypes/{linkType}` | PUT | core | | |
+| 108 | `/rest/ofscCore/v1/activities/{activityId}/multidaySegments` | GET | core | v3.0.0-dev | `async def get_activity_multiday_segments(self, activity_id: int) -> ActivityMultidaySegmentListResponse` |
+| 109 | `/rest/ofscCore/v1/activities/{activityId}/{propertyLabel}` | PUT | core | v3.0.0-dev | `async def set_activity_property(self, activity_id: int, property_label: str, property_value: Any) -> ActivityProperty` |
+| 110 | `/rest/ofscCore/v1/activities/{activityId}/{propertyLabel}` | GET | core | v3.0.0-dev | `async def get_activity_property(self, activity_id: int, property_label: str) -> ActivityProperty` |
+| 111 | `/rest/ofscCore/v1/activities/{activityId}/{propertyLabel}` | DELETE | core | v3.0.0-dev | `async def delete_activity_property(self, activity_id: int, property_label: str) -> None` |
+| 112 | `/rest/ofscCore/v1/activities/{activityId}/submittedForms` | GET | core | v3.0.0-dev | `async def get_activity_submitted_forms(self, activity_id: int) -> ActivitySubmittedFormListResponse` |
+| 113 | `/rest/ofscCore/v1/activities/{activityId}/resourcePreferences` | PUT | core | v3.0.0-dev | `async def set_activity_resource_preferences(self, activity_id: int, preferences_data: List[dict]) -> ActivityResourcePreferenceListResponse` |
+| 114 | `/rest/ofscCore/v1/activities/{activityId}/resourcePreferences` | GET | core | v3.0.0-dev | `async def get_activity_resource_preferences(self, activity_id: int) -> ActivityResourcePreferenceListResponse` |
+| 115 | `/rest/ofscCore/v1/activities/{activityId}/resourcePreferences` | DELETE | core | v3.0.0-dev | `async def delete_activity_resource_preferences(self, activity_id: int) -> None` |
+| 116 | `/rest/ofscCore/v1/activities/{activityId}/requiredInventories` | PUT | core | v3.0.0-dev | `async def set_activity_required_inventories(self, activity_id: int, inventories_data: List[dict]) -> ActivityRequiredInventoryListResponse` |
+| 117 | `/rest/ofscCore/v1/activities/{activityId}/requiredInventories` | GET | core | v3.0.0-dev | `async def get_activity_required_inventories(self, activity_id: int) -> ActivityRequiredInventoryListResponse` |
+| 118 | `/rest/ofscCore/v1/activities/{activityId}/requiredInventories` | DELETE | core | v3.0.0-dev | `async def delete_activity_required_inventories(self, activity_id: int) -> None` |
+| 119 | `/rest/ofscCore/v1/activities/{activityId}/customerInventories` | POST | core | v3.0.0-dev | `async def add_activity_customer_inventory(self, activity_id: int, inventory_data: dict) -> ActivityCustomerInventory` |
+| 120 | `/rest/ofscCore/v1/activities/{activityId}/customerInventories` | GET | core | v3.0.0-dev | `async def get_activity_customer_inventories(self, activity_id: int) -> ActivityCustomerInventoryListResponse` |
+| 121 | `/rest/ofscCore/v1/activities/{activityId}/installedInventories` | GET | core | v3.0.0-dev | `async def get_activity_installed_inventories(self, activity_id: int) -> ActivityInstalledInventoryListResponse` |
+| 122 | `/rest/ofscCore/v1/activities/{activityId}/deinstalledInventories` | GET | core | v3.0.0-dev | `async def get_activity_deinstalled_inventories(self, activity_id: int) -> ActivityDeinstalledInventoryListResponse` |
+| 123 | `/rest/ofscCore/v1/activities/{activityId}/linkedActivities` | GET | core | v3.0.0-dev | `async def get_activity_linked_activities(self, activity_id: int) -> ActivityLinkListResponse` |
+| 124 | `/rest/ofscCore/v1/activities/{activityId}/linkedActivities` | DELETE | core | v3.0.0-dev | `async def delete_activity_linked_activities(self, activity_id: int) -> None` |
+| 125 | `/rest/ofscCore/v1/activities/{activityId}/linkedActivities` | POST | core | v3.0.0-dev | `async def add_activity_linked_activities(self, activity_id: int, linked_activities_data: List[dict]) -> ActivityLinkListResponse` |
+| 126 | `/rest/ofscCore/v1/activities/{activityId}/capacityCategories` | GET | core | v3.0.0-dev | `async def get_activity_capacity_categories(self, activity_id: int) -> ActivityCapacityCategoryListResponse` |
+| 127 | `/rest/ofscCore/v1/activities/{activityId}/linkedActivities/{linkedActivityId}/linkTypes/{linkType}` | DELETE | core | v3.0.0-dev | `async def delete_activity_link(self, activity_id: int, linked_activity_id: int, link_type: str) -> None` |
+| 128 | `/rest/ofscCore/v1/activities/{activityId}/linkedActivities/{linkedActivityId}/linkTypes/{linkType}` | GET | core | v3.0.0-dev | `async def get_activity_link(self, activity_id: int, linked_activity_id: int, link_type: str) -> ActivityLink` |
+| 129 | `/rest/ofscCore/v1/activities/{activityId}/linkedActivities/{linkedActivityId}/linkTypes/{linkType}` | PUT | core | v3.0.0-dev | `async def set_activity_link(self, activity_id: int, linked_activity_id: int, link_type: str, link_data: Optional[dict] = None) -> ActivityLink` |
 | 130 | `/rest/ofscCore/v1/activities/custom-actions/search` | GET | core | v3.0.0-dev | `async def search_activities(self, **params) -> ActivityListResponse` |
 | 131 | `/rest/ofscCore/v1/activities/custom-actions/bulkUpdate` | POST | core | v3.0.0-dev | `async def bulk_update_activities(self, bulk_data: BulkUpdateRequest) -> BulkUpdateResponse` |
-| 132 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/startPrework` | POST | core | | |
-| 133 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/reopen` | POST | core | | |
-| 134 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/delay` | POST | core | | |
+| 132 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/startPrework` | POST | core | v3.0.0-dev | `async def start_activity_prework(self, activity_id: int) -> Activity` |
+| 133 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/reopen` | POST | core | v3.0.0-dev | `async def reopen_activity(self, activity_id: int) -> Activity` |
+| 134 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/delay` | POST | core | v3.0.0-dev | `async def delay_activity(self, activity_id: int, delay_data: Optional[dict] = None) -> Activity` |
 | 135 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/cancel` | POST | core | v3.0.0-dev | `async def cancel_activity(self, activity_id: int) -> Activity` |
 | 136 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/start` | POST | core | v3.0.0-dev | `async def start_activity(self, activity_id: int) -> Activity` |
-| 137 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/enroute` | POST | core | | |
-| 138 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/stopTravel` | POST | core | | |
-| 139 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/suspend` | POST | core | | |
-| 140 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/move` | POST | core | | |
+| 137 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/enroute` | POST | core | v3.0.0-dev | `async def set_activity_enroute(self, activity_id: int) -> Activity` |
+| 138 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/stopTravel` | POST | core | v3.0.0-dev | `async def stop_activity_travel(self, activity_id: int) -> Activity` |
+| 139 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/suspend` | POST | core | v3.0.0-dev | `async def suspend_activity(self, activity_id: int, suspend_data: Optional[dict] = None) -> Activity` |
+| 140 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/move` | POST | core | v3.0.0-dev | `async def move_activity(self, activity_id: int, move_data: dict) -> ActivityMoveResponse` |
 | 141 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/complete` | POST | core | v3.0.0-dev | `async def complete_activity(self, activity_id: int) -> Activity` |
-| 142 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/notDone` | POST | core | | |
+| 142 | `/rest/ofscCore/v1/activities/{activityId}/custom-actions/notDone` | POST | core | v3.0.0-dev | `async def mark_activity_not_done(self, activity_id: int, not_done_data: Optional[dict] = None) -> Activity` |
 | 143 | `/rest/ofscCore/v1/whereIsMyTech` | GET | core | | |
 | 144 | `/rest/ofscCore/v1/folders/dailyExtract/folders` | GET | core | v3.0.0-dev | `async def get_daily_extract_dates(self) -> DailyExtractFolders` |
 | 145 | `/rest/ofscCore/v1/folders/dailyExtract/folders/{dailyExtractDate}/files` | GET | core | v3.0.0-dev | `async def get_daily_extract_files(self, extract_date: str) -> DailyExtractFiles` |
@@ -170,9 +170,9 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 149 | `/rest/ofscCore/v1/events/subscriptions` | GET | core | v3.0.0-dev | `async def get_subscriptions(self, allSubscriptions: bool = False) -> SubscriptionList` |
 | 150 | `/rest/ofscCore/v1/events/subscriptions` | POST | core | | |
 | 151 | `/rest/ofscCore/v1/events` | GET | core | | |
-| 152 | `/rest/ofscCore/v1/inventories` | POST | core | | |
-| 153 | `/rest/ofscCore/v1/inventories/{inventoryId}` | PATCH | core | | |
-| 154 | `/rest/ofscCore/v1/inventories/{inventoryId}` | GET | core | | |
+| 152 | `/rest/ofscCore/v1/inventories` | POST | core | v3.0.0-dev | `async def create_inventory(self, inventory_data: dict) -> Inventory` |
+| 153 | `/rest/ofscCore/v1/inventories/{inventoryId}` | PATCH | core | v3.0.0-dev | `async def update_inventory(self, inventory_id: int, inventory_data: dict) -> Inventory` |
+| 154 | `/rest/ofscCore/v1/inventories/{inventoryId}` | GET | core | v3.0.0-dev | `async def get_inventory(self, inventory_id: int) -> Inventory` |
 | 155 | `/rest/ofscCore/v1/inventories/{inventoryId}` | DELETE | core | | |
 | 156 | `/rest/ofscCore/v1/inventories/{inventoryId}/{propertyLabel}` | PUT | core | | |
 | 157 | `/rest/ofscCore/v1/inventories/{inventoryId}/{propertyLabel}` | GET | core | | |
@@ -191,14 +191,14 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 170 | `/rest/ofscCore/v1/resources/{resourceId}/users` | GET | core | v3.0.0-dev | `async def get_resource_users(self, resource_id: str) -> ResourceUsersListResponse` |
 | 171 | `/rest/ofscCore/v1/resources/{resourceId}/users` | PUT | core | v3.0.0-dev | `async def set_resource_users(self, resource_id: str, user_logins: List[str]) -> ResourceUsersListResponse` |
 | 172 | `/rest/ofscCore/v1/resources/{resourceId}/users` | DELETE | core | v3.0.0-dev | `async def delete_resource_users(self, resource_id: str) -> None` |
-| 173 | `/rest/ofscCore/v1/resources/{resourceId}/inventories` | POST | core | | |
-| 174 | `/rest/ofscCore/v1/resources/{resourceId}/inventories` | GET | core | | |
+| 173 | `/rest/ofscCore/v1/resources/{resourceId}/inventories` | POST | core | v3.0.0-dev | `async def assign_inventory_to_resource(self, resource_id: str, inventory_data: dict) -> ResourceInventory` |
+| 174 | `/rest/ofscCore/v1/resources/{resourceId}/inventories` | GET | core | v3.0.0-dev | `async def get_resource_inventories(self, resource_id: str) -> ResourceInventoryListResponse` |
 | 175 | `/rest/ofscCore/v1/resources/{resourceId}/inventories/{inventoryId}/custom-actions/install` | POST | core | | |
-| 176 | `/rest/ofscCore/v1/resources/{resourceId}/workSkills` | POST | core | | |
-| 177 | `/rest/ofscCore/v1/resources/{resourceId}/workSkills` | GET | core | | |
+| 176 | `/rest/ofscCore/v1/resources/{resourceId}/workSkills` | POST | core | v3.0.0-dev | `async def add_resource_work_skills(self, resource_id: str, work_skills_data: List[dict]) -> ResourceWorkSkillListResponse` |
+| 177 | `/rest/ofscCore/v1/resources/{resourceId}/workSkills` | GET | core | v3.0.0-dev | `async def get_resource_work_skills(self, resource_id: str) -> ResourceWorkSkillListResponse` |
 | 178 | `/rest/ofscCore/v1/resources/{resourceId}/workSkills/{workSkill}` | DELETE | core | | |
-| 179 | `/rest/ofscCore/v1/resources/{resourceId}/workZones` | POST | core | | |
-| 180 | `/rest/ofscCore/v1/resources/{resourceId}/workZones` | GET | core | | |
+| 179 | `/rest/ofscCore/v1/resources/{resourceId}/workZones` | POST | core | v3.0.0-dev | `async def assign_resource_work_zones(self, resource_id: str, work_zones_data: List[dict]) -> ResourceWorkZoneListResponse` |
+| 180 | `/rest/ofscCore/v1/resources/{resourceId}/workZones` | GET | core | v3.0.0-dev | `async def get_resource_work_zones(self, resource_id: str) -> ResourceWorkZoneListResponse` |
 | 181 | `/rest/ofscCore/v1/resources/{resourceId}/workZones/{workZoneItemId}` | DELETE | core | | |
 | 182 | `/rest/ofscCore/v1/resources/{resourceId}/workSchedules` | GET | core | v3.0.0-dev | `async def get_resource_work_schedules(self, resource_id: str, actual_date: Optional[date] = None) -> ResourceWorkScheduleResponse` |
 | 183 | `/rest/ofscCore/v1/resources/{resourceId}/workSchedules` | POST | core | | |

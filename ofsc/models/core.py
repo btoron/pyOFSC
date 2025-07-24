@@ -144,6 +144,202 @@ class ActivityListResponse(OFSResponseList[Activity]):
     pass
 
 
+class ActivityProperty(BaseOFSResponse):
+    """Activity property value"""
+    
+    value: Optional[Any] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ActivitySubmittedForm(BaseOFSResponse):
+    """Submitted form data for an activity"""
+    
+    formId: Optional[str] = None
+    formName: Optional[str] = None
+    submittedTime: Optional[str] = None
+    formData: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ActivitySubmittedFormListResponse(OFSResponseList[ActivitySubmittedForm]):
+    """Response for activity submitted forms"""
+    
+    pass
+
+
+class ActivityMultidaySegment(BaseOFSResponse):
+    """Activity multiday segment information"""
+    
+    segmentId: Optional[int] = None
+    date: Optional[str] = None
+    startTime: Optional[str] = None
+    endTime: Optional[str] = None
+    duration: Optional[int] = None
+    status: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ActivityMultidaySegmentListResponse(OFSResponseList[ActivityMultidaySegment]):
+    """Response for activity multiday segments"""
+    
+    pass
+
+
+class ActivityCapacityCategory(BaseOFSResponse):
+    """Activity capacity category information"""
+    
+    categoryId: Optional[int] = None
+    categoryLabel: str
+    timeSlotId: Optional[int] = None
+    requiredCapacity: Optional[int] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ActivityCapacityCategoryListResponse(OFSResponseList[ActivityCapacityCategory]):
+    """Response for activity capacity categories"""
+    
+    pass
+
+
+class ActivityResourcePreference(BaseOFSResponse):
+    """Activity resource preference information"""
+    
+    resourceId: str
+    preferenceType: Optional[str] = "preferred"  # preferred, required, excluded
+    priority: Optional[int] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ActivityResourcePreferenceListResponse(OFSResponseList[ActivityResourcePreference]):
+    """Response for activity resource preferences"""
+    
+    pass
+
+
+class ActivityRequiredInventory(BaseOFSResponse):
+    """Activity required inventory information"""
+    
+    inventoryType: str
+    quantity: int = 1
+    serialNumber: Optional[str] = None
+    model: Optional[str] = None
+    requiredCapacity: Optional[int] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ActivityRequiredInventoryListResponse(OFSResponseList[ActivityRequiredInventory]):
+    """Response for activity required inventories"""
+    
+    pass
+
+
+class ActivityCustomerInventory(BaseOFSResponse):
+    """Activity customer inventory information"""
+    
+    inventoryId: Optional[int] = None
+    inventoryType: str
+    serialNumber: Optional[str] = None
+    model: Optional[str] = None
+    quantity: int = 1
+    customerId: Optional[str] = None
+    status: Optional[str] = "available"
+    model_config = ConfigDict(extra="allow")
+
+
+class ActivityCustomerInventoryListResponse(OFSResponseList[ActivityCustomerInventory]):
+    """Response for activity customer inventories"""
+    
+    pass
+
+
+class ActivityInstalledInventory(BaseOFSResponse):
+    """Activity installed inventory information"""
+    
+    inventoryId: int
+    inventoryType: str
+    serialNumber: Optional[str] = None
+    model: Optional[str] = None
+    quantity: int = 1
+    installedTime: Optional[str] = None
+    installedBy: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ActivityInstalledInventoryListResponse(OFSResponseList[ActivityInstalledInventory]):
+    """Response for activity installed inventories"""
+    
+    pass
+
+
+class ActivityDeinstalledInventory(BaseOFSResponse):
+    """Activity deinstalled inventory information"""
+    
+    inventoryId: int
+    inventoryType: str
+    serialNumber: Optional[str] = None
+    model: Optional[str] = None
+    quantity: int = 1
+    deinstalledTime: Optional[str] = None
+    deinstalledBy: Optional[str] = None
+    reason: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ActivityDeinstalledInventoryListResponse(OFSResponseList[ActivityDeinstalledInventory]):
+    """Response for activity deinstalled inventories"""
+    
+    pass
+
+
+class ActivityLinkType(str, Enum):
+    """Activity link type enumeration"""
+    
+    predecessor = "predecessor"
+    successor = "successor"
+    parent = "parent"
+    child = "child"
+    related = "related"
+
+
+class ActivityLink(BaseOFSResponse):
+    """Activity link information"""
+    
+    linkedActivityId: int
+    linkType: ActivityLinkType
+    description: Optional[str] = None
+    createdTime: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ActivityLinkListResponse(OFSResponseList[ActivityLink]):
+    """Response for activity links"""
+    
+    pass
+
+
+class ActivityMoveRequest(BaseOFSResponse):
+    """Request for moving an activity"""
+    
+    targetResourceId: Optional[str] = None
+    targetDate: Optional[str] = None
+    targetTime: Optional[str] = None
+    moveReason: Optional[str] = None
+    preserveTimeWindow: Optional[bool] = True
+    model_config = ConfigDict(extra="allow")
+
+
+class ActivityMoveResponse(BaseOFSResponse):
+    """Response for activity move operations"""
+    
+    activityId: int
+    previousResourceId: Optional[str] = None
+    newResourceId: Optional[str] = None
+    previousDate: Optional[str] = None
+    newDate: Optional[str] = None
+    moveTime: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
 class BulkUpdateError(BaseOFSResponse):
     """Error information for bulk update operations"""
 
@@ -406,6 +602,76 @@ class AssignedLocationsResponse(BaseOFSResponse):
 class LocationListResponse(OFSResponseList[Location]):
     """Paginated response for location lists"""
 
+    pass
+
+
+# Inventory Management
+class Inventory(BaseOFSResponse):
+    """Inventory item definition and configuration"""
+    
+    inventoryId: Optional[int] = None
+    inventoryType: Optional[str] = None
+    serialNumber: Optional[str] = None
+    model: Optional[str] = None
+    quantity: Optional[int] = None
+    status: Optional[str] = None
+    resourceId: Optional[str] = None
+    activityId: Optional[int] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class InventoryListResponse(OFSResponseList[Inventory]):
+    """Paginated response for inventory lists"""
+    
+    pass
+
+
+class ResourceInventory(BaseOFSResponse):
+    """Resource inventory association"""
+    
+    inventoryId: int
+    inventoryType: str
+    serialNumber: Optional[str] = None
+    model: Optional[str] = None
+    quantity: int = 1
+    status: Optional[str] = "available"
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceInventoryListResponse(OFSResponseList[ResourceInventory]):
+    """Response for resource inventory lists"""
+    
+    pass
+
+
+class ResourceWorkSkill(BaseOFSResponse):
+    """Resource work skill association"""
+    
+    workSkillId: Optional[int] = None
+    workSkillLabel: str
+    level: Optional[int] = None
+    status: Optional[str] = "active"
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceWorkSkillListResponse(OFSResponseList[ResourceWorkSkill]):
+    """Response for resource work skills"""
+    
+    pass
+
+
+class ResourceWorkZone(BaseOFSResponse):
+    """Resource work zone association"""
+    
+    workZoneId: Optional[int] = None
+    workZoneLabel: str
+    status: Optional[str] = "active"
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceWorkZoneListResponse(OFSResponseList[ResourceWorkZone]):
+    """Response for resource work zones"""
+    
     pass
 
 
