@@ -3,12 +3,12 @@
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints available in the pyOFSC Python Wrapper v3.0.
 
 **Total Endpoints:** 242  
-**Implemented in v3.0:** 121 (50.0%)
+**Implemented in v3.0:** 157 (64.9%)
 
 ## Implementation Coverage by Module
 
 - **metadata**: 49/86 endpoints (57.0%) ✅
-- **core**: 65/127 endpoints (51.2%) 🔄  
+- **core**: 101/127 endpoints (79.5%) ✅  
 - **capacity**: 7/11 endpoints (63.6%) ✅
 - **statistics**: 0/6 endpoints (0%) ❌
 - **partscatalog**: 0/3 endpoints (0%) ❌
@@ -201,42 +201,42 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 180 | `/rest/ofscCore/v1/resources/{resourceId}/workZones` | GET | core | v3.0.0-dev | `async def get_resource_work_zones(self, resource_id: str) -> ResourceWorkZoneListResponse` |
 | 181 | `/rest/ofscCore/v1/resources/{resourceId}/workZones/{workZoneItemId}` | DELETE | core | | |
 | 182 | `/rest/ofscCore/v1/resources/{resourceId}/workSchedules` | GET | core | v3.0.0-dev | `async def get_resource_work_schedules(self, resource_id: str, actual_date: Optional[date] = None) -> ResourceWorkScheduleResponse` |
-| 183 | `/rest/ofscCore/v1/resources/{resourceId}/workSchedules` | POST | core | | |
-| 184 | `/rest/ofscCore/v1/resources/{resourceId}/workSchedules/{scheduleItemId}` | DELETE | core | | |
-| 185 | `/rest/ofscCore/v1/resources/{resourceId}/workSchedules/calendarView` | GET | core | | |
-| 186 | `/rest/ofscCore/v1/calendars` | GET | core | | |
-| 187 | `/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}` | PUT | core | | |
-| 188 | `/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}` | GET | core | | |
-| 189 | `/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}` | DELETE | core | | |
-| 190 | `/rest/ofscCore/v1/resources/{resourceId}/locations` | POST | core | | |
-| 191 | `/rest/ofscCore/v1/resources/{resourceId}/locations` | GET | core | | |
-| 192 | `/rest/ofscCore/v1/resources/{resourceId}/locations/{locationId}` | GET | core | | |
-| 193 | `/rest/ofscCore/v1/resources/{resourceId}/locations/{locationId}` | PATCH | core | | |
-| 194 | `/rest/ofscCore/v1/resources/{resourceId}/locations/{locationId}` | DELETE | core | | |
-| 195 | `/rest/ofscCore/v1/resources/{resourceId}/positionHistory` | GET | core | | |
-| 196 | `/rest/ofscCore/v1/resources/{resourceId}/assignedLocations` | PUT | core | | |
-| 197 | `/rest/ofscCore/v1/resources/{resourceId}/assignedLocations` | GET | core | | |
-| 198 | `/rest/ofscCore/v1/resources/{resourceId}/assignedLocations` | PATCH | core | | |
-| 199 | `/rest/ofscCore/v1/resources/{resourceId}/assignedLocations/{date}` | DELETE | core | | |
-| 200 | `/rest/ofscCore/v1/resources/{resourceId}/plans` | POST | core | | |
-| 201 | `/rest/ofscCore/v1/resources/{resourceId}/plans` | GET | core | | |
-| 202 | `/rest/ofscCore/v1/resources/{resourceId}/plans` | DELETE | core | | |
-| 203 | `/rest/ofscCore/v1/resources/{resourceId}/routes/{date}` | GET | core | | |
-| 204 | `/rest/ofscCore/v1/resources/{resourceId}/routes/{date}/custom-actions/activate` | POST | core | | |
-| 205 | `/rest/ofscCore/v1/resources/{resourceId}/routes/{date}/custom-actions/deactivate` | POST | core | | |
-| 206 | `/rest/ofscCore/v1/resources/{resourceId}/findNearbyActivities` | GET | core | | |
-| 207 | `/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkSchedules` | POST | core | | |
-| 208 | `/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkSkills` | POST | core | | |
-| 209 | `/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkZones` | POST | core | | |
-| 210 | `/rest/ofscCore/v1/resources/custom-actions/bulkUpdateInventories` | POST | core | | |
-| 211 | `/rest/ofscCore/v1/resources/custom-actions/findMatchingResources` | POST | core | | |
-| 212 | `/rest/ofscCore/v1/resources/custom-actions/findResourcesForUrgentAssignment` | POST | core | | |
-| 213 | `/rest/ofscCore/v1/resources/custom-actions/setPositions` | POST | core | | |
-| 214 | `/rest/ofscCore/v1/resources/custom-actions/lastKnownPositions` | GET | core | | |
-| 215 | `/rest/ofscCore/v1/resources/custom-actions/resourcesInArea` | GET | core | | |
-| 216 | `/rest/ofscCore/v1/serviceRequests/{requestId}` | GET | core | | |
-| 217 | `/rest/ofscCore/v1/serviceRequests` | POST | core | | |
-| 218 | `/rest/ofscCore/v1/serviceRequests/{requestId}/{propertyLabel}` | GET | core | | |
+| 183 | `/rest/ofscCore/v1/resources/{resourceId}/workSchedules` | POST | core | v3.0.0-dev | `async def create_resource_work_schedule(self, resource_id: str, schedule_data: dict) -> ResourceWorkScheduleResponse` |
+| 184 | `/rest/ofscCore/v1/resources/{resourceId}/workSchedules/{scheduleItemId}` | DELETE | core | v3.0.0-dev | `async def delete_resource_work_schedule_item(self, resource_id: str, schedule_item_id: int) -> None` |
+| 185 | `/rest/ofscCore/v1/resources/{resourceId}/workSchedules/calendarView` | GET | core | v3.0.0-dev | `async def get_resource_calendar_view(self, resource_id: str, start_date: Optional[str] = None, end_date: Optional[str] = None) -> CalendarView` |
+| 186 | `/rest/ofscCore/v1/calendars` | GET | core | v3.0.0-dev | `async def get_calendars(self, offset: int = 0, limit: int = 100) -> CalendarListResponse` |
+| 187 | `/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}` | PUT | core | v3.0.0-dev | `async def set_resource_property(self, resource_id: str, property_label: str, property_value: Any) -> ResourcePropertyValue` |
+| 188 | `/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}` | GET | core | v3.0.0-dev | `async def get_resource_property(self, resource_id: str, property_label: str) -> ResourcePropertyValue` |
+| 189 | `/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}` | DELETE | core | v3.0.0-dev | `async def delete_resource_property(self, resource_id: str, property_label: str) -> None` |
+| 190 | `/rest/ofscCore/v1/resources/{resourceId}/locations` | POST | core | v3.0.0-dev | `async def create_resource_location(self, resource_id: str, location_data: dict) -> LocationListResponse` |
+| 191 | `/rest/ofscCore/v1/resources/{resourceId}/locations` | GET | core | v3.0.0-dev | `async def get_resource_locations(self, resource_id: str, offset: int = 0, limit: int = 100) -> LocationListResponse` |
+| 192 | `/rest/ofscCore/v1/resources/{resourceId}/locations/{locationId}` | GET | core | v3.0.0-dev | `async def get_resource_location(self, resource_id: str, location_id: int) -> LocationListResponse` |
+| 193 | `/rest/ofscCore/v1/resources/{resourceId}/locations/{locationId}` | PATCH | core | v3.0.0-dev | `async def update_resource_location(self, resource_id: str, location_id: int, location_data: dict) -> LocationListResponse` |
+| 194 | `/rest/ofscCore/v1/resources/{resourceId}/locations/{locationId}` | DELETE | core | v3.0.0-dev | `async def delete_resource_location(self, resource_id: str, location_id: int) -> None` |
+| 195 | `/rest/ofscCore/v1/resources/{resourceId}/positionHistory` | GET | core | v3.0.0-dev | `async def get_resource_position_history(self, resource_id: str, start_time: Optional[str] = None, end_time: Optional[str] = None) -> PositionHistory` |
+| 196 | `/rest/ofscCore/v1/resources/{resourceId}/assignedLocations` | PUT | core | v3.0.0-dev | `async def set_resource_assigned_locations(self, resource_id: str, assigned_locations_data: dict) -> AssignedLocationsResponse` |
+| 197 | `/rest/ofscCore/v1/resources/{resourceId}/assignedLocations` | GET | core | v3.0.0-dev | `async def get_resource_assigned_locations(self, resource_id: str) -> AssignedLocationsResponse` |
+| 198 | `/rest/ofscCore/v1/resources/{resourceId}/assignedLocations` | PATCH | core | v3.0.0-dev | `async def update_resource_assigned_locations(self, resource_id: str, assigned_locations_data: dict) -> AssignedLocationsResponse` |
+| 199 | `/rest/ofscCore/v1/resources/{resourceId}/assignedLocations/{date}` | DELETE | core | v3.0.0-dev | `async def delete_resource_assigned_location_date(self, resource_id: str, date: str) -> None` |
+| 200 | `/rest/ofscCore/v1/resources/{resourceId}/plans` | POST | core | v3.0.0-dev | `async def create_resource_plan(self, resource_id: str, plan_data: dict) -> ResourcePlanListResponse` |
+| 201 | `/rest/ofscCore/v1/resources/{resourceId}/plans` | GET | core | v3.0.0-dev | `async def get_resource_plans(self, resource_id: str) -> ResourcePlanListResponse` |
+| 202 | `/rest/ofscCore/v1/resources/{resourceId}/plans` | DELETE | core | v3.0.0-dev | `async def delete_resource_plans(self, resource_id: str) -> None` |
+| 203 | `/rest/ofscCore/v1/resources/{resourceId}/routes/{date}` | GET | core | v3.0.0-dev | `async def get_resource_route(self, resource_id: str, date: str) -> RouteInfo` |
+| 204 | `/rest/ofscCore/v1/resources/{resourceId}/routes/{date}/custom-actions/activate` | POST | core | v3.0.0-dev | `async def activate_resource_route(self, resource_id: str, date: str, activation_data: Optional[dict] = None) -> RouteActivationResponse` |
+| 205 | `/rest/ofscCore/v1/resources/{resourceId}/routes/{date}/custom-actions/deactivate` | POST | core | v3.0.0-dev | `async def deactivate_resource_route(self, resource_id: str, date: str, deactivation_data: Optional[dict] = None) -> RouteActivationResponse` |
+| 206 | `/rest/ofscCore/v1/resources/{resourceId}/findNearbyActivities` | GET | core | v3.0.0-dev | `async def find_nearby_activities(self, resource_id: str, latitude: Optional[float] = None, longitude: Optional[float] = None, radius: Optional[float] = None) -> NearbyActivityListResponse` |
+| 207 | `/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkSchedules` | POST | core | v3.0.0-dev | `async def bulk_update_work_schedules(self, bulk_data: dict) -> BulkScheduleUpdateResponse` |
+| 208 | `/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkSkills` | POST | core | v3.0.0-dev | `async def bulk_update_work_skills(self, bulk_data: dict) -> BulkSkillUpdateResponse` |
+| 209 | `/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkZones` | POST | core | v3.0.0-dev | `async def bulk_update_work_zones(self, bulk_data: dict) -> BulkZoneUpdateResponse` |
+| 210 | `/rest/ofscCore/v1/resources/custom-actions/bulkUpdateInventories` | POST | core | v3.0.0-dev | `async def bulk_update_inventories(self, bulk_data: dict) -> BulkInventoryUpdateResponse` |
+| 211 | `/rest/ofscCore/v1/resources/custom-actions/findMatchingResources` | POST | core | v3.0.0-dev | `async def find_matching_resources(self, search_criteria: dict) -> ResourceMatchResponse` |
+| 212 | `/rest/ofscCore/v1/resources/custom-actions/findResourcesForUrgentAssignment` | POST | core | v3.0.0-dev | `async def find_resources_for_urgent_assignment(self, urgent_data: dict) -> UrgentAssignmentResponse` |
+| 213 | `/rest/ofscCore/v1/resources/custom-actions/setPositions` | POST | core | v3.0.0-dev | `async def set_resource_positions(self, positions_data: dict) -> SetPositionsResponse` |
+| 214 | `/rest/ofscCore/v1/resources/custom-actions/lastKnownPositions` | GET | core | v3.0.0-dev | `async def get_last_known_positions(self, resource_ids: Optional[List[str]] = None) -> LastKnownPositionListResponse` |
+| 215 | `/rest/ofscCore/v1/resources/custom-actions/resourcesInArea` | GET | core | v3.0.0-dev | `async def get_resources_in_area(self, latitude: float, longitude: float, radius: float, resource_types: Optional[List[str]] = None) -> ResourcesInAreaResponse` |
+| 216 | `/rest/ofscCore/v1/serviceRequests/{requestId}` | GET | core | v3.0.0-dev | `async def get_service_request(self, request_id: str) -> ServiceRequest` |
+| 217 | `/rest/ofscCore/v1/serviceRequests` | POST | core | v3.0.0-dev | `async def create_service_request(self, request_data: dict) -> ServiceRequest` |
+| 218 | `/rest/ofscCore/v1/serviceRequests/{requestId}/{propertyLabel}` | GET | core | v3.0.0-dev | `async def get_service_request_property(self, request_id: str, property_label: str) -> ServiceRequestProperty` |
 | 219 | `/rest/ofscCore/v1/users` | GET | core | v3.0.0-dev | `async def get_users(self, offset: int = 0, limit: int = 100) -> UserListResponse` |
 | 220 | `/rest/ofscCore/v1/users/{login}` | GET | core | v3.0.0-dev | `async def get_user(self, login: str) -> User` |
 | 221 | `/rest/ofscCore/v1/users/{login}` | PUT | core | v3.0.0-dev | `async def create_user(self, login: str, user_data: dict) -> User` |
