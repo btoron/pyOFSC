@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 import httpx
 
 from datetime import date
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -18,12 +18,22 @@ from ofsc.models.core import (
     ActivityMultidaySegment, ActivityMultidaySegmentListResponse,
     ActivityProperty, ActivityRequiredInventory, ActivityRequiredInventoryListResponse,
     ActivityResourcePreference, ActivityResourcePreferenceListResponse,
-    ActivitySubmittedForm, ActivitySubmittedFormListResponse, BulkUpdateRequest, 
-    BulkUpdateResponse, DailyExtractFiles, DailyExtractFolders, Inventory, 
-    InventoryListResponse, Resource, ResourceInventory, ResourceInventoryListResponse, 
-    ResourceListResponse, ResourceUsersListResponse, ResourceWorkScheduleResponse, 
-    ResourceWorkSkill, ResourceWorkSkillListResponse, ResourceWorkZone, 
-    ResourceWorkZoneListResponse, SubscriptionList, User, UserListResponse
+    ActivitySubmittedForm, ActivitySubmittedFormListResponse, AssignedLocationsResponse,
+    BulkUpdateRequest, BulkUpdateResponse, BulkInventoryUpdateRequest, BulkInventoryUpdateResponse,
+    BulkScheduleUpdateRequest, BulkScheduleUpdateResponse, BulkSkillUpdateRequest, 
+    BulkSkillUpdateResponse, BulkZoneUpdateRequest, BulkZoneUpdateResponse,
+    CalendarItem, CalendarListResponse, CalendarView, DailyExtractFiles, DailyExtractFolders, 
+    Inventory, InventoryListResponse, LastKnownPositionListResponse,
+    LocationListResponse, NearbyActivityListResponse, PositionHistory,
+    Resource, ResourceInventory, ResourceInventoryListResponse, ResourceListResponse, 
+    ResourceLocationRequest, ResourceMatchRequest, ResourceMatchResponse, ResourcePlan, 
+    ResourcePlanListResponse, ResourcePropertyRequest, ResourcePropertyValue, 
+    ResourcesInAreaQuery, ResourcesInAreaResponse, ResourceUsersListResponse, 
+    ResourceWorkScheduleResponse, ResourceWorkSkill, ResourceWorkSkillListResponse, 
+    ResourceWorkZone, ResourceWorkZoneListResponse, RouteActivationRequest, 
+    RouteActivationResponse, RouteInfo, ServiceRequest, ServiceRequestListResponse, 
+    ServiceRequestProperty, SetPositionsRequest, SetPositionsResponse, SubscriptionList, 
+    UrgentAssignmentRequest, UrgentAssignmentResponse, User, UserListResponse, WorkScheduleRequest
 )
 
 if TYPE_CHECKING:
@@ -1699,3 +1709,615 @@ class OFSCoreAPI:
         
         response: "Response" = await self.client.post(endpoint, json=request_data)
         return Activity.from_response(response)
+
+    # Resource Schedule Management Methods
+    async def create_resource_work_schedule(self, resource_id: str, schedule_data: dict) -> ResourceWorkScheduleResponse:
+        """
+        Create a work schedule item for a specific resource.
+
+        Args:
+            resource_id: The unique identifier of the resource
+            schedule_data: Dictionary containing work schedule details
+
+        Returns:
+            ResourceWorkScheduleResponse: The created work schedule item
+        """
+        # Validate parameter
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+            
+        # Validate schedule data using internal model
+        schedule_request = WorkScheduleRequest(**schedule_data)
+        
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/workSchedules"
+        logging.info(f"Creating resource work schedule at endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.post(endpoint, json=schedule_request.model_dump(exclude_none=True))
+        return ResourceWorkScheduleResponse.from_response(response)
+
+    async def delete_resource_work_schedule_item(self, resource_id: str, schedule_item_id: int) -> None:
+        """
+        Delete a specific work schedule item for a resource.
+
+        Args:
+            resource_id: The unique identifier of the resource
+            schedule_item_id: The unique identifier of the schedule item to delete
+
+        Returns:
+            None
+        """
+        # Validate parameters
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+        if not isinstance(schedule_item_id, int) or schedule_item_id <= 0:
+            raise ValueError("schedule_item_id must be a positive integer")
+            
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/workSchedules/{schedule_item_id}"
+        logging.info(f"Deleting resource work schedule item at endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.delete(endpoint)
+        # DELETE operations typically return 204 No Content on success
+
+    async def get_resource_calendar_view(self, resource_id: str, start_date: Optional[str] = None, end_date: Optional[str] = None) -> CalendarView:
+        """
+        Get calendar view for a specific resource's work schedule.
+
+        Args:
+            resource_id: The unique identifier of the resource
+            start_date: Optional start date for calendar view (YYYY-MM-DD format)
+            end_date: Optional end date for calendar view (YYYY-MM-DD format)
+
+        Returns:
+            CalendarView: Calendar view data with schedule information
+        """
+        # Validate parameter
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+            
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/workSchedules/calendarView"
+        
+        # Build query parameters
+        params = {}
+        if start_date:
+            params['startDate'] = start_date
+        if end_date:
+            params['endDate'] = end_date
+            
+        logging.info(f"Getting resource calendar view from endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return CalendarView.from_response(response)
+
+    async def get_calendars(self, offset: int = 0, limit: int = 100) -> CalendarListResponse:
+        """
+        Get list of system calendars.
+
+        Args:
+            offset: Number of items to skip for pagination
+            limit: Maximum number of items to return
+
+        Returns:
+            CalendarListResponse: List of available calendars
+        """
+        # Validate parameters
+        if not isinstance(offset, int) or offset < 0:
+            raise ValueError("offset must be a non-negative integer")
+        if not isinstance(limit, int) or limit <= 0 or limit > 5000:
+            raise ValueError("limit must be a positive integer no greater than 5000")
+            
+        endpoint = "/rest/ofscCore/v1/calendars"
+        params = {"offset": offset, "limit": limit}
+        
+        logging.info(f"Getting calendars from endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return CalendarListResponse.from_response(response)
+
+    async def bulk_update_work_schedules(self, bulk_data: dict) -> BulkScheduleUpdateResponse:
+        """
+        Perform bulk updates to work schedules for multiple resources.
+
+        Args:
+            bulk_data: Dictionary containing bulk update data with resources and schedules
+
+        Returns:
+            BulkScheduleUpdateResponse: Result of the bulk update operation
+        """
+        # Validate bulk data using internal model
+        bulk_request = BulkScheduleUpdateRequest(**bulk_data)
+        
+        endpoint = "/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkSchedules"
+        logging.info(f"Performing bulk work schedule update at endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.post(endpoint, json=bulk_request.model_dump(exclude_none=True))
+        return BulkScheduleUpdateResponse.from_response(response)
+
+    # Resource Property Management Methods
+    async def set_resource_property(self, resource_id: str, property_label: str, property_value: Any) -> ResourcePropertyValue:
+        """
+        Set a property value for a specific resource.
+
+        Args:
+            resource_id: The unique identifier of the resource
+            property_label: The label of the property to set
+            property_value: The value to set for the property
+
+        Returns:
+            ResourcePropertyValue: The updated property value
+        """
+        # Validate parameters
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+        if not property_label or not isinstance(property_label, str):
+            raise ValueError("property_label must be a non-empty string")
+            
+        # Validate property data using internal model
+        property_request = ResourcePropertyRequest(value=property_value)
+        
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/{property_label}"
+        logging.info(f"Setting resource property at endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.put(endpoint, json=property_request.model_dump(exclude_none=True))
+        return ResourcePropertyValue.from_response(response)
+
+    async def get_resource_property(self, resource_id: str, property_label: str) -> ResourcePropertyValue:
+        """
+        Get a property value for a specific resource.
+
+        Args:
+            resource_id: The unique identifier of the resource
+            property_label: The label of the property to retrieve
+
+        Returns:
+            ResourcePropertyValue: The property value
+        """
+        # Validate parameters
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+        if not property_label or not isinstance(property_label, str):
+            raise ValueError("property_label must be a non-empty string")
+            
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/{property_label}"
+        logging.info(f"Getting resource property from endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.get(endpoint)
+        return ResourcePropertyValue.from_response(response)
+
+    async def delete_resource_property(self, resource_id: str, property_label: str) -> None:
+        """
+        Delete a property for a specific resource.
+
+        Args:
+            resource_id: The unique identifier of the resource
+            property_label: The label of the property to delete
+
+        Returns:
+            None
+        """
+        # Validate parameters
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+        if not property_label or not isinstance(property_label, str):
+            raise ValueError("property_label must be a non-empty string")
+            
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/{property_label}"
+        logging.info(f"Deleting resource property at endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.delete(endpoint)
+        # DELETE operations typically return 204 No Content on success
+
+    # Resource Location Management Methods
+    async def create_resource_location(self, resource_id: str, location_data: dict) -> LocationListResponse:
+        """
+        Create a location for a specific resource.
+
+        Args:
+            resource_id: The unique identifier of the resource
+            location_data: Dictionary containing location details
+
+        Returns:
+            LocationListResponse: The created location
+        """
+        # Validate parameter
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+            
+        # Validate location data using internal model
+        location_request = ResourceLocationRequest(**location_data)
+        
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/locations"
+        logging.info(f"Creating resource location at endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.post(endpoint, json=location_request.model_dump(exclude_none=True))
+        return LocationListResponse.from_response(response)
+
+    async def get_resource_locations(self, resource_id: str, offset: int = 0, limit: int = 100) -> LocationListResponse:
+        """
+        Get locations for a specific resource.
+
+        Args:
+            resource_id: The unique identifier of the resource
+            offset: Number of items to skip for pagination
+            limit: Maximum number of items to return
+
+        Returns:
+            LocationListResponse: List of resource locations
+        """
+        # Validate parameters
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+        if not isinstance(offset, int) or offset < 0:
+            raise ValueError("offset must be a non-negative integer")
+        if not isinstance(limit, int) or limit <= 0 or limit > 5000:
+            raise ValueError("limit must be a positive integer no greater than 5000")
+            
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/locations"
+        params = {"offset": offset, "limit": limit}
+        
+        logging.info(f"Getting resource locations from endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return LocationListResponse.from_response(response)
+
+    async def get_resource_location(self, resource_id: str, location_id: int) -> LocationListResponse:
+        """
+        Get a specific location for a resource.
+
+        Args:
+            resource_id: The unique identifier of the resource
+            location_id: The unique identifier of the location
+
+        Returns:
+            LocationListResponse: The specific location details
+        """
+        # Validate parameters
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+        if not isinstance(location_id, int) or location_id <= 0:
+            raise ValueError("location_id must be a positive integer")
+            
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/locations/{location_id}"
+        logging.info(f"Getting resource location from endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.get(endpoint)
+        return LocationListResponse.from_response(response)
+
+    async def update_resource_location(self, resource_id: str, location_id: int, location_data: dict) -> LocationListResponse:
+        """
+        Update a specific location for a resource.
+
+        Args:
+            resource_id: The unique identifier of the resource
+            location_id: The unique identifier of the location
+            location_data: Dictionary containing updated location details
+
+        Returns:
+            LocationListResponse: The updated location
+        """
+        # Validate parameters
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+        if not isinstance(location_id, int) or location_id <= 0:
+            raise ValueError("location_id must be a positive integer")
+            
+        # Validate location data using internal model
+        location_request = ResourceLocationRequest(**location_data)
+        
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/locations/{location_id}"
+        logging.info(f"Updating resource location at endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.patch(endpoint, json=location_request.model_dump(exclude_none=True))
+        return LocationListResponse.from_response(response)
+
+    async def delete_resource_location(self, resource_id: str, location_id: int) -> None:
+        """
+        Delete a specific location for a resource.
+
+        Args:
+            resource_id: The unique identifier of the resource
+            location_id: The unique identifier of the location
+
+        Returns:
+            None
+        """
+        # Validate parameters
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+        if not isinstance(location_id, int) or location_id <= 0:
+            raise ValueError("location_id must be a positive integer")
+            
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/locations/{location_id}"
+        logging.info(f"Deleting resource location at endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.delete(endpoint)
+        # DELETE operations typically return 204 No Content on success
+
+    async def get_resource_position_history(self, resource_id: str, start_time: Optional[str] = None, end_time: Optional[str] = None) -> PositionHistory:
+        """
+        Get position history for a specific resource.
+
+        Args:
+            resource_id: The unique identifier of the resource
+            start_time: Optional start time for position history (ISO format)
+            end_time: Optional end time for position history (ISO format)
+
+        Returns:
+            PositionHistory: List of position history entries
+        """
+        # Validate parameter
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+            
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/positionHistory"
+        
+        # Build query parameters
+        params = {}
+        if start_time:
+            params['startTime'] = start_time
+        if end_time:
+            params['endTime'] = end_time
+            
+        logging.info(f"Getting resource position history from endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return PositionHistory.from_response(response)
+
+    async def set_resource_assigned_locations(self, resource_id: str, assigned_locations_data: dict) -> AssignedLocationsResponse:
+        """
+        Set assigned locations for a resource.
+
+        Args:
+            resource_id: The unique identifier of the resource
+            assigned_locations_data: Dictionary containing assigned locations by day
+
+        Returns:
+            AssignedLocationsResponse: The updated assigned locations
+        """
+        # Validate parameter
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+            
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/assignedLocations"
+        logging.info(f"Setting resource assigned locations at endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.put(endpoint, json=assigned_locations_data)
+        return AssignedLocationsResponse.from_response(response)
+
+    async def get_resource_assigned_locations(self, resource_id: str) -> AssignedLocationsResponse:
+        """
+        Get assigned locations for a resource.
+
+        Args:
+            resource_id: The unique identifier of the resource
+
+        Returns:
+            AssignedLocationsResponse: Assigned locations by day of week
+        """
+        # Validate parameter
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+            
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/assignedLocations"
+        logging.info(f"Getting resource assigned locations from endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.get(endpoint)
+        return AssignedLocationsResponse.from_response(response)
+
+    async def update_resource_assigned_locations(self, resource_id: str, assigned_locations_data: dict) -> AssignedLocationsResponse:
+        """
+        Update assigned locations for a resource.
+
+        Args:
+            resource_id: The unique identifier of the resource
+            assigned_locations_data: Dictionary containing updated assigned locations
+
+        Returns:
+            AssignedLocationsResponse: The updated assigned locations
+        """
+        # Validate parameter
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+            
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/assignedLocations"
+        logging.info(f"Updating resource assigned locations at endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.patch(endpoint, json=assigned_locations_data)
+        return AssignedLocationsResponse.from_response(response)
+
+    async def delete_resource_assigned_location_date(self, resource_id: str, date: str) -> None:
+        """
+        Delete assigned location for a specific date.
+
+        Args:
+            resource_id: The unique identifier of the resource
+            date: The date to delete assigned location for (YYYY-MM-DD format)
+
+        Returns:
+            None
+        """
+        # Validate parameters
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+        if not date or not isinstance(date, str):
+            raise ValueError("date must be a non-empty string in YYYY-MM-DD format")
+            
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/assignedLocations/{date}"
+        logging.info(f"Deleting resource assigned location for date at endpoint: {endpoint}")
+        
+        response: "Response" = await self.client.delete(endpoint)
+        # DELETE operations typically return 204 No Content on success
+
+    # Route Planning & Operations Methods (Batch 4)
+    async def create_resource_plan(self, resource_id: str, plan_data: dict) -> ResourcePlanListResponse:
+        """Create a plan for a specific resource."""
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+        plan_request = ResourcePlan(**plan_data)
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/plans"
+        logging.info(f"Creating resource plan at endpoint: {endpoint}")
+        response: "Response" = await self.client.post(endpoint, json=plan_request.model_dump(exclude_none=True))
+        return ResourcePlanListResponse.from_response(response)
+
+    async def get_resource_plans(self, resource_id: str) -> ResourcePlanListResponse:
+        """Get plans for a specific resource."""
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/plans"
+        logging.info(f"Getting resource plans from endpoint: {endpoint}")
+        response: "Response" = await self.client.get(endpoint)
+        return ResourcePlanListResponse.from_response(response)
+
+    async def delete_resource_plans(self, resource_id: str) -> None:
+        """Delete plans for a specific resource."""
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/plans"
+        logging.info(f"Deleting resource plans at endpoint: {endpoint}")
+        response: "Response" = await self.client.delete(endpoint)
+
+    async def get_resource_route(self, resource_id: str, date: str) -> RouteInfo:
+        """Get route for a resource on a specific date."""
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+        if not date or not isinstance(date, str):
+            raise ValueError("date must be a non-empty string")
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/routes/{date}"
+        logging.info(f"Getting resource route from endpoint: {endpoint}")
+        response: "Response" = await self.client.get(endpoint)
+        return RouteInfo.from_response(response)
+
+    async def activate_resource_route(self, resource_id: str, date: str, activation_data: Optional[dict] = None) -> RouteActivationResponse:
+        """Activate route for a resource on a specific date."""
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+        if not date or not isinstance(date, str):
+            raise ValueError("date must be a non-empty string")
+        request_data = RouteActivationRequest(**(activation_data or {}))
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/routes/{date}/custom-actions/activate"
+        logging.info(f"Activating resource route at endpoint: {endpoint}")
+        response: "Response" = await self.client.post(endpoint, json=request_data.model_dump(exclude_none=True))
+        return RouteActivationResponse.from_response(response)
+
+    async def deactivate_resource_route(self, resource_id: str, date: str, deactivation_data: Optional[dict] = None) -> RouteActivationResponse:
+        """Deactivate route for a resource on a specific date."""
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+        if not date or not isinstance(date, str):
+            raise ValueError("date must be a non-empty string")
+        request_data = RouteActivationRequest(**(deactivation_data or {}))
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/routes/{date}/custom-actions/deactivate"
+        logging.info(f"Deactivating resource route at endpoint: {endpoint}")
+        response: "Response" = await self.client.post(endpoint, json=request_data.model_dump(exclude_none=True))
+        return RouteActivationResponse.from_response(response)
+
+    async def find_nearby_activities(self, resource_id: str, latitude: Optional[float] = None, longitude: Optional[float] = None, radius: Optional[float] = None) -> NearbyActivityListResponse:
+        """Find nearby activities for a resource."""
+        if not resource_id or not isinstance(resource_id, str):
+            raise ValueError("resource_id must be a non-empty string")
+        endpoint = f"/rest/ofscCore/v1/resources/{resource_id}/findNearbyActivities"
+        params = {}
+        if latitude is not None:
+            params['latitude'] = latitude
+        if longitude is not None:
+            params['longitude'] = longitude
+        if radius is not None:
+            params['radius'] = radius
+        logging.info(f"Finding nearby activities from endpoint: {endpoint}")
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return NearbyActivityListResponse.from_response(response)
+
+    # Bulk Operations & Service Requests Methods (Batch 5)
+    async def bulk_update_work_skills(self, bulk_data: dict) -> BulkSkillUpdateResponse:
+        """Perform bulk updates to work skills for multiple resources."""
+        bulk_request = BulkSkillUpdateRequest(**bulk_data)
+        endpoint = "/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkSkills"
+        logging.info(f"Performing bulk work skills update at endpoint: {endpoint}")
+        response: "Response" = await self.client.post(endpoint, json=bulk_request.model_dump(exclude_none=True))
+        return BulkSkillUpdateResponse.from_response(response)
+
+    async def bulk_update_work_zones(self, bulk_data: dict) -> BulkZoneUpdateResponse:
+        """Perform bulk updates to work zones for multiple resources."""
+        bulk_request = BulkZoneUpdateRequest(**bulk_data)
+        endpoint = "/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkZones"
+        logging.info(f"Performing bulk work zones update at endpoint: {endpoint}")
+        response: "Response" = await self.client.post(endpoint, json=bulk_request.model_dump(exclude_none=True))
+        return BulkZoneUpdateResponse.from_response(response)
+
+    async def bulk_update_inventories(self, bulk_data: dict) -> BulkInventoryUpdateResponse:
+        """Perform bulk updates to inventories for multiple resources."""
+        bulk_request = BulkInventoryUpdateRequest(**bulk_data)
+        endpoint = "/rest/ofscCore/v1/resources/custom-actions/bulkUpdateInventories"
+        logging.info(f"Performing bulk inventory update at endpoint: {endpoint}")
+        response: "Response" = await self.client.post(endpoint, json=bulk_request.model_dump(exclude_none=True))
+        return BulkInventoryUpdateResponse.from_response(response)
+
+    async def find_matching_resources(self, search_criteria: dict) -> ResourceMatchResponse:
+        """Find resources matching specific criteria."""
+        search_request = ResourceMatchRequest(**search_criteria)
+        endpoint = "/rest/ofscCore/v1/resources/custom-actions/findMatchingResources"
+        logging.info(f"Finding matching resources at endpoint: {endpoint}")
+        response: "Response" = await self.client.post(endpoint, json=search_request.model_dump(exclude_none=True))
+        return ResourceMatchResponse.from_response(response)
+
+    async def find_resources_for_urgent_assignment(self, urgent_data: dict) -> UrgentAssignmentResponse:
+        """Find resources for urgent assignment."""
+        urgent_request = UrgentAssignmentRequest(**urgent_data)
+        endpoint = "/rest/ofscCore/v1/resources/custom-actions/findResourcesForUrgentAssignment"
+        logging.info(f"Finding urgent assignment resources at endpoint: {endpoint}")
+        response: "Response" = await self.client.post(endpoint, json=urgent_request.model_dump(exclude_none=True))
+        return UrgentAssignmentResponse.from_response(response)
+
+    async def set_resource_positions(self, positions_data: dict) -> SetPositionsResponse:
+        """Set positions for multiple resources."""
+        positions_request = SetPositionsRequest(**positions_data)
+        endpoint = "/rest/ofscCore/v1/resources/custom-actions/setPositions"
+        logging.info(f"Setting resource positions at endpoint: {endpoint}")
+        response: "Response" = await self.client.post(endpoint, json=positions_request.model_dump(exclude_none=True))
+        return SetPositionsResponse.from_response(response)
+
+    async def get_last_known_positions(self, resource_ids: Optional[List[str]] = None) -> LastKnownPositionListResponse:
+        """Get last known positions for resources."""
+        endpoint = "/rest/ofscCore/v1/resources/custom-actions/lastKnownPositions"
+        params = {}
+        if resource_ids:
+            params['resourceIds'] = ','.join(resource_ids)
+        logging.info(f"Getting last known positions from endpoint: {endpoint}")
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return LastKnownPositionListResponse.from_response(response)
+
+    async def get_resources_in_area(self, latitude: float, longitude: float, radius: float, resource_types: Optional[List[str]] = None) -> ResourcesInAreaResponse:
+        """Get resources within a geographic area."""
+        query_data = ResourcesInAreaQuery(latitude=latitude, longitude=longitude, radius=radius, resourceTypes=resource_types)
+        endpoint = "/rest/ofscCore/v1/resources/custom-actions/resourcesInArea"
+        params = query_data.model_dump(exclude_none=True)
+        logging.info(f"Getting resources in area from endpoint: {endpoint}")
+        response: "Response" = await self.client.get(endpoint, params=params)
+        return ResourcesInAreaResponse.from_response(response)
+
+    async def get_service_request(self, request_id: str) -> ServiceRequest:
+        """Get a specific service request."""
+        if not request_id or not isinstance(request_id, str):
+            raise ValueError("request_id must be a non-empty string")
+        endpoint = f"/rest/ofscCore/v1/serviceRequests/{request_id}"
+        logging.info(f"Getting service request from endpoint: {endpoint}")
+        response: "Response" = await self.client.get(endpoint)
+        return ServiceRequest.from_response(response)
+
+    async def create_service_request(self, request_data: dict) -> ServiceRequest:
+        """Create a new service request."""
+        service_request = ServiceRequest(**request_data)
+        endpoint = "/rest/ofscCore/v1/serviceRequests"
+        logging.info(f"Creating service request at endpoint: {endpoint}")
+        response: "Response" = await self.client.post(endpoint, json=service_request.model_dump(exclude_none=True))
+        return ServiceRequest.from_response(response)
+
+    async def get_service_request_property(self, request_id: str, property_label: str) -> ServiceRequestProperty:
+        """Get a property value for a specific service request."""
+        if not request_id or not isinstance(request_id, str):
+            raise ValueError("request_id must be a non-empty string")
+        if not property_label or not isinstance(property_label, str):
+            raise ValueError("property_label must be a non-empty string")
+        endpoint = f"/rest/ofscCore/v1/serviceRequests/{request_id}/{property_label}"
+        logging.info(f"Getting service request property from endpoint: {endpoint}")
+        response: "Response" = await self.client.get(endpoint)
+        return ServiceRequestProperty.from_response(response)

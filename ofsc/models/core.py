@@ -735,3 +735,395 @@ class UserListResponse(OFSResponseList[User]):
     @property
     def users(self) -> List[User]:
         return [item for item in self.items] if self.items else []
+
+
+# Resource Schedule Management Models
+class WorkScheduleRequest(BaseOFSResponse):
+    """Request model for creating work schedule items"""
+    
+    recordType: CalendarViewItemRecordType
+    startDate: date
+    endDate: Optional[date] = None
+    workTimeStart: Optional[str] = None
+    workTimeEnd: Optional[str] = None
+    scheduleLabel: Optional[str] = None
+    shiftLabel: Optional[str] = None
+    shiftType: Optional[str] = None
+    isWorking: Optional[bool] = True
+    nonWorkingReason: Optional[str] = None
+    comments: Optional[str] = None
+    points: Optional[int] = None
+    recurrence: Optional[Recurrence] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class CalendarItem(BaseOFSResponse):
+    """Calendar item information"""
+    
+    calendarId: Optional[int] = None
+    calendarName: str
+    description: Optional[str] = None
+    calendarType: Optional[str] = None
+    status: Optional[str] = "active"
+    organization: Optional[str] = "default"
+    model_config = ConfigDict(extra="allow")
+
+
+class CalendarListResponse(OFSResponseList[CalendarItem]):
+    """Response for calendar lists"""
+    
+    pass
+
+
+class BulkScheduleUpdateItem(BaseOFSResponse):
+    """Individual resource schedule update for bulk operations"""
+    
+    resourceId: str
+    scheduleItems: List[WorkScheduleRequest]
+    model_config = ConfigDict(extra="allow")
+
+
+class BulkScheduleUpdateRequest(BaseOFSResponse):
+    """Request model for bulk work schedule updates"""
+    
+    resources: List[BulkScheduleUpdateItem]
+    updateParameters: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class BulkScheduleUpdateResponse(BaseOFSResponse):
+    """Response for bulk schedule update operations"""
+    
+    successCount: Optional[int] = None
+    errorCount: Optional[int] = None
+    errors: Optional[List[Dict[str, Any]]] = None
+    model_config = ConfigDict(extra="allow")
+
+
+# Resource Property Management Models
+class ResourcePropertyValue(BaseOFSResponse):
+    """Resource property value"""
+    
+    value: Optional[Any] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourcePropertyRequest(BaseOFSResponse):
+    """Request model for setting resource properties"""
+    
+    value: Any
+    model_config = ConfigDict(extra="allow")
+
+
+# Resource Location Management Models
+class ResourceLocationRequest(BaseOFSResponse):
+    """Request model for creating/updating resource locations"""
+    
+    label: str
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    postalCode: Optional[str] = None
+    country: Optional[str] = "US"
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    timeZone: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class PositionHistoryItem(BaseOFSResponse):
+    """Individual position history entry"""
+    
+    timestamp: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    accuracy: Optional[float] = None
+    speed: Optional[float] = None
+    heading: Optional[float] = None
+    altitude: Optional[float] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class PositionHistory(OFSResponseList[PositionHistoryItem]):
+    """Response for resource position history"""
+    
+    pass
+
+
+# Route Planning & Operations Models
+class ResourcePlan(BaseOFSResponse):
+    """Resource plan information"""
+    
+    planId: Optional[int] = None
+    planName: str
+    description: Optional[str] = None
+    startDate: Optional[str] = None
+    endDate: Optional[str] = None
+    status: Optional[str] = "active"
+    planType: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourcePlanListResponse(OFSResponseList[ResourcePlan]):
+    """Response for resource plans"""
+    
+    pass
+
+
+class RouteInfo(BaseOFSResponse):
+    """Route information for a specific date"""
+    
+    routeId: Optional[int] = None
+    routeDate: str
+    routeStatus: Optional[str] = None
+    totalDistance: Optional[float] = None
+    totalDuration: Optional[int] = None
+    activities: Optional[List[Dict[str, Any]]] = None
+    waypoints: Optional[List[Dict[str, Any]]] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class NearbyActivity(BaseOFSResponse):
+    """Nearby activity information"""
+    
+    activityId: int
+    activityType: Optional[str] = None
+    distance: Optional[float] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    address: Optional[str] = None
+    timeWindow: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class NearbyActivityListResponse(OFSResponseList[NearbyActivity]):
+    """Response for nearby activities"""
+    
+    pass
+
+
+class RouteActivationRequest(BaseOFSResponse):
+    """Request for route activation/deactivation"""
+    
+    reason: Optional[str] = None
+    forceActivation: Optional[bool] = False
+    model_config = ConfigDict(extra="allow")
+
+
+# Bulk Operations & Service Requests Models
+class BulkSkillUpdateItem(BaseOFSResponse):
+    """Individual resource skill update for bulk operations"""
+    
+    resourceId: str
+    workSkills: List[Dict[str, Any]]
+    model_config = ConfigDict(extra="allow")
+
+
+class BulkSkillUpdateRequest(BaseOFSResponse):
+    """Request for bulk work skill updates"""
+    
+    resources: List[BulkSkillUpdateItem]
+    updateParameters: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class BulkZoneUpdateItem(BaseOFSResponse):
+    """Individual resource zone update for bulk operations"""
+    
+    resourceId: str
+    workZones: List[Dict[str, Any]]
+    model_config = ConfigDict(extra="allow")
+
+
+class BulkZoneUpdateRequest(BaseOFSResponse):
+    """Request for bulk work zone updates"""
+    
+    resources: List[BulkZoneUpdateItem]
+    updateParameters: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class BulkInventoryUpdateItem(BaseOFSResponse):
+    """Individual resource inventory update for bulk operations"""
+    
+    resourceId: str
+    inventories: List[Dict[str, Any]]
+    model_config = ConfigDict(extra="allow")
+
+
+class BulkInventoryUpdateRequest(BaseOFSResponse):
+    """Request for bulk inventory updates"""
+    
+    resources: List[BulkInventoryUpdateItem]
+    updateParameters: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceMatchRequest(BaseOFSResponse):
+    """Request for finding matching resources"""
+    
+    activityId: Optional[int] = None
+    activityType: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    date: Optional[str] = None
+    timeWindow: Optional[str] = None
+    skills: Optional[List[str]] = None
+    maxDistance: Optional[float] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class UrgentAssignmentRequest(BaseOFSResponse):
+    """Request for urgent assignment resources"""
+    
+    activityId: int
+    urgencyLevel: Optional[str] = "high"
+    maxTravelTime: Optional[int] = None
+    maxDistance: Optional[float] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class SetPositionsRequest(BaseOFSResponse):
+    """Request for setting resource positions"""
+    
+    positions: List[Dict[str, Any]]
+    timestamp: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class LastKnownPosition(BaseOFSResponse):
+    """Last known position information"""
+    
+    resourceId: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    timestamp: Optional[str] = None
+    accuracy: Optional[float] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class LastKnownPositionListResponse(OFSResponseList[LastKnownPosition]):
+    """Response for last known positions"""
+    
+    pass
+
+
+class ResourcesInAreaQuery(BaseOFSResponse):
+    """Query parameters for resources in area"""
+    
+    latitude: float
+    longitude: float
+    radius: float
+    radiusUnit: Optional[str] = "km"
+    resourceTypes: Optional[List[str]] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ServiceRequest(BaseOFSResponse):
+    """Service request information"""
+    
+    requestId: Optional[str] = None
+    requestType: Optional[str] = None
+    customerId: Optional[str] = None
+    customerName: Optional[str] = None
+    description: Optional[str] = None
+    priority: Optional[str] = "normal"
+    status: Optional[str] = "open"
+    createdTime: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    address: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ServiceRequestListResponse(OFSResponseList[ServiceRequest]):
+    """Response for service requests"""
+    
+    pass
+
+
+class ServiceRequestProperty(BaseOFSResponse):
+    """Service request property value"""
+    
+    value: Optional[Any] = None
+    model_config = ConfigDict(extra="allow")
+
+
+# Additional Response Models for Full Model Compliance
+class RouteActivationResponse(BaseOFSResponse):
+    """Response for route activation/deactivation operations"""
+    
+    success: Optional[bool] = None
+    message: Optional[str] = None
+    routeId: Optional[int] = None
+    routeDate: Optional[str] = None
+    activationTime: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class BulkSkillUpdateResponse(BaseOFSResponse):
+    """Response for bulk work skill update operations"""
+    
+    successCount: Optional[int] = None
+    errorCount: Optional[int] = None
+    processedResources: Optional[List[str]] = None
+    errors: Optional[List[Dict[str, Any]]] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class BulkZoneUpdateResponse(BaseOFSResponse):
+    """Response for bulk work zone update operations"""
+    
+    successCount: Optional[int] = None
+    errorCount: Optional[int] = None
+    processedResources: Optional[List[str]] = None
+    errors: Optional[List[Dict[str, Any]]] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class BulkInventoryUpdateResponse(BaseOFSResponse):
+    """Response for bulk inventory update operations"""
+    
+    successCount: Optional[int] = None
+    errorCount: Optional[int] = None
+    processedResources: Optional[List[str]] = None
+    errors: Optional[List[Dict[str, Any]]] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceMatchResponse(BaseOFSResponse):
+    """Response for resource matching operations"""
+    
+    matchedResources: Optional[List[Dict[str, Any]]] = None
+    totalMatches: Optional[int] = None
+    searchCriteria: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class UrgentAssignmentResponse(BaseOFSResponse):
+    """Response for urgent assignment resource finding"""
+    
+    availableResources: Optional[List[Dict[str, Any]]] = None
+    recommendedResource: Optional[Dict[str, Any]] = None
+    urgencyLevel: Optional[str] = None
+    estimatedResponseTime: Optional[int] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class SetPositionsResponse(BaseOFSResponse):
+    """Response for setting resource positions"""
+    
+    successCount: Optional[int] = None
+    errorCount: Optional[int] = None
+    processedPositions: Optional[List[Dict[str, Any]]] = None
+    errors: Optional[List[Dict[str, Any]]] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourcesInAreaResponse(BaseOFSResponse):
+    """Response for resources in area queries"""
+    
+    resources: Optional[List[Dict[str, Any]]] = None
+    totalFound: Optional[int] = None
+    searchArea: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="allow")
