@@ -24,7 +24,8 @@ from pydantic import (
     model_validator,
 )
 
-from .base import BaseOFSResponse, OFSResponseList, Link as BaseLink
+from .base import BaseOFSResponse, OFSResponseList
+from .base import Link as BaseLink
 
 
 # Resources
@@ -146,14 +147,14 @@ class ActivityListResponse(OFSResponseList[Activity]):
 
 class ActivityProperty(BaseOFSResponse):
     """Activity property value"""
-    
+
     value: Optional[Any] = None
     model_config = ConfigDict(extra="allow")
 
 
 class ActivitySubmittedForm(BaseOFSResponse):
     """Submitted form data for an activity"""
-    
+
     formId: Optional[str] = None
     formName: Optional[str] = None
     submittedTime: Optional[str] = None
@@ -163,13 +164,13 @@ class ActivitySubmittedForm(BaseOFSResponse):
 
 class ActivitySubmittedFormListResponse(OFSResponseList[ActivitySubmittedForm]):
     """Response for activity submitted forms"""
-    
+
     pass
 
 
 class ActivityMultidaySegment(BaseOFSResponse):
     """Activity multiday segment information"""
-    
+
     segmentId: Optional[int] = None
     date: Optional[str] = None
     startTime: Optional[str] = None
@@ -181,13 +182,13 @@ class ActivityMultidaySegment(BaseOFSResponse):
 
 class ActivityMultidaySegmentListResponse(OFSResponseList[ActivityMultidaySegment]):
     """Response for activity multiday segments"""
-    
+
     pass
 
 
 class ActivityCapacityCategory(BaseOFSResponse):
     """Activity capacity category information"""
-    
+
     categoryId: Optional[int] = None
     categoryLabel: str
     timeSlotId: Optional[int] = None
@@ -197,28 +198,30 @@ class ActivityCapacityCategory(BaseOFSResponse):
 
 class ActivityCapacityCategoryListResponse(OFSResponseList[ActivityCapacityCategory]):
     """Response for activity capacity categories"""
-    
+
     pass
 
 
 class ActivityResourcePreference(BaseOFSResponse):
     """Activity resource preference information"""
-    
+
     resourceId: str
     preferenceType: Optional[str] = "preferred"  # preferred, required, excluded
     priority: Optional[int] = None
     model_config = ConfigDict(extra="allow")
 
 
-class ActivityResourcePreferenceListResponse(OFSResponseList[ActivityResourcePreference]):
+class ActivityResourcePreferenceListResponse(
+    OFSResponseList[ActivityResourcePreference]
+):
     """Response for activity resource preferences"""
-    
+
     pass
 
 
 class ActivityRequiredInventory(BaseOFSResponse):
     """Activity required inventory information"""
-    
+
     inventoryType: str
     quantity: int = 1
     serialNumber: Optional[str] = None
@@ -229,13 +232,13 @@ class ActivityRequiredInventory(BaseOFSResponse):
 
 class ActivityRequiredInventoryListResponse(OFSResponseList[ActivityRequiredInventory]):
     """Response for activity required inventories"""
-    
+
     pass
 
 
 class ActivityCustomerInventory(BaseOFSResponse):
     """Activity customer inventory information"""
-    
+
     inventoryId: Optional[int] = None
     inventoryType: str
     serialNumber: Optional[str] = None
@@ -248,13 +251,13 @@ class ActivityCustomerInventory(BaseOFSResponse):
 
 class ActivityCustomerInventoryListResponse(OFSResponseList[ActivityCustomerInventory]):
     """Response for activity customer inventories"""
-    
+
     pass
 
 
 class ActivityInstalledInventory(BaseOFSResponse):
     """Activity installed inventory information"""
-    
+
     inventoryId: int
     inventoryType: str
     serialNumber: Optional[str] = None
@@ -265,15 +268,17 @@ class ActivityInstalledInventory(BaseOFSResponse):
     model_config = ConfigDict(extra="allow")
 
 
-class ActivityInstalledInventoryListResponse(OFSResponseList[ActivityInstalledInventory]):
+class ActivityInstalledInventoryListResponse(
+    OFSResponseList[ActivityInstalledInventory]
+):
     """Response for activity installed inventories"""
-    
+
     pass
 
 
 class ActivityDeinstalledInventory(BaseOFSResponse):
     """Activity deinstalled inventory information"""
-    
+
     inventoryId: int
     inventoryType: str
     serialNumber: Optional[str] = None
@@ -285,15 +290,17 @@ class ActivityDeinstalledInventory(BaseOFSResponse):
     model_config = ConfigDict(extra="allow")
 
 
-class ActivityDeinstalledInventoryListResponse(OFSResponseList[ActivityDeinstalledInventory]):
+class ActivityDeinstalledInventoryListResponse(
+    OFSResponseList[ActivityDeinstalledInventory]
+):
     """Response for activity deinstalled inventories"""
-    
+
     pass
 
 
 class ActivityLinkType(str, Enum):
     """Activity link type enumeration"""
-    
+
     predecessor = "predecessor"
     successor = "successor"
     parent = "parent"
@@ -303,7 +310,7 @@ class ActivityLinkType(str, Enum):
 
 class ActivityLink(BaseOFSResponse):
     """Activity link information"""
-    
+
     linkedActivityId: int
     linkType: ActivityLinkType
     description: Optional[str] = None
@@ -313,13 +320,13 @@ class ActivityLink(BaseOFSResponse):
 
 class ActivityLinkListResponse(OFSResponseList[ActivityLink]):
     """Response for activity links"""
-    
+
     pass
 
 
 class ActivityMoveRequest(BaseOFSResponse):
     """Request for moving an activity"""
-    
+
     targetResourceId: Optional[str] = None
     targetDate: Optional[str] = None
     targetTime: Optional[str] = None
@@ -330,7 +337,7 @@ class ActivityMoveRequest(BaseOFSResponse):
 
 class ActivityMoveResponse(BaseOFSResponse):
     """Response for activity move operations"""
-    
+
     activityId: int
     previousResourceId: Optional[str] = None
     newResourceId: Optional[str] = None
@@ -608,7 +615,7 @@ class LocationListResponse(OFSResponseList[Location]):
 # Inventory Management
 class Inventory(BaseOFSResponse):
     """Inventory item definition and configuration"""
-    
+
     inventoryId: Optional[int] = None
     inventoryType: Optional[str] = None
     serialNumber: Optional[str] = None
@@ -622,13 +629,13 @@ class Inventory(BaseOFSResponse):
 
 class InventoryListResponse(OFSResponseList[Inventory]):
     """Paginated response for inventory lists"""
-    
+
     pass
 
 
 class ResourceInventory(BaseOFSResponse):
     """Resource inventory association"""
-    
+
     inventoryId: int
     inventoryType: str
     serialNumber: Optional[str] = None
@@ -640,13 +647,13 @@ class ResourceInventory(BaseOFSResponse):
 
 class ResourceInventoryListResponse(OFSResponseList[ResourceInventory]):
     """Response for resource inventory lists"""
-    
+
     pass
 
 
 class ResourceWorkSkill(BaseOFSResponse):
     """Resource work skill association"""
-    
+
     workSkillId: Optional[int] = None
     workSkillLabel: str
     level: Optional[int] = None
@@ -656,13 +663,13 @@ class ResourceWorkSkill(BaseOFSResponse):
 
 class ResourceWorkSkillListResponse(OFSResponseList[ResourceWorkSkill]):
     """Response for resource work skills"""
-    
+
     pass
 
 
 class ResourceWorkZone(BaseOFSResponse):
     """Resource work zone association"""
-    
+
     workZoneId: Optional[int] = None
     workZoneLabel: str
     status: Optional[str] = "active"
@@ -671,7 +678,7 @@ class ResourceWorkZone(BaseOFSResponse):
 
 class ResourceWorkZoneListResponse(OFSResponseList[ResourceWorkZone]):
     """Response for resource work zones"""
-    
+
     pass
 
 
@@ -740,7 +747,7 @@ class UserListResponse(OFSResponseList[User]):
 # Resource Schedule Management Models
 class WorkScheduleRequest(BaseOFSResponse):
     """Request model for creating work schedule items"""
-    
+
     recordType: CalendarViewItemRecordType
     startDate: date
     endDate: Optional[date] = None
@@ -759,7 +766,7 @@ class WorkScheduleRequest(BaseOFSResponse):
 
 class CalendarItem(BaseOFSResponse):
     """Calendar item information"""
-    
+
     calendarId: Optional[int] = None
     calendarName: str
     description: Optional[str] = None
@@ -771,13 +778,13 @@ class CalendarItem(BaseOFSResponse):
 
 class CalendarListResponse(OFSResponseList[CalendarItem]):
     """Response for calendar lists"""
-    
+
     pass
 
 
 class BulkScheduleUpdateItem(BaseOFSResponse):
     """Individual resource schedule update for bulk operations"""
-    
+
     resourceId: str
     scheduleItems: List[WorkScheduleRequest]
     model_config = ConfigDict(extra="allow")
@@ -785,7 +792,7 @@ class BulkScheduleUpdateItem(BaseOFSResponse):
 
 class BulkScheduleUpdateRequest(BaseOFSResponse):
     """Request model for bulk work schedule updates"""
-    
+
     resources: List[BulkScheduleUpdateItem]
     updateParameters: Optional[Dict[str, Any]] = None
     model_config = ConfigDict(extra="allow")
@@ -793,7 +800,7 @@ class BulkScheduleUpdateRequest(BaseOFSResponse):
 
 class BulkScheduleUpdateResponse(BaseOFSResponse):
     """Response for bulk schedule update operations"""
-    
+
     successCount: Optional[int] = None
     errorCount: Optional[int] = None
     errors: Optional[List[Dict[str, Any]]] = None
@@ -803,14 +810,14 @@ class BulkScheduleUpdateResponse(BaseOFSResponse):
 # Resource Property Management Models
 class ResourcePropertyValue(BaseOFSResponse):
     """Resource property value"""
-    
+
     value: Optional[Any] = None
     model_config = ConfigDict(extra="allow")
 
 
 class ResourcePropertyRequest(BaseOFSResponse):
     """Request model for setting resource properties"""
-    
+
     value: Any
     model_config = ConfigDict(extra="allow")
 
@@ -818,7 +825,7 @@ class ResourcePropertyRequest(BaseOFSResponse):
 # Resource Location Management Models
 class ResourceLocationRequest(BaseOFSResponse):
     """Request model for creating/updating resource locations"""
-    
+
     label: str
     address: Optional[str] = None
     city: Optional[str] = None
@@ -833,7 +840,7 @@ class ResourceLocationRequest(BaseOFSResponse):
 
 class PositionHistoryItem(BaseOFSResponse):
     """Individual position history entry"""
-    
+
     timestamp: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
@@ -846,14 +853,14 @@ class PositionHistoryItem(BaseOFSResponse):
 
 class PositionHistory(OFSResponseList[PositionHistoryItem]):
     """Response for resource position history"""
-    
+
     pass
 
 
 # Route Planning & Operations Models
 class ResourcePlan(BaseOFSResponse):
     """Resource plan information"""
-    
+
     planId: Optional[int] = None
     planName: str
     description: Optional[str] = None
@@ -866,26 +873,20 @@ class ResourcePlan(BaseOFSResponse):
 
 class ResourcePlanListResponse(OFSResponseList[ResourcePlan]):
     """Response for resource plans"""
-    
+
     pass
 
 
-class RouteInfo(BaseOFSResponse):
+class RouteInfoListResponse(OFSResponseList[Activity]):
     """Route information for a specific date"""
-    
-    routeId: Optional[int] = None
-    routeDate: str
-    routeStatus: Optional[str] = None
-    totalDistance: Optional[float] = None
-    totalDuration: Optional[int] = None
-    activities: Optional[List[Dict[str, Any]]] = None
-    waypoints: Optional[List[Dict[str, Any]]] = None
+
+    routeStartTime: str
     model_config = ConfigDict(extra="allow")
 
 
 class NearbyActivity(BaseOFSResponse):
     """Nearby activity information"""
-    
+
     activityId: int
     activityType: Optional[str] = None
     distance: Optional[float] = None
@@ -898,13 +899,13 @@ class NearbyActivity(BaseOFSResponse):
 
 class NearbyActivityListResponse(OFSResponseList[NearbyActivity]):
     """Response for nearby activities"""
-    
+
     pass
 
 
 class RouteActivationRequest(BaseOFSResponse):
     """Request for route activation/deactivation"""
-    
+
     reason: Optional[str] = None
     forceActivation: Optional[bool] = False
     model_config = ConfigDict(extra="allow")
@@ -913,7 +914,7 @@ class RouteActivationRequest(BaseOFSResponse):
 # Bulk Operations & Service Requests Models
 class BulkSkillUpdateItem(BaseOFSResponse):
     """Individual resource skill update for bulk operations"""
-    
+
     resourceId: str
     workSkills: List[Dict[str, Any]]
     model_config = ConfigDict(extra="allow")
@@ -921,7 +922,7 @@ class BulkSkillUpdateItem(BaseOFSResponse):
 
 class BulkSkillUpdateRequest(BaseOFSResponse):
     """Request for bulk work skill updates"""
-    
+
     resources: List[BulkSkillUpdateItem]
     updateParameters: Optional[Dict[str, Any]] = None
     model_config = ConfigDict(extra="allow")
@@ -929,7 +930,7 @@ class BulkSkillUpdateRequest(BaseOFSResponse):
 
 class BulkZoneUpdateItem(BaseOFSResponse):
     """Individual resource zone update for bulk operations"""
-    
+
     resourceId: str
     workZones: List[Dict[str, Any]]
     model_config = ConfigDict(extra="allow")
@@ -937,7 +938,7 @@ class BulkZoneUpdateItem(BaseOFSResponse):
 
 class BulkZoneUpdateRequest(BaseOFSResponse):
     """Request for bulk work zone updates"""
-    
+
     resources: List[BulkZoneUpdateItem]
     updateParameters: Optional[Dict[str, Any]] = None
     model_config = ConfigDict(extra="allow")
@@ -945,7 +946,7 @@ class BulkZoneUpdateRequest(BaseOFSResponse):
 
 class BulkInventoryUpdateItem(BaseOFSResponse):
     """Individual resource inventory update for bulk operations"""
-    
+
     resourceId: str
     inventories: List[Dict[str, Any]]
     model_config = ConfigDict(extra="allow")
@@ -953,7 +954,7 @@ class BulkInventoryUpdateItem(BaseOFSResponse):
 
 class BulkInventoryUpdateRequest(BaseOFSResponse):
     """Request for bulk inventory updates"""
-    
+
     resources: List[BulkInventoryUpdateItem]
     updateParameters: Optional[Dict[str, Any]] = None
     model_config = ConfigDict(extra="allow")
@@ -961,7 +962,7 @@ class BulkInventoryUpdateRequest(BaseOFSResponse):
 
 class ResourceMatchRequest(BaseOFSResponse):
     """Request for finding matching resources"""
-    
+
     activityId: Optional[int] = None
     activityType: Optional[str] = None
     latitude: Optional[float] = None
@@ -975,7 +976,7 @@ class ResourceMatchRequest(BaseOFSResponse):
 
 class UrgentAssignmentRequest(BaseOFSResponse):
     """Request for urgent assignment resources"""
-    
+
     activityId: int
     urgencyLevel: Optional[str] = "high"
     maxTravelTime: Optional[int] = None
@@ -985,7 +986,7 @@ class UrgentAssignmentRequest(BaseOFSResponse):
 
 class SetPositionsRequest(BaseOFSResponse):
     """Request for setting resource positions"""
-    
+
     positions: List[Dict[str, Any]]
     timestamp: Optional[str] = None
     model_config = ConfigDict(extra="allow")
@@ -993,7 +994,7 @@ class SetPositionsRequest(BaseOFSResponse):
 
 class LastKnownPosition(BaseOFSResponse):
     """Last known position information"""
-    
+
     resourceId: str
     latitude: Optional[float] = None
     longitude: Optional[float] = None
@@ -1004,13 +1005,13 @@ class LastKnownPosition(BaseOFSResponse):
 
 class LastKnownPositionListResponse(OFSResponseList[LastKnownPosition]):
     """Response for last known positions"""
-    
+
     pass
 
 
 class ResourcesInAreaQuery(BaseOFSResponse):
     """Query parameters for resources in area"""
-    
+
     latitude: float
     longitude: float
     radius: float
@@ -1021,7 +1022,7 @@ class ResourcesInAreaQuery(BaseOFSResponse):
 
 class ServiceRequest(BaseOFSResponse):
     """Service request information"""
-    
+
     requestId: Optional[str] = None
     requestType: Optional[str] = None
     customerId: Optional[str] = None
@@ -1038,13 +1039,13 @@ class ServiceRequest(BaseOFSResponse):
 
 class ServiceRequestListResponse(OFSResponseList[ServiceRequest]):
     """Response for service requests"""
-    
+
     pass
 
 
 class ServiceRequestProperty(BaseOFSResponse):
     """Service request property value"""
-    
+
     value: Optional[Any] = None
     model_config = ConfigDict(extra="allow")
 
@@ -1052,7 +1053,7 @@ class ServiceRequestProperty(BaseOFSResponse):
 # Additional Response Models for Full Model Compliance
 class RouteActivationResponse(BaseOFSResponse):
     """Response for route activation/deactivation operations"""
-    
+
     success: Optional[bool] = None
     message: Optional[str] = None
     routeId: Optional[int] = None
@@ -1063,7 +1064,7 @@ class RouteActivationResponse(BaseOFSResponse):
 
 class BulkSkillUpdateResponse(BaseOFSResponse):
     """Response for bulk work skill update operations"""
-    
+
     successCount: Optional[int] = None
     errorCount: Optional[int] = None
     processedResources: Optional[List[str]] = None
@@ -1073,7 +1074,7 @@ class BulkSkillUpdateResponse(BaseOFSResponse):
 
 class BulkZoneUpdateResponse(BaseOFSResponse):
     """Response for bulk work zone update operations"""
-    
+
     successCount: Optional[int] = None
     errorCount: Optional[int] = None
     processedResources: Optional[List[str]] = None
@@ -1083,7 +1084,7 @@ class BulkZoneUpdateResponse(BaseOFSResponse):
 
 class BulkInventoryUpdateResponse(BaseOFSResponse):
     """Response for bulk inventory update operations"""
-    
+
     successCount: Optional[int] = None
     errorCount: Optional[int] = None
     processedResources: Optional[List[str]] = None
@@ -1093,7 +1094,7 @@ class BulkInventoryUpdateResponse(BaseOFSResponse):
 
 class ResourceMatchResponse(BaseOFSResponse):
     """Response for resource matching operations"""
-    
+
     matchedResources: Optional[List[Dict[str, Any]]] = None
     totalMatches: Optional[int] = None
     searchCriteria: Optional[Dict[str, Any]] = None
@@ -1102,7 +1103,7 @@ class ResourceMatchResponse(BaseOFSResponse):
 
 class UrgentAssignmentResponse(BaseOFSResponse):
     """Response for urgent assignment resource finding"""
-    
+
     availableResources: Optional[List[Dict[str, Any]]] = None
     recommendedResource: Optional[Dict[str, Any]] = None
     urgencyLevel: Optional[str] = None
@@ -1112,7 +1113,7 @@ class UrgentAssignmentResponse(BaseOFSResponse):
 
 class SetPositionsResponse(BaseOFSResponse):
     """Response for setting resource positions"""
-    
+
     successCount: Optional[int] = None
     errorCount: Optional[int] = None
     processedPositions: Optional[List[Dict[str, Any]]] = None
@@ -1122,7 +1123,7 @@ class SetPositionsResponse(BaseOFSResponse):
 
 class ResourcesInAreaResponse(BaseOFSResponse):
     """Response for resources in area queries"""
-    
+
     resources: Optional[List[Dict[str, Any]]] = None
     totalFound: Optional[int] = None
     searchArea: Optional[Dict[str, Any]] = None

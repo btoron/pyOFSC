@@ -8,14 +8,21 @@ Usage:
     # These imports continue to work unchanged from v2
     from ofsc.models import Property, Workskill, Activity
     from ofsc.models import OFSConfig, OFSResponseList
-    
+
     # New submodule imports are also available
     from ofsc.models.metadata import PropertyResponse as Property
-    from ofsc.models.core import Activity  
+    from ofsc.models.core import Activity
     from ofsc.models.capacity import CapacityArea
 """
 
 # Base models and infrastructure
+# Authentication and configuration models
+from .auth import (
+    OFSApi,
+    OFSAPIError,
+    OFSConfig,
+    OFSOAuthRequest,
+)
 from .base import (
     BaseOFSResponse,
     CsvList,
@@ -26,50 +33,29 @@ from .base import (
     TranslationList,
 )
 
-# Authentication and configuration models
-from .auth import (
-    OFSApi,
-    OFSAPIError,
-    OFSConfig,
-    OFSOAuthRequest,
-)
-
-# Metadata API models
-from .metadata import (
-    ActivityType,
-    ActivityTypeColors,
-    ActivityTypeFeatures,
-    ActivityTypeGroup,
-    ActivityTypeGroupListResponse,
-    ActivityTypeListResponse,
-    ActivityTypeTimeSlots,
-    Application,
-    ApplicationListResponse,
-    ApplicationsResourcestoAllow,
-    Condition,
-    EnumerationValue,
-    EnumerationValueList,
-    InventoryType,
-    InventoryTypeListResponse,
-    Link,
-    Organization,
-    OrganizationListResponse,
-    PropertyRequest,
-    PropertyResponse,
-    PropertyListResponse,
-    ResourceType,
-    ResourceTypeListResponse,
-    TimeSlot,
-    TimeSlotListResponse,
-    WorkSkillGroup,
-    WorkSkillGroupListResponse,
-    Workskill,
-    WorkskillCondition,
-    WorkskillConditionListResponse,
-    WorkskillListResponse,
-    Workzone,
-    WorkzoneListResponse,
-    WorksSkillAssignments,
+# Capacity API models
+from .capacity import (
+    CapacityArea,
+    CapacityAreaConfiguration,
+    CapacityAreaListResponse,
+    CapacityAreaParent,
+    CapacityAreaResponseItem,
+    CapacityCategoryItem,
+    CapacityCategoryListResponse,
+    CapacityCategoryRequest,
+    CapacityCategoryResponse,
+    CapacityMetrics,
+    CapacityRequest,
+    CapacityResponseItem,
+    GetCapacityResponse,
+    GetQuotaRequest,
+    GetQuotaResponse,
+    Item,
+    ItemList,
+    QuotaAreaItem,
+    QuotaCategoryItem,
+    QuotaResponseItem,
+    QuotaTimeInterval,
 )
 
 # Core API models
@@ -103,13 +89,6 @@ from .core import (
     AssignedLocationsRequest,
     AssignedLocationsResponse,
     BaseUser,
-    BulkUpdateActivityItem,
-    BulkUpdateError,
-    BulkUpdateParameters,
-    BulkUpdateRequest,
-    BulkUpdateResult,
-    BulkUpdateResponse,
-    BulkUpdateWarning,
     BulkInventoryUpdateItem,
     BulkInventoryUpdateRequest,
     BulkInventoryUpdateResponse,
@@ -119,6 +98,13 @@ from .core import (
     BulkSkillUpdateItem,
     BulkSkillUpdateRequest,
     BulkSkillUpdateResponse,
+    BulkUpdateActivityItem,
+    BulkUpdateError,
+    BulkUpdateParameters,
+    BulkUpdateRequest,
+    BulkUpdateResponse,
+    BulkUpdateResult,
+    BulkUpdateWarning,
     BulkZoneUpdateItem,
     BulkZoneUpdateRequest,
     BulkZoneUpdateResponse,
@@ -138,7 +124,6 @@ from .core import (
     InventoryListResponse,
     LastKnownPosition,
     LastKnownPositionListResponse,
-    Link as CoreLink,
     Location,
     LocationListResponse,
     NearbyActivity,
@@ -171,7 +156,7 @@ from .core import (
     ResourceWorkZoneListResponse,
     RouteActivationRequest,
     RouteActivationResponse,
-    RouteInfo,
+    RouteInfoListResponse,
     ServiceRequest,
     ServiceRequestListResponse,
     ServiceRequestProperty,
@@ -186,30 +171,46 @@ from .core import (
     WeekDay,
     WorkScheduleRequest,
 )
+from .core import (
+    Link as CoreLink,
+)
 
-# Capacity API models  
-from .capacity import (
-    CapacityArea,
-    CapacityAreaConfiguration,
-    CapacityAreaListResponse,
-    CapacityAreaParent,
-    CapacityAreaResponseItem,
-    CapacityCategoryRequest,
-    CapacityCategoryResponse,
-    CapacityCategoryItem,
-    CapacityCategoryListResponse,
-    CapacityMetrics,
-    CapacityRequest,
-    CapacityResponseItem,
-    GetCapacityResponse,
-    GetQuotaRequest,
-    GetQuotaResponse,
-    Item,
-    ItemList,
-    QuotaAreaItem,
-    QuotaCategoryItem,
-    QuotaResponseItem,
-    QuotaTimeInterval,
+# Metadata API models
+from .metadata import (
+    ActivityType,
+    ActivityTypeColors,
+    ActivityTypeFeatures,
+    ActivityTypeGroup,
+    ActivityTypeGroupListResponse,
+    ActivityTypeListResponse,
+    ActivityTypeTimeSlots,
+    Application,
+    ApplicationListResponse,
+    ApplicationsResourcestoAllow,
+    Condition,
+    EnumerationValue,
+    EnumerationValueList,
+    InventoryType,
+    InventoryTypeListResponse,
+    Link,
+    Organization,
+    OrganizationListResponse,
+    PropertyListResponse,
+    PropertyRequest,
+    PropertyResponse,
+    ResourceType,
+    ResourceTypeListResponse,
+    TimeSlot,
+    TimeSlotListResponse,
+    Workskill,
+    WorkskillCondition,
+    WorkskillConditionListResponse,
+    WorkSkillGroup,
+    WorkSkillGroupListResponse,
+    WorkskillListResponse,
+    WorksSkillAssignments,
+    Workzone,
+    WorkzoneListResponse,
 )
 
 # Backward compatibility alias
@@ -220,22 +221,20 @@ __all__ = [
     # Base models
     "BaseOFSResponse",
     "CsvList",
-    "EntityEnum", 
+    "EntityEnum",
     "OFSResponseList",
     "SharingEnum",
     "Translation",
     "TranslationList",
-    
     # Auth models
     "OFSApi",
-    "OFSAPIError", 
+    "OFSAPIError",
     "OFSConfig",
     "OFSOAuthRequest",
-    
     # Metadata models
     "ActivityType",
     "ActivityTypeColors",
-    "ActivityTypeFeatures", 
+    "ActivityTypeFeatures",
     "ActivityTypeGroup",
     "ActivityTypeGroupListResponse",
     "ActivityTypeListResponse",
@@ -252,7 +251,7 @@ __all__ = [
     "Organization",
     "OrganizationListResponse",
     "Property",  # Backward compatibility alias for PropertyResponse
-    "PropertyRequest", 
+    "PropertyRequest",
     "PropertyResponse",
     "PropertyListResponse",
     "ResourceType",
@@ -268,7 +267,6 @@ __all__ = [
     "Workzone",
     "WorkzoneListResponse",
     "WorksSkillAssignments",
-    
     # Core models
     "Activity",
     "ActivityCapacityCategory",
@@ -367,7 +365,7 @@ __all__ = [
     "ResourceWorkZoneListResponse",
     "RouteActivationRequest",
     "RouteActivationResponse",
-    "RouteInfo",
+    "RouteInfoListResponse",
     "ServiceRequest",
     "ServiceRequestListResponse",
     "ServiceRequestProperty",
@@ -381,7 +379,6 @@ __all__ = [
     "UserListResponse",
     "WeekDay",
     "WorkScheduleRequest",
-    
     # Capacity models
     "CapacityArea",
     "CapacityAreaConfiguration",
@@ -391,7 +388,7 @@ __all__ = [
     "CapacityCategoryRequest",
     "CapacityCategoryResponse",
     "CapacityCategoryItem",
-    "CapacityCategoryListResponse", 
+    "CapacityCategoryListResponse",
     "CapacityMetrics",
     "CapacityRequest",
     "CapacityResponseItem",

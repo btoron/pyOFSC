@@ -210,7 +210,7 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 189 | `/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}` | DELETE | core | v3.0.0-dev | `async def delete_resource_property(self, resource_id: str, property_label: str) -> None` |
 | 190 | `/rest/ofscCore/v1/resources/{resourceId}/locations` | POST | core | v3.0.0-dev | `async def create_resource_location(self, resource_id: str, location_data: dict) -> LocationListResponse` |
 | 191 | `/rest/ofscCore/v1/resources/{resourceId}/locations` | GET | core | v3.0.0-dev | `async def get_resource_locations(self, resource_id: str, offset: int = 0, limit: int = 100) -> LocationListResponse` |
-| 192 | `/rest/ofscCore/v1/resources/{resourceId}/locations/{locationId}` | GET | core | v3.0.0-dev | `async def get_resource_location(self, resource_id: str, location_id: int) -> LocationListResponse` |
+| 192 | `/rest/ofscCore/v1/resources/{resourceId}/locations/{locationId}` | GET | core | v3.0.0-dev | `async def get_resource_location(self, resource_id: str, location_id: int) -> Location` |
 | 193 | `/rest/ofscCore/v1/resources/{resourceId}/locations/{locationId}` | PATCH | core | v3.0.0-dev | `async def update_resource_location(self, resource_id: str, location_id: int, location_data: dict) -> LocationListResponse` |
 | 194 | `/rest/ofscCore/v1/resources/{resourceId}/locations/{locationId}` | DELETE | core | v3.0.0-dev | `async def delete_resource_location(self, resource_id: str, location_id: int) -> None` |
 | 195 | `/rest/ofscCore/v1/resources/{resourceId}/positionHistory` | GET | core | v3.0.0-dev | `async def get_resource_position_history(self, resource_id: str, start_time: Optional[str] = None, end_time: Optional[str] = None) -> PositionHistory` |
@@ -221,7 +221,7 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 200 | `/rest/ofscCore/v1/resources/{resourceId}/plans` | POST | core | v3.0.0-dev | `async def create_resource_plan(self, resource_id: str, plan_data: dict) -> ResourcePlanListResponse` |
 | 201 | `/rest/ofscCore/v1/resources/{resourceId}/plans` | GET | core | v3.0.0-dev | `async def get_resource_plans(self, resource_id: str) -> ResourcePlanListResponse` |
 | 202 | `/rest/ofscCore/v1/resources/{resourceId}/plans` | DELETE | core | v3.0.0-dev | `async def delete_resource_plans(self, resource_id: str) -> None` |
-| 203 | `/rest/ofscCore/v1/resources/{resourceId}/routes/{date}` | GET | core | v3.0.0-dev | `async def get_resource_route(self, resource_id: str, date: str) -> RouteInfo` |
+| 203 | `/rest/ofscCore/v1/resources/{resourceId}/routes/{date}` | GET | core | v3.0.0-dev | `async def get_resource_route(self, resource_id: str, date: str) -> RouteInfoResponse` |
 | 204 | `/rest/ofscCore/v1/resources/{resourceId}/routes/{date}/custom-actions/activate` | POST | core | v3.0.0-dev | `async def activate_resource_route(self, resource_id: str, date: str, activation_data: Optional[dict] = None) -> RouteActivationResponse` |
 | 205 | `/rest/ofscCore/v1/resources/{resourceId}/routes/{date}/custom-actions/deactivate` | POST | core | v3.0.0-dev | `async def deactivate_resource_route(self, resource_id: str, date: str, deactivation_data: Optional[dict] = None) -> RouteActivationResponse` |
 | 206 | `/rest/ofscCore/v1/resources/{resourceId}/findNearbyActivities` | GET | core | v3.0.0-dev | `async def find_nearby_activities(self, resource_id: str, latitude: Optional[float] = None, longitude: Optional[float] = None, radius: Optional[float] = None) -> NearbyActivityListResponse` |

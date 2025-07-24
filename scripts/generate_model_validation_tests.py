@@ -72,13 +72,11 @@ class ModelValidationTestGenerator:
         "CapacityAreaCategoryListResponse": "ofsc.models.metadata.CapacityAreaCategoryListResponse",
         "Form": "ofsc.models.metadata.Form",
         "FormListResponse": "ofsc.models.metadata.FormListResponse",
-        "Property": "ofsc.models.metadata.Property",
         "PropertyListResponse": "ofsc.models.metadata.PropertyListResponse",
         "ResourceType": "ofsc.models.metadata.ResourceType",
         "ResourceTypeListResponse": "ofsc.models.metadata.ResourceTypeListResponse",
         
         # Capacity models
-        "CapacityCategory": "ofsc.models.capacity.CapacityCategory",
         "CapacityInterval": "ofsc.models.capacity.CapacityInterval",
         "CapacityResponse": "ofsc.models.capacity.CapacityResponse",
         "BookingStatus": "ofsc.models.capacity.BookingStatus",
@@ -116,13 +114,45 @@ class ModelValidationTestGenerator:
         
         return import_map
     
+    def _is_error_response(self, response_file: Path) -> bool:
+        """Check if a response file contains an error response (status_code >= 400)."""
+        try:
+            with open(response_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            # Check metadata for status_code
+            if isinstance(data, dict) and "_metadata" in data:
+                metadata = data["_metadata"]
+                if isinstance(metadata, dict) and "status_code" in metadata:
+                    status_code = metadata["status_code"]
+                    return isinstance(status_code, int) and status_code >= 400
+            
+            # Check for common error response fields
+            if isinstance(data, dict):
+                error_indicators = ["type", "title", "status", "detail"]
+                has_error_fields = sum(1 for field in error_indicators if field in data) >= 3
+                if has_error_fields and "status" in data:
+                    try:
+                        status = int(str(data["status"]))
+                        return status >= 400
+                    except (ValueError, TypeError):
+                        pass
+            
+            return False
+        except (json.JSONDecodeError, IOError):
+            return False
+    
     def _discover_models_from_files(self) -> Dict[str, str]:
-        """Discover Pydantic models by scanning actual model files."""
+        """Discover Pydantic models by scanning actual model files with recursive inheritance detection."""
         import_map = {}
         
-        # Scan each module
-        modules = ['core', 'metadata', 'capacity']
+        # Scan each module including base.py
+        modules = ['base', 'core', 'metadata', 'capacity']
         project_root = Path(__file__).parent.parent
+        
+        # First pass: collect all class definitions and their inheritance
+        all_classes = {}  # class_name -> (module, node, content)
+        inheritance_map = {}  # class_name -> set of base class names
         
         for module in modules:
             module_path = project_root / 'ofsc' / 'models' / f'{module}.py'
@@ -140,18 +170,75 @@ class ModelValidationTestGenerator:
                 for node in ast.walk(tree):
                     if isinstance(node, ast.ClassDef):
                         class_name = node.name
+                        all_classes[class_name] = (module, node, content)
                         
-                        # Check if it's likely a Pydantic model
-                        if self._is_pydantic_model_class(node, content):
-                            import_map[class_name] = f"ofsc.models.{module}.{class_name}"
-                
-                print(f"📁 {module}: Found {len([k for k in import_map.keys() if import_map[k].endswith(f'.{module}.{k}')])} models")
+                        # Extract base classes for inheritance analysis
+                        base_classes = set()
+                        for base in node.bases:
+                            base_name = self._extract_base_class_name(base)
+                            if base_name:
+                                base_classes.add(base_name)
+                        inheritance_map[class_name] = base_classes
                 
             except Exception as e:
                 print(f"⚠️  Error scanning {module_path}: {e}")
                 continue
         
+        # Second pass: identify Pydantic models using recursive inheritance
+        pydantic_models = set()
+        
+        # Start with known Pydantic base classes
+        known_pydantic_bases = {
+            'BaseModel', 'BaseOFSResponse', 'OFSResponseList', 'RootModel',
+            'BaseOFSCModel'  # In case there are custom base classes
+        }
+        
+        # Add classes that directly inherit from known Pydantic bases
+        for class_name, base_classes in inheritance_map.items():
+            if base_classes & known_pydantic_bases:
+                pydantic_models.add(class_name)
+        
+        # Recursively find classes that inherit from Pydantic models
+        changed = True
+        while changed:
+            changed = False
+            for class_name, base_classes in inheritance_map.items():
+                if class_name not in pydantic_models and base_classes & pydantic_models:
+                    pydantic_models.add(class_name)
+                    changed = True
+        
+        # Third pass: also check for Pydantic indicators in class body
+        for class_name, (module, node, content) in all_classes.items():
+            if class_name not in pydantic_models:
+                if self._is_pydantic_model_class(node, content):
+                    pydantic_models.add(class_name)
+        
+        # Build import map for discovered Pydantic models
+        module_counts = {}
+        for class_name in pydantic_models:
+            if class_name in all_classes:
+                module, _, _ = all_classes[class_name]
+                import_map[class_name] = f"ofsc.models.{module}.{class_name}"
+                module_counts[module] = module_counts.get(module, 0) + 1
+        
+        # Print discovery results
+        for module in modules:
+            count = module_counts.get(module, 0)
+            print(f"📁 {module}: Found {count} models")
+        
         return import_map
+    
+    def _extract_base_class_name(self, base_node: ast.expr) -> Optional[str]:
+        """Extract base class name from AST node."""
+        if isinstance(base_node, ast.Name):
+            return base_node.id
+        elif isinstance(base_node, ast.Attribute):
+            # Handle cases like pydantic.BaseModel
+            return base_node.attr
+        elif isinstance(base_node, ast.Subscript):
+            # Handle generic types like Generic[T], OFSResponseList[Property]
+            return self._extract_base_class_name(base_node.value)
+        return None
     
     def _is_pydantic_model_class(self, node: ast.ClassDef, file_content: str) -> bool:
         """Determine if a class is likely a Pydantic model."""
@@ -199,6 +286,10 @@ class ModelValidationTestGenerator:
         
         # Iterate through saved responses
         for response_file in self.response_dir.glob("*.json"):
+            # Skip error responses (status_code >= 400)
+            if self._is_error_response(response_file):
+                continue
+                
             # Extract endpoint ID from filename
             match = re.match(r'^(\d+)_', response_file.name)
             if not match:
@@ -271,8 +362,22 @@ against real API response examples.
 Generated on: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
 """'''
     
+    def _get_item_model_name(self, list_model_name: str) -> Optional[str]:
+        """Extract individual item model name from list response model name."""
+        if list_model_name.endswith('ListResponse'):
+            return list_model_name.replace('ListResponse', '')
+        elif list_model_name.endswith('List'):
+            return list_model_name.replace('List', '')
+        return None
+    
+    def _is_list_response_model(self, model_name: str) -> bool:
+        """Check if a model name represents a list/collection response."""
+        return (model_name.endswith('ListResponse') or 
+                model_name.endswith('List') or
+                'List' in model_name)
+
     def _generate_imports_for_models(self, model_names: List[str]) -> str:
-        """Generate import statements for model names."""
+        """Generate import statements for model names, including item models for lists."""
         imports = [
             "import json",
             "from pathlib import Path",
@@ -282,9 +387,20 @@ Generated on: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
             "# Import the actual models"
         ]
         
+        # Add individual item models for list responses
+        additional_models = set()
+        for model_name in model_names:
+            if self._is_list_response_model(model_name):
+                item_model = self._get_item_model_name(model_name)
+                if item_model and item_model in self.model_import_map:
+                    additional_models.add(item_model)
+        
+        # Include additional models in the final list
+        all_models = set(model_names) | additional_models
+        
         # Group imports by module
         imports_by_module = defaultdict(set)
-        for model_name in model_names:
+        for model_name in all_models:
             if model_name in self.model_import_map:
                 import_path = self.model_import_map[model_name]
                 parts = import_path.split('.')
@@ -344,6 +460,14 @@ Generated on: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
         # Generate file list
         file_list = '\n'.join([f'            "{f.name}",' for f in sorted(response_files)[:5]])  # Limit to 5 examples
         
+        # Check if this is a list model and get item model
+        is_list_model = self._is_list_response_model(model_name)
+        item_model_name = None
+        if is_list_model:
+            item_model_name = self._get_item_model_name(model_name)
+            if item_model_name and item_model_name not in self.model_import_map:
+                item_model_name = None  # Item model not available
+        
         return f"""
     def {test_method_name}(self, response_examples_path):
         \"\"\"Validate {model_name} model against saved response examples.
@@ -369,7 +493,7 @@ Generated on: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
             
             # Handle list responses
             if "items" in data and isinstance(data["items"], list):
-                if "ListResponse" in "{model_name}":
+                if {str(is_list_model)}:
                     # Validate the entire list response
                     try:
                         model_instance = {model_name}(**data)
@@ -377,8 +501,16 @@ Generated on: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
                         print(f"✅ Validated {{filename}} as list response")
                     except ValidationError as e:
                         pytest.fail(f"{model_name} validation failed for {{filename}}: {{e}}")
+                    
+                    # Also validate individual items using the item model{f'''
+                    for idx, item in enumerate(data["items"][:3]):
+                        try:
+                            model_instance = {item_model_name}(**item)
+                            print(f"✅ Validated {{filename}} item {{idx}} with {item_model_name}")
+                        except ValidationError as e:
+                            pytest.fail(f"{item_model_name} validation failed for {{filename}} item {{idx}}: {{e}}")''' if item_model_name else ''}
                 else:
-                    # Validate individual items (for single model types)
+                    # For non-list models, validate individual items using the same model
                     for idx, item in enumerate(data["items"][:3]):
                         try:
                             model_instance = {model_name}(**item)
@@ -506,11 +638,23 @@ Generated on: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
         coverage_table.add_row(
             "💾 Saved Response Files",
             str(stats['total_responses']),
-            str(stats['get_responses']),
-            f"{(stats['get_responses']/stats['total_responses']*100):.1f}%"
+            str(stats['get_responses'] + stats['get_error_responses']),
+            f"{((stats['get_responses'] + stats['get_error_responses'])/stats['total_responses']*100):.1f}%"
         )
         coverage_table.add_row(
-            "✅ Response Files with Tests",
+            "❌ Error Responses (>=400)",
+            str(stats['error_responses']),
+            str(stats['get_error_responses']),
+            f"{(stats['get_error_responses']/(stats['get_responses'] + stats['get_error_responses'])*100 if (stats['get_responses'] + stats['get_error_responses']) > 0 else 0):.1f}%"
+        )
+        coverage_table.add_row(
+            "✅ Success Response Files",
+            str(stats['total_responses'] - stats['error_responses']),
+            str(stats['get_responses']),
+            f"{(stats['get_responses']/(stats['get_responses'] + stats['get_error_responses'])*100 if (stats['get_responses'] + stats['get_error_responses']) > 0 else 0):.1f}%"
+        )
+        coverage_table.add_row(
+            "🧪 Response Files with Tests",
             str(stats['responses_with_tests']),
             str(stats['get_responses_with_tests']),
             f"{(stats['get_responses_with_tests']/stats['get_responses']*100 if stats['get_responses'] > 0 else 0):.1f}%"
@@ -532,6 +676,7 @@ Generated on: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
         module_table.add_column("Endpoints", justify="right")
         module_table.add_column("GET Endpoints", justify="right", style="green")
         module_table.add_column("Responses", justify="right")
+        module_table.add_column("Error Responses", justify="right", style="red")
         module_table.add_column("GET Responses", justify="right", style="green")
         module_table.add_column("Tests", justify="right", style="yellow")
         module_table.add_column("GET Tests", justify="right", style="bright_green")
@@ -544,6 +689,7 @@ Generated on: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
                 str(module_stats['endpoints']),
                 str(module_stats['get_endpoints']),
                 str(module_stats['responses']),
+                str(module_stats['error_responses']),
                 str(module_stats['get_responses']),
                 str(module_stats['tests']),
                 str(module_stats['get_tests']),
@@ -600,6 +746,8 @@ Generated on: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
             'get_responses': 0,
             'responses_with_tests': 0,
             'get_responses_with_tests': 0,
+            'error_responses': 0,
+            'get_error_responses': 0,
             'covered_endpoints': set(),
             'by_module': {},
             'test_generation': {}
@@ -626,7 +774,15 @@ Generated on: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
             if endpoint:
                 stats['covered_endpoints'].add(endpoint_id)
                 
-                # Count GET responses
+                # Check if this is an error response
+                is_error_response = self._is_error_response(response_file)
+                if is_error_response:
+                    stats['error_responses'] += 1
+                    if endpoint.method == 'GET':
+                        stats['get_error_responses'] += 1
+                    continue  # Skip error responses for test generation
+                
+                # Count GET responses (only successful ones)
                 if endpoint.method == 'GET':
                     get_response_files.append(response_file)
                 
@@ -642,14 +798,26 @@ Generated on: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
         stats['responses_with_tests'] = len(responses_with_tests)
         stats['get_responses_with_tests'] = len(get_responses_with_tests)
         
-        # Calculate by-module statistics
+        # Calculate by-module statistics (group by high-level modules)
         for endpoint in self.endpoints:
-            module = endpoint.tags[0] if endpoint.tags else 'unknown'
+            detailed_module = endpoint.tags[0] if endpoint.tags else 'unknown'
+            
+            # Map detailed module tags to high-level modules
+            if detailed_module.startswith('Core/') or detailed_module == 'Core':
+                module = 'core'
+            elif detailed_module.startswith('Metadata/') or detailed_module == 'Metadata':
+                module = 'metadata'
+            elif detailed_module.startswith('Capacity/') or detailed_module == 'Capacity':
+                module = 'capacity'
+            else:
+                module = 'other'
+            
             if module not in stats['by_module']:
                 stats['by_module'][module] = {
                     'endpoints': 0,
                     'get_endpoints': 0,
                     'responses': 0,
+                    'error_responses': 0,
                     'get_responses': 0,
                     'tests': 0,
                     'get_tests': 0
@@ -662,17 +830,25 @@ Generated on: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
             # Check if endpoint has response
             endpoint_responses = [f for f in response_files if f.name.startswith(f"{endpoint.id}_")]
             if endpoint_responses:
+                # Count all responses
                 stats['by_module'][module]['responses'] += len(endpoint_responses)
-                if endpoint.method == 'GET':
-                    stats['by_module'][module]['get_responses'] += len(endpoint_responses)
                 
-                # Check if has test
-                if endpoint.id in self.endpoint_to_model_map:
+                # Separate error responses from success responses
+                error_count = sum(1 for f in endpoint_responses if self._is_error_response(f))
+                success_count = len(endpoint_responses) - error_count
+                
+                stats['by_module'][module]['error_responses'] += error_count
+                
+                if endpoint.method == 'GET':
+                    stats['by_module'][module]['get_responses'] += success_count
+                
+                # Check if has test (only for success responses)
+                if success_count > 0 and endpoint.id in self.endpoint_to_model_map:
                     model_name = self.endpoint_to_model_map[endpoint.id]
                     if model_name in self.model_import_map:
-                        stats['by_module'][module]['tests'] += len(endpoint_responses)
+                        stats['by_module'][module]['tests'] += success_count
                         if endpoint.method == 'GET':
-                            stats['by_module'][module]['get_tests'] += len(endpoint_responses)
+                            stats['by_module'][module]['get_tests'] += success_count
         
         # Calculate test generation statistics
         for module in ['core', 'metadata', 'capacity']:
@@ -747,7 +923,16 @@ Generated on: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
         response_files = list(self.response_dir.glob("*.json"))
         analysis['total_files'] = len(response_files)
         
+        # Track error responses separately
+        error_response_files = []
+        
         for response_file in response_files:
+            # Check if this is an error response first
+            is_error = self._is_error_response(response_file)
+            if is_error:
+                error_response_files.append(response_file.name)
+                continue  # Skip error responses from pipeline analysis
+            
             file_analysis = {
                 'filename': response_file.name,
                 'endpoint_id': None,
@@ -833,6 +1018,8 @@ Generated on: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
         # Calculate summary statistics
         analysis['summary_stats'] = {
             'total_files': len(response_files),
+            'error_responses': len(error_response_files),
+            'success_responses': len(response_files) - len(error_response_files),
             'valid_pattern': len(analysis['step_results']['valid_pattern']['passed']),
             'endpoint_found': len(analysis['step_results']['endpoint_found']['passed']),
             'has_signature': len(analysis['step_results']['has_signature']['passed']),
@@ -840,6 +1027,9 @@ Generated on: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
             'model_mapped': len(analysis['step_results']['model_mapped']['passed']),
             'final_tests': len(analysis['step_results']['model_mapped']['passed'])
         }
+        
+        # Add error response list to analysis
+        analysis['error_response_files'] = error_response_files
         
         return analysis
     
@@ -857,9 +1047,11 @@ Generated on: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
 
 📊 **Pipeline Performance:**
 - **Total Response Files:** {stats['total_files']}
+- **Error Responses (>=400):** {stats['error_responses']} ({(stats['error_responses']/stats['total_files']*100):.1f}%)
+- **Success Response Files:** {stats['success_responses']}
 - **Files with Generated Tests:** {stats['final_tests']}
-- **Test Coverage:** {(stats['final_tests']/stats['total_files']*100):.1f}%
-- **Files Lost in Pipeline:** {stats['total_files'] - stats['final_tests']}
+- **Test Coverage (of Success Files):** {(stats['final_tests']/stats['success_responses']*100 if stats['success_responses'] > 0 else 0):.1f}%
+- **Files Lost in Pipeline:** {stats['success_responses'] - stats['final_tests']}
 
 🚨 **Primary Bottlenecks:**
 1. **Unmapped Models:** {len(analysis['failure_categories']['unmapped_model'])} files ({(len(analysis['failure_categories']['unmapped_model'])/stats['total_files']*100):.1f}%)
@@ -869,17 +1061,18 @@ Generated on: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
 ## Pipeline Flow Analysis
 
 ```
-Response Files → Valid Pattern → Endpoint Found → Has Signature → Model Extracted → Model Mapped → Tests Generated
-     {stats['total_files']}       →      {stats['valid_pattern']}      →      {stats['endpoint_found']}       →      {stats['has_signature']}      →       {stats['model_extracted']}       →      {stats['model_mapped']}      →       {stats['final_tests']}
+Response Files → Error Filter → Valid Pattern → Endpoint Found → Has Signature → Model Extracted → Model Mapped → Tests Generated
+     {stats['total_files']}       →   {stats['success_responses']}   →      {stats['valid_pattern']}      →      {stats['endpoint_found']}       →      {stats['has_signature']}      →       {stats['model_extracted']}       →      {stats['model_mapped']}      →       {stats['final_tests']}
                   ↓              ↓              ↓             ↓               ↓              ↓
-    Lost: {stats['total_files'] - stats['valid_pattern']}        Lost: {stats['valid_pattern'] - stats['endpoint_found']}       Lost: {stats['endpoint_found'] - stats['has_signature']}        Lost: {stats['has_signature'] - stats['model_extracted']}        Lost: {stats['model_extracted'] - stats['model_mapped']}        → SUCCESS
+    Error Responses: {stats['error_responses']}       Lost: {stats['success_responses'] - stats['valid_pattern']}        Lost: {stats['valid_pattern'] - stats['endpoint_found']}       Lost: {stats['endpoint_found'] - stats['has_signature']}        Lost: {stats['has_signature'] - stats['model_extracted']}        Lost: {stats['model_extracted'] - stats['model_mapped']}        → SUCCESS
 ```
 
 ### Step-by-Step Breakdown
 
 | Pipeline Step | Passed | Failed | Success Rate |
 |---------------|--------|--------|-------------|
-| 1. Valid Filename Pattern | {stats['valid_pattern']} | {stats['total_files'] - stats['valid_pattern']} | {(stats['valid_pattern']/stats['total_files']*100):.1f}% |
+| 0. Success Response Filter | {stats['success_responses']} | {stats['error_responses']} | {(stats['success_responses']/stats['total_files']*100):.1f}% |
+| 1. Valid Filename Pattern | {stats['valid_pattern']} | {stats['success_responses'] - stats['valid_pattern']} | {(stats['valid_pattern']/stats['success_responses']*100 if stats['success_responses'] > 0 else 0):.1f}% |
 | 2. Endpoint Found in Registry | {stats['endpoint_found']} | {stats['valid_pattern'] - stats['endpoint_found']} | {(stats['endpoint_found']/stats['valid_pattern']*100 if stats['valid_pattern'] > 0 else 0):.1f}% |
 | 3. Has Signature/Schema | {stats['has_signature']} | {stats['endpoint_found'] - stats['has_signature']} | {(stats['has_signature']/stats['endpoint_found']*100 if stats['endpoint_found'] > 0 else 0):.1f}% |
 | 4. Model Name Extracted | {stats['model_extracted']} | {stats['has_signature'] - stats['model_extracted']} | {(stats['model_extracted']/stats['has_signature']*100 if stats['has_signature'] > 0 else 0):.1f}% |
@@ -1003,7 +1196,22 @@ Update endpoint registry to include these endpoint IDs:
 | 🟡 MEDIUM | Add missing signatures | +{len(analysis['failure_categories']['no_signature'])} tests | Medium | Endpoint registry |
 | 🔵 LOW | Add missing endpoints | +{len(analysis['failure_categories']['missing_endpoint'])} tests | High | Swagger/Registry |
 
-**Potential Maximum Coverage:** {stats['final_tests'] + len(analysis['failure_categories']['unmapped_model']) + len(analysis['failure_categories']['no_signature'])}/{stats['total_files']} ({((stats['final_tests'] + len(analysis['failure_categories']['unmapped_model']) + len(analysis['failure_categories']['no_signature']))/stats['total_files']*100):.1f}%)
+**Potential Maximum Coverage:** {stats['final_tests'] + len(analysis['failure_categories']['unmapped_model']) + len(analysis['failure_categories']['no_signature'])}/{stats['success_responses']} ({((stats['final_tests'] + len(analysis['failure_categories']['unmapped_model']) + len(analysis['failure_categories']['no_signature']))/stats['success_responses']*100 if stats['success_responses'] > 0 else 0):.1f}%)
+
+## Error Response Files (Excluded from Test Generation)
+
+**Error Responses ({stats['error_responses']} files):**
+
+These files contain HTTP error responses (status_code >= 400) and are automatically excluded from test generation as they don't represent valid data models.
+
+"""
+        
+        for error_file in analysis['error_response_files'][:10]:
+            content += f"- `{error_file}` → Status >= 400 → ❌ Skipped (Error Response)\n"
+        if len(analysis['error_response_files']) > 10:
+            content += f"- ... and {len(analysis['error_response_files']) - 10} more error responses\n"
+
+        content += f"""
 
 ## Files Successfully Generating Tests
 

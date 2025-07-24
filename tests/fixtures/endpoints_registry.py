@@ -6657,7 +6657,7 @@ ENDPOINTS: List[EndpointInfo] = [
         request_body_schema=None,
         response_schema='route',
         implemented_in='core_api.py:OFSCoreAPI.get_resource_route()',
-        signature='async def get_resource_route(self, resource_id: str, date: str) -> RouteInfo',
+        signature='async def get_resource_route(self, resource_id: str, date: str) -> RouteInfoListResponse',
         rate_limits=None,
     ),
     EndpointInfo(
