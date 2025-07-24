@@ -5,9 +5,13 @@ Script to extract endpoint information from swagger.json and create the endpoint
 
 import json
 import re
+import ast
+import inspect
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, asdict
 from pathlib import Path
+import importlib.util
+import sys
 
 
 @dataclass
@@ -81,6 +85,187 @@ def get_module_from_path(path: str) -> str:
         return "unknown"
 
 
+def scan_client_api_methods() -> Dict[str, Dict[str, Any]]:
+    """Scan ofsc.client.*_api modules to find implemented methods and map them to endpoints."""
+    
+    # First, add the project root to Python path for imports
+    project_root = Path(__file__).parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+    
+    method_mapping = {}
+    client_dir = project_root / "ofsc" / "client"
+    
+    if not client_dir.exists():
+        print("Warning: ofsc/client directory not found, skipping method detection")
+        return method_mapping
+    
+    # Find all *_api.py files
+    api_files = list(client_dir.glob("*_api.py"))
+    print(f"Scanning {len(api_files)} client API files for method implementations...")
+    
+    for api_file in api_files:
+        try:
+            # Extract module name from filename (e.g., core_api.py -> core)
+            module_name = api_file.stem.replace("_api", "")
+            
+            # Read and parse the file to extract method information
+            with open(api_file, 'r') as f:
+                file_content = f.read()
+            
+            # Parse the AST to find async method definitions
+            try:
+                tree = ast.parse(file_content)
+                methods = extract_methods_from_ast(tree, api_file.name, module_name)
+                method_mapping.update(methods)
+            except SyntaxError as e:
+                print(f"Warning: Could not parse {api_file}: {e}")
+                continue
+                
+        except Exception as e:
+            print(f"Warning: Error processing {api_file}: {e}")
+            continue
+    
+    print(f"Found {len(method_mapping)} implemented methods across all API modules")
+    return method_mapping
+
+
+def extract_methods_from_ast(tree: ast.AST, filename: str, module_name: str) -> Dict[str, Dict[str, Any]]:
+    """Extract method information from an AST tree."""
+    methods = {}
+    
+    for node in ast.walk(tree):
+        if isinstance(node, ast.AsyncFunctionDef):
+            # Skip private methods and special methods
+            if node.name.startswith('_'):
+                continue
+            
+            # Extract method information
+            method_info = {
+                'method_name': node.name,
+                'module': module_name,
+                'filename': filename,
+                'class_name': None,
+                'endpoints': [],
+                'docstring': ast.get_docstring(node),
+                'line_number': node.lineno
+            }
+            
+            # Find the class this method belongs to
+            for parent in ast.walk(tree):
+                if isinstance(parent, ast.ClassDef):
+                    for child in ast.walk(parent):
+                        if child is node:
+                            method_info['class_name'] = parent.name
+                            break
+            
+            # Extract endpoint URLs from the method body
+            endpoints = extract_endpoints_from_method(node)
+            method_info['endpoints'] = endpoints
+            
+            # Create a key that includes both method name and endpoints
+            for endpoint in endpoints:
+                method_key = f"{method_info['class_name']}.{node.name}" if method_info['class_name'] else node.name
+                methods[endpoint] = method_info.copy()
+                methods[endpoint]['endpoint_url'] = endpoint
+    
+    return methods
+
+
+def extract_endpoints_from_method(method_node: ast.AsyncFunctionDef) -> List[str]:
+    """Extract endpoint URLs from method body by looking for string assignments."""
+    endpoints = []
+    
+    for node in ast.walk(method_node):
+        if isinstance(node, ast.Assign):
+            # Look for assignments like: endpoint = "/rest/ofscCore/v1/users"
+            for target in node.targets:
+                if (isinstance(target, ast.Name) and target.id == 'endpoint'):
+                    # Handle both ast.Str (older Python) and ast.Constant (Python 3.8+)
+                    if hasattr(node.value, 's'):  # ast.Str
+                        endpoints.append(node.value.s)
+                    elif (isinstance(node.value, ast.Constant) and 
+                          isinstance(node.value.value, str)):
+                        endpoints.append(node.value.value)
+    
+    return endpoints
+
+
+def find_method_for_endpoint(method_mapping: Dict[str, Dict[str, Any]], 
+                           endpoint_method: str, endpoint_path: str) -> Optional[str]:
+    """Find the implementation method for a given endpoint."""
+    
+    # Normalize the endpoint path for comparison
+    normalized_path = endpoint_path
+    
+    # Try exact match first
+    if normalized_path in method_mapping:
+        method_info = method_mapping[normalized_path]
+        class_name = method_info['class_name']
+        method_name = method_info['method_name']
+        filename = method_info['filename']
+        
+        return f"{filename}:{class_name}.{method_name}()"
+    
+    # Try partial matches (for parameterized endpoints)
+    for endpoint_url, method_info in method_mapping.items():
+        # Replace path parameters with wildcards for matching
+        pattern_path = re.sub(r'\{[^}]+\}', r'[^/]+', re.escape(endpoint_url))
+        if re.match(f"^{pattern_path}$", normalized_path):
+            class_name = method_info['class_name']
+            method_name = method_info['method_name']
+            filename = method_info['filename']
+            
+            return f"{filename}:{class_name}.{method_name}()"
+    
+    return None
+
+
+def generate_method_signature(method_mapping: Dict[str, Dict[str, Any]], 
+                            endpoint_method: str, endpoint_path: str) -> str:
+    """Generate a method signature for the endpoint if implemented."""
+    
+    # Find the method implementation
+    normalized_path = endpoint_path
+    method_info = None
+    
+    # Try exact match first
+    if normalized_path in method_mapping:
+        method_info = method_mapping[normalized_path]
+    else:
+        # Try partial matches
+        for endpoint_url, info in method_mapping.items():
+            pattern_path = re.sub(r'\{[^}]+\}', r'[^/]+', re.escape(endpoint_url))
+            if re.match(f"^{pattern_path}$", normalized_path):
+                method_info = info
+                break
+    
+    if not method_info:
+        return ""
+    
+    # Create a simple signature based on the method name
+    method_name = method_info['method_name']
+    
+    # Extract parameter names from path
+    path_params = re.findall(r'\{([^}]+)\}', endpoint_path)
+    
+    # Basic signature generation
+    params = []
+    if path_params:
+        params.extend([f"{param}: str" for param in path_params])
+    
+    # Add common parameters based on method type
+    if endpoint_method.upper() == 'GET':
+        if 'offset' not in str(path_params) and 'get_' in method_name and any(word in method_name for word in ['list', 's', 'activities', 'users', 'resources']):
+            params.extend(["offset: int = 0", "limit: int = 100"])
+    elif endpoint_method.upper() in ['POST', 'PUT', 'PATCH']:
+        if 'data' not in str(path_params):
+            params.append("data: dict")
+    
+    signature = f"async def {method_name}({', '.join(['self'] + params)}) -> ResponseModel"
+    return signature
+
+
 def load_endpoints_mapping() -> Dict[str, int]:
     """Load endpoint mapping from ENDPOINTS.md."""
     endpoints_file = Path("docs/ENDPOINTS.md")
@@ -117,6 +302,10 @@ def extract_endpoints_from_swagger(swagger_file: str) -> List[EndpointInfo]:
     endpoints = []
     paths = swagger.get("paths", {})
     endpoint_mapping = load_endpoints_mapping()
+    
+    # Scan client API methods to find implementations
+    print("Scanning client API methods for implementation mapping...")
+    method_mapping = scan_client_api_methods()
     
     endpoint_id = 1
     
@@ -156,6 +345,10 @@ def extract_endpoints_from_swagger(swagger_file: str) -> List[EndpointInfo]:
                 schema_ref = responses["200"].get("schema", {}).get("$ref", "")
                 response_schema = schema_ref.replace("#/definitions/", "") if schema_ref else ""
             
+            # Find method implementation
+            implemented_in = find_method_for_endpoint(method_mapping, method, path)
+            signature = generate_method_signature(method_mapping, method, path)
+            
             endpoint = EndpointInfo(
                 id=mapped_id,
                 path=path,
@@ -169,6 +362,8 @@ def extract_endpoints_from_swagger(swagger_file: str) -> List[EndpointInfo]:
                 optional_parameters=optional_params,
                 request_body_schema=request_body_schema,
                 response_schema=response_schema,
+                implemented_in=implemented_in or "",
+                signature=signature,
                 rate_limits=None  # No rate limits found in swagger
             )
             
@@ -388,11 +583,20 @@ def main():
     
     # Statistics
     by_module = {}
+    implemented_count = 0
     for endpoint in endpoints:
         by_module[endpoint.module] = by_module.get(endpoint.module, 0) + 1
+        if endpoint.implemented_in:
+            implemented_count += 1
     
     for module, count in sorted(by_module.items()):
-        print(f"  {module}: {count} endpoints")
+        module_implemented = sum(1 for ep in endpoints if ep.module == module and ep.implemented_in)
+        print(f"  {module}: {count} endpoints ({module_implemented} implemented, {module_implemented/count*100:.1f}%)")
+    
+    print(f"\nImplementation Summary:")
+    print(f"  Total endpoints: {len(endpoints)}")
+    print(f"  Implemented endpoints: {implemented_count}")
+    print(f"  Implementation coverage: {implemented_count/len(endpoints)*100:.1f}%")
 
 
 if __name__ == "__main__":

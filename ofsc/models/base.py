@@ -8,7 +8,7 @@ This module contains the core model infrastructure used by all other model modul
 """
 
 from enum import Enum
-from typing import TYPE_CHECKING, Dict, Generic, List, Optional, TypeVar
+from typing import TYPE_CHECKING, Dict, Generic, List, Optional, Type, TypeVar
 
 from pydantic import (
     BaseModel,
@@ -24,6 +24,7 @@ if TYPE_CHECKING:
     import httpx
 
 T = TypeVar("T")
+TBaseOFSResponse = TypeVar("TBaseOFSResponse", bound="BaseOFSResponse")
 
 
 class CsvList(BaseModel):
@@ -96,7 +97,7 @@ class BaseOFSResponse(BaseModel):
         return self._raw_response
 
     @classmethod
-    def from_response(cls, response: "httpx.Response", **kwargs) -> "BaseOFSResponse":
+    def from_response(cls: Type[TBaseOFSResponse], response: "httpx.Response", **kwargs) -> TBaseOFSResponse:
         """Create model instance from httpx response.
 
         Args:
