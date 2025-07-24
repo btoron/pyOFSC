@@ -13,6 +13,7 @@ Usage:
 """
 
 import argparse
+import ast
 import json
 import re
 from datetime import datetime, timezone
@@ -90,9 +91,93 @@ class ModelValidationTestGenerator:
         self.endpoints = ENDPOINTS
         self.models = list(MODELS.values())  # Convert dict to list
         self.response_dir = Path(__file__).parent.parent / "response_examples"
+        
+        # Build comprehensive model import map using hybrid approach
+        self.model_import_map = self._build_comprehensive_import_map()
+        
         self.endpoint_to_model_map = self._build_endpoint_model_mapping()
         self.model_to_responses_map = self._build_model_response_mapping()
         self.model_name_to_info_map = {m.name: m for m in self.models}
+    
+    def _build_comprehensive_import_map(self) -> Dict[str, str]:
+        """Build comprehensive model import map using hybrid approach."""
+        import_map = {}
+        
+        # 1. Dynamic discovery by scanning model files
+        discovered_models = self._discover_models_from_files()
+        import_map.update(discovered_models)
+        
+        # 2. Fallback to static map for any missing models
+        for model_name, import_path in self.MODEL_IMPORT_MAP.items():
+            if model_name not in import_map:
+                import_map[model_name] = import_path
+        
+        print(f"📊 Model Import Map: {len(discovered_models)} discovered + {len(self.MODEL_IMPORT_MAP)} static = {len(import_map)} total models")
+        
+        return import_map
+    
+    def _discover_models_from_files(self) -> Dict[str, str]:
+        """Discover Pydantic models by scanning actual model files."""
+        import_map = {}
+        
+        # Scan each module
+        modules = ['core', 'metadata', 'capacity']
+        project_root = Path(__file__).parent.parent
+        
+        for module in modules:
+            module_path = project_root / 'ofsc' / 'models' / f'{module}.py'
+            
+            if not module_path.exists():
+                continue
+            
+            try:
+                with open(module_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                # Parse AST to find class definitions
+                tree = ast.parse(content)
+                
+                for node in ast.walk(tree):
+                    if isinstance(node, ast.ClassDef):
+                        class_name = node.name
+                        
+                        # Check if it's likely a Pydantic model
+                        if self._is_pydantic_model_class(node, content):
+                            import_map[class_name] = f"ofsc.models.{module}.{class_name}"
+                
+                print(f"📁 {module}: Found {len([k for k in import_map.keys() if import_map[k].endswith(f'.{module}.{k}')])} models")
+                
+            except Exception as e:
+                print(f"⚠️  Error scanning {module_path}: {e}")
+                continue
+        
+        return import_map
+    
+    def _is_pydantic_model_class(self, node: ast.ClassDef, file_content: str) -> bool:
+        """Determine if a class is likely a Pydantic model."""
+        # Check if class inherits from BaseModel or BaseOFSCModel
+        for base in node.bases:
+            if isinstance(base, ast.Name):
+                if base.id in ['BaseModel', 'BaseOFSCModel', 'BaseOFSResponse']:
+                    return True
+            elif isinstance(base, ast.Attribute):
+                if base.attr in ['BaseModel', 'BaseOFSCModel', 'BaseOFSResponse']:
+                    return True
+        
+        # Additional heuristics: look for Field() usage or model_config
+        class_body = ast.get_source_segment(file_content, node) or ""
+        
+        # Look for common Pydantic patterns
+        pydantic_indicators = [
+            'Field(',
+            'model_config',
+            'ConfigDict',
+            '= field(',
+            'validator',
+            'root_validator'
+        ]
+        
+        return any(indicator in class_body for indicator in pydantic_indicators)
     
     def _build_endpoint_model_mapping(self) -> Dict[int, str]:
         """Build mapping from endpoint ID to response model."""
@@ -151,9 +236,9 @@ class ModelValidationTestGenerator:
         model_names_seen = set()
         
         for model_name, response_files in self.model_to_responses_map.items():
-            if model_name in self.MODEL_IMPORT_MAP and response_files:
+            if model_name in self.model_import_map and response_files:
                 # Check if this model belongs to the requested module
-                import_path = self.MODEL_IMPORT_MAP[model_name]
+                import_path = self.model_import_map[model_name]
                 if f".models.{module}." in import_path:
                     if model_name not in model_names_seen:
                         models_with_responses.append(model_name)
@@ -200,8 +285,8 @@ Generated on: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
         # Group imports by module
         imports_by_module = defaultdict(set)
         for model_name in model_names:
-            if model_name in self.MODEL_IMPORT_MAP:
-                import_path = self.MODEL_IMPORT_MAP[model_name]
+            if model_name in self.model_import_map:
+                import_path = self.model_import_map[model_name]
                 parts = import_path.split('.')
                 if len(parts) >= 3:
                     module_path = '.'.join(parts[:-1])
@@ -382,43 +467,580 @@ Generated on: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
         
         return generated_files
     
-    def generate_summary_report(self) -> str:
-        """Generate a summary report of model coverage."""
-        report = []
-        report.append("=" * 80)
-        report.append("MODEL VALIDATION TEST COVERAGE REPORT")
-        report.append("=" * 80)
-        report.append("")
+    def generate_summary_report(self) -> None:
+        """Generate a comprehensive summary report using Rich tables."""
+        try:
+            from rich.console import Console
+            from rich.table import Table
+            from rich.panel import Panel
+            from rich import box
+        except ImportError:
+            print("Rich library not available. Install with: uv add rich")
+            print("Falling back to text-based report...")
+            self._generate_text_report()
+            return
         
-        # Overall statistics
-        total_models = len(self.models)
-        models_with_responses = len(self.model_to_responses_map)
-        coverage_percentage = (models_with_responses / total_models * 100) if total_models > 0 else 0
+        console = Console()
         
-        report.append(f"Total models in registry: {total_models}")
-        report.append(f"Models with saved responses: {models_with_responses} ({coverage_percentage:.1f}%)")
-        report.append("")
+        # Calculate comprehensive statistics
+        stats = self._calculate_comprehensive_stats()
         
-        # By module breakdown
-        modules = defaultdict(lambda: {"total": 0, "with_responses": 0})
+        # Main Coverage Table
+        coverage_table = Table(
+            title="📊 pyOFSC API Coverage Summary",
+            box=box.ROUNDED,
+            header_style="bold magenta"
+        )
+        coverage_table.add_column("Metric", style="cyan", width=35)
+        coverage_table.add_column("All Endpoints", justify="right", style="bold white")
+        coverage_table.add_column("GET Endpoints", justify="right", style="bold green")
+        coverage_table.add_column("GET Coverage", justify="right", style="bold yellow")
         
-        for model in self.models:
-            modules[model.module]["total"] += 1
-            if model.name in self.model_to_responses_map:
-                modules[model.module]["with_responses"] += 1
+        # Add rows to coverage table
+        coverage_table.add_row(
+            "🌐 Total Endpoints (Registry)",
+            str(stats['total_endpoints']),
+            str(stats['get_endpoints']),
+            f"{(stats['get_endpoints']/stats['total_endpoints']*100):.1f}%"
+        )
+        coverage_table.add_row(
+            "💾 Saved Response Files",
+            str(stats['total_responses']),
+            str(stats['get_responses']),
+            f"{(stats['get_responses']/stats['total_responses']*100):.1f}%"
+        )
+        coverage_table.add_row(
+            "✅ Response Files with Tests",
+            str(stats['responses_with_tests']),
+            str(stats['get_responses_with_tests']),
+            f"{(stats['get_responses_with_tests']/stats['get_responses']*100 if stats['get_responses'] > 0 else 0):.1f}%"
+        )
+        coverage_table.add_row(
+            "🎯 Final Test Coverage",
+            f"{(stats['responses_with_tests']/stats['total_endpoints']*100):.1f}%",
+            f"{(stats['get_responses_with_tests']/stats['get_endpoints']*100):.1f}%",
+            f"{stats['get_responses_with_tests']}/{stats['get_endpoints']}"
+        )
         
-        report.append("Coverage by module:")
-        for module, stats in sorted(modules.items()):
-            coverage = (stats["with_responses"] / stats["total"] * 100) if stats["total"] > 0 else 0
-            report.append(f"  {module}: {stats['with_responses']}/{stats['total']} ({coverage:.1f}%)")
+        # Module Breakdown Table
+        module_table = Table(
+            title="📁 Coverage by Module",
+            box=box.ROUNDED,
+            header_style="bold blue"
+        )
+        module_table.add_column("Module", style="cyan")
+        module_table.add_column("Endpoints", justify="right")
+        module_table.add_column("GET Endpoints", justify="right", style="green")
+        module_table.add_column("Responses", justify="right")
+        module_table.add_column("GET Responses", justify="right", style="green")
+        module_table.add_column("Tests", justify="right", style="yellow")
+        module_table.add_column("GET Tests", justify="right", style="bright_green")
+        module_table.add_column("Coverage", justify="right", style="bold magenta")
         
-        report.append("")
-        report.append("Models without saved responses:")
-        for model in self.models:
-            if model.name not in self.model_to_responses_map and model.mapped_pydantic_class:
-                report.append(f"  - {model.name} ({model.module})")
+        for module, module_stats in sorted(stats['by_module'].items()):
+            coverage_pct = (module_stats['get_tests'] / module_stats['get_endpoints'] * 100) if module_stats['get_endpoints'] > 0 else 0
+            module_table.add_row(
+                module,
+                str(module_stats['endpoints']),
+                str(module_stats['get_endpoints']),
+                str(module_stats['responses']),
+                str(module_stats['get_responses']),
+                str(module_stats['tests']),
+                str(module_stats['get_tests']),
+                f"{coverage_pct:.1f}%"
+            )
         
-        return '\n'.join(report)
+        # Test Generation Summary Table
+        test_table = Table(
+            title="🧪 Generated Test Files Summary",
+            box=box.ROUNDED,
+            header_style="bold green"
+        )
+        test_table.add_column("Module", style="cyan")
+        test_table.add_column("Models Tested", justify="right", style="yellow")
+        test_table.add_column("Test Methods", justify="right", style="green")
+        test_table.add_column("Response Files Used", justify="right", style="blue")
+        
+        for module in ['core', 'metadata', 'capacity']:
+            module_stats = stats['test_generation'].get(module, {'models': 0, 'methods': 0, 'files': 0})
+            test_table.add_row(
+                module.title(),
+                str(module_stats['models']),
+                str(module_stats['methods']),
+                str(module_stats['files'])
+            )
+        
+        # Display everything
+        console.print()
+        console.print(Panel.fit("🎯 pyOFSC Model Validation Test Coverage Report", style="bold blue"))
+        console.print()
+        console.print(coverage_table)
+        console.print()
+        console.print(module_table)
+        console.print()
+        console.print(test_table)
+        console.print()
+        
+        # Summary insights
+        insights = []
+        insights.append(f"📈 GET endpoint test coverage: {stats['get_responses_with_tests']}/{stats['get_endpoints']} ({(stats['get_responses_with_tests']/stats['get_endpoints']*100):.1f}%)")
+        insights.append(f"💾 Total response files analyzed: {stats['total_responses']}")
+        insights.append(f"🎯 Models with validation tests: {sum(stats['test_generation'][m]['models'] for m in stats['test_generation'])}")
+        insights.append(f"🔍 Unique endpoints covered: {len(set(stats['covered_endpoints']))}")
+        
+        console.print(Panel("\n".join(insights), title="📊 Key Insights", style="bright_blue"))
+        console.print()
+    
+    def _calculate_comprehensive_stats(self) -> dict:
+        """Calculate comprehensive statistics for the coverage report."""
+        stats = {
+            'total_endpoints': len(self.endpoints),
+            'get_endpoints': len([e for e in self.endpoints if e.method == 'GET']),
+            'total_responses': 0,
+            'get_responses': 0,
+            'responses_with_tests': 0,
+            'get_responses_with_tests': 0,
+            'covered_endpoints': set(),
+            'by_module': {},
+            'test_generation': {}
+        }
+        
+        # Count response files
+        response_files = list(self.response_dir.glob("*.json"))
+        stats['total_responses'] = len(response_files)
+        
+        # Analyze each response file
+        get_response_files = []
+        responses_with_tests = []
+        get_responses_with_tests = []
+        
+        for response_file in response_files:
+            # Extract endpoint ID
+            match = re.match(r'^(\d+)_', response_file.name)
+            if not match:
+                continue
+            
+            endpoint_id = int(match.group(1))
+            endpoint = next((e for e in self.endpoints if e.id == endpoint_id), None)
+            
+            if endpoint:
+                stats['covered_endpoints'].add(endpoint_id)
+                
+                # Count GET responses
+                if endpoint.method == 'GET':
+                    get_response_files.append(response_file)
+                
+                # Check if this response has a test (model is mapped)
+                if endpoint_id in self.endpoint_to_model_map:
+                    model_name = self.endpoint_to_model_map[endpoint_id]
+                    if model_name in self.model_import_map:
+                        responses_with_tests.append(response_file)
+                        if endpoint.method == 'GET':
+                            get_responses_with_tests.append(response_file)
+        
+        stats['get_responses'] = len(get_response_files)
+        stats['responses_with_tests'] = len(responses_with_tests)
+        stats['get_responses_with_tests'] = len(get_responses_with_tests)
+        
+        # Calculate by-module statistics
+        for endpoint in self.endpoints:
+            module = endpoint.tags[0] if endpoint.tags else 'unknown'
+            if module not in stats['by_module']:
+                stats['by_module'][module] = {
+                    'endpoints': 0,
+                    'get_endpoints': 0,
+                    'responses': 0,
+                    'get_responses': 0,
+                    'tests': 0,
+                    'get_tests': 0
+                }
+            
+            stats['by_module'][module]['endpoints'] += 1
+            if endpoint.method == 'GET':
+                stats['by_module'][module]['get_endpoints'] += 1
+            
+            # Check if endpoint has response
+            endpoint_responses = [f for f in response_files if f.name.startswith(f"{endpoint.id}_")]
+            if endpoint_responses:
+                stats['by_module'][module]['responses'] += len(endpoint_responses)
+                if endpoint.method == 'GET':
+                    stats['by_module'][module]['get_responses'] += len(endpoint_responses)
+                
+                # Check if has test
+                if endpoint.id in self.endpoint_to_model_map:
+                    model_name = self.endpoint_to_model_map[endpoint.id]
+                    if model_name in self.model_import_map:
+                        stats['by_module'][module]['tests'] += len(endpoint_responses)
+                        if endpoint.method == 'GET':
+                            stats['by_module'][module]['get_tests'] += len(endpoint_responses)
+        
+        # Calculate test generation statistics
+        for module in ['core', 'metadata', 'capacity']:
+            stats['test_generation'][module] = {
+                'models': 0,
+                'methods': 0,
+                'files': 0
+            }
+            
+            # Count models tested in this module
+            models_tested = set()
+            methods_count = 0
+            files_used = set()
+            
+            for model_name, response_files in self.model_to_responses_map.items():
+                if model_name in self.model_import_map:
+                    import_path = self.model_import_map[model_name]
+                    if f".models.{module}." in import_path:
+                        models_tested.add(model_name)
+                        methods_count += 1
+                        files_used.update(f.name for f in response_files)
+            
+            stats['test_generation'][module]['models'] = len(models_tested)
+            stats['test_generation'][module]['methods'] = methods_count
+            stats['test_generation'][module]['files'] = len(files_used)
+        
+        return stats
+    
+    def analyze_pipeline_and_generate_log(self) -> str:
+        """Analyze the test generation pipeline and create detailed log report."""
+        from datetime import datetime
+        
+        # Create timestamp for log file
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        log_file = Path(__file__).parent.parent / "logs" / f"test_generation_pipeline_analysis_{timestamp}.md"
+        
+        # Perform detailed pipeline analysis
+        analysis = self._perform_pipeline_analysis()
+        
+        # Generate comprehensive log report
+        log_content = self._generate_pipeline_log_content(analysis, timestamp)
+        
+        # Write log file
+        log_file.write_text(log_content)
+        
+        return str(log_file)
+    
+    def _perform_pipeline_analysis(self) -> dict:
+        """Perform detailed analysis of the test generation pipeline."""
+        analysis = {
+            'total_files': 0,
+            'step_results': {
+                'valid_pattern': {'passed': [], 'failed': []},
+                'endpoint_found': {'passed': [], 'failed': []}, 
+                'has_signature': {'passed': [], 'failed': []},
+                'model_extracted': {'passed': [], 'failed': []},
+                'model_mapped': {'passed': [], 'failed': []}
+            },
+            'failure_categories': {
+                'invalid_filename': [],
+                'missing_endpoint': [],
+                'no_signature': [],
+                'no_model_name': [],
+                'unmapped_model': []
+            },
+            'endpoint_analysis': {},
+            'model_analysis': {},
+            'summary_stats': {}
+        }
+        
+        # Get all response files
+        response_files = list(self.response_dir.glob("*.json"))
+        analysis['total_files'] = len(response_files)
+        
+        for response_file in response_files:
+            file_analysis = {
+                'filename': response_file.name,
+                'endpoint_id': None,
+                'endpoint': None,
+                'model_name': None,
+                'has_test': False,
+                'failure_reason': None,
+                'failure_step': None
+            }
+            
+            # Step 1: Extract endpoint ID from filename
+            match = re.match(r'^(\d+)_', response_file.name)
+            if not match:
+                file_analysis['failure_reason'] = 'Invalid filename pattern'
+                file_analysis['failure_step'] = 'valid_pattern'
+                analysis['step_results']['valid_pattern']['failed'].append(file_analysis)
+                analysis['failure_categories']['invalid_filename'].append(file_analysis)
+                continue
+            
+            endpoint_id = int(match.group(1))
+            file_analysis['endpoint_id'] = endpoint_id
+            analysis['step_results']['valid_pattern']['passed'].append(file_analysis)
+            
+            # Step 2: Find endpoint in registry
+            endpoint = next((e for e in self.endpoints if e.id == endpoint_id), None)
+            if not endpoint:
+                file_analysis['failure_reason'] = f'Endpoint #{endpoint_id} not found in registry'
+                file_analysis['failure_step'] = 'endpoint_found'
+                analysis['step_results']['endpoint_found']['failed'].append(file_analysis)
+                analysis['failure_categories']['missing_endpoint'].append(file_analysis)
+                continue
+            
+            file_analysis['endpoint'] = {
+                'id': endpoint.id,
+                'method': endpoint.method,
+                'path': endpoint.path,
+                'tags': endpoint.tags
+            }
+            analysis['step_results']['endpoint_found']['passed'].append(file_analysis)
+            
+            # Step 3: Check for signature or response schema
+            has_signature = bool(endpoint.signature or endpoint.response_schema)
+            if not has_signature:
+                file_analysis['failure_reason'] = 'No signature or response_schema'
+                file_analysis['failure_step'] = 'has_signature'
+                analysis['step_results']['has_signature']['failed'].append(file_analysis)
+                analysis['failure_categories']['no_signature'].append(file_analysis)
+                continue
+            
+            analysis['step_results']['has_signature']['passed'].append(file_analysis)
+            
+            # Step 4: Extract model name
+            model_name = None
+            if endpoint.signature:
+                match = re.search(r'->\s*(\w+)', endpoint.signature)
+                if match:
+                    model_name = match.group(1)
+            elif endpoint.response_schema:
+                model_name = endpoint.response_schema
+            
+            if not model_name:
+                file_analysis['failure_reason'] = 'Could not extract model name from signature/schema'
+                file_analysis['failure_step'] = 'model_extracted'
+                analysis['step_results']['model_extracted']['failed'].append(file_analysis)
+                analysis['failure_categories']['no_model_name'].append(file_analysis)
+                continue
+                
+            file_analysis['model_name'] = model_name
+            analysis['step_results']['model_extracted']['passed'].append(file_analysis)
+            
+            # Step 5: Check if model is in import map
+            if model_name not in self.model_import_map:
+                file_analysis['failure_reason'] = f'Model "{model_name}" not in import map'
+                file_analysis['failure_step'] = 'model_mapped'
+                analysis['step_results']['model_mapped']['failed'].append(file_analysis)
+                analysis['failure_categories']['unmapped_model'].append(file_analysis)
+                continue
+            
+            # Success - this file should have a test
+            file_analysis['has_test'] = True
+            analysis['step_results']['model_mapped']['passed'].append(file_analysis)
+        
+        # Calculate summary statistics
+        analysis['summary_stats'] = {
+            'total_files': len(response_files),
+            'valid_pattern': len(analysis['step_results']['valid_pattern']['passed']),
+            'endpoint_found': len(analysis['step_results']['endpoint_found']['passed']),
+            'has_signature': len(analysis['step_results']['has_signature']['passed']),
+            'model_extracted': len(analysis['step_results']['model_extracted']['passed']),
+            'model_mapped': len(analysis['step_results']['model_mapped']['passed']),
+            'final_tests': len(analysis['step_results']['model_mapped']['passed'])
+        }
+        
+        return analysis
+    
+    def _generate_pipeline_log_content(self, analysis: dict, timestamp: str) -> str:
+        """Generate comprehensive log report content."""
+        stats = analysis['summary_stats']
+        
+        content = f"""# Test Generation Pipeline Analysis Report
+
+**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}  
+**Script:** generate_model_validation_tests.py  
+**Analysis ID:** {timestamp}
+
+## Executive Summary
+
+📊 **Pipeline Performance:**
+- **Total Response Files:** {stats['total_files']}
+- **Files with Generated Tests:** {stats['final_tests']}
+- **Test Coverage:** {(stats['final_tests']/stats['total_files']*100):.1f}%
+- **Files Lost in Pipeline:** {stats['total_files'] - stats['final_tests']}
+
+🚨 **Primary Bottlenecks:**
+1. **Unmapped Models:** {len(analysis['failure_categories']['unmapped_model'])} files ({(len(analysis['failure_categories']['unmapped_model'])/stats['total_files']*100):.1f}%)
+2. **Missing Signatures:** {len(analysis['failure_categories']['no_signature'])} files ({(len(analysis['failure_categories']['no_signature'])/stats['total_files']*100):.1f}%)
+3. **Missing Endpoints:** {len(analysis['failure_categories']['missing_endpoint'])} files ({(len(analysis['failure_categories']['missing_endpoint'])/stats['total_files']*100):.1f}%)
+
+## Pipeline Flow Analysis
+
+```
+Response Files → Valid Pattern → Endpoint Found → Has Signature → Model Extracted → Model Mapped → Tests Generated
+     {stats['total_files']}       →      {stats['valid_pattern']}      →      {stats['endpoint_found']}       →      {stats['has_signature']}      →       {stats['model_extracted']}       →      {stats['model_mapped']}      →       {stats['final_tests']}
+                  ↓              ↓              ↓             ↓               ↓              ↓
+    Lost: {stats['total_files'] - stats['valid_pattern']}        Lost: {stats['valid_pattern'] - stats['endpoint_found']}       Lost: {stats['endpoint_found'] - stats['has_signature']}        Lost: {stats['has_signature'] - stats['model_extracted']}        Lost: {stats['model_extracted'] - stats['model_mapped']}        → SUCCESS
+```
+
+### Step-by-Step Breakdown
+
+| Pipeline Step | Passed | Failed | Success Rate |
+|---------------|--------|--------|-------------|
+| 1. Valid Filename Pattern | {stats['valid_pattern']} | {stats['total_files'] - stats['valid_pattern']} | {(stats['valid_pattern']/stats['total_files']*100):.1f}% |
+| 2. Endpoint Found in Registry | {stats['endpoint_found']} | {stats['valid_pattern'] - stats['endpoint_found']} | {(stats['endpoint_found']/stats['valid_pattern']*100 if stats['valid_pattern'] > 0 else 0):.1f}% |
+| 3. Has Signature/Schema | {stats['has_signature']} | {stats['endpoint_found'] - stats['has_signature']} | {(stats['has_signature']/stats['endpoint_found']*100 if stats['endpoint_found'] > 0 else 0):.1f}% |
+| 4. Model Name Extracted | {stats['model_extracted']} | {stats['has_signature'] - stats['model_extracted']} | {(stats['model_extracted']/stats['has_signature']*100 if stats['has_signature'] > 0 else 0):.1f}% |
+| 5. Model Import Mapped | {stats['model_mapped']} | {stats['model_extracted'] - stats['model_mapped']} | {(stats['model_mapped']/stats['model_extracted']*100 if stats['model_extracted'] > 0 else 0):.1f}% |
+
+## Detailed Failure Analysis
+
+"""
+
+        # Add detailed failure categories
+        for category, failures in analysis['failure_categories'].items():
+            if not failures:
+                continue
+                
+            content += f"\n### {category.replace('_', ' ').title()} ({len(failures)} files)\n\n"
+            
+            if category == 'invalid_filename':
+                content += "**Files with invalid naming patterns:**\n"
+                for failure in failures[:10]:  # Limit to first 10
+                    content += f"- `{failure['filename']}` - Expected pattern: `{{endpoint_id}}_{{description}}.json`\n"
+                if len(failures) > 10:
+                    content += f"- ... and {len(failures) - 10} more files\n"
+                    
+            elif category == 'missing_endpoint':
+                content += "**Endpoint IDs not found in registry:**\n"
+                endpoint_ids = [f['endpoint_id'] for f in failures if f['endpoint_id']]
+                unique_ids = sorted(set(endpoint_ids))
+                for endpoint_id in unique_ids[:15]:  # Limit to first 15
+                    files = [f['filename'] for f in failures if f['endpoint_id'] == endpoint_id]
+                    content += f"- **Endpoint #{endpoint_id}:** {', '.join(files[:3])}"
+                    if len(files) > 3:
+                        content += f" (and {len(files) - 3} more)"
+                    content += "\n"
+                if len(unique_ids) > 15:
+                    content += f"- ... and {len(unique_ids) - 15} more endpoint IDs\n"
+                    
+            elif category == 'no_signature':
+                content += "**Endpoints without signatures or response schemas:**\n"
+                for failure in failures[:10]:
+                    endpoint = failure['endpoint']
+                    content += f"- **#{endpoint['id']}** `{endpoint['method']} {endpoint['path']}` - File: `{failure['filename']}`\n"
+                if len(failures) > 10:
+                    content += f"- ... and {len(failures) - 10} more endpoints\n"
+                    
+            elif category == 'unmapped_model':
+                content += "**Model names not in import map:**\n"
+                model_files = {}
+                for failure in failures:
+                    model_name = failure['model_name']
+                    if model_name not in model_files:
+                        model_files[model_name] = []
+                    model_files[model_name].append(failure['filename'])
+                
+                for model_name, files in sorted(model_files.items())[:15]:
+                    content += f"- **`{model_name}`:** {', '.join(files[:3])}"
+                    if len(files) > 3:
+                        content += f" (and {len(files) - 3} more files)"
+                    content += "\n"
+                    
+                if len(model_files) > 15:
+                    content += f"- ... and {len(model_files) - 15} more models\n"
+
+        # Add recommendations
+        content += f"""
+
+## Recommendations for Improvement
+
+### 1. High-Impact Actions (Target: +{len(analysis['failure_categories']['unmapped_model'])} tests)
+
+**Add Missing Model Mappings:**
+The biggest bottleneck is unmapped models. Add these to MODEL_IMPORT_MAP:
+
+```python
+# Add to MODEL_IMPORT_MAP in generate_model_validation_tests.py
+"""
+        
+        # Get unique unmapped models
+        unmapped_models = {}
+        for failure in analysis['failure_categories']['unmapped_model']:
+            model_name = failure['model_name']
+            if model_name not in unmapped_models:
+                unmapped_models[model_name] = len([f for f in analysis['failure_categories']['unmapped_model'] if f['model_name'] == model_name])
+        
+        for model_name, count in sorted(unmapped_models.items(), key=lambda x: x[1], reverse=True)[:10]:
+            content += f'"{model_name}": "ofsc.models.{model_name.lower().replace("response", "").replace("list", "")}.{model_name}",  # +{count} tests\n'
+        
+        content += f"""```
+
+### 2. Medium-Impact Actions (Target: +{len(analysis['failure_categories']['no_signature'])} tests)
+
+**Add Missing Signatures:**
+Update endpoint registry with return type signatures for:
+
+"""
+        
+        for failure in analysis['failure_categories']['no_signature'][:5]:
+            endpoint = failure['endpoint']
+            content += f"- Endpoint #{endpoint['id']}: `{endpoint['method']} {endpoint['path']}`\n"
+        
+        content += f"""
+
+### 3. Registry Maintenance (Target: +{len(analysis['failure_categories']['missing_endpoint'])} tests)
+
+**Add Missing Endpoints:**
+Update endpoint registry to include these endpoint IDs:
+
+"""
+        
+        missing_ids = sorted(set(f['endpoint_id'] for f in analysis['failure_categories']['missing_endpoint'] if f['endpoint_id']))
+        content += f"{', '.join(f'#{id}' for id in missing_ids[:20])}\n"
+        if len(missing_ids) > 20:
+            content += f"... and {len(missing_ids) - 20} more\n"
+
+        content += f"""
+
+## Implementation Priority
+
+| Priority | Action | Impact | Effort | Files Affected |
+|----------|--------|--------|--------|---------------|
+| 🔥 HIGH | Add unmapped model imports | +{len(analysis['failure_categories']['unmapped_model'])} tests | Low | MODEL_IMPORT_MAP |
+| 🟡 MEDIUM | Add missing signatures | +{len(analysis['failure_categories']['no_signature'])} tests | Medium | Endpoint registry |
+| 🔵 LOW | Add missing endpoints | +{len(analysis['failure_categories']['missing_endpoint'])} tests | High | Swagger/Registry |
+
+**Potential Maximum Coverage:** {stats['final_tests'] + len(analysis['failure_categories']['unmapped_model']) + len(analysis['failure_categories']['no_signature'])}/{stats['total_files']} ({((stats['final_tests'] + len(analysis['failure_categories']['unmapped_model']) + len(analysis['failure_categories']['no_signature']))/stats['total_files']*100):.1f}%)
+
+## Files Successfully Generating Tests
+
+**Current Success Cases ({stats['final_tests']} files):**
+"""
+        
+        successful_files = analysis['step_results']['model_mapped']['passed']
+        for success in successful_files[:10]:
+            content += f"- `{success['filename']}` → {success['model_name']} → ✅ Test Generated\n"
+        if len(successful_files) > 10:
+            content += f"- ... and {len(successful_files) - 10} more successful cases\n"
+
+        content += f"""
+
+---
+*Generated by pyOFSC Model Validation Test Generator*  
+*For questions or improvements, check scripts/generate_model_validation_tests.py*
+"""
+        
+        return content
+    
+    def _generate_text_report(self) -> None:
+        """Fallback text-based report when Rich is not available."""
+        stats = self._calculate_comprehensive_stats()
+        
+        print("=" * 80)
+        print("MODEL VALIDATION TEST COVERAGE REPORT")
+        print("=" * 80)
+        print()
+        print(f"Total endpoints: {stats['total_endpoints']}")
+        print(f"GET endpoints: {stats['get_endpoints']}")
+        print(f"Total saved responses: {stats['total_responses']}")
+        print(f"GET saved responses: {stats['get_responses']}")
+        print(f"Responses with tests: {stats['responses_with_tests']}")
+        print(f"GET responses with tests: {stats['get_responses_with_tests']}")
+        print(f"GET endpoint test coverage: {(stats['get_responses_with_tests']/stats['get_endpoints']*100):.1f}%")
+        print()
 
 
 def main():
@@ -441,13 +1063,26 @@ def main():
         action="store_true",
         help="Show coverage summary report"
     )
+    parser.add_argument(
+        "--analyze-pipeline",
+        action="store_true",
+        help="Analyze test generation pipeline and create detailed log report"
+    )
     
     args = parser.parse_args()
     
     generator = ModelValidationTestGenerator()
     
     if args.summary:
-        print(generator.generate_summary_report())
+        generator.generate_summary_report()
+        return
+    
+    if args.analyze_pipeline:
+        log_file = generator.analyze_pipeline_and_generate_log()
+        print(f"📊 Pipeline analysis complete!")
+        print(f"📄 Detailed report generated: {log_file}")
+        print(f"\nTo view the report:")
+        print(f"  cat {log_file}")
         return
     
     # Generate tests

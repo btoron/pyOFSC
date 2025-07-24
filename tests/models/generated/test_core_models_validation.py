@@ -4,7 +4,7 @@ Model validation tests for Core API responses.
 This file contains comprehensive validation tests for all Core API models
 against real API response examples.
 
-Generated on: 2025-07-24 22:35:14 UTC
+Generated on: 2025-07-24 22:47:58 UTC
 """
 
 import json
@@ -13,7 +13,7 @@ import pytest
 from pydantic import ValidationError
 
 # Import the actual models
-from ofsc.models.core import Activity, ActivityListResponse, DailyExtractFolders, Inventory, LocationListResponse, Resource, ResourceListResponse, SubscriptionList, User, UserListResponse
+from ofsc.models.core import Activity, ActivityListResponse, ActivityProperty, AssignedLocationsResponse, DailyExtractFiles, DailyExtractFolders, Inventory, LocationListResponse, Resource, ResourceListResponse, RouteInfo, SubscriptionList, User, UserListResponse
 
 class TestCoreModelsValidation:
     """Test Core API model validation against response examples."""
@@ -421,6 +421,116 @@ class TestCoreModelsValidation:
         # Add model-specific field validations here
         pass  # Add specific field validations as needed
 
+    def test_assigned_locations_response_validation(self, response_examples_path):
+        """Validate AssignedLocationsResponse model against saved response examples.
+        
+        Tests against endpoints: #197
+        """
+        response_files = [
+            "197_get_resources_33035_assignedLocations_33035.json",
+        ]
+        
+        for filename in response_files:
+            file_path = response_examples_path / filename
+            if not file_path.exists():
+                pytest.skip(f"Response file not found: {filename}")
+                continue
+            
+            with open(file_path) as f:
+                data = json.load(f)
+            
+            # Remove metadata field
+            if "_metadata" in data:
+                del data["_metadata"]
+            
+            # Handle list responses
+            if "items" in data and isinstance(data["items"], list):
+                if "ListResponse" in "AssignedLocationsResponse":
+                    # Validate the entire list response
+                    try:
+                        model_instance = AssignedLocationsResponse(**data)
+                        self._validate_assigned_locations_response_fields(model_instance, data)
+                        print(f"✅ Validated {filename} as list response")
+                    except ValidationError as e:
+                        pytest.fail(f"AssignedLocationsResponse validation failed for {filename}: {e}")
+                else:
+                    # Validate individual items (for single model types)
+                    for idx, item in enumerate(data["items"][:3]):
+                        try:
+                            model_instance = AssignedLocationsResponse(**item)
+                            self._validate_assigned_locations_response_fields(model_instance, item)
+                            print(f"✅ Validated {filename} item {idx}")
+                        except ValidationError as e:
+                            pytest.fail(f"AssignedLocationsResponse validation failed for {filename} item {idx}: {e}")
+            else:
+                # Validate single response
+                try:
+                    model_instance = AssignedLocationsResponse(**data)
+                    self._validate_assigned_locations_response_fields(model_instance, data)
+                    print(f"✅ Validated {filename}")
+                except ValidationError as e:
+                    pytest.fail(f"AssignedLocationsResponse validation failed for {filename}: {e}")
+    
+    def _validate_assigned_locations_response_fields(self, model: AssignedLocationsResponse, original_data: dict):
+        """Validate specific fields for AssignedLocationsResponse."""
+        # Add model-specific field validations here
+        pass  # Add specific field validations as needed
+
+    def test_route_info_validation(self, response_examples_path):
+        """Validate RouteInfo model against saved response examples.
+        
+        Tests against endpoints: #203
+        """
+        response_files = [
+            "203_get_resources_33035_routes_2025-07-24_33035_2025-07-24.json",
+        ]
+        
+        for filename in response_files:
+            file_path = response_examples_path / filename
+            if not file_path.exists():
+                pytest.skip(f"Response file not found: {filename}")
+                continue
+            
+            with open(file_path) as f:
+                data = json.load(f)
+            
+            # Remove metadata field
+            if "_metadata" in data:
+                del data["_metadata"]
+            
+            # Handle list responses
+            if "items" in data and isinstance(data["items"], list):
+                if "ListResponse" in "RouteInfo":
+                    # Validate the entire list response
+                    try:
+                        model_instance = RouteInfo(**data)
+                        self._validate_route_info_fields(model_instance, data)
+                        print(f"✅ Validated {filename} as list response")
+                    except ValidationError as e:
+                        pytest.fail(f"RouteInfo validation failed for {filename}: {e}")
+                else:
+                    # Validate individual items (for single model types)
+                    for idx, item in enumerate(data["items"][:3]):
+                        try:
+                            model_instance = RouteInfo(**item)
+                            self._validate_route_info_fields(model_instance, item)
+                            print(f"✅ Validated {filename} item {idx}")
+                        except ValidationError as e:
+                            pytest.fail(f"RouteInfo validation failed for {filename} item {idx}: {e}")
+            else:
+                # Validate single response
+                try:
+                    model_instance = RouteInfo(**data)
+                    self._validate_route_info_fields(model_instance, data)
+                    print(f"✅ Validated {filename}")
+                except ValidationError as e:
+                    pytest.fail(f"RouteInfo validation failed for {filename}: {e}")
+    
+    def _validate_route_info_fields(self, model: RouteInfo, original_data: dict):
+        """Validate specific fields for RouteInfo."""
+        # Add model-specific field validations here
+        pass  # Add specific field validations as needed
+
     def test_inventory_validation(self, response_examples_path):
         """Validate Inventory model against saved response examples.
         
@@ -473,6 +583,116 @@ class TestCoreModelsValidation:
     
     def _validate_inventory_fields(self, model: Inventory, original_data: dict):
         """Validate specific fields for Inventory."""
+        # Add model-specific field validations here
+        pass  # Add specific field validations as needed
+
+    def test_daily_extract_files_validation(self, response_examples_path):
+        """Validate DailyExtractFiles model against saved response examples.
+        
+        Tests against endpoints: #145
+        """
+        response_files = [
+            "145_get_folders_dailyExtract_folders_2025-07-24_files_2025-07-24.json",
+        ]
+        
+        for filename in response_files:
+            file_path = response_examples_path / filename
+            if not file_path.exists():
+                pytest.skip(f"Response file not found: {filename}")
+                continue
+            
+            with open(file_path) as f:
+                data = json.load(f)
+            
+            # Remove metadata field
+            if "_metadata" in data:
+                del data["_metadata"]
+            
+            # Handle list responses
+            if "items" in data and isinstance(data["items"], list):
+                if "ListResponse" in "DailyExtractFiles":
+                    # Validate the entire list response
+                    try:
+                        model_instance = DailyExtractFiles(**data)
+                        self._validate_daily_extract_files_fields(model_instance, data)
+                        print(f"✅ Validated {filename} as list response")
+                    except ValidationError as e:
+                        pytest.fail(f"DailyExtractFiles validation failed for {filename}: {e}")
+                else:
+                    # Validate individual items (for single model types)
+                    for idx, item in enumerate(data["items"][:3]):
+                        try:
+                            model_instance = DailyExtractFiles(**item)
+                            self._validate_daily_extract_files_fields(model_instance, item)
+                            print(f"✅ Validated {filename} item {idx}")
+                        except ValidationError as e:
+                            pytest.fail(f"DailyExtractFiles validation failed for {filename} item {idx}: {e}")
+            else:
+                # Validate single response
+                try:
+                    model_instance = DailyExtractFiles(**data)
+                    self._validate_daily_extract_files_fields(model_instance, data)
+                    print(f"✅ Validated {filename}")
+                except ValidationError as e:
+                    pytest.fail(f"DailyExtractFiles validation failed for {filename}: {e}")
+    
+    def _validate_daily_extract_files_fields(self, model: DailyExtractFiles, original_data: dict):
+        """Validate specific fields for DailyExtractFiles."""
+        # Add model-specific field validations here
+        pass  # Add specific field validations as needed
+
+    def test_activity_property_validation(self, response_examples_path):
+        """Validate ActivityProperty model against saved response examples.
+        
+        Tests against endpoints: #110
+        """
+        response_files = [
+            "110_get_activities_3951883_csign_3951883_csign.json",
+        ]
+        
+        for filename in response_files:
+            file_path = response_examples_path / filename
+            if not file_path.exists():
+                pytest.skip(f"Response file not found: {filename}")
+                continue
+            
+            with open(file_path) as f:
+                data = json.load(f)
+            
+            # Remove metadata field
+            if "_metadata" in data:
+                del data["_metadata"]
+            
+            # Handle list responses
+            if "items" in data and isinstance(data["items"], list):
+                if "ListResponse" in "ActivityProperty":
+                    # Validate the entire list response
+                    try:
+                        model_instance = ActivityProperty(**data)
+                        self._validate_activity_property_fields(model_instance, data)
+                        print(f"✅ Validated {filename} as list response")
+                    except ValidationError as e:
+                        pytest.fail(f"ActivityProperty validation failed for {filename}: {e}")
+                else:
+                    # Validate individual items (for single model types)
+                    for idx, item in enumerate(data["items"][:3]):
+                        try:
+                            model_instance = ActivityProperty(**item)
+                            self._validate_activity_property_fields(model_instance, item)
+                            print(f"✅ Validated {filename} item {idx}")
+                        except ValidationError as e:
+                            pytest.fail(f"ActivityProperty validation failed for {filename} item {idx}: {e}")
+            else:
+                # Validate single response
+                try:
+                    model_instance = ActivityProperty(**data)
+                    self._validate_activity_property_fields(model_instance, data)
+                    print(f"✅ Validated {filename}")
+                except ValidationError as e:
+                    pytest.fail(f"ActivityProperty validation failed for {filename}: {e}")
+    
+    def _validate_activity_property_fields(self, model: ActivityProperty, original_data: dict):
+        """Validate specific fields for ActivityProperty."""
         # Add model-specific field validations here
         pass  # Add specific field validations as needed
 
