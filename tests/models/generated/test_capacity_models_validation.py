@@ -4,7 +4,7 @@ Model validation tests for Capacity API responses.
 This file contains comprehensive validation tests for all Capacity API models
 against real API response examples.
 
-Generated on: 2025-07-25 00:26:01 UTC
+Generated on: 2025-07-25 12:46:44 UTC
 """
 
 import json
