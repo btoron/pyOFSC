@@ -4,7 +4,7 @@ Model validation tests for Core API responses.
 This file contains comprehensive validation tests for all Core API models
 against real API response examples.
 
-Generated on: 2025-07-24 23:57:35 UTC
+Generated on: 2025-07-25 00:03:21 UTC
 """
 
 import json
@@ -214,11 +214,10 @@ class TestCoreModelsValidation:
     def test_location_list_response_validation(self, response_examples_path):
         """Validate LocationListResponse model against saved response examples.
         
-        Tests against endpoints: #191, #192
+        Tests against endpoints: #191
         """
         response_files = [
             "191_get_resources_33035_locations_33035.json",
-            "192_get_resources_33035_locations_25_33035_25.json",
         ]
         
         for filename in response_files:
@@ -341,6 +340,63 @@ class TestCoreModelsValidation:
         # List response validations
         assert hasattr(model, 'items'), "List response should have 'items' field"
         assert hasattr(model, 'totalResults'), "List response should have 'totalResults' field"
+
+    def test_location_validation(self, response_examples_path):
+        """Validate Location model against saved response examples.
+        
+        Tests against endpoints: #192
+        """
+        response_files = [
+            "192_get_resources_33035_locations_25_33035_25.json",
+        ]
+        
+        for filename in response_files:
+            file_path = response_examples_path / filename
+            if not file_path.exists():
+                pytest.skip(f"Response file not found: {filename}")
+                continue
+            
+            with open(file_path) as f:
+                data = json.load(f)
+            
+            # Remove metadata field
+            if "_metadata" in data:
+                del data["_metadata"]
+            
+            # Handle list responses
+            if "items" in data and isinstance(data["items"], list):
+                if False:
+                    # Validate the entire list response
+                    try:
+                        model_instance = Location(**data)
+                        self._validate_location_fields(model_instance, data)
+                        print(f"✅ Validated {filename} as list response")
+                    except ValidationError as e:
+                        pytest.fail(f"Location validation failed for {filename}: {e}")
+                    
+                    # Also validate individual items using the item model
+                else:
+                    # For non-list models, validate individual items using the same model
+                    for idx, item in enumerate(data["items"][:3]):
+                        try:
+                            model_instance = Location(**item)
+                            self._validate_location_fields(model_instance, item)
+                            print(f"✅ Validated {filename} item {idx}")
+                        except ValidationError as e:
+                            pytest.fail(f"Location validation failed for {filename} item {idx}: {e}")
+            else:
+                # Validate single response
+                try:
+                    model_instance = Location(**data)
+                    self._validate_location_fields(model_instance, data)
+                    print(f"✅ Validated {filename}")
+                except ValidationError as e:
+                    pytest.fail(f"Location validation failed for {filename}: {e}")
+    
+    def _validate_location_fields(self, model: Location, original_data: dict):
+        """Validate specific fields for Location."""
+        # Add model-specific field validations here
+        pass  # Add specific field validations as needed
 
     def test_activity_validation(self, response_examples_path):
         """Validate Activity model against saved response examples.

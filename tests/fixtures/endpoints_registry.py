@@ -6273,7 +6273,7 @@ ENDPOINTS: List[EndpointInfo] = [
         request_body_schema=None,
         response_schema='resourceLocation',
         implemented_in='core_api.py:OFSCoreAPI.get_resource_location()',
-        signature='async def get_resource_location(self, resource_id: str, location_id: int) -> LocationListResponse',
+        signature='async def get_resource_location(self, resource_id: str, location_id: int) -> Location',
         rate_limits=None,
     ),
     EndpointInfo(

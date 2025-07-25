@@ -38,6 +38,7 @@ from ofsc.models.core import (
     DailyExtractFolders,
     Inventory,
     LastKnownPositionListResponse,
+    Location,
     LocationListResponse,
     NearbyActivityListResponse,
     PositionHistory,
@@ -2107,7 +2108,7 @@ class OFSCoreAPI:
 
     async def get_resource_location(
         self, resource_id: str, location_id: int
-    ) -> LocationListResponse:
+    ) -> Location:
         """
         Get a specific location for a resource.
 
@@ -2128,7 +2129,7 @@ class OFSCoreAPI:
         logging.info(f"Getting resource location from endpoint: {endpoint}")
 
         response: "Response" = await self.client.get(endpoint)
-        return LocationListResponse.from_response(response)
+        return Location.from_response(response)
 
     async def update_resource_location(
         self, resource_id: str, location_id: int, location_data: dict
