@@ -298,21 +298,13 @@ class ActivityDeinstalledInventoryListResponse(
     pass
 
 
-class ActivityLinkType(str, Enum):
-    """Activity link type enumeration"""
-
-    predecessor = "predecessor"
-    successor = "successor"
-    parent = "parent"
-    child = "child"
-    related = "related"
-
-
 class ActivityLink(BaseOFSResponse):
     """Activity link information"""
 
-    linkedActivityId: int
-    linkType: ActivityLinkType
+    fromActivityId: int
+    toActivityId: int
+    linkType: str
+    alerts: Optional[int] = None
     description: Optional[str] = None
     createdTime: Optional[str] = None
     model_config = ConfigDict(extra="allow")
@@ -655,7 +647,9 @@ class ResourceWorkSkill(BaseOFSResponse):
     """Resource work skill association"""
 
     workSkillId: Optional[int] = None
-    workSkillLabel: str
+    workSkill: str
+    ratio: Optional[int] = None
+    startDate: Optional[str] = None
     level: Optional[int] = None
     status: Optional[str] = "active"
     model_config = ConfigDict(extra="allow")
