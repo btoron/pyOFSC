@@ -56,7 +56,7 @@ from ofsc.models.core import (
     ResourcesInAreaQuery,
     ResourcesInAreaResponse,
     ResourceUsersListResponse,
-    ResourceWorkScheduleResponse,
+    ResourceWorkScheduleItemListResponse,
     ResourceWorkSkillListResponse,
     ResourceWorkZoneListResponse,
     RouteActivationRequest,
@@ -749,7 +749,7 @@ class OFSCoreAPI:
 
     async def get_resource_work_schedules(
         self, resource_id: str, actual_date: Optional[date] = None
-    ) -> ResourceWorkScheduleResponse:
+    ) -> ResourceWorkScheduleItemListResponse:
         """
         Get work schedules for a specific resource.
 

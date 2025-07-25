@@ -5892,7 +5892,7 @@ ENDPOINTS: List[EndpointInfo] = [
         request_body_schema=None,
         response_schema='workSchedules',
         implemented_in='core_api.py:OFSCoreAPI.get_resource_work_schedules()',
-        signature='async def get_resource_work_schedules(self, resource_id: str, actual_date: Optional[date] = None) -> ResourceWorkScheduleResponse',
+        signature='async def get_resource_work_schedules(self, resource_id: str, actual_date: Optional[date] = None) -> ResourceWorkScheduleItemListResponse',
         rate_limits=None,
     ),
     EndpointInfo(

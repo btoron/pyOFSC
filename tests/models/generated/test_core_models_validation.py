@@ -4,7 +4,7 @@ Model validation tests for Core API responses.
 This file contains comprehensive validation tests for all Core API models
 against real API response examples.
 
-Generated on: 2025-07-25 00:03:21 UTC
+Generated on: 2025-07-25 00:26:01 UTC
 """
 
 import json
@@ -13,7 +13,7 @@ import pytest
 from pydantic import ValidationError
 
 # Import the actual models
-from ofsc.models.core import Activity, ActivityCapacityCategory, ActivityCapacityCategoryListResponse, ActivityCustomerInventory, ActivityCustomerInventoryListResponse, ActivityDeinstalledInventory, ActivityDeinstalledInventoryListResponse, ActivityInstalledInventory, ActivityInstalledInventoryListResponse, ActivityLink, ActivityLinkListResponse, ActivityRequiredInventory, ActivityRequiredInventoryListResponse, ActivityResourcePreference, ActivityResourcePreferenceListResponse, ActivitySubmittedForm, ActivitySubmittedFormListResponse, AssignedLocationsResponse, DailyExtractFiles, DailyExtractFolders, Inventory, LastKnownPosition, LastKnownPositionListResponse, Location, LocationListResponse, NearbyActivity, NearbyActivityListResponse, Resource, ResourceInventory, ResourceInventoryListResponse, ResourceListResponse, ResourceUsersListResponse, ResourceWorkScheduleResponse, ResourceWorkSkill, ResourceWorkSkillListResponse, ResourceWorkZone, ResourceWorkZoneListResponse, RouteInfoListResponse, Subscription, SubscriptionList, User, UserListResponse
+from ofsc.models.core import Activity, ActivityCapacityCategory, ActivityCapacityCategoryListResponse, ActivityCustomerInventory, ActivityCustomerInventoryListResponse, ActivityDeinstalledInventory, ActivityDeinstalledInventoryListResponse, ActivityInstalledInventory, ActivityInstalledInventoryListResponse, ActivityLink, ActivityLinkListResponse, ActivityRequiredInventory, ActivityRequiredInventoryListResponse, ActivityResourcePreference, ActivityResourcePreferenceListResponse, ActivitySubmittedForm, ActivitySubmittedFormListResponse, AssignedLocationsResponse, DailyExtractFiles, DailyExtractFolders, Inventory, LastKnownPosition, LastKnownPositionListResponse, Location, LocationListResponse, NearbyActivity, NearbyActivityListResponse, Resource, ResourceInventory, ResourceInventoryListResponse, ResourceListResponse, ResourceUsersListResponse, ResourceWorkScheduleItem, ResourceWorkScheduleItemListResponse, ResourceWorkSkill, ResourceWorkSkillListResponse, ResourceWorkZone, ResourceWorkZoneListResponse, RouteInfoListResponse, Subscription, SubscriptionList, User, UserListResponse
 
 class TestCoreModelsValidation:
     """Test Core API model validation against response examples."""
@@ -154,8 +154,8 @@ class TestCoreModelsValidation:
         assert hasattr(model, 'items'), "List response should have 'items' field"
         assert hasattr(model, 'totalResults'), "List response should have 'totalResults' field"
 
-    def test_resource_work_schedule_response_validation(self, response_examples_path):
-        """Validate ResourceWorkScheduleResponse model against saved response examples.
+    def test_resource_work_schedule_item_list_response_validation(self, response_examples_path):
+        """Validate ResourceWorkScheduleItemListResponse model against saved response examples.
         
         Tests against endpoints: #182
         """
@@ -178,38 +178,46 @@ class TestCoreModelsValidation:
             
             # Handle list responses
             if "items" in data and isinstance(data["items"], list):
-                if False:
+                if True:
                     # Validate the entire list response
                     try:
-                        model_instance = ResourceWorkScheduleResponse(**data)
-                        self._validate_resource_work_schedule_response_fields(model_instance, data)
+                        model_instance = ResourceWorkScheduleItemListResponse(**data)
+                        self._validate_resource_work_schedule_item_list_response_fields(model_instance, data)
                         print(f"✅ Validated {filename} as list response")
                     except ValidationError as e:
-                        pytest.fail(f"ResourceWorkScheduleResponse validation failed for {filename}: {e}")
+                        pytest.fail(f"ResourceWorkScheduleItemListResponse validation failed for {filename}: {e}")
                     
                     # Also validate individual items using the item model
+                    for idx, item in enumerate(data["items"][:3]):
+                        try:
+                            model_instance = ResourceWorkScheduleItem(**item)
+                            print(f"✅ Validated {filename} item {idx} with ResourceWorkScheduleItem")
+                        except ValidationError as e:
+                            pytest.fail(f"ResourceWorkScheduleItem validation failed for {filename} item {idx}: {e}")
                 else:
                     # For non-list models, validate individual items using the same model
                     for idx, item in enumerate(data["items"][:3]):
                         try:
-                            model_instance = ResourceWorkScheduleResponse(**item)
-                            self._validate_resource_work_schedule_response_fields(model_instance, item)
+                            model_instance = ResourceWorkScheduleItemListResponse(**item)
+                            self._validate_resource_work_schedule_item_list_response_fields(model_instance, item)
                             print(f"✅ Validated {filename} item {idx}")
                         except ValidationError as e:
-                            pytest.fail(f"ResourceWorkScheduleResponse validation failed for {filename} item {idx}: {e}")
+                            pytest.fail(f"ResourceWorkScheduleItemListResponse validation failed for {filename} item {idx}: {e}")
             else:
                 # Validate single response
                 try:
-                    model_instance = ResourceWorkScheduleResponse(**data)
-                    self._validate_resource_work_schedule_response_fields(model_instance, data)
+                    model_instance = ResourceWorkScheduleItemListResponse(**data)
+                    self._validate_resource_work_schedule_item_list_response_fields(model_instance, data)
                     print(f"✅ Validated {filename}")
                 except ValidationError as e:
-                    pytest.fail(f"ResourceWorkScheduleResponse validation failed for {filename}: {e}")
+                    pytest.fail(f"ResourceWorkScheduleItemListResponse validation failed for {filename}: {e}")
     
-    def _validate_resource_work_schedule_response_fields(self, model: ResourceWorkScheduleResponse, original_data: dict):
-        """Validate specific fields for ResourceWorkScheduleResponse."""
+    def _validate_resource_work_schedule_item_list_response_fields(self, model: ResourceWorkScheduleItemListResponse, original_data: dict):
+        """Validate specific fields for ResourceWorkScheduleItemListResponse."""
         # Add model-specific field validations here
-        pass  # Add specific field validations as needed
+        # List response validations
+        assert hasattr(model, 'items'), "List response should have 'items' field"
+        assert hasattr(model, 'totalResults'), "List response should have 'totalResults' field"
 
     def test_location_list_response_validation(self, response_examples_path):
         """Validate LocationListResponse model against saved response examples.

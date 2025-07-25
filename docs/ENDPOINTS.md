@@ -200,8 +200,8 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 179 | `/rest/ofscCore/v1/resources/{resourceId}/workZones` | POST | core | v3.0.0-dev | `async def assign_resource_work_zones(self, resource_id: str, work_zones_data: List[dict]) -> ResourceWorkZoneListResponse` |
 | 180 | `/rest/ofscCore/v1/resources/{resourceId}/workZones` | GET | core | v3.0.0-dev | `async def get_resource_work_zones(self, resource_id: str) -> ResourceWorkZoneListResponse` |
 | 181 | `/rest/ofscCore/v1/resources/{resourceId}/workZones/{workZoneItemId}` | DELETE | core | | |
-| 182 | `/rest/ofscCore/v1/resources/{resourceId}/workSchedules` | GET | core | v3.0.0-dev | `async def get_resource_work_schedules(self, resource_id: str, actual_date: Optional[date] = None) -> ResourceWorkScheduleResponse` |
-| 183 | `/rest/ofscCore/v1/resources/{resourceId}/workSchedules` | POST | core | v3.0.0-dev | `async def create_resource_work_schedule(self, resource_id: str, schedule_data: dict) -> ResourceWorkScheduleResponse` |
+| 182 | `/rest/ofscCore/v1/resources/{resourceId}/workSchedules` | GET | core | v3.0.0-dev | `async def get_resource_work_schedules(self, resource_id: str, actual_date: Optional[date] = None) -> ResourceWorkScheduleItemListResponse` |
+| 183 | `/rest/ofscCore/v1/resources/{resourceId}/workSchedules` | POST | core | v3.0.0-dev | `async def create_resource_work_schedule(self, resource_id: str, schedule_data: dict) -> ResourceWorkScheduleItemListResponse` |
 | 184 | `/rest/ofscCore/v1/resources/{resourceId}/workSchedules/{scheduleItemId}` | DELETE | core | v3.0.0-dev | `async def delete_resource_work_schedule_item(self, resource_id: str, schedule_item_id: int) -> None` |
 | 185 | `/rest/ofscCore/v1/resources/{resourceId}/workSchedules/calendarView` | GET | core | v3.0.0-dev | `async def get_resource_calendar_view(self, resource_id: str, start_date: Optional[str] = None, end_date: Optional[str] = None) -> CalendarView` |
 | 186 | `/rest/ofscCore/v1/calendars` | GET | core | v3.0.0-dev | `async def get_calendars(self, offset: int = 0, limit: int = 100) -> CalendarListResponse` |

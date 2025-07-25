@@ -454,11 +454,11 @@ class Recurrence(BaseOFSResponse):
     dayTo: Optional[date] = None
     recurEvery: int = Field(ge=1, le=255)
     recurrenceType: RecurrenceType
-    weekDays: Optional[List[str]] = None
+    weekdays: Optional[List[str]] = None
 
     @model_validator(mode="after")
     def check_week_days(cls, values):
-        if values.recurrenceType == RecurrenceType.weekly and not values.weekDays:
+        if values.recurrenceType == RecurrenceType.weekly and not values.weekdays:
             raise ValueError("weekDays is required for weekly recurrence")
         if values.recurrenceType == RecurrenceType.yearly and not values.dayFrom:
             raise ValueError("dayFrom is required for yearly recurrence")
@@ -485,9 +485,13 @@ class CalendarViewItem(BaseOFSResponse):
     comments: Optional[str] = None
     nonWorkingReason: Optional[str] = None
     points: Optional[int] = None
-    recordType: CalendarViewItemRecordType
+    recordType: Optional[str] = None
     scheduleLabel: Optional[str] = None
     shiftLabel: Optional[str] = None
+    shiftType: Optional[str] = None
+    startDate: Optional[str] = None
+    isWorking: Optional[bool] = None
+    recurrence: Optional[Recurrence] = None
     workTimeEnd: Optional[str] = None
     workTimeStart: Optional[str] = None
 
@@ -542,7 +546,7 @@ class ResourceWorkScheduleItem(BaseOFSResponse):
     workTimeStart: Optional[str] = None
 
 
-class ResourceWorkScheduleResponse(OFSResponseList[ResourceWorkScheduleItem]):
+class ResourceWorkScheduleItemListResponse(OFSResponseList[ResourceWorkScheduleItem]):
     """Paginated response for resource work schedules"""
 
     pass

@@ -22,7 +22,7 @@ from .models import (
     OFSResponseList,
     ResourceUsersListResponse,
     ResourceWorkScheduleItem,
-    ResourceWorkScheduleResponse,
+    ResourceWorkScheduleItemListResponse,
 )
 
 
@@ -251,7 +251,7 @@ class OFSCore(OFSApi):
         return response
 
     @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=ResourceWorkScheduleResponse
+        response_type=OBJ_RESPONSE, expected=[200], model=ResourceWorkScheduleItemListResponse
     )
     def get_resource_workschedules(self, resource_id, actualDate: date):
         url = urljoin(
@@ -262,7 +262,7 @@ class OFSCore(OFSApi):
         return response
 
     @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=ResourceWorkScheduleResponse
+        response_type=OBJ_RESPONSE, expected=[200], model=ResourceWorkScheduleItemListResponse
     )
     def set_resource_workschedules(self, resource_id, data: ResourceWorkScheduleItem):
         url = urljoin(
