@@ -758,7 +758,7 @@ class OFSCoreAPI:
             actual_date: Specific date to get schedules for (YYYY-MM-DD format)
 
         Returns:
-            ResourceWorkScheduleResponse: Work schedules for the resource
+            ResourceWorkScheduleItemListResponse: Work schedules for the resource
         """
         if not resource_id or not isinstance(resource_id, str):
             raise ValueError("resource_id must be a non-empty string")
@@ -772,7 +772,7 @@ class OFSCoreAPI:
         logging.info(f"Fetching resource work schedules from endpoint: {endpoint}")
 
         response: "Response" = await self.client.get(endpoint, params=params)
-        return ResourceWorkScheduleResponse.from_response(response)
+        return ResourceWorkScheduleItemListResponse.from_response(response)
 
     async def get_resource_descendants(
         self,
@@ -1827,7 +1827,7 @@ class OFSCoreAPI:
     # Resource Schedule Management Methods
     async def create_resource_work_schedule(
         self, resource_id: str, schedule_data: dict
-    ) -> ResourceWorkScheduleResponse:
+    ) -> ResourceWorkScheduleItemListResponse:
         """
         Create a work schedule item for a specific resource.
 
@@ -1836,7 +1836,7 @@ class OFSCoreAPI:
             schedule_data: Dictionary containing work schedule details
 
         Returns:
-            ResourceWorkScheduleResponse: The created work schedule item
+            ResourceWorkScheduleItemListResponse: The created work schedule item
         """
         # Validate parameter
         if not resource_id or not isinstance(resource_id, str):
@@ -1851,7 +1851,7 @@ class OFSCoreAPI:
         response: "Response" = await self.client.post(
             endpoint, json=schedule_request.model_dump(exclude_none=True)
         )
-        return ResourceWorkScheduleResponse.from_response(response)
+        return ResourceWorkScheduleItemListResponse.from_response(response)
 
     async def delete_resource_work_schedule_item(
         self, resource_id: str, schedule_item_id: int

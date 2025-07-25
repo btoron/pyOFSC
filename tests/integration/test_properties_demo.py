@@ -21,17 +21,18 @@ from ofsc.client import OFSC
 from ofsc.exceptions import (
     OFSException,
     OFSValidationException,
-    OFSNotFoundException, 
+    OFSResourceNotFoundException, 
     OFSAuthenticationException,
     OFSRateLimitException,
 )
-from ofsc.models.metadata import (
-    PropertiesGet,
-    Property,
-    PropertyEnumeration,
-    PropertyEnumerations,
-    PropertyGet,
-)
+# TODO: Fix missing model imports
+# from ofsc.models.metadata import (
+#     PropertiesGet,
+#     Property,
+#     PropertyEnumeration,
+#     PropertyEnumerations,
+#     PropertyGet,
+# )
 from tests.utils.base_test import BaseOFSCTest
 from tests.utils.factories import (
     create_test_translation,
@@ -102,7 +103,7 @@ class TestPropertiesAPI(BaseOFSCTest):
             try:
                 if hasattr(self.client.metadata, 'delete_properties'):
                     await self.client.metadata.delete_properties(properties_data['label'])
-            except OFSNotFoundException:
+            except OFSResourceNotFoundException:
                 pass  # Already deleted
         
         # Create properties with performance tracking
@@ -423,7 +424,7 @@ class TestPropertiesAPI(BaseOFSCTest):
         self.set_endpoint_context(endpoint_id=50)
         
         # Test with non-existent resource ID
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             # TODO: Add API call with non-existent resource ID
             # Example: nonexistent_id = "nonexistent_resource_12345"
             pass
@@ -446,7 +447,7 @@ class TestPropertiesAPI(BaseOFSCTest):
         self.set_endpoint_context(endpoint_id=51)
         
         # Test with non-existent resource ID
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             # TODO: Add API call with non-existent resource ID
             # Example: nonexistent_id = "nonexistent_resource_12345"
             pass
@@ -469,7 +470,7 @@ class TestPropertiesAPI(BaseOFSCTest):
         self.set_endpoint_context(endpoint_id=52)
         
         # Test with non-existent resource ID
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             # TODO: Add API call with non-existent resource ID
             # Example: nonexistent_id = "nonexistent_resource_12345"
             pass
@@ -505,7 +506,7 @@ class TestPropertiesAPI(BaseOFSCTest):
         self.set_endpoint_context(endpoint_id=53)
         
         # Test with non-existent resource ID
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             # TODO: Add API call with non-existent resource ID
             # Example: nonexistent_id = "nonexistent_resource_12345"
             pass
@@ -541,7 +542,7 @@ class TestPropertiesAPI(BaseOFSCTest):
         self.set_endpoint_context(endpoint_id=54)
         
         # Test with non-existent resource ID
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             # TODO: Add API call with non-existent resource ID
             # Example: nonexistent_id = "nonexistent_resource_12345"
             pass
@@ -564,7 +565,7 @@ class TestPropertiesAPI(BaseOFSCTest):
         self.set_endpoint_context(endpoint_id=55)
         
         # Test with non-existent resource ID
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             # TODO: Add API call with non-existent resource ID
             # Example: nonexistent_id = "nonexistent_resource_12345"
             pass

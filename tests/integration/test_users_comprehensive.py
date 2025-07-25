@@ -21,20 +21,21 @@ from ofsc.client import OFSC
 from ofsc.exceptions import (
     OFSException,
     OFSValidationException,
-    OFSNotFoundException, 
+    OFSResourceNotFoundException, 
     OFSAuthenticationException,
     OFSRateLimitException,
 )
-from ofsc.models.core import (
-    collaborationGroups,
-    file,
-    resourceUsers,
-    updateUser,
-    userGet,
-    userRequest,
-    userResponse,
-    users,
-)
+# TODO: Fix missing model imports  
+# from ofsc.models.core import (
+#     collaborationGroups,
+#     file,
+#     resourceUsers,
+#     updateUser,
+#     userGet,
+#     userRequest,
+#     userResponse,
+#     users,
+# )
 from tests.utils.base_test import BaseOFSCTest
 from tests.utils.factories import (
     create_test_translation,
@@ -105,7 +106,7 @@ class TestUsersAPI(BaseOFSCTest):
             try:
                 if hasattr(self.client.core, 'delete_users'):
                     await self.client.core.delete_users(users_data['label'])
-            except OFSNotFoundException:
+            except OFSResourceNotFoundException:
                 pass  # Already deleted
         
         # Create users with performance tracking
@@ -226,7 +227,7 @@ class TestUsersAPI(BaseOFSCTest):
                 )
         
         # Verify deletion by attempting to retrieve (should fail)
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             await self.client.core.get_users(users_data['label'])
         
         # Assert deletion performance
@@ -461,7 +462,7 @@ class TestUsersAPI(BaseOFSCTest):
         self.set_endpoint_context(endpoint_id=170)
         
         # Test with non-existent resource ID
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             # TODO: Add API call with non-existent resource ID
             # Example: nonexistent_id = "nonexistent_resource_12345"
             pass
@@ -484,7 +485,7 @@ class TestUsersAPI(BaseOFSCTest):
         self.set_endpoint_context(endpoint_id=171)
         
         # Test with non-existent resource ID
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             # TODO: Add API call with non-existent resource ID
             # Example: nonexistent_id = "nonexistent_resource_12345"
             pass
@@ -520,7 +521,7 @@ class TestUsersAPI(BaseOFSCTest):
         self.set_endpoint_context(endpoint_id=172)
         
         # Test with non-existent resource ID
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             # TODO: Add API call with non-existent resource ID
             # Example: nonexistent_id = "nonexistent_resource_12345"
             pass
@@ -543,7 +544,7 @@ class TestUsersAPI(BaseOFSCTest):
         self.set_endpoint_context(endpoint_id=219)
         
         # Test with non-existent resource ID
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             # TODO: Add API call with non-existent resource ID
             # Example: nonexistent_id = "nonexistent_resource_12345"
             pass
@@ -566,7 +567,7 @@ class TestUsersAPI(BaseOFSCTest):
         self.set_endpoint_context(endpoint_id=220)
         
         # Test with non-existent resource ID
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             # TODO: Add API call with non-existent resource ID
             # Example: nonexistent_id = "nonexistent_resource_12345"
             pass
@@ -589,7 +590,7 @@ class TestUsersAPI(BaseOFSCTest):
         self.set_endpoint_context(endpoint_id=221)
         
         # Test with non-existent resource ID
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             # TODO: Add API call with non-existent resource ID
             # Example: nonexistent_id = "nonexistent_resource_12345"
             pass
@@ -625,7 +626,7 @@ class TestUsersAPI(BaseOFSCTest):
         self.set_endpoint_context(endpoint_id=222)
         
         # Test with non-existent resource ID
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             # TODO: Add API call with non-existent resource ID
             # Example: nonexistent_id = "nonexistent_resource_12345"
             pass
@@ -661,7 +662,7 @@ class TestUsersAPI(BaseOFSCTest):
         self.set_endpoint_context(endpoint_id=223)
         
         # Test with non-existent resource ID
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             # TODO: Add API call with non-existent resource ID
             # Example: nonexistent_id = "nonexistent_resource_12345"
             pass
@@ -684,7 +685,7 @@ class TestUsersAPI(BaseOFSCTest):
         self.set_endpoint_context(endpoint_id=224)
         
         # Test with non-existent resource ID
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             # TODO: Add API call with non-existent resource ID
             # Example: nonexistent_id = "nonexistent_resource_12345"
             pass
@@ -707,7 +708,7 @@ class TestUsersAPI(BaseOFSCTest):
         self.set_endpoint_context(endpoint_id=225)
         
         # Test with non-existent resource ID
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             # TODO: Add API call with non-existent resource ID
             # Example: nonexistent_id = "nonexistent_resource_12345"
             pass
@@ -730,7 +731,7 @@ class TestUsersAPI(BaseOFSCTest):
         self.set_endpoint_context(endpoint_id=226)
         
         # Test with non-existent resource ID
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             # TODO: Add API call with non-existent resource ID
             # Example: nonexistent_id = "nonexistent_resource_12345"
             pass
@@ -753,7 +754,7 @@ class TestUsersAPI(BaseOFSCTest):
         self.set_endpoint_context(endpoint_id=227)
         
         # Test with non-existent resource ID
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             # TODO: Add API call with non-existent resource ID
             # Example: nonexistent_id = "nonexistent_resource_12345"
             pass
@@ -776,7 +777,7 @@ class TestUsersAPI(BaseOFSCTest):
         self.set_endpoint_context(endpoint_id=228)
         
         # Test with non-existent resource ID
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             # TODO: Add API call with non-existent resource ID
             # Example: nonexistent_id = "nonexistent_resource_12345"
             pass
@@ -812,7 +813,7 @@ class TestUsersAPI(BaseOFSCTest):
         self.set_endpoint_context(endpoint_id=229)
         
         # Test with non-existent resource ID
-        async with self.expect_exception(OFSNotFoundException):
+        async with self.expect_exception(OFSResourceNotFoundException):
             # TODO: Add API call with non-existent resource ID
             # Example: nonexistent_id = "nonexistent_resource_12345"
             pass
