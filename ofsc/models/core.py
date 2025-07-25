@@ -669,7 +669,7 @@ class ResourceWorkZone(BaseOFSResponse):
     """Resource work zone association"""
 
     workZoneId: Optional[int] = None
-    workZoneLabel: str
+    workZone: str
     status: Optional[str] = "active"
     model_config = ConfigDict(extra="allow")
 
@@ -882,6 +882,13 @@ class RouteInfoListResponse(OFSResponseList[Activity]):
     model_config = ConfigDict(extra="allow")
 
 
+class Coordinates(BaseOFSResponse):
+    """Coordinate information with longitude and latitude"""
+
+    longitude: float
+    latitude: float
+
+
 class NearbyActivity(BaseOFSResponse):
     """Nearby activity information"""
 
@@ -898,7 +905,7 @@ class NearbyActivity(BaseOFSResponse):
 class NearbyActivityListResponse(OFSResponseList[NearbyActivity]):
     """Response for nearby activities"""
 
-    pass
+    coordinates: Optional[Coordinates] = None
 
 
 class RouteActivationRequest(BaseOFSResponse):
