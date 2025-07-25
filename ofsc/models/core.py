@@ -190,7 +190,7 @@ class ActivityCapacityCategory(BaseOFSResponse):
     """Activity capacity category information"""
 
     categoryId: Optional[int] = None
-    categoryLabel: str
+    capacityCategory: str
     timeSlotId: Optional[int] = None
     requiredCapacity: Optional[int] = None
     model_config = ConfigDict(extra="allow")
