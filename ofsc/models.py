@@ -127,14 +127,14 @@ class OFSAPIError(BaseModel):
 
 class OFSApi(ABC):
     """Abstract base API client class for OFSC v2 compatibility.
-    
+
     This abstract class defines the interface that all OFSC API clients
     must implement. It provides common configuration and base URL handling.
-    
+
     Note: For v3.0, this will be replaced by the new client architecture
     in ofsc.client.base.BaseOFSClient
     """
-    
+
     def __init__(self, config: OFSConfig) -> None:
         self._config = config
 
@@ -151,7 +151,7 @@ class OFSApi(ABC):
     @property
     def headers(self) -> dict:
         """Get headers for API requests.
-        
+
         Default implementation for backward compatibility.
         Subclasses can override this for custom behavior.
         """
@@ -159,8 +159,8 @@ class OFSApi(ABC):
         _headers["Content-Type"] = "application/json;charset=UTF-8"
 
         if not self._config.useToken:
-            _headers["Authorization"] = (
-                "Basic " + self._config.basicAuthString.decode("utf-8")
+            _headers["Authorization"] = "Basic " + self._config.basicAuthString.decode(
+                "utf-8"
             )
         else:
             # Token-based auth would require actual HTTP implementation

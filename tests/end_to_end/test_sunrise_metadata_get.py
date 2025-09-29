@@ -74,7 +74,7 @@ from ofsc.models.metadata import (
 )
 
 # Import shared test data and fixtures
-from conftest_sunrise_metadata import get_test_data, TEST_DATA
+from conftest_sunrise_metadata import get_test_data
 
 
 @pytest.mark.live

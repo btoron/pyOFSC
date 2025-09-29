@@ -21,10 +21,11 @@ if TYPE_CHECKING:
 
 class OFSConfig(BaseOFSResponse):
     """Configuration model for OFSC client credentials and settings.
-    
+
     Enhanced to internally manage auth objects for backward compatibility
     while using the modern authentication system.
     """
+
     clientID: str
     secret: str
     companyName: str
@@ -33,9 +34,9 @@ class OFSConfig(BaseOFSResponse):
     baseURL: Optional[str] = None
     auto_raise: bool = True
     auto_model: bool = True
-    
+
     # Private field to cache auth instance
-    _auth_instance: Optional['BaseAuth'] = None
+    _auth_instance: Optional["BaseAuth"] = None
 
     @property
     def basicAuthString(self) -> bytes:
@@ -51,29 +52,29 @@ class OFSConfig(BaseOFSResponse):
     def set_base_URL(cls, url, info: ValidationInfo) -> str:
         """Auto-generate base URL from company name if not provided"""
         return url or f"https://{info.data['companyName']}.fs.ocs.oraclecloud.com"
-    
-    def _get_auth_instance(self) -> 'BaseAuth':
+
+    def _get_auth_instance(self) -> "BaseAuth":
         """Get or create appropriate auth instance based on configuration."""
         if self._auth_instance is None:
             # Import here to avoid circular imports
             from ..auth import BasicAuth, OAuth2Auth
-            
+
             if self.useToken:
                 self._auth_instance = OAuth2Auth(
                     instance=self.companyName,
                     client_id=self.clientID,
                     client_secret=self.secret,
-                    base_url=self.baseURL
+                    base_url=self.baseURL,
                 )
             else:
                 self._auth_instance = BasicAuth(
                     instance=self.companyName,
                     client_id=self.clientID,
-                    client_secret=self.secret
+                    client_secret=self.secret,
                 )
-        
+
         return self._auth_instance
-    
+
     def get_auth_headers(self) -> dict:
         """Get authentication headers using modern auth system."""
         return self._get_auth_instance().get_headers()
@@ -81,6 +82,7 @@ class OFSConfig(BaseOFSResponse):
 
 class OFSOAuthRequest(BaseOFSResponse):
     """OAuth2 authentication request model"""
+
     assertion: Optional[str] = None
     grant_type: str = "client_credentials"
     # ofs_dynamic_scope: Optional[str] = None
@@ -88,6 +90,7 @@ class OFSOAuthRequest(BaseOFSResponse):
 
 class OFSAPIError(BaseOFSResponse):
     """Model for OFSC API error responses"""
+
     type: str
     title: str
     status: int
@@ -96,14 +99,14 @@ class OFSAPIError(BaseOFSResponse):
 
 class OFSApi(ABC):
     """Abstract base API client class for OFSC v2 compatibility.
-    
+
     This abstract class defines the interface that all OFSC API clients
     must implement. It provides common configuration and base URL handling.
-    
+
     Note: For v3.0, this will be replaced by the new client architecture
     in ofsc.client.base.BaseOFSClient
     """
-    
+
     def __init__(self, config: OFSConfig) -> None:
         self._config = config
 
@@ -111,16 +114,16 @@ class OFSApi(ABC):
     def config(self) -> OFSConfig:
         """Get the configuration object."""
         return self._config
-    
+
     @property
     def baseUrl(self) -> Optional[str]:
         """Get the base URL for API requests."""
         return self._config.baseURL
-    
+
     @property
     def headers(self) -> dict:
         """Get headers for API requests using modern auth system.
-        
+
         Now uses the internal auth objects managed by OFSConfig
         for both Basic Auth and OAuth2 authentication.
         """

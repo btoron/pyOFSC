@@ -4,7 +4,10 @@ from typing import List, Tuple
 from urllib.parse import urljoin
 
 # TODO: Phase 1.6 - Migrate from requests to httpx
-import mockup_requests as requests
+try:
+    import mockup_requests as requests
+except ImportError:
+    import httpx as requests
 
 from .common import FULL_RESPONSE, OBJ_RESPONSE, wrap_return
 from .models import (
@@ -15,8 +18,8 @@ from .models import (
     ApplicationListResponse,
     CapacityArea,
     CapacityAreaListResponse,
-    CapacityCategoryResponse,
     CapacityCategoryListResponse,
+    CapacityCategoryResponse,
     EnumerationValue,
     EnumerationValueList,
     InventoryType,
@@ -26,9 +29,9 @@ from .models import (
     OrganizationListResponse,
     Property,
     Workskill,
+    WorkskillCondition,
     WorkSkillGroup,
     WorkSkillGroupListResponse,
-    WorkskillCondition,
 )
 
 
@@ -191,7 +194,11 @@ class OFSMetadata(OFSApi):
     ):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillConditions")
         # Convert list of WorkskillCondition objects to JSON
-        items_json = "[" + ",".join(item.model_dump_json(exclude_none=True) for item in data) + "]"
+        items_json = (
+            "["
+            + ",".join(item.model_dump_json(exclude_none=True) for item in data)
+            + "]"
+        )
         content = '{"items":' + items_json + "}"
         headers = self.headers
         headers["Content-Type"] = "application/json"
@@ -294,7 +301,9 @@ class OFSMetadata(OFSApi):
         response = requests.get(url, headers=self.headers, params=params)
         return response
 
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=CapacityCategoryResponse)
+    @wrap_return(
+        response_type=OBJ_RESPONSE, expected=[200], model=CapacityCategoryResponse
+    )
     def get_capacity_category(self, label: str):
         encoded_label = urllib.parse.quote_plus(label)
         url = urljoin(

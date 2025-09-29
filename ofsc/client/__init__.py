@@ -11,5 +11,5 @@ __all__ = [
     "ConnectionConfig",
     "ResponseHandler",
     "parse_response",
-    "parse_list_response"
+    "parse_list_response",
 ]

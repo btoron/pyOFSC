@@ -5,7 +5,10 @@ from typing import Optional
 from urllib.parse import urljoin
 
 # TODO: Phase 1.6 - Migrate from requests to httpx
-import mockup_requests as requests
+try:
+    import mockup_requests as requests
+except ImportError:
+    import httpx as requests
 
 from .common import FILE_RESPONSE, FULL_RESPONSE, OBJ_RESPONSE, wrap_return
 from .models import (
@@ -251,7 +254,9 @@ class OFSCore(OFSApi):
         return response
 
     @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=ResourceWorkScheduleItemListResponse
+        response_type=OBJ_RESPONSE,
+        expected=[200],
+        model=ResourceWorkScheduleItemListResponse,
     )
     def get_resource_workschedules(self, resource_id, actualDate: date):
         url = urljoin(
@@ -262,7 +267,9 @@ class OFSCore(OFSApi):
         return response
 
     @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=ResourceWorkScheduleItemListResponse
+        response_type=OBJ_RESPONSE,
+        expected=[200],
+        model=ResourceWorkScheduleItemListResponse,
     )
     def set_resource_workschedules(self, resource_id, data: ResourceWorkScheduleItem):
         url = urljoin(

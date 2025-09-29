@@ -24,14 +24,14 @@ def mock_subscription_response():
             {
                 "subscriptionId": "test_sub_1",
                 "name": "Test Subscription 1",
-                "status": "active"
+                "status": "active",
             },
             {
-                "subscriptionId": "test_sub_2", 
+                "subscriptionId": "test_sub_2",
                 "name": "Test Subscription 2",
-                "status": "active"
-            }
-        ]
+                "status": "active",
+            },
+        ],
     }
 
 
@@ -47,9 +47,9 @@ def mock_users_response():
                 "login": "test_user",
                 "name": "Test User",
                 "mainResourceId": "123",
-                "status": "active"
+                "status": "active",
             }
-        ]
+        ],
     }
 
 
@@ -75,9 +75,7 @@ class TestCoreAPIAsyncClient:
     @respx.mock
     async def test_get_users_success(self, mock_users_response):
         """Test get_users with valid parameters."""
-        route = respx.get(
-            "https://demo.fs.ocs.oraclecloud.com/rest/ofscCore/v1/users"
-        )
+        route = respx.get("https://demo.fs.ocs.oraclecloud.com/rest/ofscCore/v1/users")
         route.mock(return_value=Response(200, json=mock_users_response))
 
         async with OFSC(
@@ -86,5 +84,3 @@ class TestCoreAPIAsyncClient:
             result = await client.core.get_users(offset=0, limit=50)
             assert isinstance(result, UserListResponse)
             assert result.totalResults == 1
-
-

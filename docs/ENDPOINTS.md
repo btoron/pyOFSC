@@ -2,13 +2,13 @@
 
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints available in the pyOFSC Python Wrapper v3.0.
 
-**Total Endpoints:** 242  
-**Implemented in v3.0:** 158 (65.3%)
+**Total Endpoints:** 242
+**Implemented in v3.0:** 159 (65.7%)
 
 ## Implementation Coverage by Module
 
 - **metadata**: 49/86 endpoints (57.0%) ✅
-- **core**: 102/127 endpoints (80.3%) ✅  
+- **core**: 103/127 endpoints (81.1%) ✅
 - **capacity**: 7/11 endpoints (63.6%) ✅
 - **statistics**: 0/6 endpoints (0%) ❌
 - **partscatalog**: 0/3 endpoints (0%) ❌
@@ -340,5 +340,5 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 
 ---
 
-*Generated from endpoints.json data for pyOFSC Python Wrapper v3.0  
-Last updated: July 23, 2025 - Added 25 Core API endpoints with complete signatures*
+*Generated from endpoints.json data for pyOFSC Python Wrapper v3.0
+Last updated: September 29, 2025 - Corrected implementation counts after audit (103 Core, 49 Metadata, 7 Capacity)*

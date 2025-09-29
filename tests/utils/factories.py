@@ -6,11 +6,11 @@ from typing import Any, Dict, Optional
 
 def create_test_translation(locale: str = "en", value: str = "Test") -> Dict[str, str]:
     """Create a test translation object.
-    
+
     Args:
         locale: Language locale (default: "en")
         value: Translation value (default: "Test")
-        
+
     Returns:
         Translation dictionary
     """
@@ -18,19 +18,16 @@ def create_test_translation(locale: str = "en", value: str = "Test") -> Dict[str
 
 
 def create_test_user(
-    login: str = "test_user",
-    name: str = "Test User",
-    status: str = "active",
-    **kwargs
+    login: str = "test_user", name: str = "Test User", status: str = "active", **kwargs
 ) -> Dict[str, Any]:
     """Create a test user object.
-    
+
     Args:
         login: User login (default: "test_user")
         name: User name (default: "Test User")
         status: User status (default: "active")
         **kwargs: Additional user fields
-        
+
     Returns:
         User dictionary
     """
@@ -53,17 +50,17 @@ def create_test_resource(
     name: str = "Test Resource",
     status: str = "active",
     resourceType: str = "FT",
-    **kwargs
+    **kwargs,
 ) -> Dict[str, Any]:
     """Create a test resource object.
-    
+
     Args:
         resourceId: Resource ID (default: "test_resource")
         name: Resource name (default: "Test Resource")
-        status: Resource status (default: "active") 
+        status: Resource status (default: "active")
         resourceType: Resource type (default: "FT")
         **kwargs: Additional resource fields
-        
+
     Returns:
         Resource dictionary
     """
@@ -84,16 +81,16 @@ def create_test_activity(
     activityId: str = "test_activity",
     activityType: str = "install",
     status: str = "pending",
-    **kwargs
+    **kwargs,
 ) -> Dict[str, Any]:
     """Create a test activity object.
-    
+
     Args:
         activityId: Activity ID (default: "test_activity")
         activityType: Activity type (default: "install")
         status: Activity status (default: "pending")
         **kwargs: Additional activity fields
-        
+
     Returns:
         Activity dictionary
     """
@@ -114,17 +111,17 @@ def create_test_property(
     name: str = "Test Property",
     entity: str = "activity",
     type: str = "string",
-    **kwargs
+    **kwargs,
 ) -> Dict[str, Any]:
     """Create a test property object.
-    
+
     Args:
         label: Property label (default: "test_property")
         name: Property name (default: "Test Property")
         entity: Entity type (default: "activity")
         type: Property type (default: "string")
         **kwargs: Additional property fields
-        
+
     Returns:
         Property dictionary
     """
@@ -134,9 +131,9 @@ def create_test_property(
         "entity": entity,
         "type": type,
         "gui": kwargs.get("gui", "text"),
-        "translations": kwargs.get("translations", [
-            create_test_translation("en", name)
-        ]),
+        "translations": kwargs.get(
+            "translations", [create_test_translation("en", name)]
+        ),
     }
     prop.update(kwargs)
     return prop
@@ -146,16 +143,16 @@ def create_test_workskill(
     label: str = "test_skill",
     name: str = "Test Skill",
     sharing: str = "maximal",
-    **kwargs
+    **kwargs,
 ) -> Dict[str, Any]:
     """Create a test work skill object.
-    
+
     Args:
         label: Skill label (default: "test_skill")
         name: Skill name (default: "Test Skill")
         sharing: Sharing type (default: "maximal")
         **kwargs: Additional skill fields
-        
+
     Returns:
         Work skill dictionary
     """
@@ -163,9 +160,9 @@ def create_test_workskill(
         "label": label,
         "name": name,
         "sharing": sharing,
-        "translations": kwargs.get("translations", [
-            create_test_translation("en", name)
-        ]),
+        "translations": kwargs.get(
+            "translations", [create_test_translation("en", name)]
+        ),
     }
     skill.update(kwargs)
     return skill
@@ -176,17 +173,17 @@ def create_test_capacity_area(
     name: str = "Test Area",
     parent: Optional[str] = None,
     status: str = "active",
-    **kwargs
+    **kwargs,
 ) -> Dict[str, Any]:
     """Create a test capacity area object.
-    
+
     Args:
         label: Area label (default: "test_area")
         name: Area name (default: "Test Area")
         parent: Parent area label (optional)
         status: Area status (default: "active")
         **kwargs: Additional area fields
-        
+
     Returns:
         Capacity area dictionary
     """
@@ -194,11 +191,10 @@ def create_test_capacity_area(
         "label": label,
         "name": name,
         "status": status,
-        "configuration": kwargs.get("configuration", {
-            "isTimeSlotBase": True,
-            "isWorkZoneBase": True,
-            "timeSlotDuration": 2
-        }),
+        "configuration": kwargs.get(
+            "configuration",
+            {"isTimeSlotBase": True, "isWorkZoneBase": True, "timeSlotDuration": 2},
+        ),
     }
     if parent:
         area["parent"] = parent

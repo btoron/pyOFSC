@@ -7,9 +7,8 @@ identifies relationships with Pydantic models, and generates a comprehensive mod
 """
 
 import json
-import re
-from typing import Dict, List, Any, Optional, Set
-from dataclasses import dataclass, asdict
+from typing import Dict, List, Any, Optional
+from dataclasses import dataclass
 from pathlib import Path
 import sys
 
@@ -17,12 +16,12 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from tests.utils.schema_mapper import SchemaModelMapper
-from tests.utils.schema_validator import SwaggerSchemaValidator
 
 
 @dataclass
 class ModelProperty:
     """Represents a property of a model schema."""
+
     name: str
     type: str
     description: str
@@ -38,9 +37,10 @@ class ModelProperty:
     default: Optional[Any] = None
 
 
-@dataclass 
+@dataclass
 class ModelInfo:
     """Represents complete model schema information."""
+
     name: str
     description: str
     properties: List[ModelProperty]
@@ -61,7 +61,7 @@ def get_module_from_endpoint_usage(used_in_endpoints: List[str]) -> str:
     """Determine the primary module for a model based on its endpoint usage."""
     if not used_in_endpoints:
         return "unknown"
-    
+
     module_counts = {}
     for endpoint in used_in_endpoints:
         if "/ofscMetadata/" in endpoint:
@@ -80,23 +80,25 @@ def get_module_from_endpoint_usage(used_in_endpoints: List[str]) -> str:
             module = "auth"
         else:
             module = "unknown"
-        
+
         module_counts[module] = module_counts.get(module, 0) + 1
-    
+
     # Return the most common module
     return max(module_counts.items(), key=lambda x: x[1])[0]
 
 
-def parse_model_property(prop_name: str, prop_data: Dict[str, Any], required_props: List[str]) -> ModelProperty:
+def parse_model_property(
+    prop_name: str, prop_data: Dict[str, Any], required_props: List[str]
+) -> ModelProperty:
     """Parse a single property from a schema definition."""
     prop_type = prop_data.get("type", "unknown")
-    
+
     # Handle $ref properties
     ref = prop_data.get("$ref")
     if ref:
         ref_name = ref.replace("#/definitions/", "")
         prop_type = f"ref:{ref_name}"
-    
+
     # Handle array items
     items = None
     if prop_type == "array":
@@ -104,13 +106,18 @@ def parse_model_property(prop_name: str, prop_data: Dict[str, Any], required_pro
         if items_data:
             items = {
                 "type": items_data.get("type", "unknown"),
-                "$ref": items_data.get("$ref", "").replace("#/definitions/", "") if items_data.get("$ref") else None
+                "$ref": items_data.get("$ref", "").replace("#/definitions/", "")
+                if items_data.get("$ref")
+                else None,
             }
-    
+
     return ModelProperty(
         name=prop_name,
         type=prop_type,
-        description=prop_data.get("description", "").replace("<p>", "").replace("</p>", "").strip(),
+        description=prop_data.get("description", "")
+        .replace("<p>", "")
+        .replace("</p>", "")
+        .strip(),
         required=prop_name in required_props,
         format=prop_data.get("format"),
         enum=prop_data.get("enum"),
@@ -120,27 +127,27 @@ def parse_model_property(prop_name: str, prop_data: Dict[str, Any], required_pro
         maximum=prop_data.get("maximum"),
         items=items,
         ref=ref.replace("#/definitions/", "") if ref else None,
-        default=prop_data.get("default")
+        default=prop_data.get("default"),
     )
 
 
 def extract_inheritance_chain(schema_def: Dict[str, Any]) -> List[str]:
     """Extract inheritance chain from allOf patterns."""
     inheritance = []
-    
+
     all_of = schema_def.get("allOf", [])
     for item in all_of:
         ref = item.get("$ref")
         if ref:
             inheritance.append(ref.replace("#/definitions/", ""))
-    
+
     return inheritance
 
 
 def extract_nested_references(schema_def: Dict[str, Any]) -> List[str]:
     """Extract all model references nested within this schema."""
     nested_models = set()
-    
+
     def find_refs_recursive(obj: Any):
         if isinstance(obj, dict):
             # Direct $ref
@@ -153,34 +160,36 @@ def extract_nested_references(schema_def: Dict[str, Any]) -> List[str]:
         elif isinstance(obj, list):
             for item in obj:
                 find_refs_recursive(item)
-    
+
     find_refs_recursive(schema_def)
     return list(nested_models)
 
 
 def load_swagger_definitions(swagger_file: str) -> Dict[str, Any]:
     """Load schema definitions from swagger.json."""
-    with open(swagger_file, 'r') as f:
+    with open(swagger_file, "r") as f:
         swagger = json.load(f)
-    
+
     return swagger.get("definitions", {})
 
 
-def find_schema_usage_in_endpoints(swagger_file: str) -> Dict[str, Dict[str, List[str]]]:
+def find_schema_usage_in_endpoints(
+    swagger_file: str,
+) -> Dict[str, Dict[str, List[str]]]:
     """Find which endpoints use each schema for requests and responses."""
-    with open(swagger_file, 'r') as f:
+    with open(swagger_file, "r") as f:
         swagger = json.load(f)
-    
+
     schema_usage = {}  # schema_name -> {"request": [endpoints], "response": [endpoints]}
-    
+
     paths = swagger.get("paths", {})
     for path, methods in paths.items():
         for method_name, method_data in methods.items():
-            if method_name.lower() not in ['get', 'post', 'put', 'patch', 'delete']:
+            if method_name.lower() not in ["get", "post", "put", "patch", "delete"]:
                 continue
-            
+
             endpoint_key = f"{method_name.upper()} {path}"
-            
+
             # Check request body schemas
             for param in method_data.get("parameters", []):
                 if param.get("in") == "body":
@@ -190,7 +199,7 @@ def find_schema_usage_in_endpoints(swagger_file: str) -> Dict[str, Dict[str, Lis
                         if schema_name not in schema_usage:
                             schema_usage[schema_name] = {"request": [], "response": []}
                         schema_usage[schema_name]["request"].append(endpoint_key)
-            
+
             # Check response schemas
             responses = method_data.get("responses", {})
             for status_code, response_data in responses.items():
@@ -201,7 +210,7 @@ def find_schema_usage_in_endpoints(swagger_file: str) -> Dict[str, Dict[str, Lis
                         if schema_name not in schema_usage:
                             schema_usage[schema_name] = {"request": [], "response": []}
                         schema_usage[schema_name]["response"].append(endpoint_key)
-    
+
     return schema_usage
 
 
@@ -210,55 +219,59 @@ def extract_models_from_swagger(swagger_file: str) -> List[ModelInfo]:
     print("Loading swagger definitions...")
     definitions = load_swagger_definitions(swagger_file)
     print(f"Found {len(definitions)} schema definitions")
-    
+
     print("Analyzing endpoint-schema relationships...")
     schema_usage = find_schema_usage_in_endpoints(swagger_file)
-    
+
     print("Initializing Pydantic model mapper...")
     schema_mapper = SchemaModelMapper()
-    
+
     models = []
-    
+
     print("Processing schema definitions...")
     for schema_name, schema_def in definitions.items():
         # Extract basic information
         description = schema_def.get("description", "")
         schema_type = schema_def.get("type", "object")
-        
+
         # Extract properties
         properties = []
         required_props = schema_def.get("required", [])
-        
+
         # Handle properties from schema definition
         props_data = schema_def.get("properties", {})
         for prop_name, prop_data in props_data.items():
-            properties.append(parse_model_property(prop_name, prop_data, required_props))
-        
+            properties.append(
+                parse_model_property(prop_name, prop_data, required_props)
+            )
+
         # Handle properties from allOf inheritance
         all_of = schema_def.get("allOf", [])
         for inherited_schema in all_of:
             if "properties" in inherited_schema:
                 inherited_required = inherited_schema.get("required", [])
                 for prop_name, prop_data in inherited_schema["properties"].items():
-                    properties.append(parse_model_property(prop_name, prop_data, inherited_required))
-        
+                    properties.append(
+                        parse_model_property(prop_name, prop_data, inherited_required)
+                    )
+
         # Extract inheritance chain
         inheritance = extract_inheritance_chain(schema_def)
-        
+
         # Extract nested model references
         nested_models = extract_nested_references(schema_def)
-        
+
         # Get endpoint usage
         usage = schema_usage.get(schema_name, {"request": [], "response": []})
         all_endpoints = usage["request"] + usage["response"]
-        
+
         # Determine module based on endpoint usage
         module = get_module_from_endpoint_usage(all_endpoints)
-        
+
         # Try to map to Pydantic model
         pydantic_class = schema_mapper.get_model_class_by_schema_name(schema_name)
         mapped_pydantic_class = pydantic_class.__name__ if pydantic_class else None
-        
+
         # Create model info
         model_info = ModelInfo(
             name=schema_name,
@@ -274,11 +287,11 @@ def extract_models_from_swagger(swagger_file: str) -> List[ModelInfo]:
             schema_type=schema_type,
             examples=[],  # Could be extracted from swagger examples if available
             nested_models=nested_models,
-            parent_models=[]  # Will be populated in post-processing
+            parent_models=[],  # Will be populated in post-processing
         )
-        
+
         models.append(model_info)
-    
+
     # Post-process to populate parent_models (reverse references)
     print("Building reverse reference mappings...")
     model_by_name = {model.name: model for model in models}
@@ -286,14 +299,14 @@ def extract_models_from_swagger(swagger_file: str) -> List[ModelInfo]:
         for nested_model_name in model.nested_models:
             if nested_model_name in model_by_name:
                 model_by_name[nested_model_name].parent_models.append(model.name)
-    
+
     print(f"Extracted {len(models)} model definitions")
     return models
 
 
 def generate_registry_module(models: List[ModelInfo]) -> str:
     """Generate the Python module content for models registry."""
-    
+
     module_content = '''"""
 OFSC API Models Registry
 
@@ -348,58 +361,64 @@ class ModelInfo:
 # All models from swagger.json definitions
 MODELS: Dict[str, ModelInfo] = {
 '''
-    
+
     # Generate model entries
     for model in models:
         module_content += f'    "{model.name}": ModelInfo(\n'
-        module_content += f'        name={repr(model.name)},\n'
-        module_content += f'        description={repr(model.description)},\n'
-        
+        module_content += f"        name={repr(model.name)},\n"
+        module_content += f"        description={repr(model.description)},\n"
+
         # Properties
-        module_content += f'        properties=[\n'
+        module_content += "        properties=[\n"
         for prop in model.properties:
-            module_content += f'            ModelProperty(\n'
-            module_content += f'                name={repr(prop.name)},\n'
-            module_content += f'                type={repr(prop.type)},\n'
-            module_content += f'                description={repr(prop.description)},\n'
-            module_content += f'                required={prop.required},\n'
+            module_content += "            ModelProperty(\n"
+            module_content += f"                name={repr(prop.name)},\n"
+            module_content += f"                type={repr(prop.type)},\n"
+            module_content += f"                description={repr(prop.description)},\n"
+            module_content += f"                required={prop.required},\n"
             if prop.format is not None:
-                module_content += f'                format={repr(prop.format)},\n'
+                module_content += f"                format={repr(prop.format)},\n"
             if prop.enum is not None:
-                module_content += f'                enum={repr(prop.enum)},\n'
+                module_content += f"                enum={repr(prop.enum)},\n"
             if prop.min_length is not None:
-                module_content += f'                min_length={prop.min_length},\n'
+                module_content += f"                min_length={prop.min_length},\n"
             if prop.max_length is not None:
-                module_content += f'                max_length={prop.max_length},\n'
+                module_content += f"                max_length={prop.max_length},\n"
             if prop.minimum is not None:
-                module_content += f'                minimum={prop.minimum},\n'
+                module_content += f"                minimum={prop.minimum},\n"
             if prop.maximum is not None:
-                module_content += f'                maximum={prop.maximum},\n'
+                module_content += f"                maximum={prop.maximum},\n"
             if prop.items is not None:
-                module_content += f'                items={repr(prop.items)},\n'
+                module_content += f"                items={repr(prop.items)},\n"
             if prop.ref is not None:
-                module_content += f'                ref={repr(prop.ref)},\n'
+                module_content += f"                ref={repr(prop.ref)},\n"
             if prop.default is not None:
-                module_content += f'                default={repr(prop.default)},\n'
-            module_content += f'            ),\n'
-        module_content += f'        ],\n'
-        
+                module_content += f"                default={repr(prop.default)},\n"
+            module_content += "            ),\n"
+        module_content += "        ],\n"
+
         # Other fields
-        module_content += f'        required_properties={repr(model.required_properties)},\n'
-        module_content += f'        inheritance={repr(model.inheritance)},\n'
-        module_content += f'        used_in_endpoints={repr(model.used_in_endpoints)},\n'
-        module_content += f'        used_in_request_endpoints={repr(model.used_in_request_endpoints)},\n'
-        module_content += f'        used_in_response_endpoints={repr(model.used_in_response_endpoints)},\n'
-        module_content += f'        mapped_pydantic_class={repr(model.mapped_pydantic_class)},\n'
-        module_content += f'        module={repr(model.module)},\n'
-        module_content += f'        schema_type={repr(model.schema_type)},\n'
-        module_content += f'        examples={repr(model.examples)},\n'
-        module_content += f'        nested_models={repr(model.nested_models)},\n'
-        module_content += f'        parent_models={repr(model.parent_models)},\n'
-        module_content += f'    ),\n'
-    
+        module_content += (
+            f"        required_properties={repr(model.required_properties)},\n"
+        )
+        module_content += f"        inheritance={repr(model.inheritance)},\n"
+        module_content += (
+            f"        used_in_endpoints={repr(model.used_in_endpoints)},\n"
+        )
+        module_content += f"        used_in_request_endpoints={repr(model.used_in_request_endpoints)},\n"
+        module_content += f"        used_in_response_endpoints={repr(model.used_in_response_endpoints)},\n"
+        module_content += (
+            f"        mapped_pydantic_class={repr(model.mapped_pydantic_class)},\n"
+        )
+        module_content += f"        module={repr(model.module)},\n"
+        module_content += f"        schema_type={repr(model.schema_type)},\n"
+        module_content += f"        examples={repr(model.examples)},\n"
+        module_content += f"        nested_models={repr(model.nested_models)},\n"
+        module_content += f"        parent_models={repr(model.parent_models)},\n"
+        module_content += "    ),\n"
+
     module_content += "}\n\n"
-    
+
     # Add utility functions and indexes
     module_content += '''
 # Utility functions for model lookup and analysis
@@ -535,7 +554,7 @@ MAPPED_MODELS_COUNT = len(MODELS_WITH_PYDANTIC_MAPPING)
 UNMAPPED_MODELS_COUNT = len(MODELS_WITHOUT_PYDANTIC_MAPPING)
 OVERALL_MAPPING_COVERAGE = (MAPPED_MODELS_COUNT / TOTAL_MODELS * 100) if TOTAL_MODELS > 0 else 0
 '''
-    
+
     return module_content
 
 
@@ -544,16 +563,16 @@ def main():
     print("=" * 60)
     print("OFSC API Models Registry Generator")
     print("=" * 60)
-    
+
     swagger_file = "response_examples/swagger.json"
     if not Path(swagger_file).exists():
         print(f"Error: {swagger_file} not found")
         return 1
-    
+
     try:
         # Extract models
         models = extract_models_from_swagger(swagger_file)
-        
+
         # Generate statistics
         by_module = {}
         mapped_count = 0
@@ -561,41 +580,46 @@ def main():
             by_module[model.module] = by_module.get(model.module, 0) + 1
             if model.mapped_pydantic_class:
                 mapped_count += 1
-        
-        print(f"\nExtraction Summary:")
+
+        print("\nExtraction Summary:")
         print(f"  Total models: {len(models)}")
         print(f"  Models with Pydantic mapping: {mapped_count}")
         print(f"  Models without Pydantic mapping: {len(models) - mapped_count}")
         print(f"  Overall mapping coverage: {mapped_count / len(models) * 100:.1f}%")
-        
-        print(f"\nModels by module:")
+
+        print("\nModels by module:")
         for module, count in sorted(by_module.items()):
             module_models = [m for m in models if m.module == module]
             module_mapped = len([m for m in module_models if m.mapped_pydantic_class])
             coverage = (module_mapped / count * 100) if count > 0 else 0
-            print(f"  {module}: {count} models ({module_mapped} mapped, {coverage:.1f}% coverage)")
-        
+            print(
+                f"  {module}: {count} models ({module_mapped} mapped, {coverage:.1f}% coverage)"
+            )
+
         # Generate the registry module
-        print(f"\nGenerating models registry...")
+        print("\nGenerating models registry...")
         module_content = generate_registry_module(models)
-        
+
         # Ensure tests/fixtures directory exists
         fixtures_dir = Path("tests/fixtures")
         fixtures_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Write the module
         registry_file = fixtures_dir / "models_registry.py"
-        with open(registry_file, 'w') as f:
+        with open(registry_file, "w") as f:
             f.write(module_content)
-        
+
         print(f"Generated {registry_file}")
-        print(f"Registry contains {len(models)} model definitions with comprehensive metadata")
-        
+        print(
+            f"Registry contains {len(models)} model definitions with comprehensive metadata"
+        )
+
         return 0
-        
+
     except Exception as e:
         print(f"Error: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

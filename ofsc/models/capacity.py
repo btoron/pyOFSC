@@ -11,7 +11,14 @@ This module contains Pydantic models for OFSC Capacity API endpoints:
 
 from typing import Any, Dict, List, Optional
 
-from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, RootModel, field_validator
+from pydantic import (
+    AnyHttpUrl,
+    BaseModel,
+    ConfigDict,
+    Field,
+    RootModel,
+    field_validator,
+)
 from typing_extensions import Annotated
 
 from .base import BaseOFSResponse, CsvList, OFSResponseList, TranslationList
@@ -114,12 +121,14 @@ class CapacityCategoryResponse(BaseOFSResponse):
 
 class CapacityCategoryRequest(BaseModel):
     """Request model for creating or updating capacity categories"""
-    
+
     label: str
     name: str
     active: bool = True
     timeSlots: Optional[List[Dict[str, str]]] = None  # List of {"label": "value"}
-    workSkills: Optional[List[Dict[str, Any]]] = None  # List with label, ratio, startDate
+    workSkills: Optional[List[Dict[str, Any]]] = (
+        None  # List with label, ratio, startDate
+    )
     workSkillGroups: Optional[List[Dict[str, str]]] = None
     translations: Optional[TranslationList] = None
 
@@ -407,9 +416,10 @@ class GetQuotaRequest(BaseOFSResponse):
 
 # Booking-related models for Capacity API endpoints
 
+
 class TimeSlotDictionary(BaseOFSResponse):
     """Time slot dictionary entry for booking options"""
-    
+
     label: str = Field(description="The label of the timeslot")
     name: str = Field(description="The name of the timeslot")
     timeFrom: str = Field(description="The start time of the timeslot")
@@ -418,222 +428,439 @@ class TimeSlotDictionary(BaseOFSResponse):
 
 class BookingTimeSlot(BaseOFSResponse):
     """Time slot information for booking options"""
-    
+
     label: Optional[str] = Field(None, description="The label of the time slot")
-    reason: Optional[str] = Field(None, description="The reason the timeslot is not used for activity booking")
-    remainingQuota: Optional[int] = Field(None, description="The available quota after activity booking")
-    originalQuota: Optional[int] = Field(None, description="The minimum quota value defined on a time slot level")
+    reason: Optional[str] = Field(
+        None, description="The reason the timeslot is not used for activity booking"
+    )
+    remainingQuota: Optional[int] = Field(
+        None, description="The available quota after activity booking"
+    )
+    originalQuota: Optional[int] = Field(
+        None, description="The minimum quota value defined on a time slot level"
+    )
 
 
 class BookingArea(BaseOFSResponse):
     """Booking area information for activity booking options"""
-    
+
     label: str = Field(description="The label of the area")
     name: Optional[str] = Field(None, description="The name of the area")
-    bucket: Optional[str] = Field(None, description="The external identifier of the bucket")
+    bucket: Optional[str] = Field(
+        None, description="The external identifier of the bucket"
+    )
     timeZone: Optional[str] = Field(None, description="The IANA name of the time zone")
-    timeZoneDiff: Optional[int] = Field(None, description="The time zone difference in minutes")
-    categories: Optional[List[str]] = Field(None, description="The list of capacity categories matching the activity")
-    reason: Optional[str] = Field(None, description="The reason for the unavailability of booking options")
-    remainingQuota: Optional[int] = Field(None, description="The quota available on the day level after booking")
-    originalQuota: Optional[int] = Field(None, description="The quota value defined on a day level")
-    timeSlots: Optional[List[BookingTimeSlot]] = Field(None, description="The list of time slots at which the activity can be started")
+    timeZoneDiff: Optional[int] = Field(
+        None, description="The time zone difference in minutes"
+    )
+    categories: Optional[List[str]] = Field(
+        None, description="The list of capacity categories matching the activity"
+    )
+    reason: Optional[str] = Field(
+        None, description="The reason for the unavailability of booking options"
+    )
+    remainingQuota: Optional[int] = Field(
+        None, description="The quota available on the day level after booking"
+    )
+    originalQuota: Optional[int] = Field(
+        None, description="The quota value defined on a day level"
+    )
+    timeSlots: Optional[List[BookingTimeSlot]] = Field(
+        None, description="The list of time slots at which the activity can be started"
+    )
 
 
 class BookingDate(BaseOFSResponse):
     """Booking date information for activity booking options"""
-    
+
     date: str = Field(description="The date for booking options", format="date")
-    areas: List[BookingArea] = Field(description="The array of available booking options within capacity areas")
+    areas: List[BookingArea] = Field(
+        description="The array of available booking options within capacity areas"
+    )
 
 
 class ActivityBookingOptionsResponse(BaseOFSResponse):
     """Response model for activity booking options endpoint"""
-    
-    duration: Optional[int] = Field(None, description="The estimated duration of the activity in minutes")
-    travelTime: Optional[int] = Field(None, description="The average travel time (in minutes) to the activity")
-    categories: Optional[List[str]] = Field(None, description="The array of capacity categories returned for the activity")
-    timeSlotsDictionary: Optional[List[TimeSlotDictionary]] = Field(None, description="The dictionary of time slots")
-    workZone: Optional[str] = Field(None, description="The label of the work zone determined for the activity")
-    dates: List[BookingDate] = Field(description="The array of available booking options for each day")
+
+    duration: Optional[int] = Field(
+        None, description="The estimated duration of the activity in minutes"
+    )
+    travelTime: Optional[int] = Field(
+        None, description="The average travel time (in minutes) to the activity"
+    )
+    categories: Optional[List[str]] = Field(
+        None, description="The array of capacity categories returned for the activity"
+    )
+    timeSlotsDictionary: Optional[List[TimeSlotDictionary]] = Field(
+        None, description="The dictionary of time slots"
+    )
+    workZone: Optional[str] = Field(
+        None, description="The label of the work zone determined for the activity"
+    )
+    dates: List[BookingDate] = Field(
+        description="The array of available booking options for each day"
+    )
 
 
 class BookingStatusState(BaseOFSResponse):
     """Booking status state information"""
-    
-    state: str = Field(description="The state of the booking status", pattern="^(open|closed)$")
-    scheduledCloseTime: Optional[str] = Field(None, description="The scheduled date and time when the booking closes")
-    closedAt: Optional[str] = Field(None, description="The date and time when the booking was closed")
+
+    state: str = Field(
+        description="The state of the booking status", pattern="^(open|closed)$"
+    )
+    scheduledCloseTime: Optional[str] = Field(
+        None, description="The scheduled date and time when the booking closes"
+    )
+    closedAt: Optional[str] = Field(
+        None, description="The date and time when the booking was closed"
+    )
 
 
 class BookingStatusItem(BaseOFSResponse):
     """Individual booking status item"""
-    
-    category: Optional[str] = Field(None, description="The label of the capacity category")
+
+    category: Optional[str] = Field(
+        None, description="The label of the capacity category"
+    )
     workZone: Optional[str] = Field(None, description="The label of the work zone")
     timeFrom: Optional[str] = Field(None, description="The start time in HH:MM format")
     timeTo: Optional[str] = Field(None, description="The end time in HH:MM format")
-    bookingStatus: BookingStatusState = Field(description="The booking status information")
+    bookingStatus: BookingStatusState = Field(
+        description="The booking status information"
+    )
 
 
 class BookingStatus(BaseOFSResponse):
     """Booking status for a specific date and area"""
-    
+
     date: str = Field(description="The date specified in the request", format="date")
-    area: str = Field(description="The label of the capacity area", min_length=1, max_length=40)
+    area: str = Field(
+        description="The label of the capacity area", min_length=1, max_length=40
+    )
     statuses: List[BookingStatusItem] = Field(description="Array of booking statuses")
 
 
 class BookingStatusListResponse(OFSResponseList[BookingStatus]):
     """Response model for booking statuses endpoint"""
+
     pass
 
 
 class BookingClosingSchedule(BaseOFSResponse):
     """Booking closing schedule configuration"""
-    
-    area: str = Field(description="The label of the area from which the booking is closed", min_length=1, max_length=40)
-    dayOffset: int = Field(description="The offset determines the day on which the booking is closed", ge=1, le=255)
-    category: Optional[str] = Field(None, description="The label of the capacity category for which the booking is closed")
-    workZone: Optional[str] = Field(None, description="The label of the work zone from which the booking is closed")
-    startTime: Optional[str] = Field(None, description="The start time of the booking closing schedule")
-    endTime: Optional[str] = Field(None, description="The end time of the booking closing schedule")
-    closeTime: Optional[str] = Field(None, description="The time at which the booking is closed")
+
+    area: str = Field(
+        description="The label of the area from which the booking is closed",
+        min_length=1,
+        max_length=40,
+    )
+    dayOffset: int = Field(
+        description="The offset determines the day on which the booking is closed",
+        ge=1,
+        le=255,
+    )
+    category: Optional[str] = Field(
+        None,
+        description="The label of the capacity category for which the booking is closed",
+    )
+    workZone: Optional[str] = Field(
+        None, description="The label of the work zone from which the booking is closed"
+    )
+    startTime: Optional[str] = Field(
+        None, description="The start time of the booking closing schedule"
+    )
+    endTime: Optional[str] = Field(
+        None, description="The end time of the booking closing schedule"
+    )
+    closeTime: Optional[str] = Field(
+        None, description="The time at which the booking is closed"
+    )
 
 
 class BookingClosingScheduleListResponse(OFSResponseList[BookingClosingSchedule]):
     """Response model for booking closing schedule endpoint"""
+
     pass
 
 
 # Quota v2 models (newer API version with enhanced structure)
 
+
 class QuotaV2WorkZone(BaseOFSResponse):
     """Work zone quota status for v2 API"""
-    
+
     label: str = Field(description="The label of a work zone")
-    quotaIsClosed: Optional[bool] = Field(None, description="Indicates if the booking has been closed at this level")
-    quotaIsAutoClosed: Optional[bool] = Field(None, description="Indicates if the booking has been closed automatically")
-    quotaIsReopened: Optional[bool] = Field(None, description="Indicates if the booking has been manually reopened")
+    quotaIsClosed: Optional[bool] = Field(
+        None, description="Indicates if the booking has been closed at this level"
+    )
+    quotaIsAutoClosed: Optional[bool] = Field(
+        None, description="Indicates if the booking has been closed automatically"
+    )
+    quotaIsReopened: Optional[bool] = Field(
+        None, description="Indicates if the booking has been manually reopened"
+    )
 
 
 class QuotaV2CategoryInterval(BaseOFSResponse):
     """Quota interval information within a category for v2 API"""
-    
-    timeFrom: str = Field(description="The start time of the time interval in HH:MM format")
+
+    timeFrom: str = Field(
+        description="The start time of the time interval in HH:MM format"
+    )
     timeTo: str = Field(description="The end time of the time interval in HH:MM format")
     quota: Optional[int] = Field(None, description="The quota value in minutes")
-    used: Optional[int] = Field(None, description="The amount of consumed capacity in minutes")
-    quotaIsClosed: Optional[bool] = Field(None, description="Indicates if the booking has been closed")
-    quotaIsAutoClosed: Optional[bool] = Field(None, description="Indicates if automatically closed by schedule")
-    scheduledCloseTime: Optional[str] = Field(None, description="The scheduled date and time when booking closes")
-    closedAt: Optional[str] = Field(None, description="The date and time when booking was closed")
-    workZones: Optional[List[QuotaV2WorkZone]] = Field(None, description="Work zone quota statuses")
+    used: Optional[int] = Field(
+        None, description="The amount of consumed capacity in minutes"
+    )
+    quotaIsClosed: Optional[bool] = Field(
+        None, description="Indicates if the booking has been closed"
+    )
+    quotaIsAutoClosed: Optional[bool] = Field(
+        None, description="Indicates if automatically closed by schedule"
+    )
+    scheduledCloseTime: Optional[str] = Field(
+        None, description="The scheduled date and time when booking closes"
+    )
+    closedAt: Optional[str] = Field(
+        None, description="The date and time when booking was closed"
+    )
+    workZones: Optional[List[QuotaV2WorkZone]] = Field(
+        None, description="Work zone quota statuses"
+    )
 
 
 class QuotaV2AreaCategory(BaseOFSResponse):
     """Capacity category quota information for area in v2 API"""
-    
+
     label: str = Field(description="The label of the Capacity Category")
-    maxAvailable: Optional[int] = Field(None, description="The total working time of the resources for the category")
-    maxAvailableByPlans: Optional[int] = Field(None, description="The total working time for the category based on plans")
+    maxAvailable: Optional[int] = Field(
+        None, description="The total working time of the resources for the category"
+    )
+    maxAvailableByPlans: Optional[int] = Field(
+        None, description="The total working time for the category based on plans"
+    )
     quota: Optional[int] = Field(None, description="The quota value in minutes")
-    quotaPercent: Optional[float] = Field(None, description="The quota value in percent")
-    quotaPercentDay: Optional[float] = Field(None, description="The quota value as a percent of daily quota")
-    quotaPercentCategory: Optional[float] = Field(None, description="The quota value as a percent of category quota")
-    minQuota: Optional[int] = Field(None, description="The minimal quota value in minutes")
-    used: Optional[int] = Field(None, description="The amount of consumed capacity in minutes")
-    usedQuotaPercent: Optional[float] = Field(None, description="The used quota as a percent")
-    bookedActivities: Optional[int] = Field(None, description="The number of booked activities")
-    quotaIsClosed: Optional[bool] = Field(None, description="Indicates if the booking has been closed")
-    quotaIsAutoClosed: Optional[bool] = Field(None, description="Indicates if automatically closed by schedule")
-    scheduledCloseTime: Optional[str] = Field(None, description="The scheduled date and time when booking closes")
-    closedAt: Optional[str] = Field(None, description="The date and time when booking was closed")
-    workZones: Optional[List[QuotaV2WorkZone]] = Field(None, description="Work zone quota statuses")
-    intervals: Optional[List[QuotaV2CategoryInterval]] = Field(None, description="Interval quota information")
+    quotaPercent: Optional[float] = Field(
+        None, description="The quota value in percent"
+    )
+    quotaPercentDay: Optional[float] = Field(
+        None, description="The quota value as a percent of daily quota"
+    )
+    quotaPercentCategory: Optional[float] = Field(
+        None, description="The quota value as a percent of category quota"
+    )
+    minQuota: Optional[int] = Field(
+        None, description="The minimal quota value in minutes"
+    )
+    used: Optional[int] = Field(
+        None, description="The amount of consumed capacity in minutes"
+    )
+    usedQuotaPercent: Optional[float] = Field(
+        None, description="The used quota as a percent"
+    )
+    bookedActivities: Optional[int] = Field(
+        None, description="The number of booked activities"
+    )
+    quotaIsClosed: Optional[bool] = Field(
+        None, description="Indicates if the booking has been closed"
+    )
+    quotaIsAutoClosed: Optional[bool] = Field(
+        None, description="Indicates if automatically closed by schedule"
+    )
+    scheduledCloseTime: Optional[str] = Field(
+        None, description="The scheduled date and time when booking closes"
+    )
+    closedAt: Optional[str] = Field(
+        None, description="The date and time when booking was closed"
+    )
+    workZones: Optional[List[QuotaV2WorkZone]] = Field(
+        None, description="Work zone quota statuses"
+    )
+    intervals: Optional[List[QuotaV2CategoryInterval]] = Field(
+        None, description="Interval quota information"
+    )
 
 
 class QuotaV2TimeSlotCategory(BaseOFSResponse):
     """Category quota information within a time slot for v2 API"""
-    
+
     label: str = Field(description="The label of the Capacity Category")
-    maxAvailable: Optional[int] = Field(None, description="The total working time of the resources for the category")
+    maxAvailable: Optional[int] = Field(
+        None, description="The total working time of the resources for the category"
+    )
     quota: Optional[int] = Field(None, description="The quota value in minutes")
-    quotaPercent: Optional[float] = Field(None, description="The quota value in percent")
-    quotaPercentDay: Optional[float] = Field(None, description="The quota value as a percent of daily quota")
-    quotaPercentCategory: Optional[float] = Field(None, description="The quota value as a percent of category quota")
-    minQuota: Optional[int] = Field(None, description="The minimal quota value in minutes")
-    used: Optional[int] = Field(None, description="The amount of consumed capacity in minutes")
-    usedQuotaPercent: Optional[float] = Field(None, description="The used quota as a percent")
-    bookedActivities: Optional[int] = Field(None, description="The number of booked activities")
-    quotaIsClosed: Optional[bool] = Field(None, description="Indicates if the booking has been closed")
-    quotaIsAutoClosed: Optional[bool] = Field(None, description="Indicates if automatically closed by schedule")
-    scheduledCloseTime: Optional[str] = Field(None, description="The scheduled date and time when booking closes")
-    closedAt: Optional[str] = Field(None, description="The date and time when booking was closed")
-    workZones: Optional[List[QuotaV2WorkZone]] = Field(None, description="Work zone quota statuses")
+    quotaPercent: Optional[float] = Field(
+        None, description="The quota value in percent"
+    )
+    quotaPercentDay: Optional[float] = Field(
+        None, description="The quota value as a percent of daily quota"
+    )
+    quotaPercentCategory: Optional[float] = Field(
+        None, description="The quota value as a percent of category quota"
+    )
+    minQuota: Optional[int] = Field(
+        None, description="The minimal quota value in minutes"
+    )
+    used: Optional[int] = Field(
+        None, description="The amount of consumed capacity in minutes"
+    )
+    usedQuotaPercent: Optional[float] = Field(
+        None, description="The used quota as a percent"
+    )
+    bookedActivities: Optional[int] = Field(
+        None, description="The number of booked activities"
+    )
+    quotaIsClosed: Optional[bool] = Field(
+        None, description="Indicates if the booking has been closed"
+    )
+    quotaIsAutoClosed: Optional[bool] = Field(
+        None, description="Indicates if automatically closed by schedule"
+    )
+    scheduledCloseTime: Optional[str] = Field(
+        None, description="The scheduled date and time when booking closes"
+    )
+    closedAt: Optional[str] = Field(
+        None, description="The date and time when booking was closed"
+    )
+    workZones: Optional[List[QuotaV2WorkZone]] = Field(
+        None, description="Work zone quota statuses"
+    )
 
 
 class QuotaV2AreaTimeSlot(BaseOFSResponse):
     """Time slot quota information for area in v2 API"""
-    
+
     label: str = Field(description="Label of the time slot")
-    maxAvailable: Optional[int] = Field(None, description="The total working time of the resources")
-    otherActivities: Optional[int] = Field(None, description="Total travel time and duration of non-capacity activities")
+    maxAvailable: Optional[int] = Field(
+        None, description="The total working time of the resources"
+    )
+    otherActivities: Optional[int] = Field(
+        None, description="Total travel time and duration of non-capacity activities"
+    )
     quota: Optional[int] = Field(None, description="The quota value in minutes")
-    quotaPercent: Optional[float] = Field(None, description="The quota value in percent")
-    quotaPercentDay: Optional[float] = Field(None, description="The quota value as a percent of daily quota")
-    minQuota: Optional[int] = Field(None, description="The minimal quota value in minutes")
-    used: Optional[int] = Field(None, description="The amount of consumed capacity in minutes")
-    usedQuotaPercent: Optional[float] = Field(None, description="The used quota as a percent")
-    bookedActivities: Optional[int] = Field(None, description="The number of booked activities")
-    quotaIsClosed: Optional[bool] = Field(None, description="Indicates if the booking has been closed")
-    quotaIsAutoClosed: Optional[bool] = Field(None, description="Indicates if automatically closed by schedule")
-    scheduledCloseTime: Optional[str] = Field(None, description="The scheduled date and time when booking closes")
-    closedAt: Optional[str] = Field(None, description="The date and time when booking was closed")
-    categories: Optional[List[QuotaV2TimeSlotCategory]] = Field(None, description="Category quota information")
+    quotaPercent: Optional[float] = Field(
+        None, description="The quota value in percent"
+    )
+    quotaPercentDay: Optional[float] = Field(
+        None, description="The quota value as a percent of daily quota"
+    )
+    minQuota: Optional[int] = Field(
+        None, description="The minimal quota value in minutes"
+    )
+    used: Optional[int] = Field(
+        None, description="The amount of consumed capacity in minutes"
+    )
+    usedQuotaPercent: Optional[float] = Field(
+        None, description="The used quota as a percent"
+    )
+    bookedActivities: Optional[int] = Field(
+        None, description="The number of booked activities"
+    )
+    quotaIsClosed: Optional[bool] = Field(
+        None, description="Indicates if the booking has been closed"
+    )
+    quotaIsAutoClosed: Optional[bool] = Field(
+        None, description="Indicates if automatically closed by schedule"
+    )
+    scheduledCloseTime: Optional[str] = Field(
+        None, description="The scheduled date and time when booking closes"
+    )
+    closedAt: Optional[str] = Field(
+        None, description="The date and time when booking was closed"
+    )
+    categories: Optional[List[QuotaV2TimeSlotCategory]] = Field(
+        None, description="Category quota information"
+    )
 
 
 class QuotaV2AreaInterval(BaseOFSResponse):
     """Area interval quota information for v2 API"""
-    
-    timeFrom: str = Field(description="The start time of the time interval in HH:MM format")
+
+    timeFrom: str = Field(
+        description="The start time of the time interval in HH:MM format"
+    )
     timeTo: str = Field(description="The end time of the time interval in HH:MM format")
-    quotaIsClosed: Optional[bool] = Field(None, description="Indicates if the booking has been closed")
-    quotaIsAutoClosed: Optional[bool] = Field(None, description="Indicates if automatically closed by schedule")
-    scheduledCloseTime: Optional[str] = Field(None, description="The scheduled date and time when booking closes")
-    closedAt: Optional[str] = Field(None, description="The date and time when booking was closed")
+    quotaIsClosed: Optional[bool] = Field(
+        None, description="Indicates if the booking has been closed"
+    )
+    quotaIsAutoClosed: Optional[bool] = Field(
+        None, description="Indicates if automatically closed by schedule"
+    )
+    scheduledCloseTime: Optional[str] = Field(
+        None, description="The scheduled date and time when booking closes"
+    )
+    closedAt: Optional[str] = Field(
+        None, description="The date and time when booking was closed"
+    )
 
 
 class QuotaV2Area(BaseOFSResponse):
     """Capacity area quota information for v2 API"""
-    
-    label: Optional[str] = Field(None, description="The label of the Capacity Area (not returned for aggregated results)")
-    maxAvailable: Optional[int] = Field(None, description="The total working time of the resources")
-    maxAvailableByPlans: Optional[int] = Field(None, description="The total working time based on plans")
-    otherActivities: Optional[int] = Field(None, description="Total travel time and duration of non-capacity activities")
+
+    label: Optional[str] = Field(
+        None,
+        description="The label of the Capacity Area (not returned for aggregated results)",
+    )
+    maxAvailable: Optional[int] = Field(
+        None, description="The total working time of the resources"
+    )
+    maxAvailableByPlans: Optional[int] = Field(
+        None, description="The total working time based on plans"
+    )
+    otherActivities: Optional[int] = Field(
+        None, description="Total travel time and duration of non-capacity activities"
+    )
     quota: Optional[int] = Field(None, description="The quota value in minutes")
-    quotaPercent: Optional[float] = Field(None, description="The quota value in percent")
-    minQuota: Optional[int] = Field(None, description="The minimal quota value in minutes")
-    used: Optional[int] = Field(None, description="The amount of consumed capacity in minutes")
-    usedQuotaPercent: Optional[float] = Field(None, description="The used quota as a percent")
-    bookedActivities: Optional[int] = Field(None, description="The number of booked activities")
-    quotaIsClosed: Optional[bool] = Field(None, description="Indicates if the booking has been closed")
-    quotaIsAutoClosed: Optional[bool] = Field(None, description="Indicates if automatically closed by schedule")
-    scheduledCloseTime: Optional[str] = Field(None, description="The scheduled date and time when booking closes")
-    closedAt: Optional[str] = Field(None, description="The date and time when booking was closed")
-    intervals: Optional[List[QuotaV2AreaInterval]] = Field(None, description="Interval information")
-    categories: Optional[List[QuotaV2AreaCategory]] = Field(None, description="Category quota information")
-    timeSlots: Optional[List[QuotaV2AreaTimeSlot]] = Field(None, description="Time slot quota information")
+    quotaPercent: Optional[float] = Field(
+        None, description="The quota value in percent"
+    )
+    minQuota: Optional[int] = Field(
+        None, description="The minimal quota value in minutes"
+    )
+    used: Optional[int] = Field(
+        None, description="The amount of consumed capacity in minutes"
+    )
+    usedQuotaPercent: Optional[float] = Field(
+        None, description="The used quota as a percent"
+    )
+    bookedActivities: Optional[int] = Field(
+        None, description="The number of booked activities"
+    )
+    quotaIsClosed: Optional[bool] = Field(
+        None, description="Indicates if the booking has been closed"
+    )
+    quotaIsAutoClosed: Optional[bool] = Field(
+        None, description="Indicates if automatically closed by schedule"
+    )
+    scheduledCloseTime: Optional[str] = Field(
+        None, description="The scheduled date and time when booking closes"
+    )
+    closedAt: Optional[str] = Field(
+        None, description="The date and time when booking was closed"
+    )
+    intervals: Optional[List[QuotaV2AreaInterval]] = Field(
+        None, description="Interval information"
+    )
+    categories: Optional[List[QuotaV2AreaCategory]] = Field(
+        None, description="Category quota information"
+    )
+    timeSlots: Optional[List[QuotaV2AreaTimeSlot]] = Field(
+        None, description="Time slot quota information"
+    )
 
 
 class QuotaV2ResponseItem(BaseOFSResponse):
     """Individual quota response item by date for v2 API"""
-    
+
     date: str = Field(description="Date in the YYYY-MM-DD format", format="date")
-    areas: List[QuotaV2Area] = Field(description="Array of quota information for each capacity area")
+    areas: List[QuotaV2Area] = Field(
+        description="Array of quota information for each capacity area"
+    )
 
 
 class GetQuotaV2Response(BaseOFSResponse):
     """Response model for quota v2 endpoint"""
-    
-    items: List[QuotaV2ResponseItem] = Field(description="Array of quota information for each requested date")
+
+    items: List[QuotaV2ResponseItem] = Field(
+        description="Array of quota information for each requested date"
+    )

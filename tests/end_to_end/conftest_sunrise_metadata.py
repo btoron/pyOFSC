@@ -4,12 +4,6 @@ This module provides common fixtures and test data used by both GET and PUT
 metadata test files to avoid duplication and ensure consistency.
 """
 
-import os
-
-import pytest
-
-from ofsc.client import OFSC
-
 
 def get_test_data(collection: str, version: str = "25A") -> list:
     return (

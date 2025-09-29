@@ -263,12 +263,7 @@ class TestMetadataAPIAsyncClient:
 def mock_capacity_area_categories_response():
     """Mock capacity area categories API response."""
     return {
-        "items": [
-            {
-                "label": "EST",
-                "name": "Estimation"
-            }
-        ],
+        "items": [{"label": "EST", "name": "Estimation"}],
         "totalResults": 1,
         "limit": 100,
         "offset": 0,
@@ -281,10 +276,7 @@ def mock_capacity_area_workzones_v2_response():
     """Mock capacity area work zones v2 API response."""
     return {
         "items": [
-            {
-                "workZoneLabel": "ALTAMONTE_SPRINGS",
-                "workZoneName": "ALTAMONTE SPRINGS"
-            }
+            {"workZoneLabel": "ALTAMONTE_SPRINGS", "workZoneName": "ALTAMONTE SPRINGS"}
         ],
         "totalResults": 1,
         "limit": 100,
@@ -302,7 +294,7 @@ def mock_capacity_area_timeslots_response():
                 "label": "08-10",
                 "name": "08-10",
                 "timeFrom": "08:00:00",
-                "timeTo": "10:00:00"
+                "timeTo": "10:00:00",
             }
         ],
         "totalResults": 1,
@@ -316,15 +308,7 @@ def mock_capacity_area_timeslots_response():
 def mock_capacity_area_timeintervals_response():
     """Mock capacity area time intervals API response."""
     return {
-        "items": [
-            {
-                "timeFrom": "00",
-                "timeTo": "08"
-            },
-            {
-                "timeFrom": "08"
-            }
-        ],
+        "items": [{"timeFrom": "00", "timeTo": "08"}, {"timeFrom": "08"}],
         "totalResults": 2,
         "limit": 100,
         "offset": 0,
@@ -340,7 +324,7 @@ def mock_capacity_area_organizations_response():
             {
                 "label": "default",
                 "name": "Supremo Fitness Organization",
-                "type": "inhouse"
+                "type": "inhouse",
             }
         ],
         "totalResults": 1,
@@ -355,12 +339,16 @@ class TestCapacityAreaSubResourcesAPI:
     """Test Capacity Area Sub-Resource API endpoints (16-21)."""
 
     @respx.mock
-    async def test_get_capacity_area_categories(self, mock_capacity_area_categories_response):
+    async def test_get_capacity_area_categories(
+        self, mock_capacity_area_categories_response
+    ):
         """Test get_capacity_area_categories endpoint."""
         route = respx.get(
             "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/FLUSA/capacityCategories"
         )
-        route.mock(return_value=Response(200, json=mock_capacity_area_categories_response))
+        route.mock(
+            return_value=Response(200, json=mock_capacity_area_categories_response)
+        )
 
         async with OFSC(
             instance="demo", client_id="test_id", client_secret="test_secret"
@@ -373,12 +361,16 @@ class TestCapacityAreaSubResourcesAPI:
             assert result.items[0].name == "Estimation"
 
     @respx.mock
-    async def test_get_capacity_area_workzones(self, mock_capacity_area_workzones_v2_response):
+    async def test_get_capacity_area_workzones(
+        self, mock_capacity_area_workzones_v2_response
+    ):
         """Test get_capacity_area_workzones endpoint."""
         route = respx.get(
             "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v2/capacityAreas/FLUSA/workZones"
         )
-        route.mock(return_value=Response(200, json=mock_capacity_area_workzones_v2_response))
+        route.mock(
+            return_value=Response(200, json=mock_capacity_area_workzones_v2_response)
+        )
 
         async with OFSC(
             instance="demo", client_id="test_id", client_secret="test_secret"
@@ -391,12 +383,16 @@ class TestCapacityAreaSubResourcesAPI:
             assert result.items[0].workZoneName == "ALTAMONTE SPRINGS"
 
     @respx.mock
-    async def test_get_capacity_area_timeslots(self, mock_capacity_area_timeslots_response):
+    async def test_get_capacity_area_timeslots(
+        self, mock_capacity_area_timeslots_response
+    ):
         """Test get_capacity_area_timeslots endpoint."""
         route = respx.get(
             "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/FLUSA/timeSlots"
         )
-        route.mock(return_value=Response(200, json=mock_capacity_area_timeslots_response))
+        route.mock(
+            return_value=Response(200, json=mock_capacity_area_timeslots_response)
+        )
 
         async with OFSC(
             instance="demo", client_id="test_id", client_secret="test_secret"
@@ -411,12 +407,16 @@ class TestCapacityAreaSubResourcesAPI:
             assert result.items[0].timeTo == "10:00:00"
 
     @respx.mock
-    async def test_get_capacity_area_timeintervals(self, mock_capacity_area_timeintervals_response):
+    async def test_get_capacity_area_timeintervals(
+        self, mock_capacity_area_timeintervals_response
+    ):
         """Test get_capacity_area_timeintervals endpoint."""
         route = respx.get(
             "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/FLUSA/timeIntervals"
         )
-        route.mock(return_value=Response(200, json=mock_capacity_area_timeintervals_response))
+        route.mock(
+            return_value=Response(200, json=mock_capacity_area_timeintervals_response)
+        )
 
         async with OFSC(
             instance="demo", client_id="test_id", client_secret="test_secret"
@@ -431,12 +431,16 @@ class TestCapacityAreaSubResourcesAPI:
             assert result.items[1].timeTo is None  # Some intervals only have timeFrom
 
     @respx.mock
-    async def test_get_capacity_area_organizations(self, mock_capacity_area_organizations_response):
+    async def test_get_capacity_area_organizations(
+        self, mock_capacity_area_organizations_response
+    ):
         """Test get_capacity_area_organizations endpoint."""
         route = respx.get(
             "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/FLUSA/organizations"
         )
-        route.mock(return_value=Response(200, json=mock_capacity_area_organizations_response))
+        route.mock(
+            return_value=Response(200, json=mock_capacity_area_organizations_response)
+        )
 
         async with OFSC(
             instance="demo", client_id="test_id", client_secret="test_secret"
@@ -458,16 +462,16 @@ class TestCapacityAreaSubResourcesAPI:
             # Test empty label for all methods
             with pytest.raises(OFSValidationException):
                 await client.metadata.get_capacity_area_categories("")
-            
+
             with pytest.raises(OFSValidationException):
                 await client.metadata.get_capacity_area_workzones("")
-            
+
             with pytest.raises(OFSValidationException):
                 await client.metadata.get_capacity_area_timeslots("")
-            
+
             with pytest.raises(OFSValidationException):
                 await client.metadata.get_capacity_area_timeintervals("")
-            
+
             with pytest.raises(OFSValidationException):
                 await client.metadata.get_capacity_area_organizations("")
 
@@ -480,10 +484,10 @@ class TestCapacityAreaSubResourcesAPI:
             # Test invalid pagination for one method (they all use same validation)
             with pytest.raises(OFSValidationException):
                 await client.metadata.get_capacity_area_categories("FLUSA", offset=-1)
-            
+
             with pytest.raises(OFSValidationException):
                 await client.metadata.get_capacity_area_categories("FLUSA", limit=0)
-            
+
             with pytest.raises(OFSValidationException):
                 await client.metadata.get_capacity_area_categories("FLUSA", limit=1001)
 
@@ -494,23 +498,20 @@ def mock_activity_type_group_response():
     return {
         "label": "test_group",
         "name": "Test Activity Type Group",
-        "activityTypes": [
-            {"label": "activity_1"},
-            {"label": "activity_2"}
-        ],
+        "activityTypes": [{"label": "activity_1"}, {"label": "activity_2"}],
         "translations": [
             {
                 "language": "en",
                 "name": "Test Activity Type Group",
-                "languageISO": "en-US"
+                "languageISO": "en-US",
             }
         ],
         "links": [
             {
                 "rel": "canonical",
-                "href": "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/activityTypeGroups/test_group"
+                "href": "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/activityTypeGroups/test_group",
             }
-        ]
+        ],
     }
 
 
@@ -519,7 +520,9 @@ class TestActivityTypeGroupAPI:
     """Test Activity Type Group API endpoints including create/replace."""
 
     @respx.mock
-    async def test_create_or_replace_activity_type_group_success(self, mock_activity_type_group_response):
+    async def test_create_or_replace_activity_type_group_success(
+        self, mock_activity_type_group_response
+    ):
         """Test successful creation/replacement of activity type group with translations."""
         route = respx.put(
             "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/activityTypeGroups/test_group"
@@ -530,19 +533,33 @@ class TestActivityTypeGroupAPI:
             instance="demo", client_id="test_id", client_secret="test_secret"
         ) as client:
             # Create translations
-            translations = TranslationList([
-                Translation(language="en", name="Test Activity Type Group", languageISO="en-US"),
-                Translation(language="es", name="Grupo de Tipos de Actividad", languageISO="es-ES")
-            ])
-            
-            result = await client.metadata.create_or_replace_activity_type_group("test_group", translations)
-            
+            translations = TranslationList(
+                [
+                    Translation(
+                        language="en",
+                        name="Test Activity Type Group",
+                        languageISO="en-US",
+                    ),
+                    Translation(
+                        language="es",
+                        name="Grupo de Tipos de Actividad",
+                        languageISO="es-ES",
+                    ),
+                ]
+            )
+
+            result = await client.metadata.create_or_replace_activity_type_group(
+                "test_group", translations
+            )
+
             assert isinstance(result, ActivityTypeGroup)
             assert result.label == "test_group"
             assert result.name == "Test Activity Type Group"
 
     @respx.mock
-    async def test_create_or_replace_activity_type_group_minimal(self, mock_activity_type_group_response):
+    async def test_create_or_replace_activity_type_group_minimal(
+        self, mock_activity_type_group_response
+    ):
         """Test creation with no translations (empty request)."""
         route = respx.put(
             "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/activityTypeGroups/minimal_group"
@@ -555,9 +572,9 @@ class TestActivityTypeGroupAPI:
             "links": [
                 {
                     "rel": "canonical",
-                    "href": "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/activityTypeGroups/minimal_group"
+                    "href": "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/activityTypeGroups/minimal_group",
                 }
-            ]
+            ],
         }
         route.mock(return_value=Response(200, json=minimal_response))
 
@@ -565,8 +582,10 @@ class TestActivityTypeGroupAPI:
             instance="demo", client_id="test_id", client_secret="test_secret"
         ) as client:
             # Call with no translations (None)
-            result = await client.metadata.create_or_replace_activity_type_group("minimal_group", None)
-            
+            result = await client.metadata.create_or_replace_activity_type_group(
+                "minimal_group", None
+            )
+
             assert isinstance(result, ActivityTypeGroup)
             assert result.label == "minimal_group"
             assert result.name == "Minimal Group"
@@ -577,24 +596,32 @@ class TestActivityTypeGroupAPI:
         route = respx.put(
             "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/activityTypeGroups/request_test"
         )
-        route.mock(return_value=Response(200, json={"label": "request_test", "name": "Test"}))
+        route.mock(
+            return_value=Response(200, json={"label": "request_test", "name": "Test"})
+        )
 
         async with OFSC(
             instance="demo", client_id="test_id", client_secret="test_secret"
         ) as client:
-            translations = TranslationList([
-                Translation(language="en", name="Request Test Group", languageISO="en-US")
-            ])
-            
-            await client.metadata.create_or_replace_activity_type_group("request_test", translations)
-            
+            translations = TranslationList(
+                [
+                    Translation(
+                        language="en", name="Request Test Group", languageISO="en-US"
+                    )
+                ]
+            )
+
+            await client.metadata.create_or_replace_activity_type_group(
+                "request_test", translations
+            )
+
             # Verify the request was made with correct JSON body
             assert len(route.calls) == 1
             request_call = route.calls[0]
             assert request_call.request.method == "PUT"
-            
+
             # Check request body contains expected fields
-            request_json = request_call.request.content.decode('utf-8')
+            request_json = request_call.request.content.decode("utf-8")
             assert '"translations"' in request_json
             assert '"language":"en"' in request_json
             assert '"name":"Request Test Group"' in request_json
@@ -617,7 +644,9 @@ class TestActivityTypeGroupAPI:
             empty_translations = TranslationList([])
             # This should not raise an exception
             try:
-                await client.metadata.create_or_replace_activity_type_group("test", empty_translations)
+                await client.metadata.create_or_replace_activity_type_group(
+                    "test", empty_translations
+                )
             except Exception as e:
                 # Should only fail on network/API issues, not validation
                 assert "validation" not in str(e).lower()
@@ -635,7 +664,9 @@ class TestActivityTypeGroupAPI:
         ) as client:
             # The client should raise an appropriate exception for HTTP errors
             with pytest.raises(Exception):  # Should raise OFS exception for HTTP errors
-                await client.metadata.create_or_replace_activity_type_group("error_test", None)
+                await client.metadata.create_or_replace_activity_type_group(
+                    "error_test", None
+                )
 
 
 @pytest.fixture
@@ -649,18 +680,14 @@ def mock_capacity_category_response():
         "workSkills": [],
         "workSkillGroups": [],
         "translations": [
-            {
-                "language": "en",
-                "name": "Test Category",
-                "languageISO": "en-US"
-            }
+            {"language": "en", "name": "Test Category", "languageISO": "en-US"}
         ],
         "links": [
             {
                 "rel": "canonical",
-                "href": "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityCategories/TEST_CAT"
+                "href": "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityCategories/TEST_CAT",
             }
-        ]
+        ],
     }
 
 
@@ -673,7 +700,7 @@ def mock_capacity_category_request():
         active=True,
         timeSlots=[],
         workSkills=[],
-        workSkillGroups=[]
+        workSkillGroups=[],
     )
 
 
@@ -682,7 +709,9 @@ class TestCapacityCategoryAPI:
     """Test Capacity Category API endpoints including create/replace and delete."""
 
     @respx.mock
-    async def test_create_or_replace_capacity_category_success(self, mock_capacity_category_response, mock_capacity_category_request):
+    async def test_create_or_replace_capacity_category_success(
+        self, mock_capacity_category_response, mock_capacity_category_request
+    ):
         """Test successful creation/replacement of capacity category."""
         route = respx.put(
             "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityCategories/TEST_CAT"
@@ -692,33 +721,43 @@ class TestCapacityCategoryAPI:
         async with OFSC(
             instance="demo", client_id="test_id", client_secret="test_secret"
         ) as client:
-            result = await client.metadata.create_or_replace_capacity_category("TEST_CAT", mock_capacity_category_request)
-            
+            result = await client.metadata.create_or_replace_capacity_category(
+                "TEST_CAT", mock_capacity_category_request
+            )
+
             assert isinstance(result, CapacityCategoryResponse)
             assert result.label == "TEST_CAT"
             assert result.name == "Test Category"
             assert result.active is True
 
     @respx.mock
-    async def test_create_or_replace_capacity_category_request_body(self, mock_capacity_category_request):
+    async def test_create_or_replace_capacity_category_request_body(
+        self, mock_capacity_category_request
+    ):
         """Test that request body is properly serialized."""
         route = respx.put(
             "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityCategories/BODY_TEST"
         )
-        route.mock(return_value=Response(200, json={"label": "BODY_TEST", "name": "Test", "active": True}))
+        route.mock(
+            return_value=Response(
+                200, json={"label": "BODY_TEST", "name": "Test", "active": True}
+            )
+        )
 
         async with OFSC(
             instance="demo", client_id="test_id", client_secret="test_secret"
         ) as client:
-            await client.metadata.create_or_replace_capacity_category("BODY_TEST", mock_capacity_category_request)
-            
+            await client.metadata.create_or_replace_capacity_category(
+                "BODY_TEST", mock_capacity_category_request
+            )
+
             # Verify the request was made with correct JSON body
             assert len(route.calls) == 1
             request_call = route.calls[0]
             assert request_call.request.method == "PUT"
-            
+
             # Check request body contains expected fields
-            request_json = request_call.request.content.decode('utf-8')
+            request_json = request_call.request.content.decode("utf-8")
             assert '"label":"TEST_CAT"' in request_json
             assert '"name":"Test Category"' in request_json
             assert '"active":true' in request_json
@@ -729,14 +768,14 @@ class TestCapacityCategoryAPI:
             instance="demo", client_id="test_id", client_secret="test_secret"
         ) as client:
             mock_request = CapacityCategoryRequest(
-                label="TEST",
-                name="Test",
-                active=True
+                label="TEST", name="Test", active=True
             )
-            
+
             # Test empty label
             with pytest.raises(OFSValidationException):
-                await client.metadata.create_or_replace_capacity_category("", mock_request)
+                await client.metadata.create_or_replace_capacity_category(
+                    "", mock_request
+                )
 
     @respx.mock
     async def test_create_or_replace_capacity_category_http_error(self):
@@ -750,14 +789,14 @@ class TestCapacityCategoryAPI:
             instance="demo", client_id="test_id", client_secret="test_secret"
         ) as client:
             mock_request = CapacityCategoryRequest(
-                label="ERROR_TEST",
-                name="Error Test",
-                active=True
+                label="ERROR_TEST", name="Error Test", active=True
             )
-            
+
             # The client should raise an appropriate exception for HTTP errors
             with pytest.raises(Exception):  # Should raise OFS exception for HTTP errors
-                await client.metadata.create_or_replace_capacity_category("ERROR_TEST", mock_request)
+                await client.metadata.create_or_replace_capacity_category(
+                    "ERROR_TEST", mock_request
+                )
 
     @respx.mock
     async def test_delete_capacity_category_success(self):
@@ -765,14 +804,16 @@ class TestCapacityCategoryAPI:
         route = respx.delete(
             "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityCategories/DELETE_TEST"
         )
-        route.mock(return_value=Response(204))  # HTTP 204 No Content for successful deletion
+        route.mock(
+            return_value=Response(204)
+        )  # HTTP 204 No Content for successful deletion
 
         async with OFSC(
             instance="demo", client_id="test_id", client_secret="test_secret"
         ) as client:
             # Should not raise any exception
             await client.metadata.delete_capacity_category("DELETE_TEST")
-            
+
             # Verify the request was made
             assert len(route.calls) == 1
             request_call = route.calls[0]
@@ -816,16 +857,16 @@ class TestCapacityCategoryAPI:
                 {
                     "language": "en",
                     "name": "Full Test Category",
-                    "languageISO": "en-US"
+                    "languageISO": "en-US",
                 },
                 {
-                    "language": "es", 
+                    "language": "es",
                     "name": "Categoría de Prueba Completa",
-                    "languageISO": "es-ES"
-                }
-            ]
+                    "languageISO": "es-ES",
+                },
+            ],
         }
-        
+
         route = respx.put(
             "https://demo.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityCategories/FULL_TEST"
         )
@@ -841,14 +882,26 @@ class TestCapacityCategoryAPI:
                 timeSlots=[{"label": "08-10", "name": "08-10"}],
                 workSkills=[{"label": "EST", "name": "Estimation"}],
                 workSkillGroups=[{"label": "TECH", "name": "Technical"}],
-                translations=TranslationList([
-                    Translation(language="en", name="Full Test Category", languageISO="en-US"),
-                    Translation(language="es", name="Categoría de Prueba Completa", languageISO="es-ES")
-                ])
+                translations=TranslationList(
+                    [
+                        Translation(
+                            language="en",
+                            name="Full Test Category",
+                            languageISO="en-US",
+                        ),
+                        Translation(
+                            language="es",
+                            name="Categoría de Prueba Completa",
+                            languageISO="es-ES",
+                        ),
+                    ]
+                ),
             )
-            
-            result = await client.metadata.create_or_replace_capacity_category("FULL_TEST", full_request)
-            
+
+            result = await client.metadata.create_or_replace_capacity_category(
+                "FULL_TEST", full_request
+            )
+
             assert isinstance(result, CapacityCategoryResponse)
             assert result.label == "FULL_TEST"
             assert result.name == "Full Test Category"

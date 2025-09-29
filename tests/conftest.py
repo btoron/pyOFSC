@@ -221,12 +221,12 @@ def pytest_configure(config):
 
     # Implement fallback strategy for parallel execution
     _implement_parallel_fallback(config)
-    
+
     # NEW: Configure optimal distribution based on test mix
-    if hasattr(config.option, 'include_e2e') and config.option.include_e2e:
+    if hasattr(config.option, "include_e2e") and config.option.include_e2e:
         # Set environment variable for loadfile mode
         os.environ["PYTEST_XDIST_MODE"] = "loadfile"
-        
+
         # Override dist mode if not manually set
         if hasattr(config.option, "dist") and config.option.dist == "loadscope":
             config.option.dist = "loadfile"
@@ -235,7 +235,7 @@ def pytest_configure(config):
 def _configure_auto_parallel(config):
     """Configure automatic parallel execution based on test paths and environment."""
     # Store command line option for later use
-    if hasattr(config.option, 'include_e2e'):
+    if hasattr(config.option, "include_e2e"):
         _should_include_slow_tests._include_e2e = config.option.include_e2e
 
     # Check if user explicitly disabled parallel execution
@@ -299,7 +299,7 @@ def _calculate_optimal_workers(test_paths):
             return int(os.environ["PYTEST_WORKERS"])
         except ValueError:
             pass
-    
+
     # Check if we're using loadfile distribution
     # This is set when using the optimized config
     if os.environ.get("PYTEST_XDIST_MODE") == "loadfile":
@@ -316,6 +316,7 @@ def _calculate_optimal_workers(test_paths):
         if path_str.endswith("tests") or path_str.endswith("tests/"):
             # This is a mixed scenario - we need to analyze subdirectories
             import glob
+
             test_files = glob.glob(str(Path(path) / "**/test_*.py"), recursive=True)
             for test_file in test_files:
                 test_file_str = test_file.lower()
@@ -417,7 +418,7 @@ def _handle_mixed_test_scenario(test_paths, categories, cpu_count):
 def _should_include_slow_tests():
     """Check if slow tests should be included in mixed scenarios."""
     # Check for command line flag (will be set by pytest_configure)
-    return getattr(_should_include_slow_tests, '_include_e2e', False)
+    return getattr(_should_include_slow_tests, "_include_e2e", False)
 
 
 def _mark_slow_tests_for_exclusion(test_paths):
@@ -426,7 +427,9 @@ def _mark_slow_tests_for_exclusion(test_paths):
     excluded_patterns = []
     for path in test_paths:
         path_str = str(path).lower()
-        if any(keyword in path_str for keyword in ["end_to_end", "live", "integration"]):
+        if any(
+            keyword in path_str for keyword in ["end_to_end", "live", "integration"]
+        ):
             excluded_patterns.append(path)
 
     # Always mark for exclusion when this function is called
@@ -436,22 +439,30 @@ def _mark_slow_tests_for_exclusion(test_paths):
 def _print_execution_status(test_paths, optimal_workers, enable_rate_limiting):
     """Print detailed status about what's being executed."""
     # Check if any tests were excluded
-    excluded_patterns = getattr(_mark_slow_tests_for_exclusion, '_excluded_patterns', [])
-    
+    excluded_patterns = getattr(
+        _mark_slow_tests_for_exclusion, "_excluded_patterns", []
+    )
+
     # Check if this is a mixed scenario with --include-e2e
     include_slow = _should_include_slow_tests()
-    
+
     if excluded_patterns:
-        print(f"\n🚀 Auto-parallel enabled: {optimal_workers} workers (fast tests only)")
+        print(
+            f"\n🚀 Auto-parallel enabled: {optimal_workers} workers (fast tests only)"
+        )
         print("📋 Excluded end-to-end/live tests for better performance")
         print("💡 Use --include-e2e to run all tests")
-    elif include_slow and any(path.endswith("tests") or path.endswith("tests/") for path in test_paths):
+    elif include_slow and any(
+        path.endswith("tests") or path.endswith("tests/") for path in test_paths
+    ):
         print(f"\n🚀 Auto-parallel enabled: {optimal_workers} workers (mixed tests)")
         print("📋 Running fast and slow tests together")
         if enable_rate_limiting:
             print("⚡ Rate limiting enabled for API tests")
     else:
-        print(f"\n🚀 Auto-parallel enabled: {optimal_workers} workers, rate limiting: {enable_rate_limiting}")
+        print(
+            f"\n🚀 Auto-parallel enabled: {optimal_workers} workers, rate limiting: {enable_rate_limiting}"
+        )
 
 
 def _should_enable_rate_limiting(test_paths):
@@ -461,28 +472,27 @@ def _should_enable_rate_limiting(test_paths):
     paths = [Path(p) for p in test_paths]
 
     # Check if slow tests were excluded
-    excluded_patterns = getattr(_mark_slow_tests_for_exclusion, '_excluded_patterns', [])
+    excluded_patterns = getattr(
+        _mark_slow_tests_for_exclusion, "_excluded_patterns", []
+    )
     if excluded_patterns:
         # Slow tests excluded, no rate limiting needed
         return False
 
     # Check if user explicitly wants to include slow tests
     include_slow = _should_include_slow_tests()
-    
+
     if not include_slow:
         return False
 
     # For mixed scenarios with --include-e2e, be smarter about rate limiting
     # The issue might be that we're being too aggressive with rate limiting
     # Since manual -n 8 works for e2e tests, maybe rate limiting isn't the core issue
-    
+
     # Enable rate limiting only for specific e2e-heavy scenarios
     for path in paths:
         path_str = str(path).lower()
-        if any(
-            keyword in path_str
-            for keyword in ["end_to_end", "e2e", "live"]
-        ):
+        if any(keyword in path_str for keyword in ["end_to_end", "e2e", "live"]):
             # Direct e2e test execution - enable rate limiting
             return True
 
@@ -614,8 +624,10 @@ def pytest_runtest_logreport(report):
 
 def pytest_collection_modifyitems(config, items):
     """Modify test collection to exclude slow tests in mixed scenarios."""
-    excluded_patterns = getattr(_mark_slow_tests_for_exclusion, '_excluded_patterns', [])
-    
+    excluded_patterns = getattr(
+        _mark_slow_tests_for_exclusion, "_excluded_patterns", []
+    )
+
     # NEW: Always sort tests by speed (fast first)
     def get_test_priority(item):
         path_str = str(item.fspath).lower()
@@ -627,33 +639,37 @@ def pytest_collection_modifyitems(config, items):
         elif "end_to_end" in path_str or "e2e" in path_str or "live" in path_str:
             return 3  # Slowest
         return 1  # Default
-    
+
     # Sort all items regardless of exclusion
     items.sort(key=get_test_priority)
-    
+
     # Continue with existing exclusion logic
     if not excluded_patterns:
         return  # No exclusions needed
-    
+
     # Filter out slow tests
     original_count = len(items)
     items_to_keep = []
     excluded_count = 0
-    
+
     for item in items:
         item_path = str(item.fspath).lower()
-        should_exclude = any(keyword in item_path for keyword in ["end_to_end", "live", "integration"])
-        
+        should_exclude = any(
+            keyword in item_path for keyword in ["end_to_end", "live", "integration"]
+        )
+
         if should_exclude:
             excluded_count += 1
         else:
             items_to_keep.append(item)
-    
+
     # Update the items list in place
     items[:] = items_to_keep
-    
+
     if excluded_count > 0:
-        print(f"📋 Excluded {excluded_count} slow tests, running {len(items_to_keep)} fast tests")
+        print(
+            f"📋 Excluded {excluded_count} slow tests, running {len(items_to_keep)} fast tests"
+        )
 
 
 def pytest_keyboard_interrupt(excinfo):

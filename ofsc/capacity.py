@@ -2,7 +2,11 @@ from typing import Optional, Union, get_args, get_origin
 from urllib.parse import urljoin
 
 # TODO: Phase 1.6 - Migrate from requests to httpx
-import mockup_requests as requests
+try:
+    import mockup_requests as requests
+except ImportError:
+    import httpx as requests
+
 from pydantic import BaseModel
 
 from ofsc.models import CsvList, OFSApi
@@ -19,26 +23,26 @@ from .models import (
 def _convert_model_to_api_params(model: BaseModel) -> dict:
     """
     Convert a Pydantic BaseModel instance to API-compatible parameters dictionary.
-    
+
     This internal function uses inspection to automatically detect and convert:
     - CsvList fields: Converts serialized CsvList objects (dict with 'value' key) to string values
     - Boolean fields: Converts boolean values to lowercase strings for API compatibility
-    
+
     :param model: Pydantic BaseModel instance to convert
     :return: Dictionary with API-compatible parameter values
     """
     # Start with model dump, excluding None values
     params = model.model_dump(exclude_none=True)
-    
+
     # Use inspection to get field type annotations
     model_fields = model.model_fields
-    
+
     # Detect CsvList fields and convert them
     for field_name, field_info in model_fields.items():
         if field_name in params:
             # Check if field type is CsvList or Optional[CsvList]
             field_type = field_info.annotation
-            
+
             # Handle Optional[CsvList] by checking Union args
             actual_type = field_type
             if get_origin(field_type) is Union:
@@ -47,19 +51,21 @@ def _convert_model_to_api_params(model: BaseModel) -> dict:
                 non_none_types = [arg for arg in union_args if arg is not type(None)]
                 if non_none_types:
                     actual_type = non_none_types[0]
-            
+
             # Convert CsvList fields
             if actual_type is CsvList:
                 field_value = params[field_name]
-                if isinstance(field_value, dict) and 'value' in field_value:
-                    params[field_name] = field_value['value']
-            
+                if isinstance(field_value, dict) and "value" in field_value:
+                    params[field_name] = field_value["value"]
+
             # Convert boolean fields to lowercase strings
-            elif actual_type is bool or (get_origin(actual_type) is Union and bool in get_args(actual_type)):
+            elif actual_type is bool or (
+                get_origin(actual_type) is Union and bool in get_args(actual_type)
+            ):
                 field_value = params[field_name]
                 if isinstance(field_value, bool):
                     params[field_name] = str(field_value).lower()
-    
+
     return params
 
 
@@ -67,14 +73,16 @@ class OFSCapacity(OFSApi):
     # OFSC Function Library
 
     @wrap_return(response_type=OBJ_RESPONSE, model=GetCapacityResponse)
-    def getAvailableCapacity(self, 
-                             dates: Union[list[str], CsvList, str],
-                             areas: Optional[Union[list[str], CsvList, str]] = None,
-                             categories: Optional[Union[list[str], CsvList, str]] = None,
-                             aggregateResults: Optional[bool] = None,
-                             availableTimeIntervals: str = "all",
-                             calendarTimeIntervals: str = "all",
-                             fields: Optional[Union[list[str], CsvList, str]] = None):
+    def getAvailableCapacity(
+        self,
+        dates: Union[list[str], CsvList, str],
+        areas: Optional[Union[list[str], CsvList, str]] = None,
+        categories: Optional[Union[list[str], CsvList, str]] = None,
+        aggregateResults: Optional[bool] = None,
+        availableTimeIntervals: str = "all",
+        calendarTimeIntervals: str = "all",
+        fields: Optional[Union[list[str], CsvList, str]] = None,
+    ):
         """
         Get available capacity for a given resource or group of resources.
 
@@ -103,12 +111,12 @@ class OFSCapacity(OFSApi):
             aggregateResults=aggregateResults,
             availableTimeIntervals=availableTimeIntervals,
             calendarTimeIntervals=calendarTimeIntervals,
-            fields=fields
+            fields=fields,
         )
-        
+
         # Convert model to API-compatible parameters using internal converter
         params = _convert_model_to_api_params(capacity_request)
-        
+
         # Build URL and make request
         base_url = self.baseUrl or ""
         url = urljoin(base_url, "/rest/ofscCapacity/v1/capacity")
@@ -120,15 +128,17 @@ class OFSCapacity(OFSApi):
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, model=GetQuotaResponse)
-    def getQuota(self, 
-                 dates: Union[list[str], CsvList, str],
-                 areas: Optional[Union[list[str], CsvList, str]] = None,
-                 categories: Optional[Union[list[str], CsvList, str]] = None,
-                 aggregateResults: Optional[bool] = None,
-                 categoryLevel: Optional[bool] = None,
-                 intervalLevel: Optional[bool] = None,
-                 returnStatuses: Optional[bool] = None,
-                 timeSlotLevel: Optional[bool] = None):
+    def getQuota(
+        self,
+        dates: Union[list[str], CsvList, str],
+        areas: Optional[Union[list[str], CsvList, str]] = None,
+        categories: Optional[Union[list[str], CsvList, str]] = None,
+        aggregateResults: Optional[bool] = None,
+        categoryLevel: Optional[bool] = None,
+        intervalLevel: Optional[bool] = None,
+        returnStatuses: Optional[bool] = None,
+        timeSlotLevel: Optional[bool] = None,
+    ):
         """
         Get quota information for specified areas and dates.
 
@@ -154,12 +164,12 @@ class OFSCapacity(OFSApi):
             categoryLevel=categoryLevel,
             intervalLevel=intervalLevel,
             returnStatuses=returnStatuses,
-            timeSlotLevel=timeSlotLevel
+            timeSlotLevel=timeSlotLevel,
         )
-        
+
         # Convert model to API-compatible parameters using internal converter
         params = _convert_model_to_api_params(quota_request)
-        
+
         # Build URL and make request
         base_url = self.baseUrl or ""
         url = urljoin(base_url, "/rest/ofscCapacity/v2/quota")

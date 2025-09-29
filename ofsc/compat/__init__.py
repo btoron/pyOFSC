@@ -5,7 +5,7 @@ allowing existing v2.x code to work with minimal changes.
 
 Usage:
     from ofsc.compat import OFSC
-    
+
     # Same API as v2.x
     client = OFSC(instance="demo", client_id="id", client_secret="secret")
     users = client.get_users()  # Returns UserListResponse (same as async API)

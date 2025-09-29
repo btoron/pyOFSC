@@ -5,7 +5,6 @@ All methods are async and return Pydantic models.
 """
 
 from typing import List, Optional
-from urllib.parse import quote
 
 import httpx
 from pydantic import BaseModel, Field, ValidationError
@@ -26,47 +25,71 @@ from ..models.capacity import (
 # Request validation models (internal use only)
 class GetCapacityParams(BaseModel):
     """Internal validation for get capacity parameters."""
-    
+
     dates: List[str] = Field(description="List of dates in YYYY-MM-DD format")
     areas: Optional[List[str]] = Field(None, description="List of capacity area labels")
-    categories: Optional[List[str]] = Field(None, description="List of capacity category labels")
+    categories: Optional[List[str]] = Field(
+        None, description="List of capacity category labels"
+    )
     fields: Optional[List[str]] = Field(None, description="List of fields to include")
     aggregateResults: bool = Field(False, description="Whether to aggregate results")
-    availableTimeIntervals: str = Field("all", description="Available time intervals filter")
-    calendarTimeIntervals: str = Field("all", description="Calendar time intervals filter")
+    availableTimeIntervals: str = Field(
+        "all", description="Available time intervals filter"
+    )
+    calendarTimeIntervals: str = Field(
+        "all", description="Calendar time intervals filter"
+    )
 
 
 class GetQuotaParams(BaseModel):
     """Internal validation for get quota parameters."""
-    
+
     dates: List[str] = Field(description="List of dates in YYYY-MM-DD format")
     areas: Optional[List[str]] = Field(None, description="List of capacity area labels")
-    categories: Optional[List[str]] = Field(None, description="List of capacity category labels")
-    aggregateResults: Optional[bool] = Field(None, description="Whether to aggregate results")
-    categoryLevel: Optional[bool] = Field(None, description="Include category-level quota")
-    intervalLevel: Optional[bool] = Field(None, description="Include interval-level quota")
-    returnStatuses: Optional[bool] = Field(None, description="Include quota status information")
-    timeSlotLevel: Optional[bool] = Field(None, description="Include time slot-level quota")
+    categories: Optional[List[str]] = Field(
+        None, description="List of capacity category labels"
+    )
+    aggregateResults: Optional[bool] = Field(
+        None, description="Whether to aggregate results"
+    )
+    categoryLevel: Optional[bool] = Field(
+        None, description="Include category-level quota"
+    )
+    intervalLevel: Optional[bool] = Field(
+        None, description="Include interval-level quota"
+    )
+    returnStatuses: Optional[bool] = Field(
+        None, description="Include quota status information"
+    )
+    timeSlotLevel: Optional[bool] = Field(
+        None, description="Include time slot-level quota"
+    )
 
 
 class GetActivityBookingOptionsParams(BaseModel):
     """Internal validation for activity booking options parameters."""
-    
-    activityId: str = Field(description="The activity ID for booking options", min_length=1)
+
+    activityId: str = Field(
+        description="The activity ID for booking options", min_length=1
+    )
     date: str = Field(description="Date in YYYY-MM-DD format", min_length=1)
-    duration: Optional[int] = Field(None, description="Expected duration in minutes", ge=1)
-    travelTime: Optional[int] = Field(None, description="Expected travel time in minutes", ge=0)
-    
-    
+    duration: Optional[int] = Field(
+        None, description="Expected duration in minutes", ge=1
+    )
+    travelTime: Optional[int] = Field(
+        None, description="Expected travel time in minutes", ge=0
+    )
+
+
 class GetBookingClosingScheduleParams(BaseModel):
     """Internal validation for booking closing schedule parameters."""
-    
+
     areas: Optional[List[str]] = Field(None, description="List of capacity area labels")
 
 
 class GetBookingStatusesParams(BaseModel):
     """Internal validation for booking statuses parameters."""
-    
+
     dates: List[str] = Field(description="List of dates in YYYY-MM-DD format")
     areas: Optional[List[str]] = Field(None, description="List of capacity area labels")
 
@@ -76,7 +99,7 @@ class CapacityAPI:
 
     def __init__(self, client: httpx.AsyncClient):
         """Initialize with httpx AsyncClient instance.
-        
+
         Args:
             client: httpx AsyncClient instance with base_url and auth headers configured
         """
@@ -84,14 +107,14 @@ class CapacityAPI:
 
     def _validate_params(self, model_class: type[BaseModel], **kwargs) -> dict:
         """Validate request parameters using Pydantic models.
-        
+
         Args:
             model_class: Pydantic model class for validation
             **kwargs: Parameters to validate
-            
+
         Returns:
             Validated parameters as dict
-            
+
         Raises:
             OFSValidationException: If validation fails
         """
@@ -102,7 +125,7 @@ class CapacityAPI:
         except ValidationError as e:
             raise OFSValidationException(
                 message=f"Invalid parameters for {model_class.__name__}",
-                errors=e.errors()
+                errors=e.errors(),
             )
 
     async def get_capacity(
@@ -116,7 +139,7 @@ class CapacityAPI:
         calendarTimeIntervals: str = "all",
     ) -> GetCapacityResponse:
         """Get capacity information for specified dates and areas.
-        
+
         Args:
             dates: List of dates in YYYY-MM-DD format (required)
             areas: List of capacity area labels to filter by
@@ -125,7 +148,7 @@ class CapacityAPI:
             aggregateResults: Whether to aggregate results across areas
             availableTimeIntervals: Available time intervals filter ("all", "none", or specific)
             calendarTimeIntervals: Calendar time intervals filter ("all", "none", or specific)
-            
+
         Returns:
             GetCapacityResponse: Capacity data for the specified parameters
         """
@@ -140,16 +163,16 @@ class CapacityAPI:
             availableTimeIntervals=availableTimeIntervals,
             calendarTimeIntervals=calendarTimeIntervals,
         )
-        
+
         # Create request model for CSV formatting
         request_data = CapacityRequest(**validated_params)
-        
+
         # Build query parameters
         params = {}
-        
+
         # Required parameters
         params["dates"] = request_data.dates.value if request_data.dates else ""
-        
+
         # Optional parameters
         if request_data.areas:
             params["areas"] = request_data.areas.value
@@ -169,7 +192,7 @@ class CapacityAPI:
             url="/rest/ofscCapacity/v1/capacity",
             params=params,
         )
-        
+
         return GetCapacityResponse.from_response(response)
 
     async def get_quota(
@@ -184,7 +207,7 @@ class CapacityAPI:
         timeSlotLevel: Optional[bool] = None,
     ) -> GetQuotaResponse:
         """Get quota information for specified dates and areas.
-        
+
         Args:
             dates: List of dates in YYYY-MM-DD format (required)
             areas: List of capacity area labels to filter by
@@ -194,7 +217,7 @@ class CapacityAPI:
             intervalLevel: Include interval-level quota information
             returnStatuses: Include quota status information
             timeSlotLevel: Include time slot-level quota information
-            
+
         Returns:
             GetQuotaResponse: Quota data for the specified parameters
         """
@@ -210,16 +233,16 @@ class CapacityAPI:
             returnStatuses=returnStatuses,
             timeSlotLevel=timeSlotLevel,
         )
-        
+
         # Create request model for CSV formatting
         request_data = GetQuotaRequest(**validated_params)
-        
+
         # Build query parameters
         params = {}
-        
+
         # Required parameters
         params["dates"] = request_data.dates.value if request_data.dates else ""
-        
+
         # Optional parameters
         if request_data.areas:
             params["areas"] = request_data.areas.value
@@ -241,7 +264,7 @@ class CapacityAPI:
             url="/rest/ofscCapacity/v1/quota",
             params=params,
         )
-        
+
         return GetQuotaResponse.from_response(response)
 
     async def patch_quota(
@@ -257,7 +280,7 @@ class CapacityAPI:
         # TODO: Add request body parameters for quota modifications
     ) -> GetQuotaResponse:
         """Update quota information for specified dates and areas.
-        
+
         Args:
             dates: List of dates in YYYY-MM-DD format (required)
             areas: List of capacity area labels to filter by
@@ -267,10 +290,10 @@ class CapacityAPI:
             intervalLevel: Include interval-level quota information
             returnStatuses: Include quota status information
             timeSlotLevel: Include time slot-level quota information
-            
+
         Returns:
             GetQuotaResponse: Updated quota data
-            
+
         Note:
             This method needs the request body implementation for quota modifications.
             Currently implemented as a placeholder for the API structure.
@@ -287,16 +310,16 @@ class CapacityAPI:
             returnStatuses=returnStatuses,
             timeSlotLevel=timeSlotLevel,
         )
-        
+
         # Create request model for CSV formatting
         request_data = GetQuotaRequest(**validated_params)
-        
+
         # Build query parameters
         params = {}
-        
+
         # Required parameters
         params["dates"] = request_data.dates.value if request_data.dates else ""
-        
+
         # Optional parameters
         if request_data.areas:
             params["areas"] = request_data.areas.value
@@ -322,7 +345,7 @@ class CapacityAPI:
             params=params,
             json=request_body,
         )
-        
+
         return GetQuotaResponse.from_response(response)
 
     async def get_activity_booking_options(
@@ -333,13 +356,13 @@ class CapacityAPI:
         travel_time: Optional[int] = None,
     ) -> ActivityBookingOptionsResponse:
         """Get booking options for a specific activity.
-        
+
         Args:
             activity_id: The activity ID for which to get booking options
             date: Date in YYYY-MM-DD format
             duration: Expected duration in minutes
             travel_time: Expected travel time in minutes
-            
+
         Returns:
             ActivityBookingOptionsResponse: Available booking options for the activity
         """
@@ -351,12 +374,12 @@ class CapacityAPI:
             duration=duration,
             travelTime=travel_time,
         )
-        
+
         # Build query parameters
         params = {}
         params["activityId"] = validated_params["activityId"]
         params["date"] = validated_params["date"]
-        
+
         if validated_params.get("duration") is not None:
             params["duration"] = str(validated_params["duration"])
         if validated_params.get("travelTime") is not None:
@@ -367,7 +390,7 @@ class CapacityAPI:
             url="/rest/ofscCapacity/v1/activityBookingOptions",
             params=params,
         )
-        
+
         return ActivityBookingOptionsResponse.from_response(response)
 
     async def get_booking_closing_schedule(
@@ -375,10 +398,10 @@ class CapacityAPI:
         areas: Optional[List[str]] = None,
     ) -> BookingClosingScheduleListResponse:
         """Get booking closing schedule configuration.
-        
+
         Args:
             areas: List of capacity area labels to filter by
-            
+
         Returns:
             BookingClosingScheduleListResponse: Booking closing schedule configuration
         """
@@ -387,7 +410,7 @@ class CapacityAPI:
             GetBookingClosingScheduleParams,
             areas=areas,
         )
-        
+
         # Build query parameters
         params = {}
         if validated_params.get("areas"):
@@ -399,7 +422,7 @@ class CapacityAPI:
             url="/rest/ofscCapacity/v1/bookingClosingSchedule",
             params=params,
         )
-        
+
         return BookingClosingScheduleListResponse.from_response(response)
 
     async def get_booking_statuses(
@@ -408,11 +431,11 @@ class CapacityAPI:
         areas: Optional[List[str]] = None,
     ) -> BookingStatusListResponse:
         """Get booking statuses for specified dates and areas.
-        
+
         Args:
             dates: List of dates in YYYY-MM-DD format (required)
             areas: List of capacity area labels to filter by
-            
+
         Returns:
             BookingStatusListResponse: Booking status information
         """
@@ -422,11 +445,11 @@ class CapacityAPI:
             dates=dates,
             areas=areas,
         )
-        
+
         # Build query parameters
         params = {}
         params["dates"] = ",".join(validated_params["dates"])
-        
+
         if validated_params.get("areas"):
             params["areas"] = ",".join(validated_params["areas"])
 
@@ -435,7 +458,7 @@ class CapacityAPI:
             url="/rest/ofscCapacity/v1/bookingStatuses",
             params=params,
         )
-        
+
         return BookingStatusListResponse.from_response(response)
 
     async def get_quota_v2(
@@ -450,7 +473,7 @@ class CapacityAPI:
         timeSlotLevel: Optional[bool] = None,
     ) -> GetQuotaV2Response:
         """Get quota information using v2 API with enhanced structure.
-        
+
         Args:
             dates: List of dates in YYYY-MM-DD format (required)
             areas: List of capacity area labels to filter by
@@ -460,7 +483,7 @@ class CapacityAPI:
             intervalLevel: Include interval-level quota information
             returnStatuses: Include quota status information
             timeSlotLevel: Include time slot-level quota information
-            
+
         Returns:
             GetQuotaV2Response: Enhanced quota data with detailed structure
         """
@@ -476,17 +499,19 @@ class CapacityAPI:
             returnStatuses=returnStatuses,
             timeSlotLevel=timeSlotLevel,
         )
-        
+
         # Build query parameters (same format as v1)
         params = {}
         params["dates"] = ",".join(validated_params["dates"])
-        
+
         if validated_params.get("areas"):
             params["areas"] = ",".join(validated_params["areas"])
         if validated_params.get("categories"):
             params["categories"] = ",".join(validated_params["categories"])
         if validated_params.get("aggregateResults") is not None:
-            params["aggregateResults"] = str(validated_params["aggregateResults"]).lower()
+            params["aggregateResults"] = str(
+                validated_params["aggregateResults"]
+            ).lower()
         if validated_params.get("categoryLevel") is not None:
             params["categoryLevel"] = str(validated_params["categoryLevel"]).lower()
         if validated_params.get("intervalLevel") is not None:
@@ -501,5 +526,5 @@ class CapacityAPI:
             url="/rest/ofscCapacity/v2/quota",
             params=params,
         )
-        
+
         return GetQuotaV2Response.from_response(response)

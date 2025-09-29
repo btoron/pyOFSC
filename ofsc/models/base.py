@@ -97,7 +97,9 @@ class BaseOFSResponse(BaseModel):
         return self._raw_response
 
     @classmethod
-    def from_response(cls: Type[TBaseOFSResponse], response: "httpx.Response", **kwargs) -> TBaseOFSResponse:
+    def from_response(
+        cls: Type[TBaseOFSResponse], response: "httpx.Response", **kwargs
+    ) -> TBaseOFSResponse:
         """Create model instance from httpx response.
 
         Args:
@@ -114,13 +116,14 @@ class BaseOFSResponse(BaseModel):
         # Check for HTTP errors first - always raise exceptions (R7.3)
         if response.status_code >= 400:
             from ..exceptions import create_exception_from_response
+
             raise create_exception_from_response(response)
-        
+
         # Remove metadata if present (API metadata, not model data)
         data = response.json()
         if isinstance(data, dict) and "_metadata" in data:
             data = {k: v for k, v in data.items() if k != "_metadata"}
-        
+
         instance = cls.model_validate(data, **kwargs)
         instance._raw_response = response
         return instance

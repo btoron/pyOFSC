@@ -1,25 +1,24 @@
+# Export these for backwards compatibility
+__all__ = [
+    "OFSC",
+    "FULL_RESPONSE",
+    "OBJ_RESPONSE",
+    "TEXT_RESPONSE",
+    "OFSCapacity",
+    "OFSCore",
+    "OFSMetadata",
+    "OFSConfig",
+    "OFSOauth2",
+]
+
 from .capacity import OFSCapacity
 from .core import OFSCore
 from .metadata import OFSMetadata
 from .models import OFSConfig
 from .oauth import OFSOauth2
 
-# Export these for backwards compatibility
-__all__ = [
-    "OFSC",
-    "FULL_RESPONSE",
-    "OBJ_RESPONSE", 
-    "TEXT_RESPONSE",
-    "OFSCapacity",
-    "OFSCore",
-    "OFSMetadata",
-    "OFSConfig",
-    "OFSOauth2"
-]
-
 
 class OFSC:
-
     # the default URL becomes {companyname}.fs.ocs.oraclecloud.com
     def __init__(
         self,
@@ -32,7 +31,6 @@ class OFSC:
         enable_auto_raise=True,
         enable_auto_model=True,
     ):
-
         self._config = OFSConfig(
             baseURL=baseUrl,
             clientID=clientID,

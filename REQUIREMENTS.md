@@ -130,71 +130,71 @@ The OFSC Python Wrapper v3.0 is a comprehensive Python library for interacting w
 ## Test Mapping
 
 ### Authentication Tests
-- R2.5: test_compat_wrapper_sync_to_async
-- R5.1: test_basic_auth_async
-- R5.2: test_oauth2_async
-- R5.3: test_token_refresh
-- R5.4: test_env_var_auth
+- R2.5: test_compat_wrapper.py - Tests compatibility wrapper for async operations
+- R5.1: test_auth.py - Tests basic authentication
+- R5.2: test_auth.py - Tests OAuth2 implementation
+- R5.3: test_auth_integration.py - Tests token refresh mechanism
+- R5.4: test_auth.py - Tests environment variable authentication
 
 ### Model Tests
-- R4.1: test_model_responses
-- R4.2: test_endpoint_models
-- R4.3: test_model_validation
-- R4.4: test_model_serialization
-- R4.5: test_generic_responses
+- R4.1: test_all_models_integration.py - Tests model responses
+- R4.2: test_endpoints_*.py - Tests endpoint models
+- R4.3: test_*_models_validation.py - Tests model validation
+- R4.4: test_base_models_validation.py - Tests model serialization
+- R4.5: test_all_response_examples.py - Tests generic responses
 
 ### Error Handling Tests
-- R7.1: test_typed_exceptions
-- R7.2: test_exception_context
-- R7.3: test_error_raising
-- R7.4: test_retry_logic
-- R7.5: test_circuit_breaker
+- R7.1: test_exceptions.py - Tests typed exception hierarchy
+- R7.2: test_exceptions.py - Tests exception context
+- R7.3: test_exceptions.py - Tests error raising behavior
+- R7.4: test_retry.py - Tests retry logic with exponential backoff
+- R7.5: test_retry.py - Tests circuit breaker pattern
 
 ### Integration Tests
-- R6.1: test_core_api_endpoints (2/127 implemented)
-- R6.2: test_metadata_api_endpoints (49/86 implemented)
-- R6.3: test_capacity_api_endpoints (7/11 implemented)
-- R11.1-R11.5: test_compat_module_backwards_compatibility
+- R6.1: test_core_api.py, test_endpoints_core.py (103/127 implemented)
+- R6.2: test_metadata_api.py, test_endpoints_metadata.py (49/86 implemented)
+- R6.3: test_endpoints_capacity.py (7/11 implemented)
+- R11.1-R11.5: test_compat_wrapper.py - Tests backward compatibility
 
 ### Configuration Tests
-- R8.1: test_pydantic_settings
-- R8.2: test_environment_variables
-- R8.3: test_file_based_config
-- R8.4: test_config_validation
-- R8.5: test_url_generation
+- R8.1: Not implemented - Pydantic settings tests needed
+- R8.2: Not implemented - Environment variable tests needed
+- R8.3: Not implemented - File-based config tests needed
+- R8.4: Not implemented - Config validation tests needed
+- R8.5: Not implemented - URL generation tests needed
 
 ### Type Safety Tests
-- R12.1: test_type_hints_coverage
-- R12.2: test_mypy_strict_compatibility
-- R12.3: test_generic_types
-- R12.4: test_type_stubs
+- R12.1: Not implemented - Type hints coverage tests needed
+- R12.2: Not implemented - mypy strict mode tests needed
+- R12.3: Not implemented - Generic types tests needed
+- R12.4: Not implemented - Type stubs tests needed
 
 ### Logging and Monitoring Tests
-- R13.1: test_structured_logging
-- R13.2: test_log_levels
-- R13.3: test_opentelemetry_tracing
-- R13.4: test_debug_mode
+- R13.1: Not implemented - Structured logging tests needed
+- R13.2: Not implemented - Log levels tests needed
+- R13.3: Not implemented - OpenTelemetry tracing tests needed
+- R13.4: Not implemented - Debug mode tests needed
 
 ### Security Tests
-- R14.1: test_credential_masking
-- R14.2: test_https_enforcement
-- R14.3: test_ssl_validation
-- R14.4: test_sensitive_data_masking
+- R14.1: Not implemented - Credential masking tests needed
+- R14.2: Not implemented - HTTPS enforcement tests needed
+- R14.3: Not implemented - SSL validation tests needed
+- R14.4: Not implemented - Sensitive data masking tests needed
 
 ### Extensibility Tests
-- R15.1: test_middleware_interceptors
-- R15.2: test_custom_behaviors
-- R15.3: test_custom_validators
-- R15.4: test_response_processing
+- R15.1: Not implemented - Middleware/interceptors tests needed
+- R15.2: Not implemented - Custom behaviors tests needed
+- R15.3: Not implemented - Custom validators tests needed
+- R15.4: Not implemented - Response processing tests needed
 
 ### Request Handling Tests
-- R16.1: test_parameter_passing
-- R16.2: test_internal_validation
-- R16.3: test_validation_exceptions
-- R16.4: test_validation_encapsulation
+- R16.1: Not implemented - Parameter passing tests needed
+- R16.2: Not implemented - Internal validation tests needed
+- R16.3: Not implemented - Validation exceptions tests needed
+- R16.4: Not implemented - Validation encapsulation tests needed
 
 ### Raw Response Tests
-- R4.6: test_raw_response_access
+- R4.6: test_all_response_examples.py - Tests raw response access
 
 ## Success Criteria
 

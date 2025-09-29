@@ -2,7 +2,6 @@
 
 import pytest
 import respx
-from httpx import Response
 
 from ofsc.client import OFSC
 
@@ -20,14 +19,14 @@ class TestCoreAPISimple:
             # Test that we can access the core API
             core_api = client.core
             assert core_api is not None
-            
+
             # Check if bulk methods exist (these were visible in the dir output)
             expected_methods = [
-                'bulk_update_activities',
-                'bulk_update_inventories', 
-                'bulk_update_work_skills'
+                "bulk_update_activities",
+                "bulk_update_inventories",
+                "bulk_update_work_skills",
             ]
-            
+
             for method_name in expected_methods:
                 if hasattr(core_api, method_name):
                     method = getattr(core_api, method_name)
@@ -40,5 +39,5 @@ class TestCoreAPISimple:
             instance="demo", client_id="test_id", client_secret="test_secret"
         ) as client:
             assert client is not None
-            assert hasattr(client, 'core')
+            assert hasattr(client, "core")
             assert client.core is not None
