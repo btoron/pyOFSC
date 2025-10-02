@@ -32,6 +32,45 @@ def test_get_activity_error(instance):
     assert raw_response.status_code == 404
 
 
+def test_delete_activity_error(instance):
+    """Test that deleting a non-existent activity returns 404"""
+    raw_response = instance.core.delete_activity(99999, response_type=FULL_RESPONSE)
+    assert raw_response.status_code == 404
+
+
+def test_delete_activity_success(instance):
+    """Test successful deletion of a pending activity for FLUSA"""
+    # Get a pending activity for FLUSA from all activities
+    response = instance.core.get_all_activities(
+        date_from=None,
+        date_to=None,
+        include_non_scheduled=True,
+        activity_fields=["activityId", "status", "resourceId"],
+    )
+
+    # Find a pending activity for FLUSA
+    pending_flusa = [
+        a for a in response.items
+        if a.get("status") == "pending" and a.get("resourceId") == "FLUSA"
+    ]
+
+    assert len(pending_flusa) > 0, "No pending activities found for FLUSA"
+
+    # Use the first pending activity
+    activity_id = pending_flusa[0]["activityId"]
+    logging.info(f"Attempting to delete activity {activity_id}")
+
+    # Delete the activity
+    delete_response = instance.core.delete_activity(
+        activity_id, response_type=FULL_RESPONSE
+    )
+    assert delete_response.status_code == 204
+
+    # Verify the activity is deleted by trying to get it
+    get_response = instance.core.get_activity(activity_id, response_type=FULL_RESPONSE)
+    assert get_response.status_code == 404
+
+
 def test_search_activities_001(instance):
     params = {
         "searchInField": "customerPhone",
