@@ -48,6 +48,14 @@ class OFSCore(OFSApi):
         response = requests.patch(url, headers=self.headers, data=data)
         return response
 
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
+    def delete_activity(self, activity_id):
+        url = urljoin(
+            self.baseUrl, "/rest/ofscCore/v1/activities/{}".format(activity_id)
+        )
+        response = requests.delete(url, headers=self.headers)
+        return response
+
     # 202107 Added ssearch
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def search_activities(self, params):
