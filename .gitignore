@@ -177,3 +177,4 @@ _*.json
 tests/saved_responses
 plans
 tmp
+docs/qa.md
