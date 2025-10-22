@@ -174,3 +174,7 @@ tests/keys/*
 CLAUDE.md
 response_examples
 _*.json
+tests/saved_responses
+plans
+tmp
+docs/qa.md

@@ -24,6 +24,12 @@ The models are based on the Pydantic BaseModel, so it is possible to build an en
 - **InventoryType**: Inventory type definitions
 - **Property**: Property definitions with validation and enumeration support
 - **EnumerationValue**: Enumeration values for properties
+- **RoutingProfile**: Routing profile definitions (groups of routing plans)
+- **RoutingPlan**: Routing plan definitions
+- **RoutingPlanData**: Complete routing plan export with configuration
+- **RoutingPlanConfig**: Detailed routing plan configuration with optimization parameters
+- **RoutingActivityGroup**: Activity group configuration within routing plan
+- **RoutingProviderGroup**: Provider group settings within activity group
 - **Workskill**: Work skill definitions
 - **WorkSkillCondition**: Work skill condition definitions
 - **WorkSkillGroup**: Work skill group definitions
@@ -178,6 +184,15 @@ The models are based on the Pydantic BaseModel, so it is possible to build an en
 ### Metadata / Workzones
     get_workzones(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
 
+### Metadata / Routing Profiles
+    get_routing_profiles(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
+    get_routing_profile_plans(self, profile_label: str, offset=0, limit=100, response_type=OBJ_RESPONSE)
+    export_routing_plan(self, profile_label: str, plan_label: str, response_type=OBJ_RESPONSE)
+    export_plan_file(self, profile_label: str, plan_label: str) -> bytes
+    import_routing_plan(self, profile_label: str, plan_data: bytes, response_type=OBJ_RESPONSE)
+    force_import_routing_plan(self, profile_label: str, plan_data: bytes, response_type=OBJ_RESPONSE)
+    start_routing_plan(self, profile_label: str, plan_label: str, resource_external_id: str, date: str, response_type=OBJ_RESPONSE)
+
 ### Metadata / Applications
     get_applications(self, response_type=OBJ_RESPONSE)
     get_application(self, label: str, response_type=OBJ_RESPONSE)
@@ -305,7 +320,94 @@ mixed_quota = ofsc_instance.capacity.getQuota(
     returnStatuses=True
 )
 ```
-    
+
+### Routing Profiles API
+```python
+from ofsc import OFSC
+from ofsc.common import FULL_RESPONSE
+
+# Initialize connection
+ofsc_instance = OFSC(
+    clientID="your_client_id",
+    secret="your_secret",
+    companyName="your_company"
+)
+
+# Get all routing profiles
+profiles = ofsc_instance.metadata.get_routing_profiles()
+for profile in profiles.items:
+    print(f"Profile: {profile.profileLabel}")
+
+# Get plans for a specific profile
+plans = ofsc_instance.metadata.get_routing_profile_plans(
+    profile_label="MaintenanceRoutingProfile"
+)
+for plan in plans.items:
+    print(f"Plan: {plan.planLabel}")
+
+# Export a routing plan (returns parsed JSON)
+plan_data = ofsc_instance.metadata.export_routing_plan(
+    profile_label="MaintenanceRoutingProfile",
+    plan_label="Optimization"
+)
+
+# Export a plan as raw bytes (ready for import)
+plan_bytes = ofsc_instance.metadata.export_plan_file(
+    profile_label="MaintenanceRoutingProfile",
+    plan_label="Optimization"
+)
+# plan_bytes contains raw data that can be imported
+
+# Import a routing plan (409 if plan already exists)
+response = ofsc_instance.metadata.import_routing_plan(
+    profile_label="TargetProfile",
+    plan_data=plan_bytes,
+    response_type=FULL_RESPONSE
+)
+if response.status_code == 409:
+    print("Plan already exists, use force_import to overwrite")
+
+# Force import (overwrite existing plan)
+response = ofsc_instance.metadata.force_import_routing_plan(
+    profile_label="MaintenanceRoutingProfile",
+    plan_data=plan_bytes,
+    response_type=FULL_RESPONSE
+)
+print(f"Import status: {response.status_code}")
+
+# Start a routing plan for a specific resource
+response = ofsc_instance.metadata.start_routing_plan(
+    profile_label="MaintenanceRoutingProfile",
+    plan_label="Optimization",
+    resource_external_id="TECH_001",
+    date="2025-10-25",
+    response_type=FULL_RESPONSE
+)
+print(f"Start status: {response.status_code}")
+
+# Complete workflow: Backup and restore a routing plan
+# 1. Export the plan
+backup_data = ofsc_instance.metadata.export_plan_file(
+    profile_label="MaintenanceRoutingProfile",
+    plan_label="Optimization"
+)
+
+# 2. Save to file (optional)
+with open("backup_optimization.dat", "wb") as f:
+    f.write(backup_data)
+
+# 3. Later, restore from backup
+with open("backup_optimization.dat", "rb") as f:
+    restore_data = f.read()
+
+response = ofsc_instance.metadata.force_import_routing_plan(
+    profile_label="MaintenanceRoutingProfile",
+    plan_data=restore_data,
+    response_type=FULL_RESPONSE
+)
+print(f"Restore completed: {response.status_code}")
+```
+
 ## Test History
 
 OFS REST API Version | PyOFSC
