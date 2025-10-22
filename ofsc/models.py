@@ -1190,3 +1190,56 @@ class GetQuotaRequest(BaseModel):
 
 
 # endregion
+
+# region 202510 Routing Profiles
+
+
+class RoutingProfile(BaseModel):
+    """Model for routing profile entity
+
+    A routing profile is a group of routing plans that enables assignment
+    to multiple buckets without duplicating plans.
+    """
+
+    profileLabel: str = Field(..., description="Unique identifier for the routing profile")
+    model_config = ConfigDict(extra="allow")
+
+
+class RoutingProfileList(OFSResponseList[RoutingProfile]):
+    """Response model for list of routing profiles"""
+
+    pass
+
+
+class RoutingPlan(BaseModel):
+    """Model for routing plan entity
+
+    A routing plan is a configuration within a routing profile that defines
+    routing behavior and parameters.
+    """
+
+    planLabel: str = Field(..., description="Unique identifier for the routing plan")
+    model_config = ConfigDict(extra="allow")
+
+
+class RoutingPlanList(OFSResponseList[RoutingPlan]):
+    """Response model for list of routing plans within a profile"""
+
+    pass
+
+
+class RoutingPlanExport(BaseModel):
+    """Model for routing plan export response
+
+    Contains links to download the exported routing plan data.
+    """
+
+    mediaType: str = Field(
+        default="application/octet-stream",
+        description="MIME type of the exported content",
+    )
+    links: List[Link] = Field(default_factory=list, description="Download links")
+    model_config = ConfigDict(extra="allow")
+
+
+# endregion

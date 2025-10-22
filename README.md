@@ -24,6 +24,9 @@ The models are based on the Pydantic BaseModel, so it is possible to build an en
 - **InventoryType**: Inventory type definitions
 - **Property**: Property definitions with validation and enumeration support
 - **EnumerationValue**: Enumeration values for properties
+- **RoutingProfile**: Routing profile definitions (groups of routing plans)
+- **RoutingPlan**: Routing plan definitions
+- **RoutingPlanExport**: Routing plan export response with download links
 - **Workskill**: Work skill definitions
 - **WorkSkillCondition**: Work skill condition definitions
 - **WorkSkillGroup**: Work skill group definitions
@@ -177,6 +180,11 @@ The models are based on the Pydantic BaseModel, so it is possible to build an en
 
 ### Metadata / Workzones
     get_workzones(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
+
+### Metadata / Routing Profiles
+    get_routing_profiles(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
+    get_routing_profile_plans(self, profile_label: str, offset=0, limit=100, response_type=OBJ_RESPONSE)
+    export_routing_plan(self, profile_label: str, plan_label: str, response_type=FILE_RESPONSE)
 
 ### Metadata / Applications
     get_applications(self, response_type=OBJ_RESPONSE)
