@@ -1296,7 +1296,7 @@ class RoutingPlanConfig(BaseModel):
     rpfrom_time: Optional[str] = Field(default=None, description="Start time")
     rpto_time: Optional[str] = Field(default=None, description="End time")
     rpinterval: Optional[str] = Field(default=None, description="Time interval")
-    rpweekdays: Optional[str] = Field(default=None, description="Weekdays")
+    rpweekdays: Optional[str | int] = Field(default=None, description="Weekdays (string or int)")
     rptime_limit: int = Field(default=30, description="Time limit in minutes")
     rptime_slr_limit_percent: int = Field(
         default=50, description="SLR time limit percentage"
@@ -1354,7 +1354,7 @@ class RoutingPlanConfig(BaseModel):
     rpcalendar_reserved: int = Field(default=0, description="Calendar reserved")
 
     # Assurance and skill settings
-    rpassurance_still_limit: int = Field(default=20, description="Assurance still limit")
+    rpassurance_still_limit: Optional[int] = Field(default=20, description="Assurance still limit")
     rpinsufficient_skill_factor: float = Field(
         default=1.0, description="Insufficient skill factor"
     )

@@ -12,3 +12,5 @@
 `get_users_simple.py`: extract from the OFS instance a list of users and print their login, names and full_names
 
 `get_capacity_areas.py`: extracts the list of capacity areas (buckets) defined in the system
+
+`export_routing_plans.py`: exports all routing plans from all profiles to separate JSON files (profileName_planName.json)

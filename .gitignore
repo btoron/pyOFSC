@@ -176,3 +176,4 @@ response_examples
 _*.json
 tests/saved_responses
 plans
+tmp
