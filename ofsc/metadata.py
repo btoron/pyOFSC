@@ -467,4 +467,165 @@ class OFSMetadata(OFSApi):
         response = requests.get(url, headers=headers)
         return response
 
+    def export_plan_file(self, profile_label: str, plan_label: str) -> bytes:
+        """Export routing plan as raw bytes ready for import
+
+        This method exports a routing plan in the exact format needed for import operations.
+        Unlike export_routing_plan which returns a Response object that can be parsed,
+        this returns raw bytes that can be directly used with import_routing_plan or
+        force_import_routing_plan.
+
+        Args:
+            profile_label: Label of the routing profile
+            plan_label: Label of the routing plan to export
+
+        Returns:
+            bytes: Raw plan data ready for import/force_import operations
+
+        Example:
+            # Export and re-import a plan to a different profile
+            plan_bytes = instance.metadata.export_plan_file("Profile1", "Plan1")
+            response = instance.metadata.force_import_routing_plan(
+                profile_label="Profile2",
+                plan_data=plan_bytes
+            )
+
+        Note:
+            The returned bytes contain the complete routing plan configuration
+            including all settings, activity groups, and optimization parameters.
+        """
+        encoded_profile = urllib.parse.quote_plus(profile_label)
+        encoded_plan = urllib.parse.quote_plus(plan_label)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/routingProfiles/{encoded_profile}/plans/{encoded_plan}/custom-actions/export",
+        )
+        headers = self.headers.copy()
+        headers["Accept"] = "application/octet-stream"
+        response = requests.get(url, headers=headers)
+        return response.content
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200, 409])
+    def import_routing_plan(self, profile_label: str, plan_data: bytes):
+        """Import a routing plan into a routing profile
+
+        Imports a routing plan from exported plan data. If a plan with the same label
+        already exists in the profile, this will return a 409 Conflict error indicating
+        that force_import_routing_plan should be used instead.
+
+        Args:
+            profile_label: Label of the target routing profile
+            plan_data: Raw plan data as bytes (from export_plan_file or export_routing_plan)
+
+        Returns:
+            Response object with status 200 on success, 409 if plan already exists
+
+        Example:
+            # Import a plan to a different profile
+            plan_bytes = instance.metadata.export_plan_file("Profile1", "Plan1")
+            response = instance.metadata.import_routing_plan(
+                profile_label="Profile2",
+                plan_data=plan_bytes,
+                response_type=FULL_RESPONSE
+            )
+
+        Note:
+            If the response is 409, the response will include "force": "required" in the JSON
+            body, indicating that force_import_routing_plan should be used to overwrite.
+        """
+        encoded_label = urllib.parse.quote_plus(profile_label)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/routingProfiles/{encoded_label}/plans/custom-actions/import",
+        )
+        headers = self.headers.copy()
+        headers["Content-Type"] = "application/octet-stream"
+        response = requests.put(url, headers=headers, data=plan_data)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def force_import_routing_plan(self, profile_label: str, plan_data: bytes):
+        """Force import a routing plan, overwriting if it already exists
+
+        Imports a routing plan from exported plan data, overwriting any existing plan
+        with the same label in the profile. This is useful for restoring backups or
+        updating existing plans.
+
+        Args:
+            profile_label: Label of the target routing profile
+            plan_data: Raw plan data as bytes (from export_plan_file or export_routing_plan)
+
+        Returns:
+            Response object with status 200 on success
+
+        Example:
+            # Export and restore a plan (backup/restore)
+            plan_bytes = instance.metadata.export_plan_file("Profile1", "Plan1")
+            response = instance.metadata.force_import_routing_plan(
+                profile_label="Profile1",
+                plan_data=plan_bytes,
+                response_type=FULL_RESPONSE
+            )
+
+        Note:
+            This will overwrite existing plans without warning. Use import_routing_plan
+            first if you want to check for conflicts.
+        """
+        encoded_label = urllib.parse.quote_plus(profile_label)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/routingProfiles/{encoded_label}/plans/custom-actions/forceImport",
+        )
+        headers = self.headers.copy()
+        headers["Content-Type"] = "application/octet-stream"
+        response = requests.put(url, headers=headers, data=plan_data)
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200, 202, 204])
+    def start_routing_plan(
+        self,
+        profile_label: str,
+        plan_label: str,
+        resource_external_id: str,
+        date: str,
+    ):
+        """Start a routing plan for a specific resource on a given date
+
+        Triggers the execution of a routing plan for a specified resource and date.
+        This initiates the routing optimization process.
+
+        Args:
+            profile_label: Label of the routing profile
+            plan_label: Label of the routing plan to start
+            resource_external_id: External ID of the resource to route
+            date: Target date in YYYY-MM-DD format
+
+        Returns:
+            Response object with status 200, 202, or 204 on success
+
+        Example:
+            response = instance.metadata.start_routing_plan(
+                profile_label="MaintenanceRoutingProfile",
+                plan_label="Optimization",
+                resource_external_id="TECH_001",
+                date="2025-10-25",
+                response_type=FULL_RESPONSE
+            )
+
+        Note:
+            The resource must exist and be valid for the specified date.
+            The date should be in YYYY-MM-DD format.
+        """
+        encoded_profile = urllib.parse.quote_plus(profile_label)
+        encoded_plan = urllib.parse.quote_plus(plan_label)
+        encoded_resource = urllib.parse.quote_plus(resource_external_id)
+
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/routingProfiles/{encoded_profile}/plans/{encoded_plan}/"
+            f"{encoded_resource}/{date}/custom-actions/start",
+        )
+        response = requests.post(url, headers=self.headers)
+        return response
+
     # endregion Routing Profiles
