@@ -24,7 +24,7 @@ from .models import (
     Organization,
     OrganizationListResponse,
     Property,
-    RoutingPlanExport,
+    RoutingPlanData,
     RoutingPlanList,
     RoutingProfileList,
     Workskill,
@@ -444,7 +444,7 @@ class OFSMetadata(OFSApi):
         response = requests.get(url, headers=self.headers, params=params)
         return response
 
-    @wrap_return(response_type=FILE_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=RoutingPlanData)
     def export_routing_plan(self, profile_label: str, plan_label: str):
         """Export a routing plan
 
@@ -453,7 +453,8 @@ class OFSMetadata(OFSApi):
             plan_label: Label of the routing plan to export
 
         Returns:
-            bytes: The actual routing plan file content
+            RoutingPlanData: Parsed routing plan configuration with all settings,
+                            including activity groups, optimization parameters, and costs
         """
         encoded_profile = urllib.parse.quote_plus(profile_label)
         encoded_plan = urllib.parse.quote_plus(plan_label)

@@ -10,6 +10,7 @@ from ofsc.models import (
     RoutingProfileList,
     RoutingPlan,
     RoutingPlanList,
+    RoutingPlanData,
 )
 
 
@@ -127,7 +128,7 @@ def test_get_routing_profile_plans_validation(instance):
 
 
 def test_export_routing_plan_basic(instance):
-    """Test basic routing plan export returns plan data"""
+    """Test basic routing plan export returns parsed Pydantic model"""
     # First get a profile and plan to test with
     profiles_response = instance.metadata.get_routing_profiles(
         response_type=FULL_RESPONSE
@@ -152,20 +153,20 @@ def test_export_routing_plan_basic(instance):
 
     plan_label = plans_data["items"][0]["planLabel"]
 
-    # Test exporting the plan - returns actual plan data (JSON with routing_plan)
+    # Test exporting the plan with FULL_RESPONSE
     response = instance.metadata.export_routing_plan(
         profile_label=profile_label, plan_label=plan_label, response_type=FULL_RESPONSE
     )
     assert response.status_code == 200
-    # API returns JSON with the actual routing plan data
-    assert len(response.content) > 0
+    # Verify response structure
     data = response.json()
-    # Verify we got the actual plan data, not metadata links
     assert "routing_plan" in data
+    assert "sign" in data
+    assert "version" in data
 
 
 def test_export_routing_plan_obj(instance):
-    """Test routing plan export returning bytes containing plan data"""
+    """Test routing plan export returning RoutingPlanData model"""
     # First get a profile and plan to test with
     profiles_response = instance.metadata.get_routing_profiles()
 
@@ -186,58 +187,63 @@ def test_export_routing_plan_obj(instance):
 
     plan_label = plans_response.items[0].planLabel
 
-    # Test exporting the plan - returns bytes with JSON plan data
+    # Test exporting the plan - returns RoutingPlanData model
     response = instance.metadata.export_routing_plan(
         profile_label=profile_label, plan_label=plan_label
     )
-    assert isinstance(response, bytes)
-    assert len(response) > 0
-    # Verify it contains the actual routing plan JSON data
-    import json
-    data = json.loads(response)
-    assert "routing_plan" in data
+    assert isinstance(response, RoutingPlanData)
+    # Verify model structure and access
+    assert hasattr(response, "routing_plan")
+    assert hasattr(response, "sign")
+    assert hasattr(response, "version")
+    # Access routing plan fields with type safety
+    assert response.routing_plan.rpname is not None
+    assert response.routing_plan.rpoptimization in ["fastest", "balanced", "best"]
 
 
 def test_export_routing_plan_validation(instance):
-    """Test routing plan export data structure validation"""
+    """Test routing plan Pydantic model validation and nested structure"""
     # First get a profile and plan to test with
-    profiles_response = instance.metadata.get_routing_profiles(
-        response_type=FULL_RESPONSE
-    )
-    profiles_data = profiles_response.json()
+    profiles_response = instance.metadata.get_routing_profiles()
 
     # Skip if no profiles available
-    if profiles_data["totalResults"] == 0:
+    if len(profiles_response.items) == 0:
         return
 
-    profile_label = profiles_data["items"][0]["profileLabel"]
+    profile_label = profiles_response.items[0].profileLabel
 
     # Get plans for the profile
     plans_response = instance.metadata.get_routing_profile_plans(
-        profile_label=profile_label, response_type=FULL_RESPONSE
+        profile_label=profile_label
     )
-    plans_data = plans_response.json()
 
     # Skip if no plans available
-    if plans_data["totalResults"] == 0:
+    if len(plans_response.items) == 0:
         return
 
-    plan_label = plans_data["items"][0]["planLabel"]
+    plan_label = plans_response.items[0].planLabel
 
-    # Test exporting the plan
-    response = instance.metadata.export_routing_plan(
-        profile_label=profile_label, plan_label=plan_label, response_type=FULL_RESPONSE
+    # Test exporting the plan - returns RoutingPlanData model
+    plan_data = instance.metadata.export_routing_plan(
+        profile_label=profile_label, plan_label=plan_label
     )
 
-    # Validate we got plan data
-    assert response.status_code == 200
-    assert len(response.content) > 0
-    # Parse and validate the routing plan structure
-    data = response.json()
-    assert "routing_plan" in data
-    routing_plan = data["routing_plan"]
-    # Check for expected routing plan fields
-    assert isinstance(routing_plan, dict)
+    # Validate nested structure access
+    assert isinstance(plan_data.routing_plan.activityGroups, list)
+
+    # If there are activity groups, validate their structure
+    if len(plan_data.routing_plan.activityGroups) > 0:
+        first_group = plan_data.routing_plan.activityGroups[0]
+        # Access activity group fields
+        assert hasattr(first_group, "activity_location")
+        assert hasattr(first_group, "filterLabel")
+        assert isinstance(first_group.providerGroups, list)
+
+        # If there are provider groups, validate their structure
+        if len(first_group.providerGroups) > 0:
+            first_provider = first_group.providerGroups[0]
+            assert hasattr(first_provider, "priority")
+            assert hasattr(first_provider, "filterLabel")
 
 
 # Phase 2: PUT/POST Operations Tests (to be implemented later)

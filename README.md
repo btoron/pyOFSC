@@ -26,7 +26,10 @@ The models are based on the Pydantic BaseModel, so it is possible to build an en
 - **EnumerationValue**: Enumeration values for properties
 - **RoutingProfile**: Routing profile definitions (groups of routing plans)
 - **RoutingPlan**: Routing plan definitions
-- **RoutingPlanExport**: Routing plan export response with download links
+- **RoutingPlanData**: Complete routing plan export with configuration
+- **RoutingPlanConfig**: Detailed routing plan configuration with optimization parameters
+- **RoutingActivityGroup**: Activity group configuration within routing plan
+- **RoutingProviderGroup**: Provider group settings within activity group
 - **Workskill**: Work skill definitions
 - **WorkSkillCondition**: Work skill condition definitions
 - **WorkSkillGroup**: Work skill group definitions
@@ -184,7 +187,7 @@ The models are based on the Pydantic BaseModel, so it is possible to build an en
 ### Metadata / Routing Profiles
     get_routing_profiles(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
     get_routing_profile_plans(self, profile_label: str, offset=0, limit=100, response_type=OBJ_RESPONSE)
-    export_routing_plan(self, profile_label: str, plan_label: str, response_type=FILE_RESPONSE)
+    export_routing_plan(self, profile_label: str, plan_label: str, response_type=OBJ_RESPONSE)
 
 ### Metadata / Applications
     get_applications(self, response_type=OBJ_RESPONSE)
