@@ -97,6 +97,7 @@ The models are based on the Pydantic BaseModel, so it is possible to build an en
 
 ### Core / Resources
     get_resource(self, resource_id, inventories=False, workSkills=False, workZones=False, workSchedules=False, response_type=OBJ_RESPONSE)
+    get_resources(self, fields=None, offset=0, limit=100, canBeTeamHolder=None, canParticipateInTeam=None, inventories=False, workSkills=False, workZones=False, workSchedules=False, response_type=OBJ_RESPONSE)
     create_resource(self, resourceId, data, response_type=OBJ_RESPONSE)
     create_resource_from_obj(self, resourceId, data, response_type=OBJ_RESPONSE)
     update_resource(self, resourceId, data: dict, identify_by_internal_id: bool = False, response_type=OBJ_RESPONSE)
