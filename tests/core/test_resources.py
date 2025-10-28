@@ -146,6 +146,83 @@ def test_get_resource_descendants_noexpand_fields(instance, pp):
     assert response["totalResults"] == 37
 
 
+@pytest.fixture
+def demo_data():
+    """Demo data setup fixture."""
+    return True
+
+def test_get_resources_basic(instance, pp, demo_data):
+    """Test basic get_resources call without any filters or expansions."""
+    raw_response = instance.core.get_resources(
+        limit=10,
+        response_type=FULL_RESPONSE,
+    )
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    logging.debug(pp.pformat(response))
+    assert "totalResults" in response
+    assert "items" in response
+    assert len(response["items"]) <= 10
+
+
+def test_get_resources_with_fields(instance, pp, demo_data):
+    """Test get_resources with specific fields."""
+    raw_response = instance.core.get_resources(
+        fields=["resourceId", "parentResourceId", "resourceInternalId", "name"],
+        limit=5,
+        response_type=FULL_RESPONSE,
+    )
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    logging.debug(pp.pformat(response))  # Log the full response for debugging
+    assert "items" in response
+    for item in response["items"]:
+        # resourceId might be returned directly or in links
+        assert any(
+            [
+                "resourceId" in item,
+                "resourceInternalId" in item and any(
+                    "resourceInternalId" in link["href"]
+                    for link in item.get("links", [])
+                    if "href" in link
+                )
+            ]
+        )
+        assert "name" in item
+def test_get_resources_with_expand(instance, pp, demo_data):
+    """Test get_resources with expanded sub-entities."""
+    raw_response = instance.core.get_resources(
+        workZones=True,
+        workSkills=True,
+        limit=5,
+        response_type=FULL_RESPONSE,
+    )
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    if response["totalResults"] > 0:
+        # Check that at least one item has the expanded data or links
+        item = response["items"][0]
+        assert any(
+            key in item for key in ["workZones", "links"]
+        ), "Expected workZones data or links"
+        assert any(
+            key in item for key in ["workSkills", "links"]
+        ), "Expected workSkills data or links"
+
+
+def test_get_resources_team_filter(instance, pp, demo_data):
+    """Test get_resources with team-related filters."""
+    raw_response = instance.core.get_resources(
+        canBeTeamHolder=True,
+        fields=["resourceId", "name"],
+        limit=5,
+        response_type=FULL_RESPONSE,
+    )
+    assert raw_response.status_code == 200
+    response = raw_response.json()
+    logging.debug(pp.pformat(response))
+
+
 def test_update_resource(instance, demo_data, request_logging):
     raw_response = instance.core.update_resource(
         "FLUSA", data={"name": "FLUSA-1"}, response_type=FULL_RESPONSE

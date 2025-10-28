@@ -224,6 +224,75 @@ class OFSCore(OFSApi):
         response = requests.get(url, params=params, headers=self.headers)
         return response
 
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    def get_resources(
+        self,
+        canBeTeamHolder: bool = None,
+        canParticipateInTeam: bool = None,
+        fields: list[str] = None,
+        offset: int = 0,
+        limit: int = 100,
+        inventories: bool = False,
+        workSkills: bool = False,
+        workZones: bool = False,
+        workSchedules: bool = False,
+    ):
+        """Get resources based on the specified criteria.
+
+        Args:
+            canBeTeamHolder: Filter resources that can be team holders
+            canParticipateInTeam: Filter resources that can participate in teams
+            fields: List of resource fields to include in response
+            offset: Starting record number (default 0)
+            limit: Maximum number of resources to return (default 100)
+            inventories: Include inventories in response
+            workSkills: Include work skills in response
+            workZones: Include work zones in response
+            workSchedules: Include work schedules in response
+
+        Note:
+            Any expanded sub-entity containing more than 500 items will be returned as a link
+            instead of being embedded in the response.
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/resources")
+        params = {}
+
+        # Handle expand parameter like get_resource_descendants
+        expand = ""
+        if inventories:
+            expand = "inventories"
+        if workSkills:
+            if len(expand) > 0:
+                expand = "{},workSkills".format(expand)
+            else:
+                expand = "workSkills"
+        if workZones:
+            if len(expand) > 0:
+                expand = "{},workZones".format(expand)
+            else:
+                expand = "workZones"
+        if workSchedules:
+            if len(expand) > 0:
+                expand = "{},workSchedules".format(expand)
+            else:
+                expand = "workSchedules"
+
+        if len(expand) > 0:
+            params["expand"] = expand
+
+        if canBeTeamHolder is not None:
+            params["canBeTeamHolder"] = str(canBeTeamHolder).lower()
+        if canParticipateInTeam is not None:
+            params["canParticipateInTeam"] = str(canParticipateInTeam).lower()
+        if fields is not None:
+            params["fields"] = ",".join(fields)
+        params["offset"] = offset
+        params["limit"] = limit
+
+        logging.debug(json.dumps(params, indent=2))
+        response = requests.get(url, params=params, headers=self.headers)
+        return response
+
     @wrap_return(
         response_type=OBJ_RESPONSE, expected=[200], model=ResourceUsersListResponse
     )
