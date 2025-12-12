@@ -5,7 +5,7 @@ from urllib.parse import urljoin
 
 import requests
 
-from .common import FILE_RESPONSE, FULL_RESPONSE, OBJ_RESPONSE, wrap_return
+from .common import FULL_RESPONSE, OBJ_RESPONSE, wrap_return
 from .models import (
     ActivityTypeGroup,
     ActivityTypeGroupListResponse,
@@ -30,6 +30,7 @@ from .models import (
     Workskill,
     WorkSkillGroup,
     WorkSkillGroupListResponse,
+    Workzone,
     WorskillConditionList,
 )
 
@@ -115,6 +116,27 @@ class OFSMetadata(OFSApi):
             url,
             headers=self.headers,
             params=params,
+        )
+        return response
+
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200, 204])
+    def replace_workzone(
+        self,
+        workzone: Workzone,
+        auto_resolve_conflicts: bool = False,
+    ):
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/workZones/{workzone.workZoneLabel}",
+        )
+        params = {}
+        if auto_resolve_conflicts:
+            params["autoResolveConflicts"] = "true"
+        response = requests.put(
+            url,
+            headers=self.headers,
+            data=workzone.model_dump_json(exclude_none=True),
+            params=params if params else None,
         )
         return response
 
