@@ -120,6 +120,12 @@ class OFSMetadata(OFSApi):
         )
         return response
 
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=Workzone)
+    def get_workzone(self, label: str):
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workZones/{label}")
+        response = requests.get(url, headers=self.headers)
+        return response
+
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200, 204], model=Workzone)
     def replace_workzone(
         self,

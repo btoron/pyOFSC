@@ -32,6 +32,48 @@ def test_get_workzones_with_model(instance):
         assert hasattr(workzones.items[0], "workZoneName")
 
 
+def test_get_workzone(instance):
+    """Test getting a single workzone by label"""
+    # First get a list of workzones to get a valid label
+    workzones = instance.metadata.get_workzones(offset=0, limit=1)
+
+    if len(workzones.items) == 0:
+        pytest.skip("No workzones available to test")
+
+    # Get the label of the first workzone
+    label = workzones.items[0].workZoneLabel
+
+    # Get the specific workzone
+    workzone = instance.metadata.get_workzone(label)
+
+    # Verify type validation
+    assert isinstance(workzone, Workzone)
+    assert workzone.workZoneLabel == label
+    assert hasattr(workzone, "workZoneName")
+    assert hasattr(workzone, "status")
+    assert hasattr(workzone, "travelArea")
+
+
+def test_get_workzone_with_response_type(instance):
+    """Test getting a single workzone using FULL_RESPONSE"""
+    # Get a valid label first
+    workzones = instance.metadata.get_workzones(offset=0, limit=1)
+
+    if len(workzones.items) == 0:
+        pytest.skip("No workzones available to test")
+
+    label = workzones.items[0].workZoneLabel
+
+    # Get with FULL_RESPONSE
+    response = instance.metadata.get_workzone(label, response_type=FULL_RESPONSE)
+
+    assert response.status_code == 200
+    workzone_data = response.json()
+    assert workzone_data["workZoneLabel"] == label
+    assert "workZoneName" in workzone_data
+    assert "status" in workzone_data
+
+
 @pytest.mark.uses_real_data
 def test_replace_workzone(instance, faker):
     """Test replacing an existing workzone"""
