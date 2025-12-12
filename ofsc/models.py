@@ -290,7 +290,9 @@ class Workzone(BaseModel):
     workZoneName: str
     status: str
     travelArea: str
-    keys: List[Any]
+    keys: Optional[List[str]] = None
+    shapes: Optional[List[str]] = None
+    organization: Optional[str] = None
 
 
 class WorkzoneList(RootModel[List[Workzone]]):
@@ -299,6 +301,12 @@ class WorkzoneList(RootModel[List[Workzone]]):
 
     def __getitem__(self, item):
         return self.root[item]
+
+
+class WorkzoneListResponse(OFSResponseList[Workzone]):
+    """Response model for list of workzones"""
+
+    pass
 
 
 class Property(BaseModel):
@@ -1201,7 +1209,9 @@ class RoutingProfile(BaseModel):
     to multiple buckets without duplicating plans.
     """
 
-    profileLabel: str = Field(..., description="Unique identifier for the routing profile")
+    profileLabel: str = Field(
+        ..., description="Unique identifier for the routing profile"
+    )
     model_config = ConfigDict(extra="allow")
 
 
@@ -1256,7 +1266,9 @@ class RoutingActivityGroup(BaseModel):
     activity_location: str = Field(
         description="Location type (e.g., 'resource_routing_date', 'bucket_routing_date')"
     )
-    unacceptable_overdue: int = Field(default=0, description="Unacceptable overdue time")
+    unacceptable_overdue: int = Field(
+        default=0, description="Unacceptable overdue time"
+    )
     overdue_cost: int = Field(default=50, description="Cost for overdue activities")
     non_assignment_cost: int = Field(
         default=0, description="Cost for non-assigned activities"
@@ -1296,7 +1308,9 @@ class RoutingPlanConfig(BaseModel):
     rpfrom_time: Optional[str] = Field(default=None, description="Start time")
     rpto_time: Optional[str] = Field(default=None, description="End time")
     rpinterval: Optional[str] = Field(default=None, description="Time interval")
-    rpweekdays: Optional[str | int] = Field(default=None, description="Weekdays (string or int)")
+    rpweekdays: Optional[str | int] = Field(
+        default=None, description="Weekdays (string or int)"
+    )
     rptime_limit: int = Field(default=30, description="Time limit in minutes")
     rptime_slr_limit_percent: int = Field(
         default=50, description="SLR time limit percentage"
@@ -1345,7 +1359,9 @@ class RoutingPlanConfig(BaseModel):
     rpload_technicians_by_points: int = Field(
         default=0, description="Load technicians by points"
     )
-    rpdefault_appt_points: int = Field(default=0, description="Default appointment points")
+    rpdefault_appt_points: int = Field(
+        default=0, description="Default appointment points"
+    )
     rpget_technician_points_from_calendar: int = Field(
         default=0, description="Get technician points from calendar"
     )
@@ -1354,7 +1370,9 @@ class RoutingPlanConfig(BaseModel):
     rpcalendar_reserved: int = Field(default=0, description="Calendar reserved")
 
     # Assurance and skill settings
-    rpassurance_still_limit: Optional[int] = Field(default=20, description="Assurance still limit")
+    rpassurance_still_limit: Optional[int] = Field(
+        default=20, description="Assurance still limit"
+    )
     rpinsufficient_skill_factor: float = Field(
         default=1.0, description="Insufficient skill factor"
     )
@@ -1366,8 +1384,12 @@ class RoutingPlanConfig(BaseModel):
     rpcenter_point_enable: int = Field(default=0, description="Center point enabled")
 
     # Inventory and reoptimization
-    rpuse_required_inventory: int = Field(default=0, description="Use required inventory")
-    rpreoptimization_enable: int = Field(default=1, description="Reoptimization enabled")
+    rpuse_required_inventory: int = Field(
+        default=0, description="Use required inventory"
+    )
+    rpreoptimization_enable: int = Field(
+        default=1, description="Reoptimization enabled"
+    )
     rpreoptimization_reduce_overdue_threshold: Optional[int] = Field(
         default=None, description="Reoptimization reduce overdue threshold"
     )
