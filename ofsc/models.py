@@ -303,6 +303,12 @@ class WorkzoneList(RootModel[List[Workzone]]):
         return self.root[item]
 
 
+class WorkzoneListResponse(OFSResponseList[Workzone]):
+    """Response model for list of workzones"""
+
+    pass
+
+
 class Property(BaseModel):
     label: str
     name: str

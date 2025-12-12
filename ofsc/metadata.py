@@ -31,6 +31,7 @@ from .models import (
     WorkSkillGroup,
     WorkSkillGroupListResponse,
     Workzone,
+    WorkzoneListResponse,
     WorskillConditionList,
 )
 
@@ -104,7 +105,7 @@ class OFSMetadata(OFSApi):
     # 202208 Skill management
 
     # 202208 Workzones
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=WorkzoneListResponse)
     def get_workzones(
         self,
         offset=0,
@@ -119,7 +120,7 @@ class OFSMetadata(OFSApi):
         )
         return response
 
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200, 204])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200, 204], model=Workzone)
     def replace_workzone(
         self,
         workzone: Workzone,
