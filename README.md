@@ -33,7 +33,8 @@ The models are based on the Pydantic BaseModel, so it is possible to build an en
 - **Workskill**: Work skill definitions
 - **WorkSkillCondition**: Work skill condition definitions
 - **WorkSkillGroup**: Work skill group definitions
-- **Workzone**: Work zone definitions
+- **Workzone**: Work zone definitions with keys, shapes, and organization
+- **WorkzoneListResponse**: Paginated response for workzone lists
 
 ### Organization & Application Models
 - **Application**: Application definitions with resource access
@@ -184,6 +185,8 @@ The models are based on the Pydantic BaseModel, so it is possible to build an en
 
 ### Metadata / Workzones
     get_workzones(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
+    get_workzone(self, label: str, response_type=OBJ_RESPONSE)
+    replace_workzone(self, workzone: Workzone, auto_resolve_conflicts: bool = False, response_type=OBJ_RESPONSE)
 
 ### Metadata / Routing Profiles
     get_routing_profiles(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
@@ -407,6 +410,64 @@ response = ofsc_instance.metadata.force_import_routing_plan(
     response_type=FULL_RESPONSE
 )
 print(f"Restore completed: {response.status_code}")
+```
+
+### Workzones API
+```python
+from ofsc import OFSC
+from ofsc.models import Workzone
+
+# Initialize connection
+ofsc_instance = OFSC(
+    clientID="your_client_id",
+    secret="your_secret",
+    companyName="your_company"
+)
+
+# Get all workzones (returns WorkzoneListResponse)
+workzones = ofsc_instance.metadata.get_workzones(offset=0, limit=100)
+print(f"Total workzones: {workzones.totalResults}")
+
+for workzone in workzones.items:
+    print(f"Label: {workzone.workZoneLabel}, Name: {workzone.workZoneName}")
+    print(f"  Status: {workzone.status}, Travel Area: {workzone.travelArea}")
+    if workzone.keys:
+        print(f"  Keys: {', '.join(workzone.keys)}")
+    if workzone.shapes:
+        print(f"  Shapes: {', '.join(workzone.shapes)}")
+
+# Get a single workzone by label (returns Workzone)
+workzone = ofsc_instance.metadata.get_workzone("ATLANTA")
+print(f"Workzone: {workzone.workZoneName}")
+print(f"Status: {workzone.status}")
+
+# Replace/Update a workzone
+updated_workzone = Workzone(
+    workZoneLabel="ATLANTA",
+    workZoneName="Atlanta Metro Area",
+    status="active",
+    travelArea="sunrise_enterprise",
+    keys=["ATL", "ATLANTA"],
+    shapes=["12345", "67890"],
+    organization="SOUTH_REGION"
+)
+
+result = ofsc_instance.metadata.replace_workzone(
+    workzone=updated_workzone,
+    auto_resolve_conflicts=True  # Automatically resolve key conflicts with other zones
+)
+print(f"Updated workzone: {result.workZoneLabel}")
+
+# Using FULL_RESPONSE for raw API response
+from ofsc.common import FULL_RESPONSE
+
+response = ofsc_instance.metadata.get_workzone(
+    "ATLANTA",
+    response_type=FULL_RESPONSE
+)
+if response.status_code == 200:
+    data = response.json()
+    print(f"Raw workzone data: {data}")
 ```
 
 ## Test History
