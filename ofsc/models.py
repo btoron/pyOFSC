@@ -72,11 +72,11 @@ class OFSResponseList(BaseModel, Generic[T]):
     hasMore: Annotated[Optional[bool], Field(alias="hasMore")] = False
     totalResults: int = -1
 
-    @model_validator(mode="after")
-    def check_coherence(self):
-        if self.totalResults != len(self.items) and self.hasMore is False:
-            self.totalResults = len(self.items)
-        return self
+    # @model_validator(mode="after")
+    # def check_coherence(self):
+    #     if self.totalResults != len(self.items) and self.hasMore is False:
+    #         self.totalResults = len(self.items)
+    #     return self
 
     def __len__(self):
         return len(self.items)

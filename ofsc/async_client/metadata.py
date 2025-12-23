@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from typing import Tuple
+from urllib.parse import urljoin
 
 import httpx
 
@@ -345,8 +346,6 @@ class AsyncOFSMetadata:
         Returns:
             WorkzoneListResponse: List of workzones with pagination info
         """
-        from urllib.parse import urljoin
-
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workZones")
         params = {"offset": offset, "limit": limit}
 
@@ -369,8 +368,6 @@ class AsyncOFSMetadata:
         Returns:
             Workzone: The workzone details
         """
-        from urllib.parse import urljoin
-
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workZones/{label}")
 
         response = await self._client.get(url, headers=self.headers)
