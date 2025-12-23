@@ -90,10 +90,52 @@ class AsyncOFSMetadata:
     async def get_workzones(
         self, offset: int = 0, limit: int = 100
     ) -> WorkzoneListResponse:
-        raise NotImplementedError("Async method not yet implemented")
+        """Get workzones with pagination.
+
+        Args:
+            offset: Starting record number (default 0)
+            limit: Maximum number of workzones to return (default 100)
+
+        Returns:
+            WorkzoneListResponse: List of workzones with pagination info
+        """
+        from urllib.parse import urljoin
+
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workZones")
+        params = {"offset": offset, "limit": limit}
+
+        response = await self._client.get(url, headers=self.headers, params=params)
+        response.raise_for_status()
+
+        data = response.json()
+        # Remove links if not in model
+        if "links" in data and not hasattr(WorkzoneListResponse, "links"):
+            del data["links"]
+
+        return WorkzoneListResponse.model_validate(data)
 
     async def get_workzone(self, label: str) -> Workzone:
-        raise NotImplementedError("Async method not yet implemented")
+        """Get a single workzone by label.
+
+        Args:
+            label: The workzone label to retrieve
+
+        Returns:
+            Workzone: The workzone details
+        """
+        from urllib.parse import urljoin
+
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workZones/{label}")
+
+        response = await self._client.get(url, headers=self.headers)
+        response.raise_for_status()
+
+        data = response.json()
+        # Remove links if not in model
+        if "links" in data and not hasattr(Workzone, "links"):
+            del data["links"]
+
+        return Workzone.model_validate(data)
 
     async def replace_workzone(
         self, workzone: Workzone, auto_resolve_conflicts: bool = False

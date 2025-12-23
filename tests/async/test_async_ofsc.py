@@ -164,14 +164,6 @@ class TestAsyncOFSMetadataStubs:
     """Test that AsyncOFSMetadata methods raise NotImplementedError."""
 
     @pytest.mark.asyncio
-    async def test_get_workzones_not_implemented(self):
-        async with AsyncOFSC(
-            clientID="test", companyName="test", secret="test"
-        ) as client:
-            with pytest.raises(NotImplementedError):
-                await client.metadata.get_workzones()
-
-    @pytest.mark.asyncio
     async def test_get_properties_not_implemented(self):
         async with AsyncOFSC(
             clientID="test", companyName="test", secret="test"
