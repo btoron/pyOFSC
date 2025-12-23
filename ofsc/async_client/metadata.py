@@ -62,6 +62,154 @@ class AsyncOFSMetadata:
             raise NotImplementedError("Token-based auth not yet implemented for async")
         return headers
 
+    # region Activity Type Groups
+
+    async def get_activity_type_groups(
+        self, offset: int = 0, limit: int = 100
+    ) -> ActivityTypeGroupListResponse:
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_activity_type_group(self, label: str) -> ActivityTypeGroup:
+        raise NotImplementedError("Async method not yet implemented")
+
+    # endregion
+
+    # region Activity Types
+
+    async def get_activity_types(
+        self, offset: int = 0, limit: int = 100
+    ) -> ActivityTypeListResponse:
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_activity_type(self, label: str):
+        raise NotImplementedError("Async method not yet implemented")
+
+    # endregion
+
+    # region Applications
+
+    async def get_applications(self) -> ApplicationListResponse:
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_application(self, label: str) -> Application:
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_application_api_accesses(self, label: str):
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_application_api_access(self, label: str, accessId: str):
+        raise NotImplementedError("Async method not yet implemented")
+
+    # endregion
+
+    # region Capacity Areas
+
+    async def get_capacity_areas(
+        self,
+        expandParent: bool = False,
+        fields: list[str] = None,
+        activeOnly: bool = False,
+        areasOnly: bool = False,
+    ) -> CapacityAreaListResponse:
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_capacity_area(self, label: str) -> CapacityArea:
+        raise NotImplementedError("Async method not yet implemented")
+
+    # endregion
+
+    # region Capacity Categories
+
+    async def get_capacity_categories(
+        self, offset: int = 0, limit: int = 100
+    ) -> CapacityCategoryListResponse:
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_capacity_category(self, label: str) -> CapacityCategory:
+        raise NotImplementedError("Async method not yet implemented")
+
+    # endregion
+
+    # region Forms
+
+    async def get_forms(self, offset: int = 0, limit: int = 100):
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_form(self, label: str):
+        raise NotImplementedError("Async method not yet implemented")
+
+    # endregion
+
+    # region Inventory Types
+
+    async def get_inventory_types(self) -> InventoryTypeListResponse:
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_inventory_type(self, label: str) -> InventoryType:
+        raise NotImplementedError("Async method not yet implemented")
+
+    # endregion
+
+    # region Languages
+
+    async def get_languages(self, offset: int = 0, limit: int = 100):
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_language(self, label: str):
+        raise NotImplementedError("Async method not yet implemented")
+
+    # endregion
+
+    # region Link Templates
+
+    async def get_link_templates(self, offset: int = 0, limit: int = 100):
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_link_template(self, label: str):
+        raise NotImplementedError("Async method not yet implemented")
+
+    # endregion
+
+    # region Map Layers
+
+    async def get_map_layers(self, offset: int = 0, limit: int = 100):
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_map_layer(self, label: str):
+        raise NotImplementedError("Async method not yet implemented")
+
+    # endregion
+
+    # region Non-working Reasons
+
+    async def get_non_working_reasons(self, offset: int = 0, limit: int = 100):
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_non_working_reason(self, label: str):
+        raise NotImplementedError("Async method not yet implemented")
+
+    # endregion
+
+    # region Organizations
+
+    async def get_organizations(self) -> OrganizationListResponse:
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_organization(self, label: str) -> Organization:
+        raise NotImplementedError("Async method not yet implemented")
+
+    # endregion
+
+    # region Plugins
+
+    async def import_plugin_file(self, plugin: Path):
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def import_plugin(self, plugin: str):
+        raise NotImplementedError("Async method not yet implemented")
+
+    # endregion
+
     # region Properties
 
     async def get_properties(self, offset: int = 0, limit: int = 100):
@@ -85,7 +233,105 @@ class AsyncOFSMetadata:
 
     # endregion
 
-    # region Workzones
+    # region Resource Types
+
+    async def get_resource_types(self):
+        raise NotImplementedError("Async method not yet implemented")
+
+    # endregion
+
+    # region Routing Profiles
+
+    async def get_routing_profiles(
+        self, offset: int = 0, limit: int = 100
+    ) -> RoutingProfileList:
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_routing_profile_plans(
+        self, profile_label: str, offset: int = 0, limit: int = 100
+    ) -> RoutingPlanList:
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def export_routing_plan(
+        self, profile_label: str, plan_label: str
+    ) -> RoutingPlanData:
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def export_plan_file(self, profile_label: str, plan_label: str) -> bytes:
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def import_routing_plan(self, profile_label: str, plan_data: bytes):
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def force_import_routing_plan(self, profile_label: str, plan_data: bytes):
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def start_routing_plan(
+        self,
+        profile_label: str,
+        plan_label: str,
+        resource_external_id: str,
+        date: str,
+    ):
+        raise NotImplementedError("Async method not yet implemented")
+
+    # endregion
+
+    # region Shifts
+
+    async def get_shifts(self, offset: int = 0, limit: int = 100):
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_shift(self, label: str):
+        raise NotImplementedError("Async method not yet implemented")
+
+    # endregion
+
+    # region Time Slots
+
+    async def get_time_slots(self, offset: int = 0, limit: int = 100):
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_time_slot(self, label: str):
+        raise NotImplementedError("Async method not yet implemented")
+
+    # endregion
+
+    # region Work Skills
+
+    async def get_workskills(self, offset: int = 0, limit: int = 100):
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_workskill(self, label: str):
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def create_or_update_workskill(self, skill: Workskill):
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def delete_workskill(self, label: str):
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_workskill_conditions(self):
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def replace_workskill_conditions(self, data: WorskillConditionList):
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_workskill_groups(self) -> WorkSkillGroupListResponse:
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def get_workskill_group(self, label: str) -> WorkSkillGroup:
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def create_or_update_workskill_group(self, data: WorkSkillGroup):
+        raise NotImplementedError("Async method not yet implemented")
+
+    async def delete_workskill_group(self, label: str):
+        raise NotImplementedError("Async method not yet implemented")
+
+    # endregion
+
+    # region Work Zones
 
     async def get_workzones(
         self, offset: int = 0, limit: int = 100
@@ -140,186 +386,6 @@ class AsyncOFSMetadata:
     async def replace_workzone(
         self, workzone: Workzone, auto_resolve_conflicts: bool = False
     ) -> Workzone:
-        raise NotImplementedError("Async method not yet implemented")
-
-    # endregion
-
-    # region Resource Types
-
-    async def get_resource_types(self):
-        raise NotImplementedError("Async method not yet implemented")
-
-    # endregion
-
-    # region Plugins
-
-    async def import_plugin_file(self, plugin: Path):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def import_plugin(self, plugin: str):
-        raise NotImplementedError("Async method not yet implemented")
-
-    # endregion
-
-    # region Workskills
-
-    async def get_workskills(self, offset: int = 0, limit: int = 100):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_workskill(self, label: str):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def create_or_update_workskill(self, skill: Workskill):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def delete_workskill(self, label: str):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_workskill_conditions(self):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def replace_workskill_conditions(self, data: WorskillConditionList):
-        raise NotImplementedError("Async method not yet implemented")
-
-    # endregion
-
-    # region Activity Type Groups
-
-    async def get_activity_type_groups(
-        self, offset: int = 0, limit: int = 100
-    ) -> ActivityTypeGroupListResponse:
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_activity_type_group(self, label: str) -> ActivityTypeGroup:
-        raise NotImplementedError("Async method not yet implemented")
-
-    # endregion
-
-    # region Activity Types
-
-    async def get_activity_types(
-        self, offset: int = 0, limit: int = 100
-    ) -> ActivityTypeListResponse:
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_activity_type(self, label: str):
-        raise NotImplementedError("Async method not yet implemented")
-
-    # endregion
-
-    # region Capacity Areas
-
-    async def get_capacity_areas(
-        self,
-        expandParent: bool = False,
-        fields: list[str] = None,
-        activeOnly: bool = False,
-        areasOnly: bool = False,
-    ) -> CapacityAreaListResponse:
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_capacity_area(self, label: str) -> CapacityArea:
-        raise NotImplementedError("Async method not yet implemented")
-
-    # endregion
-
-    # region Capacity Categories
-
-    async def get_capacity_categories(
-        self, offset: int = 0, limit: int = 100
-    ) -> CapacityCategoryListResponse:
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_capacity_category(self, label: str) -> CapacityCategory:
-        raise NotImplementedError("Async method not yet implemented")
-
-    # endregion
-
-    # region Inventory Types
-
-    async def get_inventory_types(self) -> InventoryTypeListResponse:
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_inventory_type(self, label: str) -> InventoryType:
-        raise NotImplementedError("Async method not yet implemented")
-
-    # endregion
-
-    # region Workskill Groups
-
-    async def get_workskill_groups(self) -> WorkSkillGroupListResponse:
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_workskill_group(self, label: str) -> WorkSkillGroup:
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def create_or_update_workskill_group(self, data: WorkSkillGroup):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def delete_workskill_group(self, label: str):
-        raise NotImplementedError("Async method not yet implemented")
-
-    # endregion
-
-    # region Applications
-
-    async def get_applications(self) -> ApplicationListResponse:
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_application(self, label: str) -> Application:
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_application_api_accesses(self, label: str):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_application_api_access(self, label: str, accessId: str):
-        raise NotImplementedError("Async method not yet implemented")
-
-    # endregion
-
-    # region Organizations
-
-    async def get_organizations(self) -> OrganizationListResponse:
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_organization(self, label: str) -> Organization:
-        raise NotImplementedError("Async method not yet implemented")
-
-    # endregion
-
-    # region Routing Profiles
-
-    async def get_routing_profiles(
-        self, offset: int = 0, limit: int = 100
-    ) -> RoutingProfileList:
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_routing_profile_plans(
-        self, profile_label: str, offset: int = 0, limit: int = 100
-    ) -> RoutingPlanList:
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def export_routing_plan(
-        self, profile_label: str, plan_label: str
-    ) -> RoutingPlanData:
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def export_plan_file(self, profile_label: str, plan_label: str) -> bytes:
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def import_routing_plan(self, profile_label: str, plan_data: bytes):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def force_import_routing_plan(self, profile_label: str, plan_data: bytes):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def start_routing_plan(
-        self,
-        profile_label: str,
-        plan_label: str,
-        resource_external_id: str,
-        date: str,
-    ):
         raise NotImplementedError("Async method not yet implemented")
 
     # endregion
