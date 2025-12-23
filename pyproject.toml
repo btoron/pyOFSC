@@ -41,6 +41,11 @@ log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(linen
 log_cli_date_format = "%Y-%m-%d %H:%M:%S"
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+markers = [
+    "integration: marks tests as integration tests (may be slow)",
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "uses_real_data: marks tests that use real API data (requires credentials)",
+]
 
 [tool.pytest_env]
 RUN_ENV = 1
