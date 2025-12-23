@@ -2,6 +2,49 @@
 
 A simple Python wrapper for Oracle OFS REST API
 
+## Async Client
+
+Starting with version 2.19, pyOFSC includes an async client (`AsyncOFSC`) that provides asynchronous API access using `httpx` and Python's `async`/`await` patterns.
+
+**Implementation Status**: The async client is being implemented progressively. Currently available async methods are marked with `[Sync & Async]` tags throughout this documentation.
+
+### Usage Example
+```python
+from ofsc.async_client import AsyncOFSC
+
+async with AsyncOFSC(
+    clientID="your_client_id",
+    secret="your_secret",
+    companyName="your_company"
+) as client:
+    # Get workzones asynchronously
+    workzones = await client.metadata.get_workzones(offset=0, limit=100)
+
+    # Get specific workzone
+    workzone = await client.metadata.get_workzone("ATLANTA")
+
+    # Create a new workzone
+    from ofsc.models import Workzone
+    new_zone = Workzone(
+        workZoneLabel="NEW_ZONE",
+        workZoneName="New Zone",
+        status="active",
+        travelArea="enterprise"
+    )
+    result = await client.metadata.create_workzone(new_zone)
+```
+
+### Key Features
+- **Async/Await Support**: Full async/await pattern support for non-blocking I/O
+- **Same Models**: Reuses all existing Pydantic models from the sync version
+- **Context Manager**: Must be used as an async context manager to properly manage HTTP client lifecycle
+- **Simplified API**: Async methods always return Pydantic models (no `response_type` parameter)
+
+### Currently Implemented Async Methods
+- **Metadata / Workzones**: `get_workzones`, `get_workzone`, `create_workzone`, `replace_workzone`
+
+More async methods will be added progressively. Check the `[Sync & Async]` tags in the function listings below to see which methods support async.
+
 ## Models
 
 Starting with OFS 1.17 we added models for the most common entities and metadata. All models should be imported from `ofsc.models`. All existing create functions will be eventually transitioned to models.
@@ -183,9 +226,10 @@ The models are based on the Pydantic BaseModel, so it is possible to build an en
 ### Metadata / Resource Types
     get_resource_types(self, response_type=OBJ_RESPONSE)
 
-### Metadata / Workzones
+### Metadata / Workzones [Sync & Async]
     get_workzones(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
     get_workzone(self, label: str, response_type=OBJ_RESPONSE)
+    create_workzone(self, workzone: Workzone, response_type=OBJ_RESPONSE)  # Async only
     replace_workzone(self, workzone: Workzone, auto_resolve_conflicts: bool = False, response_type=OBJ_RESPONSE)
 
 ### Metadata / Routing Profiles
@@ -504,3 +548,43 @@ During the transition period a DeprecationWarning will be raised if the function
 - All functions return a python object by default. If there is an available model it will be used, otherwise a dict will be returned (see `response_type` parameter and `auto_model` parameter)
 - Errors during API calls can raise exceptions and will by default when returning an object (see `auto_raise` parameter)
 - OBJ_RESPONS and TEXT_RESPONSE are now deprecated. Use `response_type` parameter to control the response type
+
+## Future Deprecation Notice - OFSC 3.0
+
+**Important**: Starting with OFSC 3.0, the synchronous client (`OFSC`) will be deprecated in favor of the async client (`AsyncOFSC`).
+
+### Migration Path
+- The async client (`AsyncOFSC`) is the recommended approach for all new development
+- OFSC 3.0 will provide a **compatibility wrapper** to allow existing synchronous code to continue working without modifications
+- The compatibility wrapper will internally use the async client with synchronous adapters
+- We recommend gradually migrating to the async client to take advantage of better performance and scalability
+
+### Migration Example
+**Current synchronous code:**
+```python
+from ofsc import OFSC
+
+instance = OFSC(
+    clientID="your_client_id",
+    secret="your_secret",
+    companyName="your_company"
+)
+workzones = instance.metadata.get_workzones(offset=0, limit=100)
+```
+
+**Migrated async code:**
+```python
+from ofsc.async_client import AsyncOFSC
+
+async with AsyncOFSC(
+    clientID="your_client_id",
+    secret="your_secret",
+    companyName="your_company"
+) as client:
+    workzones = await client.metadata.get_workzones(offset=0, limit=100)
+```
+
+### Timeline
+- **OFSC 2.x**: Both sync and async clients fully supported
+- **OFSC 3.0**: Sync client deprecated, compatibility wrapper provided
+- **OFSC 4.0**: Sync client may be removed (compatibility wrapper will remain for at least one major version)
