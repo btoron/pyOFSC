@@ -382,7 +382,42 @@ class AsyncOFSMetadata:
 
     async def replace_workzone(
         self, workzone: Workzone, auto_resolve_conflicts: bool = False
-    ) -> Workzone:
-        raise NotImplementedError("Async method not yet implemented")
+    ) -> Workzone | None:
+        """Replace an existing workzone.
+
+        Args:
+            workzone: The workzone object with updated data
+            auto_resolve_conflicts: If True, automatically resolve conflicts (default False)
+
+        Returns:
+            Workzone | None: The updated workzone if status is 200, None if status is 204
+        """
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/workZones/{workzone.workZoneLabel}",
+        )
+
+        params = {}
+        if auto_resolve_conflicts:
+            params["autoResolveConflicts"] = "true"
+
+        response = await self._client.put(
+            url,
+            headers=self.headers,
+            content=workzone.model_dump_json(exclude_none=True),
+            params=params if params else None,
+        )
+        response.raise_for_status()
+
+        # API returns 200 with body or 204 with no content
+        if response.status_code == 204:
+            return None
+
+        data = response.json()
+        # Remove links if not in model
+        if "links" in data and not hasattr(Workzone, "links"):
+            del data["links"]
+
+        return Workzone.model_validate(data)
 
     # endregion

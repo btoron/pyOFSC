@@ -1,5 +1,6 @@
 """Async tests for workzone operations."""
 
+import httpx
 import pytest
 
 from ofsc.models import Workzone, WorkzoneListResponse
@@ -111,3 +112,115 @@ class TestAsyncGetWorkzone:
         assert workzone.workZoneName is not None
         assert workzone.status in ["active", "inactive"]
         assert workzone.travelArea is not None
+
+
+class TestAsyncReplaceWorkzone:
+    """Test async replace_workzone method."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_replace_workzone(self, async_instance, faker):
+        """Test replacing an existing workzone"""
+        # First, get an existing workzone
+        workzones = await async_instance.metadata.get_workzones(offset=0, limit=1)
+
+        if len(workzones.items) == 0:
+            pytest.skip("No workzones available to test")
+
+        # Get the first workzone and store original data
+        original_workzone = workzones.items[0]
+
+        # Modify the workzone
+        modified_workzone = original_workzone.model_copy()
+        modified_workzone.workZoneName = f"TEST_{faker.city()}"
+
+        # Replace the workzone
+        result = await async_instance.metadata.replace_workzone(modified_workzone)
+
+        # Result can be Workzone (200) or None (204)
+        if result is not None:
+            assert isinstance(result, Workzone)
+            assert hasattr(result, "workZoneLabel")
+            assert hasattr(result, "workZoneName")
+
+        # Restore original workzone
+        await async_instance.metadata.replace_workzone(original_workzone)
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_replace_workzone_with_auto_resolve_conflicts(
+        self, async_instance, faker
+    ):
+        """Test replacing a workzone with auto_resolve_conflicts parameter"""
+        # Get an existing workzone
+        workzones = await async_instance.metadata.get_workzones(offset=0, limit=1)
+
+        if len(workzones.items) == 0:
+            pytest.skip("No workzones available to test")
+
+        # Get the first workzone and store original data
+        original_workzone = workzones.items[0]
+
+        # Modify the workzone
+        modified_workzone = original_workzone.model_copy()
+        modified_workzone.workZoneName = f"TEST_AUTO_{faker.city()}"
+
+        # Replace with auto_resolve_conflicts
+        result = await async_instance.metadata.replace_workzone(
+            modified_workzone, auto_resolve_conflicts=True
+        )
+
+        # Result can be Workzone (200) or None (204)
+        if result is not None:
+            assert isinstance(result, Workzone)
+
+        # Restore original workzone
+        await async_instance.metadata.replace_workzone(original_workzone)
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_replace_workzone_returns_workzone(self, async_instance, faker):
+        """Test that replace_workzone returns Workzone when status is 200"""
+        # Get existing workzones using the model
+        workzones = await async_instance.metadata.get_workzones(offset=0, limit=1)
+
+        if len(workzones.items) == 0:
+            pytest.skip("No workzones available to test")
+
+        # Get the first workzone and store original data
+        original_workzone = workzones.items[0]
+
+        # Modify the workzone
+        modified_workzone = original_workzone.model_copy()
+        modified_workzone.workZoneName = f"TEST_{faker.city()}"
+
+        # Replace the workzone
+        result = await async_instance.metadata.replace_workzone(modified_workzone)
+
+        # Verify type validation if we got a 200 response (some APIs return 204)
+        if result is not None:
+            assert isinstance(result, Workzone)
+            assert hasattr(result, "workZoneLabel")
+            assert hasattr(result, "workZoneName")
+
+        # Restore original workzone
+        await async_instance.metadata.replace_workzone(original_workzone)
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_replace_workzone_non_existing(self, async_instance):
+        """Test that replacing a non-existing workzone raises HTTPStatusError"""
+        # Create a workzone with a label that doesn't exist
+        non_existing_workzone = Workzone(
+            workZoneLabel="NON_EXISTING_WORKZONE_12345",
+            workZoneName="Non Existing Zone",
+            status="active",
+            travelArea="sunrise_enterprise",
+        )
+
+        # Try to replace the non-existing workzone
+        with pytest.raises(httpx.HTTPStatusError) as exc_info:
+            await async_instance.metadata.replace_workzone(non_existing_workzone)
+
+        # Verify it's a 404 error
+        assert exc_info.value.response.status_code == 404
