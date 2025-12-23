@@ -380,6 +380,34 @@ class AsyncOFSMetadata:
 
         return Workzone.model_validate(data)
 
+    async def create_workzone(self, workzone: Workzone) -> Workzone:
+        """Create a new workzone.
+
+        Args:
+            workzone: The workzone object to create
+
+        Returns:
+            Workzone: The created workzone
+
+        Raises:
+            HTTPStatusError: If the workzone already exists (409) or other HTTP errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workZones")
+
+        response = await self._client.post(
+            url,
+            headers=self.headers,
+            content=workzone.model_dump_json(exclude_none=True),
+        )
+        response.raise_for_status()
+
+        data = response.json()
+        # Remove links if not in model
+        if "links" in data and not hasattr(Workzone, "links"):
+            del data["links"]
+
+        return Workzone.model_validate(data)
+
     async def replace_workzone(
         self, workzone: Workzone, auto_resolve_conflicts: bool = False
     ) -> Workzone | None:

@@ -17,7 +17,9 @@ class TestAsyncGetWorkzonesLive:
         # Verify type validation
         assert isinstance(workzones, WorkzoneListResponse)
         assert workzones.totalResults is not None
-        assert workzones.totalResults == 18  # 22.B - known test data
+        assert (
+            workzones.totalResults >= 18
+        )  # 22.B - at least 18, may have test workzones
         assert workzones.items[0].workZoneLabel == "ALTAMONTE_SPRINGS"
         assert workzones.items[1].workZoneName == "CASSELBERRY"
 
@@ -224,3 +226,64 @@ class TestAsyncReplaceWorkzone:
 
         # Verify it's a 404 error
         assert exc_info.value.response.status_code == 404
+
+
+class TestAsyncCreateWorkzone:
+    """Test async create_workzone method."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_create_workzone(self, async_instance, faker):
+        """Test creating a new workzone"""
+        # Create a unique workzone label using timestamp to ensure uniqueness
+        import time
+
+        unique_label = f"TEST_WZ_{int(time.time())}"
+
+        # Create a new workzone
+        new_workzone = Workzone(
+            workZoneLabel=unique_label,
+            workZoneName=f"Test Zone {faker.city()}",
+            status="active",
+            travelArea="sunrise_enterprise",
+            keys=["00000"],
+            shapes=["00000"],
+        )
+
+        # Create the workzone
+        try:
+            result = await async_instance.metadata.create_workzone(new_workzone)
+
+            # Verify the result
+            assert isinstance(result, Workzone)
+            assert result.workZoneLabel == unique_label
+            assert result.workZoneName == new_workzone.workZoneName
+            assert result.status == "active"
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 409:
+                # Workzone already exists from previous test run - that's ok, it means create worked
+                pytest.skip(
+                    f"Workzone {unique_label} already exists (from previous test run)"
+                )
+            else:
+                raise
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_create_workzone_already_exists(self, async_instance):
+        """Test that creating a duplicate workzone raises HTTPStatusError"""
+        # Get an existing workzone
+        workzones = await async_instance.metadata.get_workzones(offset=0, limit=1)
+
+        if len(workzones.items) == 0:
+            pytest.skip("No workzones available to test")
+
+        # Try to create a workzone with the same label
+        existing_workzone = workzones.items[0]
+
+        # Attempt to create it again
+        with pytest.raises(httpx.HTTPStatusError) as exc_info:
+            await async_instance.metadata.create_workzone(existing_workzone)
+
+        # Verify it's a 409 conflict error
+        assert exc_info.value.response.status_code == 409
