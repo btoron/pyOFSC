@@ -18,6 +18,7 @@ from ..exceptions import (
     OFSCValidationError,
 )
 from ..models import (
+    ActivityType,
     ActivityTypeGroup,
     ActivityTypeGroupListResponse,
     ActivityTypeListResponse,

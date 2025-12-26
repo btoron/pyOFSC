@@ -457,111 +457,6 @@ class BulkUpdateResponse(BaseModel):
     results: Optional[List[BulkUpdateResult]] = None
 
 
-# region Activity Type Groups
-
-
-class ActivityTypeGroup(BaseModel):
-    label: str
-    name: str
-    _activityTypes: Annotated[Optional[List[dict]], "activityTypes"] = []
-    translations: TranslationList
-
-    @property
-    def activityTypes(self):
-        return [_activityType["label"] for _activityType in self._activityTypes]
-
-
-class ActivityTypeGroupList(RootModel[List[ActivityTypeGroup]]):
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
-class ActivityTypeGroupListResponse(OFSResponseList[ActivityTypeGroup]):
-    pass
-
-
-# endregion
-
-# region Activity Types
-
-
-class ActivityTypeColors(BaseModel):
-    cancelled: Annotated[Optional[str], Field(alias="cancelled")]
-    completed: Annotated[Optional[str], Field(alias="completed")]
-    notdone: Annotated[Optional[str], Field(alias="notdone")]
-    notOrdered: Annotated[Optional[str], Field(alias="notOrdered")]
-    pending: Annotated[Optional[str], Field(alias="pending")]
-    started: Annotated[Optional[str], Field(alias="started")]
-    suspended: Annotated[Optional[str], Field(alias="suspended")]
-    warning: Annotated[Optional[str], Field(alias="warning")]
-
-
-class ActivityTypeFeatures(BaseModel):
-    model_config = ConfigDict(extra="allow")
-    allowCreationInBuckets: Optional[bool] = False
-    allowMassActivities: Optional[bool] = False
-    allowMoveBetweenResources: Optional[bool] = False
-    allowNonScheduled: Optional[bool] = False
-    allowRepeatingActivities: Optional[bool] = False
-    allowReschedule: Optional[bool] = False
-    allowToCreateFromIncomingInterface: Optional[bool] = False
-    allowToSearch: Optional[bool] = False
-    calculateActivityDurationUsingStatistics: Optional[bool] = False
-    calculateDeliveryWindow: Optional[bool] = False
-    calculateTravel: Optional[bool] = False
-    disableLocationTracking: Optional[bool] = False
-    enableDayBeforeTrigger: Optional[bool] = False
-    enableNotStartedTrigger: Optional[bool] = False
-    enableReminderAndChangeTriggers: Optional[bool] = False
-    enableSwWarningTrigger: Optional[bool] = False
-    isSegmentingEnabled: Optional[bool] = False
-    isTeamworkAvailable: Optional[bool] = False
-    slaAndServiceWindowUseCustomerTimeZone: Optional[bool] = False
-    supportOfInventory: Optional[bool] = False
-    supportOfLinks: Optional[bool] = False
-    supportOfNotOrderedActivities: Optional[bool] = False
-    supportOfPreferredResources: Optional[bool] = False
-    supportOfRequiredInventory: Optional[bool] = False
-    supportOfTimeSlots: Optional[bool] = False
-    supportOfWorkSkills: Optional[bool] = False
-    supportOfWorkZones: Optional[bool] = False
-
-
-class ActivityTypeTimeSlots(BaseModel):
-    label: str
-
-
-class ActivityType(BaseModel):
-    active: bool
-    colors: Optional[ActivityTypeColors]
-    defaultDuration: int
-    features: Optional[ActivityTypeFeatures]
-    groupLabel: Optional[str]
-    label: str
-    name: str
-    segmentMaxDuration: Optional[int] = None
-    segmentMinDuration: Optional[int] = None
-    timeSlots: Optional[List[ActivityTypeTimeSlots]] = None
-    translations: TranslationList
-
-
-class ActivityTypeList(RootModel[List[ActivityType]]):
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
-class ActivityTypeListResponse(OFSResponseList[ActivityType]):
-    pass
-
-
-# endregion
-
 # region Capacity Areas
 
 
@@ -1466,9 +1361,108 @@ class RoutingPlanData(BaseModel):
 # endregion
 
 # region Metadata / Activity Type Groups
+
+
+class ActivityTypeGroup(BaseModel):
+    label: str
+    name: str
+    _activityTypes: Annotated[Optional[list[dict]], "activityTypes"] = []
+    translations: TranslationList
+
+    @property
+    def activityTypes(self):
+        return [_activityType["label"] for _activityType in self._activityTypes]
+
+
+class ActivityTypeGroupList(RootModel[list[ActivityTypeGroup]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class ActivityTypeGroupListResponse(OFSResponseList[ActivityTypeGroup]):
+    pass
+
+
 # endregion Metadata / Activity Type Groups
 
 # region Metadata / Activity Types
+
+
+class ActivityTypeColors(BaseModel):
+    cancelled: Annotated[Optional[str], Field(alias="cancelled")]
+    completed: Annotated[Optional[str], Field(alias="completed")]
+    notdone: Annotated[Optional[str], Field(alias="notdone")]
+    notOrdered: Annotated[Optional[str], Field(alias="notOrdered")]
+    pending: Annotated[Optional[str], Field(alias="pending")]
+    started: Annotated[Optional[str], Field(alias="started")]
+    suspended: Annotated[Optional[str], Field(alias="suspended")]
+    warning: Annotated[Optional[str], Field(alias="warning")]
+
+
+class ActivityTypeFeatures(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    allowCreationInBuckets: Optional[bool] = False
+    allowMassActivities: Optional[bool] = False
+    allowMoveBetweenResources: Optional[bool] = False
+    allowNonScheduled: Optional[bool] = False
+    allowRepeatingActivities: Optional[bool] = False
+    allowReschedule: Optional[bool] = False
+    allowToCreateFromIncomingInterface: Optional[bool] = False
+    allowToSearch: Optional[bool] = False
+    calculateActivityDurationUsingStatistics: Optional[bool] = False
+    calculateDeliveryWindow: Optional[bool] = False
+    calculateTravel: Optional[bool] = False
+    disableLocationTracking: Optional[bool] = False
+    enableDayBeforeTrigger: Optional[bool] = False
+    enableNotStartedTrigger: Optional[bool] = False
+    enableReminderAndChangeTriggers: Optional[bool] = False
+    enableSwWarningTrigger: Optional[bool] = False
+    isSegmentingEnabled: Optional[bool] = False
+    isTeamworkAvailable: Optional[bool] = False
+    slaAndServiceWindowUseCustomerTimeZone: Optional[bool] = False
+    supportOfInventory: Optional[bool] = False
+    supportOfLinks: Optional[bool] = False
+    supportOfNotOrderedActivities: Optional[bool] = False
+    supportOfPreferredResources: Optional[bool] = False
+    supportOfRequiredInventory: Optional[bool] = False
+    supportOfTimeSlots: Optional[bool] = False
+    supportOfWorkSkills: Optional[bool] = False
+    supportOfWorkZones: Optional[bool] = False
+
+
+class ActivityTypeTimeSlots(BaseModel):
+    label: str
+
+
+class ActivityType(BaseModel):
+    active: bool
+    colors: Optional[ActivityTypeColors]
+    defaultDuration: int
+    features: Optional[ActivityTypeFeatures]
+    groupLabel: Optional[str]
+    label: str
+    name: str
+    segmentMaxDuration: Optional[int] = None
+    segmentMinDuration: Optional[int] = None
+    timeSlots: Optional[list[ActivityTypeTimeSlots]] = None
+    translations: TranslationList
+
+
+class ActivityTypeList(RootModel[list[ActivityType]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class ActivityTypeListResponse(OFSResponseList[ActivityType]):
+    pass
+
+
 # endregion Metadata / Activity Types
 
 # region Metadata / Applications
