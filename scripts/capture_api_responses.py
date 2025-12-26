@@ -308,7 +308,7 @@ async def save_all_responses():
     auth_header = get_auth_header(client_id, company_name, secret)
 
     print(f"Base URL: {base_url}")
-    print(f"Client ID: {client_id}\n")
+    print("Client credentials loaded.\n")
 
     async with httpx.AsyncClient(timeout=30.0) as client:
         # Process each endpoint category
