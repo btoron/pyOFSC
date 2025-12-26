@@ -332,31 +332,6 @@ class WorskillConditionList(RootModel[List[WorkskillCondition]]):
         return self.root[item]
 
 
-# Workzones
-class Workzone(BaseModel):
-    workZoneLabel: str
-    workZoneName: str
-    status: str
-    travelArea: str
-    keys: Optional[List[str]] = None
-    shapes: Optional[List[str]] = None
-    organization: Optional[str] = None
-
-
-class WorkzoneList(RootModel[List[Workzone]]):
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
-class WorkzoneListResponse(OFSResponseList[Workzone]):
-    """Response model for list of workzones"""
-
-    pass
-
-
 class Property(BaseModel):
     label: str
     name: str
@@ -1546,3 +1521,89 @@ class RoutingPlanData(BaseModel):
 
 
 # endregion
+
+# region Metadata / Activity Type Groups
+# endregion Metadata / Activity Type Groups
+
+# region Metadata / Activity Types
+# endregion Metadata / Activity Types
+
+# region Metadata / Applications
+# endregion Metadata / Applications
+
+# region Metadata / Capacity Areas
+# endregion Metadata / Capacity Areas
+
+# region Metadata / Capacity Categories
+# endregion Metadata / Capacity Categories
+
+# region Metadata / Forms
+# endregion Metadata / Forms
+
+# region Metadata / Inventory Types
+# endregion Metadata / Inventory Types
+
+# region Metadata / Languages
+# endregion Metadata / Languages
+
+# region Metadata / Link Templates
+# endregion Metadata / Link Templates
+
+# region Metadata / Map Layers
+# endregion Metadata / Map Layers
+
+# region Metadata / Non-working Reasons
+# endregion Metadata / Non-working Reasons
+
+# region Metadata / Organizations
+# endregion Metadata / Organizations
+
+# region Metadata / Plugins
+# endregion Metadata / Plugins
+
+# region Metadata / Properties
+# endregion Metadata / Properties
+
+# region Metadata / Resource Types
+# endregion Metadata / Resource Types
+
+# region Metadata / Routing Profiles
+# endregion Metadata / Routing Profiles
+
+# region Metadata / Shifts
+# endregion Metadata / Shifts
+
+# region Metadata / Time Slots
+# endregion Metadata / Time Slots
+
+# region Metadata / Work Skills
+# endregion Metadata / Work Skills
+
+# region Metadata / Work Zones
+
+
+class Workzone(BaseModel):
+    workZoneLabel: str
+    workZoneName: str
+    status: str
+    travelArea: str
+    keys: Optional[list[str]] = None
+    shapes: Optional[list[str]] = None
+    organization: Optional[str] = None
+
+
+class WorkzoneList(RootModel[list[Workzone]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class WorkzoneListResponse(OFSResponseList[Workzone]):
+    """Response model for list of workzones"""
+
+    pass
+
+
+# endregion Metadata / Work Zones
