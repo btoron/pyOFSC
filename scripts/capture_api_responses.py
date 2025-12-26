@@ -237,6 +237,35 @@ ENDPOINTS = {
             "metadata": {"activity_type_label": "NONEXISTENT_TYPE_12345"},
         },
     ],
+    "non_working_reasons": [
+        {
+            "name": "get_non_working_reasons_200_success",
+            "description": "Get all non-working reasons with pagination",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/nonWorkingReasons",
+            "params": {"offset": 0, "limit": 100},
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_non_working_reason_200_success",
+            "description": "Get a single non-working reason by label",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/nonWorkingReasons/ILLNESS",
+            "params": None,
+            "body": None,
+            "metadata": {"non_working_reason_label": "ILLNESS"},
+        },
+        {
+            "name": "get_non_working_reason_404_not_found",
+            "description": "Get a non-existent non-working reason",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/nonWorkingReasons/NONEXISTENT_REASON_12345",
+            "params": None,
+            "body": None,
+            "metadata": {"non_working_reason_label": "NONEXISTENT_REASON_12345"},
+        },
+    ],
 }
 
 

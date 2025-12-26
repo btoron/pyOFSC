@@ -32,6 +32,8 @@ from ..models import (
     EnumerationValueList,
     InventoryType,
     InventoryTypeListResponse,
+    NonWorkingReason,
+    NonWorkingReasonListResponse,
     OFSConfig,
     Organization,
     OrganizationListResponse,
@@ -429,11 +431,60 @@ class AsyncOFSMetadata:
 
     # region Non-working Reasons
 
-    async def get_non_working_reasons(self, offset: int = 0, limit: int = 100):
-        raise NotImplementedError("Async method not yet implemented")
+    async def get_non_working_reasons(
+        self, offset: int = 0, limit: int = 100
+    ) -> NonWorkingReasonListResponse:
+        """Get non-working reasons with pagination.
 
-    async def get_non_working_reason(self, label: str):
-        raise NotImplementedError("Async method not yet implemented")
+        Args:
+            offset: Starting record number (default 0)
+            limit: Maximum number of non-working reasons to return (default 100)
+
+        Returns:
+            NonWorkingReasonListResponse: List of non-working reasons with pagination info
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/nonWorkingReasons")
+        params = {"offset": offset, "limit": limit}
+
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            data = response.json()
+            # Remove links if not in model
+            if "links" in data and not hasattr(NonWorkingReasonListResponse, "links"):
+                del data["links"]
+
+            return NonWorkingReasonListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get non-working reasons")
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_non_working_reason(self, label: str) -> NonWorkingReason:
+        """Get a single non-working reason by label.
+
+        Note:
+            The Oracle Field Service API does not support retrieving individual
+            non-working reasons by label. This method raises NotImplementedError.
+            Use get_non_working_reasons() and filter the results instead.
+
+        Args:
+            label: The non-working reason label to retrieve
+
+        Raises:
+            NotImplementedError: This operation is not supported by the API
+        """
+        raise NotImplementedError(
+            "Oracle Field Service API does not support retrieving individual non-working reasons by label. "
+            "Use get_non_working_reasons() and filter the results instead."
+        )
 
     # endregion
 

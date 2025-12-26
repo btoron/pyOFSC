@@ -1490,6 +1490,27 @@ class ActivityTypeListResponse(OFSResponseList[ActivityType]):
 # endregion Metadata / Map Layers
 
 # region Metadata / Non-working Reasons
+
+
+class NonWorkingReason(BaseModel):
+    label: str
+    name: str
+    active: bool
+    translations: TranslationList
+
+
+class NonWorkingReasonList(RootModel[list[NonWorkingReason]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class NonWorkingReasonListResponse(OFSResponseList[NonWorkingReason]):
+    pass
+
+
 # endregion Metadata / Non-working Reasons
 
 # region Metadata / Organizations
