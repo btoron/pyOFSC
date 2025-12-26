@@ -35,6 +35,7 @@ from ..models import (
     Organization,
     OrganizationListResponse,
     Property,
+    PropertyListResponse,
     RoutingPlanData,
     RoutingPlanList,
     RoutingProfileList,
@@ -327,24 +328,201 @@ class AsyncOFSMetadata:
 
     # region Properties
 
-    async def get_properties(self, offset: int = 0, limit: int = 100):
-        raise NotImplementedError("Async method not yet implemented")
+    async def get_properties(
+        self, offset: int = 0, limit: int = 100
+    ) -> PropertyListResponse:
+        """Get properties with pagination.
 
-    async def get_property(self, label: str):
-        raise NotImplementedError("Async method not yet implemented")
+        Args:
+            offset: Starting record number (default 0)
+            limit: Maximum number of properties to return (default 100)
 
-    async def create_or_replace_property(self, property: Property):
-        raise NotImplementedError("Async method not yet implemented")
+        Returns:
+            PropertyListResponse: List of properties with pagination info
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/properties")
+        params = {"offset": offset, "limit": limit}
+
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get properties")
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+        data = response.json()
+        # Remove links if not in model
+        if "links" in data and not hasattr(PropertyListResponse, "links"):
+            del data["links"]
+
+        return PropertyListResponse.model_validate(data)
+
+    async def get_property(self, label: str) -> Property:
+        """Get a single property by label.
+
+        Args:
+            label: The property label to retrieve
+
+        Returns:
+            Property: The property details
+
+        Raises:
+            OFSCNotFoundError: If property not found (404)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/properties/{label}")
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, f"Failed to get property '{label}'")
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+        data = response.json()
+        # Remove links if not in model
+        if "links" in data and not hasattr(Property, "links"):
+            del data["links"]
+
+        return Property.model_validate(data)
+
+    async def create_or_replace_property(self, property: Property) -> Property:
+        """Create or replace a property.
+
+        Args:
+            property: The property object to create or replace
+
+        Returns:
+            Property: The created or updated property
+
+        Raises:
+            OFSCValidationError: If validation fails (400)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/properties/{property.label}"
+        )
+
+        try:
+            response = await self._client.put(
+                url,
+                headers=self.headers,
+                content=property.model_dump_json(exclude_none=True).encode("utf-8"),
+            )
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to create or replace property '{property.label}'"
+            )
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+        data = response.json()
+        # Remove links if not in model
+        if "links" in data and not hasattr(Property, "links"):
+            del data["links"]
+
+        return Property.model_validate(data)
 
     async def get_enumeration_values(
         self, label: str, offset: int = 0, limit: int = 100
     ) -> EnumerationValueList:
-        raise NotImplementedError("Async method not yet implemented")
+        """Get enumeration values for a property.
+
+        Args:
+            label: The property label
+            offset: Starting record number (default 0)
+            limit: Maximum number of values to return (default 100)
+
+        Returns:
+            EnumerationValueList: List of enumeration values with pagination info
+
+        Raises:
+            OFSCNotFoundError: If property not found (404)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/properties/{label}/enumerationList"
+        )
+        params = {"offset": offset, "limit": limit}
+
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get enumeration values for property '{label}'"
+            )
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+        data = response.json()
+        # Remove links if not in model
+        if "links" in data and not hasattr(EnumerationValueList, "links"):
+            del data["links"]
+
+        return EnumerationValueList.model_validate(data)
 
     async def create_or_update_enumeration_value(
         self, label: str, value: Tuple[EnumerationValue, ...]
     ) -> EnumerationValueList:
-        raise NotImplementedError("Async method not yet implemented")
+        """Create or update enumeration values for a property.
+
+        Args:
+            label: The property label
+            value: Tuple of EnumerationValue objects to create or update
+
+        Returns:
+            EnumerationValueList: Updated list of enumeration values
+
+        Raises:
+            OFSCNotFoundError: If property not found (404)
+            OFSCValidationError: If validation fails (400)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/properties/{label}/enumerationList",
+        )
+        data = {"items": [item.model_dump() for item in value]}
+
+        try:
+            response = await self._client.put(url, headers=self.headers, json=data)
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e,
+                f"Failed to create or update enumeration values for property '{label}'",
+            )
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+        response_data = response.json()
+        # Remove links if not in model
+        if "links" in response_data and not hasattr(EnumerationValueList, "links"):
+            del response_data["links"]
+
+        return EnumerationValueList.model_validate(response_data)
 
     # endregion
 

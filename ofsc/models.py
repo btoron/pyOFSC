@@ -1562,6 +1562,14 @@ class RoutingPlanData(BaseModel):
 # endregion Metadata / Plugins
 
 # region Metadata / Properties
+
+
+class PropertyListResponse(OFSResponseList[Property]):
+    """Response model for list of properties"""
+
+    pass
+
+
 # endregion Metadata / Properties
 
 # region Metadata / Resource Types
