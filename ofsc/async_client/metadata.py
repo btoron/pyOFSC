@@ -261,10 +261,74 @@ class AsyncOFSMetadata:
     async def get_activity_types(
         self, offset: int = 0, limit: int = 100
     ) -> ActivityTypeListResponse:
-        raise NotImplementedError("Async method not yet implemented")
+        """Get activity types with pagination.
 
-    async def get_activity_type(self, label: str):
-        raise NotImplementedError("Async method not yet implemented")
+        Args:
+            offset: Starting record number (default 0)
+            limit: Maximum number of activity types to return (default 100)
+
+        Returns:
+            ActivityTypeListResponse: List of activity types with pagination info
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/activityTypes")
+        params = {"offset": offset, "limit": limit}
+
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            data = response.json()
+            # Remove links if not in model
+            if "links" in data and not hasattr(ActivityTypeListResponse, "links"):
+                del data["links"]
+
+            return ActivityTypeListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get activity types")
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_activity_type(self, label: str) -> ActivityType:
+        """Get a single activity type by label.
+
+        Args:
+            label: The activity type label to retrieve
+
+        Returns:
+            ActivityType: The activity type details
+
+        Raises:
+            OFSCNotFoundError: If activity type not found (404)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/activityTypes/{encoded_label}"
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            # Remove links if not in model
+            if "links" in data and not hasattr(ActivityType, "links"):
+                del data["links"]
+
+            return ActivityType.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, f"Failed to get activity type '{label}'")
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     # endregion
 

@@ -222,10 +222,10 @@ ENDPOINTS = {
             "name": "get_activity_type_200_success",
             "description": "Get a single activity type by label",
             "method": "GET",
-            "path": "/rest/ofscMetadata/v1/activityTypes/install",
+            "path": "/rest/ofscMetadata/v1/activityTypes/LU",
             "params": None,
             "body": None,
-            "metadata": {"activity_type_label": "install"},
+            "metadata": {"activity_type_label": "LU"},
         },
         {
             "name": "get_activity_type_404_not_found",
