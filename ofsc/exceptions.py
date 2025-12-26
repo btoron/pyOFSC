@@ -4,18 +4,28 @@ import httpx
 
 
 class OFSAPIException(Exception):
+    """Base exception for OFSC API errors."""
+
+    status_code: Optional[int]
+
     def __init__(self, *args: object, **kwargs) -> None:
         super().__init__(*args)
+        self.status_code = None
         for key, value in kwargs.items():
             match key:
                 case "status":
-                    setattr(self, "status_code", int(value))
+                    self.status_code = int(value) if value is not None else None
                 case _:
                     setattr(self, key, value)
 
 
 class OFSCApiError(OFSAPIException):
     """API-level errors (HTTP errors) with OFSC error details"""
+
+    response: Optional[httpx.Response]
+    error_type: Optional[str]
+    title: Optional[str]
+    detail: Optional[str]
 
     def __init__(
         self,

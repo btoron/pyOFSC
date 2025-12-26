@@ -1,7 +1,10 @@
 """Async tests for workzone operations."""
 
+import time
+
 import pytest
 
+from ofsc.exceptions import OFSCConflictError, OFSCNotFoundError
 from ofsc.models import Workzone, WorkzoneListResponse
 
 
@@ -211,8 +214,6 @@ class TestAsyncReplaceWorkzone:
     @pytest.mark.uses_real_data
     async def test_replace_workzone_non_existing(self, async_instance):
         """Test that replacing a non-existing workzone raises OFSCNotFoundError"""
-        from ofsc.exceptions import OFSCNotFoundError
-
         # Create a workzone with a label that doesn't exist
         non_existing_workzone = Workzone(
             workZoneLabel="NON_EXISTING_WORKZONE_12345",
@@ -237,8 +238,6 @@ class TestAsyncCreateWorkzone:
     async def test_create_workzone(self, async_instance, faker):
         """Test creating a new workzone"""
         # Create a unique workzone label using timestamp to ensure uniqueness
-        import time
-
         unique_label = f"TEST_WZ_{int(time.time())}"
 
         # Create a new workzone
@@ -261,9 +260,6 @@ class TestAsyncCreateWorkzone:
             assert result.workZoneName == new_workzone.workZoneName
             assert result.status == "active"
         except Exception as e:
-            # Import custom exceptions
-            from ofsc.exceptions import OFSCConflictError
-
             if isinstance(e, OFSCConflictError):
                 # Workzone already exists from previous test run - that's ok, it means create worked
                 pytest.skip(
@@ -276,8 +272,6 @@ class TestAsyncCreateWorkzone:
     @pytest.mark.uses_real_data
     async def test_create_workzone_already_exists(self, async_instance):
         """Test that creating a duplicate workzone raises OFSCConflictError"""
-        from ofsc.exceptions import OFSCConflictError
-
         # Get an existing workzone
         workzones = await async_instance.metadata.get_workzones(offset=0, limit=1)
 
