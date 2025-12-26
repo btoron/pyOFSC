@@ -99,6 +99,56 @@ ENDPOINTS = {
             "body": None,
             "metadata": {"property_label": "NONEXISTENT_PROPERTY_12345"},
         },
+        {
+            "name": "create_or_update_enumeration_values_200_success",
+            "description": "Create or update enumeration values for a property",
+            "method": "PUT",
+            "path": "/rest/ofscMetadata/v1/properties/complete_code/enumerationList",
+            "params": None,
+            "body": {
+                "items": [
+                    {
+                        "label": "1",
+                        "active": True,
+                        "translations": [
+                            {"language": "en", "name": "E1 - Complete, No Issues"}
+                        ],
+                    },
+                    {
+                        "label": "2",
+                        "active": True,
+                        "translations": [
+                            {"language": "en", "name": "E2 - Complete, Plant Issue"}
+                        ],
+                    },
+                    {
+                        "label": "3",
+                        "active": True,
+                        "translations": [
+                            {"language": "en", "name": "E3 - Complete, Drop Replace"}
+                        ],
+                    },
+                ]
+            },
+            "metadata": {"property_label": "complete_code"},
+        },
+        {
+            "name": "create_or_update_enumeration_values_404_not_found",
+            "description": "Create or update enumeration values for non-existent property",
+            "method": "PUT",
+            "path": "/rest/ofscMetadata/v1/properties/NONEXISTENT_PROPERTY_12345/enumerationList",
+            "params": None,
+            "body": {
+                "items": [
+                    {
+                        "label": "TEST",
+                        "active": True,
+                        "translations": [{"language": "en", "name": "Test Value"}],
+                    }
+                ]
+            },
+            "metadata": {"property_label": "NONEXISTENT_PROPERTY_12345"},
+        },
     ],
 }
 
