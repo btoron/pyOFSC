@@ -332,49 +332,6 @@ class WorskillConditionList(RootModel[List[WorkskillCondition]]):
         return self.root[item]
 
 
-class Property(BaseModel):
-    label: str
-    name: str
-    type: str
-    entity: Optional[EntityEnum] = None
-    gui: Optional[str] = None
-    translations: Annotated[TranslationList, Field(validate_default=True)] = []
-
-    @field_validator("translations")
-    def set_default(cls, field_value, values):
-        return field_value or [Translation(name=values.name)]
-
-    @field_validator("gui")
-    @classmethod
-    def gui_match(cls, v):
-        if v not in [
-            "text",
-            "checkbox",
-            "combobox",
-            "radiogroup",
-            "file",
-            "signature",
-            "image",
-            "url",
-            "phone",
-            "email",
-            "capture",
-            "geo",
-        ]:
-            raise ValueError(f"{v} is not a valid GUI value")
-        return v
-
-    model_config = ConfigDict(extra="ignore")
-
-
-class PropertyList(RootModel[List[Property]]):
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
 class Resource(BaseModel):
     resourceId: Optional[str] = None
     parentResourceId: Optional[str] = None
@@ -765,20 +722,6 @@ class ResourceUsersListResponse(OFSResponseList[BaseUser]):
     @property
     def users(self) -> List[str]:
         return [item.login for item in self.items]
-
-
-class EnumerationValue(BaseModel):
-    active: bool
-    label: str
-    translations: TranslationList
-
-    @property
-    def map(self):
-        return {translation.language: translation for translation in self.translations}
-
-
-class EnumerationValueList(OFSResponseList[EnumerationValue]):
-    pass
 
 
 # endregion
@@ -1564,9 +1507,66 @@ class RoutingPlanData(BaseModel):
 # region Metadata / Properties
 
 
+class Property(BaseModel):
+    label: str
+    name: str
+    type: str
+    entity: Optional[EntityEnum] = None
+    gui: Optional[str] = None
+    translations: Annotated[TranslationList, Field(validate_default=True)] = []
+
+    @field_validator("translations")
+    def set_default(cls, field_value, values):
+        return field_value or [Translation(name=values.name)]
+
+    @field_validator("gui")
+    @classmethod
+    def gui_match(cls, v):
+        if v not in [
+            "text",
+            "checkbox",
+            "combobox",
+            "radiogroup",
+            "file",
+            "signature",
+            "image",
+            "url",
+            "phone",
+            "email",
+            "capture",
+            "geo",
+        ]:
+            raise ValueError(f"{v} is not a valid GUI value")
+        return v
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class PropertyList(RootModel[List[Property]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
 class PropertyListResponse(OFSResponseList[Property]):
     """Response model for list of properties"""
 
+    pass
+
+
+class EnumerationValue(BaseModel):
+    active: bool
+    label: str
+    translations: TranslationList
+
+    @property
+    def map(self):
+        return {translation.language: translation for translation in self.translations}
+
+
+class EnumerationValueList(OFSResponseList[EnumerationValue]):
     pass
 
 

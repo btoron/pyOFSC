@@ -352,17 +352,17 @@ class AsyncOFSMetadata:
         try:
             response = await self._client.get(url, headers=self.headers, params=params)
             response.raise_for_status()
+            data = response.json()
+            # Remove links if not in model
+            if "links" in data and not hasattr(PropertyListResponse, "links"):
+                del data["links"]
+
+            return PropertyListResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(e, "Failed to get properties")
+            raise  # This will never execute, but satisfies type checker
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
-
-        data = response.json()
-        # Remove links if not in model
-        if "links" in data and not hasattr(PropertyListResponse, "links"):
-            del data["links"]
-
-        return PropertyListResponse.model_validate(data)
 
     async def get_property(self, label: str) -> Property:
         """Get a single property by label.
@@ -385,17 +385,17 @@ class AsyncOFSMetadata:
         try:
             response = await self._client.get(url, headers=self.headers)
             response.raise_for_status()
+            data = response.json()
+            # Remove links if not in model
+            if "links" in data and not hasattr(Property, "links"):
+                del data["links"]
+
+            return Property.model_validate(data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(e, f"Failed to get property '{label}'")
+            raise  # This will never execute, but satisfies type checker
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
-
-        data = response.json()
-        # Remove links if not in model
-        if "links" in data and not hasattr(Property, "links"):
-            del data["links"]
-
-        return Property.model_validate(data)
 
     async def create_or_replace_property(self, property: Property) -> Property:
         """Create or replace a property.
@@ -424,19 +424,19 @@ class AsyncOFSMetadata:
                 content=property.model_dump_json(exclude_none=True).encode("utf-8"),
             )
             response.raise_for_status()
+            data = response.json()
+            # Remove links if not in model
+            if "links" in data and not hasattr(Property, "links"):
+                del data["links"]
+
+            return Property.model_validate(data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(
                 e, f"Failed to create or replace property '{property.label}'"
             )
+            raise  # This will never execute, but satisfies type checker
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
-
-        data = response.json()
-        # Remove links if not in model
-        if "links" in data and not hasattr(Property, "links"):
-            del data["links"]
-
-        return Property.model_validate(data)
 
     async def get_enumeration_values(
         self, label: str, offset: int = 0, limit: int = 100
@@ -466,19 +466,19 @@ class AsyncOFSMetadata:
         try:
             response = await self._client.get(url, headers=self.headers, params=params)
             response.raise_for_status()
+            data = response.json()
+            # Remove links if not in model
+            if "links" in data and not hasattr(EnumerationValueList, "links"):
+                del data["links"]
+
+            return EnumerationValueList.model_validate(data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(
                 e, f"Failed to get enumeration values for property '{label}'"
             )
+            raise  # This will never execute, but satisfies type checker
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
-
-        data = response.json()
-        # Remove links if not in model
-        if "links" in data and not hasattr(EnumerationValueList, "links"):
-            del data["links"]
-
-        return EnumerationValueList.model_validate(data)
 
     async def create_or_update_enumeration_value(
         self, label: str, value: Tuple[EnumerationValue, ...]
@@ -509,20 +509,20 @@ class AsyncOFSMetadata:
         try:
             response = await self._client.put(url, headers=self.headers, json=data)
             response.raise_for_status()
+            response_data = response.json()
+            # Remove links if not in model
+            if "links" in response_data and not hasattr(EnumerationValueList, "links"):
+                del response_data["links"]
+
+            return EnumerationValueList.model_validate(response_data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(
                 e,
                 f"Failed to create or update enumeration values for property '{label}'",
             )
+            raise  # This will never execute, but satisfies type checker
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
-
-        response_data = response.json()
-        # Remove links if not in model
-        if "links" in response_data and not hasattr(EnumerationValueList, "links"):
-            del response_data["links"]
-
-        return EnumerationValueList.model_validate(response_data)
 
     # endregion
 
