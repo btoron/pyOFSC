@@ -6,6 +6,17 @@ from urllib.parse import urljoin
 
 import httpx
 
+from ..exceptions import (
+    OFSCApiError,
+    OFSCAuthenticationError,
+    OFSCAuthorizationError,
+    OFSCConflictError,
+    OFSCNetworkError,
+    OFSCNotFoundError,
+    OFSCRateLimitError,
+    OFSCServerError,
+    OFSCValidationError,
+)
 from ..models import (
     ActivityTypeGroup,
     ActivityTypeGroupListResponse,
@@ -62,6 +73,107 @@ class AsyncOFSMetadata:
         else:
             raise NotImplementedError("Token-based auth not yet implemented for async")
         return headers
+
+    def _parse_error_response(self, response: httpx.Response) -> dict:
+        """Parse OFSC error response format.
+
+        OFSC API returns errors in the format:
+        {
+            "type": "string",
+            "title": "string",
+            "detail": "string"
+        }
+
+        Args:
+            response: The httpx Response object
+
+        Returns:
+            dict: Error information with type, title, and detail keys
+        """
+        try:
+            error_data = response.json()
+            return {
+                "type": error_data.get("type", "about:blank"),
+                "title": error_data.get("title", ""),
+                "detail": error_data.get("detail", response.text),
+            }
+        except Exception:
+            # If response is not JSON or doesn't match format
+            return {
+                "type": "about:blank",
+                "title": f"HTTP {response.status_code}",
+                "detail": response.text,
+            }
+
+    def _handle_http_error(self, e: httpx.HTTPStatusError, context: str = "") -> None:
+        """Convert httpx exceptions to OFSC exceptions with error details.
+
+        Args:
+            e: The httpx HTTPStatusError exception
+            context: Additional context for the error message
+
+        Raises:
+            OFSCAuthenticationError: For 401 errors
+            OFSCAuthorizationError: For 403 errors
+            OFSCNotFoundError: For 404 errors
+            OFSCConflictError: For 409 errors
+            OFSCRateLimitError: For 429 errors
+            OFSCValidationError: For 400, 422 errors
+            OFSCServerError: For 5xx errors
+            OFSCApiError: For other HTTP errors
+        """
+        status = e.response.status_code
+        error_info = self._parse_error_response(e.response)
+
+        # Build message with detail
+        message = (
+            f"{context}: {error_info['detail']}" if context else error_info["detail"]
+        )
+
+        error_map = {
+            401: OFSCAuthenticationError,
+            403: OFSCAuthorizationError,
+            404: OFSCNotFoundError,
+            409: OFSCConflictError,
+            429: OFSCRateLimitError,
+        }
+
+        if status in error_map:
+            raise error_map[status](
+                message,
+                status_code=status,
+                response=e.response,
+                error_type=error_info["type"],
+                title=error_info["title"],
+                detail=error_info["detail"],
+            ) from e
+        elif 400 <= status < 500:
+            raise OFSCValidationError(
+                message,
+                status_code=status,
+                response=e.response,
+                error_type=error_info["type"],
+                title=error_info["title"],
+                detail=error_info["detail"],
+            ) from e
+        elif 500 <= status < 600:
+            raise OFSCServerError(
+                message,
+                status_code=status,
+                response=e.response,
+                error_type=error_info["type"],
+                title=error_info["title"],
+                detail=error_info["detail"],
+            ) from e
+        else:
+            raise OFSCApiError(
+                message,
+                status_code=status,
+                response=e.response,
+                error_type=error_info["type"],
+                title=error_info["title"],
+                detail=error_info["detail"],
+            ) from e
 
     # region Activity Type Groups
 
@@ -345,12 +457,23 @@ class AsyncOFSMetadata:
 
         Returns:
             WorkzoneListResponse: List of workzones with pagination info
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workZones")
         params = {"offset": offset, "limit": limit}
 
-        response = await self._client.get(url, headers=self.headers, params=params)
-        response.raise_for_status()
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get workzones")
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
         data = response.json()
         # Remove links if not in model
@@ -367,11 +490,23 @@ class AsyncOFSMetadata:
 
         Returns:
             Workzone: The workzone details
+
+        Raises:
+            OFSCNotFoundError: If workzone not found (404)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workZones/{label}")
 
-        response = await self._client.get(url, headers=self.headers)
-        response.raise_for_status()
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, f"Failed to get workzone '{label}'")
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
         data = response.json()
         # Remove links if not in model
@@ -390,16 +525,28 @@ class AsyncOFSMetadata:
             Workzone: The created workzone
 
         Raises:
-            HTTPStatusError: If the workzone already exists (409) or other HTTP errors
+            OFSCConflictError: If the workzone already exists (409)
+            OFSCValidationError: If validation fails (400)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workZones")
 
-        response = await self._client.post(
-            url,
-            headers=self.headers,
-            content=workzone.model_dump_json(exclude_none=True),
-        )
-        response.raise_for_status()
+        try:
+            response = await self._client.post(
+                url,
+                headers=self.headers,
+                content=workzone.model_dump_json(exclude_none=True),
+            )
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to create workzone '{workzone.workZoneLabel}'"
+            )
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
         data = response.json()
         # Remove links if not in model
@@ -419,6 +566,15 @@ class AsyncOFSMetadata:
 
         Returns:
             Workzone | None: The updated workzone if status is 200, None if status is 204
+
+        Raises:
+            OFSCNotFoundError: If workzone not found (404)
+            OFSCConflictError: If there are conflicts (409)
+            OFSCValidationError: If validation fails (400)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
         """
         url = urljoin(
             self.baseUrl,
@@ -429,13 +585,20 @@ class AsyncOFSMetadata:
         if auto_resolve_conflicts:
             params["autoResolveConflicts"] = "true"
 
-        response = await self._client.put(
-            url,
-            headers=self.headers,
-            content=workzone.model_dump_json(exclude_none=True),
-            params=params if params else None,
-        )
-        response.raise_for_status()
+        try:
+            response = await self._client.put(
+                url,
+                headers=self.headers,
+                content=workzone.model_dump_json(exclude_none=True),
+                params=params if params else None,
+            )
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to replace workzone '{workzone.workZoneLabel}'"
+            )
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
         # API returns 200 with body or 204 with no content
         if response.status_code == 204:

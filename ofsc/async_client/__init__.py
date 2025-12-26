@@ -4,11 +4,37 @@ from typing import Optional
 
 import httpx
 
+from ..exceptions import (
+    OFSAPIException,
+    OFSCApiError,
+    OFSCAuthenticationError,
+    OFSCAuthorizationError,
+    OFSCConflictError,
+    OFSCNetworkError,
+    OFSCNotFoundError,
+    OFSCRateLimitError,
+    OFSCServerError,
+    OFSCValidationError,
+)
 from ..models import OFSConfig
 from .capacity import AsyncOFSCapacity
 from .core import AsyncOFSCore
 from .metadata import AsyncOFSMetadata
 from .oauth import AsyncOFSOauth2
+
+__all__ = [
+    "AsyncOFSC",
+    "OFSAPIException",
+    "OFSCApiError",
+    "OFSCAuthenticationError",
+    "OFSCAuthorizationError",
+    "OFSCConflictError",
+    "OFSCNetworkError",
+    "OFSCNotFoundError",
+    "OFSCRateLimitError",
+    "OFSCServerError",
+    "OFSCValidationError",
+]
 
 
 class AsyncOFSC:

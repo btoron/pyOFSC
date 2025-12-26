@@ -1,6 +1,5 @@
 """Async tests for workzone operations."""
 
-import httpx
 import pytest
 
 from ofsc.models import Workzone, WorkzoneListResponse
@@ -211,7 +210,9 @@ class TestAsyncReplaceWorkzone:
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
     async def test_replace_workzone_non_existing(self, async_instance):
-        """Test that replacing a non-existing workzone raises HTTPStatusError"""
+        """Test that replacing a non-existing workzone raises OFSCNotFoundError"""
+        from ofsc.exceptions import OFSCNotFoundError
+
         # Create a workzone with a label that doesn't exist
         non_existing_workzone = Workzone(
             workZoneLabel="NON_EXISTING_WORKZONE_12345",
@@ -221,11 +222,11 @@ class TestAsyncReplaceWorkzone:
         )
 
         # Try to replace the non-existing workzone
-        with pytest.raises(httpx.HTTPStatusError) as exc_info:
+        with pytest.raises(OFSCNotFoundError) as exc_info:
             await async_instance.metadata.replace_workzone(non_existing_workzone)
 
         # Verify it's a 404 error
-        assert exc_info.value.response.status_code == 404
+        assert exc_info.value.status_code == 404
 
 
 class TestAsyncCreateWorkzone:
@@ -259,8 +260,11 @@ class TestAsyncCreateWorkzone:
             assert result.workZoneLabel == unique_label
             assert result.workZoneName == new_workzone.workZoneName
             assert result.status == "active"
-        except httpx.HTTPStatusError as e:
-            if e.response.status_code == 409:
+        except Exception as e:
+            # Import custom exceptions
+            from ofsc.exceptions import OFSCConflictError
+
+            if isinstance(e, OFSCConflictError):
                 # Workzone already exists from previous test run - that's ok, it means create worked
                 pytest.skip(
                     f"Workzone {unique_label} already exists (from previous test run)"
@@ -271,7 +275,9 @@ class TestAsyncCreateWorkzone:
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
     async def test_create_workzone_already_exists(self, async_instance):
-        """Test that creating a duplicate workzone raises HTTPStatusError"""
+        """Test that creating a duplicate workzone raises OFSCConflictError"""
+        from ofsc.exceptions import OFSCConflictError
+
         # Get an existing workzone
         workzones = await async_instance.metadata.get_workzones(offset=0, limit=1)
 
@@ -282,8 +288,8 @@ class TestAsyncCreateWorkzone:
         existing_workzone = workzones.items[0]
 
         # Attempt to create it again
-        with pytest.raises(httpx.HTTPStatusError) as exc_info:
+        with pytest.raises(OFSCConflictError) as exc_info:
             await async_instance.metadata.create_workzone(existing_workzone)
 
         # Verify it's a 409 conflict error
-        assert exc_info.value.response.status_code == 409
+        assert exc_info.value.status_code == 409
