@@ -179,6 +179,35 @@ ENDPOINTS = {
             "metadata": {"time_slot_label": "NONEXISTENT_TIME_SLOT_12345"},
         },
     ],
+    "activity_type_groups": [
+        {
+            "name": "get_activity_type_groups_200_success",
+            "description": "Get all activity type groups with pagination",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/activityTypeGroups",
+            "params": {"offset": 0, "limit": 100},
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_activity_type_group_200_success",
+            "description": "Get a single activity type group by label",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/activityTypeGroups/customer",
+            "params": None,
+            "body": None,
+            "metadata": {"activity_type_group_label": "customer"},
+        },
+        {
+            "name": "get_activity_type_group_404_not_found",
+            "description": "Get a non-existent activity type group",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/activityTypeGroups/NONEXISTENT_GROUP_12345",
+            "params": None,
+            "body": None,
+            "metadata": {"activity_type_group_label": "NONEXISTENT_GROUP_12345"},
+        },
+    ],
 }
 
 
