@@ -161,15 +161,10 @@ class TestAsyncOFSCoreStubs:
 
 
 class TestAsyncOFSMetadataStubs:
-    """Test that AsyncOFSMetadata methods raise NotImplementedError."""
+    """Test that AsyncOFSMetadata stub methods raise NotImplementedError."""
 
-    @pytest.mark.asyncio
-    async def test_get_properties_not_implemented(self):
-        async with AsyncOFSC(
-            clientID="test", companyName="test", secret="test"
-        ) as client:
-            with pytest.raises(NotImplementedError):
-                await client.metadata.get_properties()
+    # Note: get_properties is now implemented, see test_async_properties.py
+    pass
 
 
 class TestAsyncOFSCapacityStubs:

@@ -1,6 +1,6 @@
 import base64
 import logging
-from datetime import date
+from datetime import date, time
 from enum import Enum
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 from urllib.parse import urljoin
@@ -61,6 +61,54 @@ class CsvList(BaseModel):
     def __repr__(self) -> str:
         """Representation shows both CSV and list format"""
         return f"CsvList(value='{self.value}', list={self.to_list()})"
+
+
+class OFSResponseBoundedList(BaseModel, Generic[T]):
+    model_config = ConfigDict(extra="allow")
+
+    items: List[T] = []
+    offset: Annotated[Optional[int], Field(alias="offset")] = None
+    limit: Annotated[Optional[int], Field(alias="limit")] = None
+    hasMore: Annotated[Optional[bool], Field(alias="hasMore")] = False
+
+    def __len__(self):
+        return len(self.items)
+
+    def __iter__(self):
+        return iter(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+    def __contains__(self, item):
+        return item in self.items
+
+    def __next__(self):
+        return next(self.items)
+
+
+class OFSResponseUnboundedList(BaseModel, Generic[T]):
+    model_config = ConfigDict(extra="allow")
+
+    items: List[T] = []
+    offset: Annotated[Optional[int], Field(alias="offset")] = None
+    limit: Annotated[Optional[int], Field(alias="limit")] = None
+    totalResults: int = -1
+
+    def __len__(self):
+        return len(self.items)
+
+    def __iter__(self):
+        return iter(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+    def __contains__(self, item):
+        return item in self.items
+
+    def __next__(self):
+        return next(self.items)
 
 
 class OFSResponseList(BaseModel, Generic[T]):
@@ -284,74 +332,6 @@ class WorskillConditionList(RootModel[List[WorkskillCondition]]):
         return self.root[item]
 
 
-# Workzones
-class Workzone(BaseModel):
-    workZoneLabel: str
-    workZoneName: str
-    status: str
-    travelArea: str
-    keys: Optional[List[str]] = None
-    shapes: Optional[List[str]] = None
-    organization: Optional[str] = None
-
-
-class WorkzoneList(RootModel[List[Workzone]]):
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
-class WorkzoneListResponse(OFSResponseList[Workzone]):
-    """Response model for list of workzones"""
-
-    pass
-
-
-class Property(BaseModel):
-    label: str
-    name: str
-    type: str
-    entity: Optional[EntityEnum] = None
-    gui: Optional[str] = None
-    translations: Annotated[TranslationList, Field(validate_default=True)] = []
-
-    @field_validator("translations")
-    def set_default(cls, field_value, values):
-        return field_value or [Translation(name=values.name)]
-
-    @field_validator("gui")
-    @classmethod
-    def gui_match(cls, v):
-        if v not in [
-            "text",
-            "checkbox",
-            "combobox",
-            "radiogroup",
-            "file",
-            "signature",
-            "image",
-            "url",
-            "phone",
-            "email",
-            "capture",
-            "geo",
-        ]:
-            raise ValueError(f"{v} is not a valid GUI value")
-        return v
-
-    model_config = ConfigDict(extra="ignore")
-
-
-class PropertyList(RootModel[List[Property]]):
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
 class Resource(BaseModel):
     resourceId: Optional[str] = None
     parentResourceId: Optional[str] = None
@@ -477,111 +457,6 @@ class BulkUpdateResponse(BaseModel):
     results: Optional[List[BulkUpdateResult]] = None
 
 
-# region Activity Type Groups
-
-
-class ActivityTypeGroup(BaseModel):
-    label: str
-    name: str
-    _activityTypes: Annotated[Optional[List[dict]], "activityTypes"] = []
-    translations: TranslationList
-
-    @property
-    def activityTypes(self):
-        return [_activityType["label"] for _activityType in self._activityTypes]
-
-
-class ActivityTypeGroupList(RootModel[List[ActivityTypeGroup]]):
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
-class ActivityTypeGroupListResponse(OFSResponseList[ActivityTypeGroup]):
-    pass
-
-
-# endregion
-
-# region Activity Types
-
-
-class ActivityTypeColors(BaseModel):
-    cancelled: Annotated[Optional[str], Field(alias="cancelled")]
-    completed: Annotated[Optional[str], Field(alias="completed")]
-    notdone: Annotated[Optional[str], Field(alias="notdone")]
-    notOrdered: Annotated[Optional[str], Field(alias="notOrdered")]
-    pending: Annotated[Optional[str], Field(alias="pending")]
-    started: Annotated[Optional[str], Field(alias="started")]
-    suspended: Annotated[Optional[str], Field(alias="suspended")]
-    warning: Annotated[Optional[str], Field(alias="warning")]
-
-
-class ActivityTypeFeatures(BaseModel):
-    model_config = ConfigDict(extra="allow")
-    allowCreationInBuckets: Optional[bool] = False
-    allowMassActivities: Optional[bool] = False
-    allowMoveBetweenResources: Optional[bool] = False
-    allowNonScheduled: Optional[bool] = False
-    allowRepeatingActivities: Optional[bool] = False
-    allowReschedule: Optional[bool] = False
-    allowToCreateFromIncomingInterface: Optional[bool] = False
-    allowToSearch: Optional[bool] = False
-    calculateActivityDurationUsingStatistics: Optional[bool] = False
-    calculateDeliveryWindow: Optional[bool] = False
-    calculateTravel: Optional[bool] = False
-    disableLocationTracking: Optional[bool] = False
-    enableDayBeforeTrigger: Optional[bool] = False
-    enableNotStartedTrigger: Optional[bool] = False
-    enableReminderAndChangeTriggers: Optional[bool] = False
-    enableSwWarningTrigger: Optional[bool] = False
-    isSegmentingEnabled: Optional[bool] = False
-    isTeamworkAvailable: Optional[bool] = False
-    slaAndServiceWindowUseCustomerTimeZone: Optional[bool] = False
-    supportOfInventory: Optional[bool] = False
-    supportOfLinks: Optional[bool] = False
-    supportOfNotOrderedActivities: Optional[bool] = False
-    supportOfPreferredResources: Optional[bool] = False
-    supportOfRequiredInventory: Optional[bool] = False
-    supportOfTimeSlots: Optional[bool] = False
-    supportOfWorkSkills: Optional[bool] = False
-    supportOfWorkZones: Optional[bool] = False
-
-
-class ActivityTypeTimeSlots(BaseModel):
-    label: str
-
-
-class ActivityType(BaseModel):
-    active: bool
-    colors: Optional[ActivityTypeColors]
-    defaultDuration: int
-    features: Optional[ActivityTypeFeatures]
-    groupLabel: Optional[str]
-    label: str
-    name: str
-    segmentMaxDuration: Optional[int] = None
-    segmentMinDuration: Optional[int] = None
-    timeSlots: Optional[List[ActivityTypeTimeSlots]] = None
-    translations: TranslationList
-
-
-class ActivityTypeList(RootModel[List[ActivityType]]):
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
-class ActivityTypeListResponse(OFSResponseList[ActivityType]):
-    pass
-
-
-# endregion
-
 # region Capacity Areas
 
 
@@ -660,33 +535,6 @@ class CapacityCategoryListResponse(OFSResponseList[CapacityCategory]):
 
 #  endregion
 
-# region 202405 Inventory Types
-
-
-class InventoryType(BaseModel):
-    label: str
-    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
-        None
-    )
-    active: bool = True
-    model_property: Optional[str] = None
-    non_serialized: bool = False
-    quantityPrecision: Optional[int] = 0
-    model_config = ConfigDict(extra="allow")
-
-
-class InventoryTypeList(RootModel[List[InventoryType]]):
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
-class InventoryTypeListResponse(OFSResponseList[InventoryType]):
-    pass
-
-
 # region 202404 Metadata - Time Slots
 # endregion
 # region 202404 Metadata - Workzones
@@ -744,20 +592,6 @@ class ResourceUsersListResponse(OFSResponseList[BaseUser]):
         return [item.login for item in self.items]
 
 
-class EnumerationValue(BaseModel):
-    active: bool
-    label: str
-    translations: TranslationList
-
-    @property
-    def map(self):
-        return {translation.language: translation for translation in self.translations}
-
-
-class EnumerationValueList(OFSResponseList[EnumerationValue]):
-    pass
-
-
 # endregion
 # region 202412 Applications
 
@@ -778,25 +612,6 @@ class Application(BaseModel):
 
 
 class ApplicationListResponse(OFSResponseList[Application]):
-    pass
-
-
-class Organization(BaseModel):
-    label: str
-    name: str
-    translations: TranslationList
-    type: str
-
-
-class OrganizationList(RootModel[List[Organization]]):
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
-class OrganizationListResponse(OFSResponseList[Organization]):
     pass
 
 
@@ -1498,3 +1313,443 @@ class RoutingPlanData(BaseModel):
 
 
 # endregion
+
+# region Metadata / Activity Type Groups
+
+
+class ActivityTypeGroup(BaseModel):
+    label: str
+    name: str
+    _activityTypes: Annotated[Optional[list[dict]], "activityTypes"] = []
+    translations: TranslationList
+
+    @property
+    def activityTypes(self):
+        return [_activityType["label"] for _activityType in self._activityTypes]
+
+
+class ActivityTypeGroupList(RootModel[list[ActivityTypeGroup]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class ActivityTypeGroupListResponse(OFSResponseList[ActivityTypeGroup]):
+    pass
+
+
+# endregion Metadata / Activity Type Groups
+
+# region Metadata / Activity Types
+
+
+class ActivityTypeColors(BaseModel):
+    cancelled: Annotated[Optional[str], Field(alias="cancelled")]
+    completed: Annotated[Optional[str], Field(alias="completed")]
+    notdone: Annotated[Optional[str], Field(alias="notdone")]
+    notOrdered: Annotated[Optional[str], Field(alias="notOrdered")]
+    pending: Annotated[Optional[str], Field(alias="pending")]
+    started: Annotated[Optional[str], Field(alias="started")]
+    suspended: Annotated[Optional[str], Field(alias="suspended")]
+    warning: Annotated[Optional[str], Field(alias="warning")]
+
+
+class ActivityTypeFeatures(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    allowCreationInBuckets: Optional[bool] = False
+    allowMassActivities: Optional[bool] = False
+    allowMoveBetweenResources: Optional[bool] = False
+    allowNonScheduled: Optional[bool] = False
+    allowRepeatingActivities: Optional[bool] = False
+    allowReschedule: Optional[bool] = False
+    allowToCreateFromIncomingInterface: Optional[bool] = False
+    allowToSearch: Optional[bool] = False
+    calculateActivityDurationUsingStatistics: Optional[bool] = False
+    calculateDeliveryWindow: Optional[bool] = False
+    calculateTravel: Optional[bool] = False
+    disableLocationTracking: Optional[bool] = False
+    enableDayBeforeTrigger: Optional[bool] = False
+    enableNotStartedTrigger: Optional[bool] = False
+    enableReminderAndChangeTriggers: Optional[bool] = False
+    enableSwWarningTrigger: Optional[bool] = False
+    isSegmentingEnabled: Optional[bool] = False
+    isTeamworkAvailable: Optional[bool] = False
+    slaAndServiceWindowUseCustomerTimeZone: Optional[bool] = False
+    supportOfInventory: Optional[bool] = False
+    supportOfLinks: Optional[bool] = False
+    supportOfNotOrderedActivities: Optional[bool] = False
+    supportOfPreferredResources: Optional[bool] = False
+    supportOfRequiredInventory: Optional[bool] = False
+    supportOfTimeSlots: Optional[bool] = False
+    supportOfWorkSkills: Optional[bool] = False
+    supportOfWorkZones: Optional[bool] = False
+
+
+class ActivityTypeTimeSlots(BaseModel):
+    label: str
+
+
+class ActivityType(BaseModel):
+    active: bool
+    colors: Optional[ActivityTypeColors]
+    defaultDuration: int
+    features: Optional[ActivityTypeFeatures]
+    groupLabel: Optional[str]
+    label: str
+    name: str
+    segmentMaxDuration: Optional[int] = None
+    segmentMinDuration: Optional[int] = None
+    timeSlots: Optional[list[ActivityTypeTimeSlots]] = None
+    translations: TranslationList
+
+
+class ActivityTypeList(RootModel[list[ActivityType]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class ActivityTypeListResponse(OFSResponseList[ActivityType]):
+    pass
+
+
+# endregion Metadata / Activity Types
+
+# region Metadata / Applications
+# endregion Metadata / Applications
+
+# region Metadata / Capacity Areas
+# endregion Metadata / Capacity Areas
+
+# region Metadata / Capacity Categories
+# endregion Metadata / Capacity Categories
+
+# region Metadata / Forms
+# endregion Metadata / Forms
+
+# region Metadata / Inventory Types
+
+
+class InventoryType(BaseModel):
+    label: str
+    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
+        None
+    )
+    active: bool = True
+    model_property: Optional[str] = None
+    non_serialized: bool = False
+    quantityPrecision: Optional[int] = 0
+    model_config = ConfigDict(extra="allow")
+
+
+class InventoryTypeList(RootModel[list[InventoryType]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class InventoryTypeListResponse(OFSResponseList[InventoryType]):
+    pass
+
+
+# endregion Metadata / Inventory Types
+
+# region Metadata / Languages
+
+
+class LanguageTranslation(BaseModel):
+    """Translation of a language name into another language."""
+
+    language: str
+    languageISO: str
+    name: str
+
+
+class Language(BaseModel):
+    """Language configuration in OFSC."""
+
+    label: str
+    code: str
+    name: str
+    active: bool
+    translations: list[LanguageTranslation]
+
+
+class LanguageList(RootModel[list[Language]]):
+    """List of languages."""
+
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class LanguageListResponse(OFSResponseList[Language]):
+    """Response for get_languages with pagination metadata."""
+
+    pass
+
+
+# endregion Metadata / Languages
+
+# region Metadata / Link Templates
+
+
+class LinkTemplateType(str, Enum):
+    finishToStart = "finishToStart"
+    startToStart = "startToStart"
+    simultaneous = "simultaneous"
+    related = "related"
+
+
+class LinkTemplateInterval(str, Enum):
+    unlimited = "unlimited"
+    adjustable = "adjustable"
+    nonAdjustable = "nonAdjustable"
+
+
+class LinkTemplateSchedulingConstraint(str, Enum):
+    sameDay = "sameDay"
+    differentDays = "differentDays"
+
+
+class LinkTemplateAssignmentConstraint(str, Enum):
+    sameResource = "sameResource"
+    differentResources = "differentResources"
+
+
+class LinkTemplateTranslation(BaseModel):
+    language: str
+    name: str
+    reverseName: Optional[str] = None
+
+
+class LinkTemplate(BaseModel):
+    label: str
+    reverseLabel: Optional[str] = None
+    active: bool
+    linkType: LinkTemplateType
+    minInterval: Optional[LinkTemplateInterval] = None
+    maxInterval: Optional[LinkTemplateInterval] = None
+    minIntervalValue: Optional[int] = None
+    schedulingConstraint: Optional[LinkTemplateSchedulingConstraint] = None
+    assignmentConstraints: Optional[LinkTemplateAssignmentConstraint] = None
+    translations: list[LinkTemplateTranslation]
+
+
+class LinkTemplateList(RootModel[list[LinkTemplate]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class LinkTemplateListResponse(OFSResponseList[LinkTemplate]):
+    pass
+
+
+# endregion Metadata / Link Templates
+
+# region Metadata / Map Layers
+# endregion Metadata / Map Layers
+
+# region Metadata / Non-working Reasons
+
+
+class NonWorkingReason(BaseModel):
+    label: str
+    name: str
+    active: bool
+    translations: TranslationList
+
+
+class NonWorkingReasonList(RootModel[list[NonWorkingReason]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class NonWorkingReasonListResponse(OFSResponseList[NonWorkingReason]):
+    pass
+
+
+# endregion Metadata / Non-working Reasons
+
+# region Metadata / Organizations
+
+
+class OrganizationType(str, Enum):
+    contractor = "contractor"
+    inhouse = "inhouse"
+
+
+class Organization(BaseModel):
+    label: str
+    name: str
+    translations: TranslationList
+    type: OrganizationType
+
+
+class OrganizationList(RootModel[list[Organization]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class OrganizationListResponse(OFSResponseList[Organization]):
+    pass
+
+
+# endregion Metadata / Organizations
+
+# region Metadata / Plugins
+# endregion Metadata / Plugins
+
+# region Metadata / Properties
+
+
+class Property(BaseModel):
+    label: str
+    name: str
+    type: str
+    entity: Optional[EntityEnum] = None
+    gui: Optional[str] = None
+    translations: Annotated[TranslationList, Field(validate_default=True)] = []
+
+    @field_validator("translations")
+    def set_default(cls, field_value, values):
+        return field_value or [Translation(name=values.name)]
+
+    @field_validator("gui")
+    @classmethod
+    def gui_match(cls, v):
+        if v not in [
+            "text",
+            "checkbox",
+            "combobox",
+            "radiogroup",
+            "file",
+            "signature",
+            "image",
+            "url",
+            "phone",
+            "email",
+            "capture",
+            "geo",
+        ]:
+            raise ValueError(f"{v} is not a valid GUI value")
+        return v
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class PropertyList(RootModel[List[Property]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class PropertyListResponse(OFSResponseList[Property]):
+    """Response model for list of properties"""
+
+    pass
+
+
+class EnumerationValue(BaseModel):
+    active: bool
+    label: str
+    translations: TranslationList
+
+    @property
+    def map(self):
+        return {translation.language: translation for translation in self.translations}
+
+
+class EnumerationValueList(OFSResponseList[EnumerationValue]):
+    pass
+
+
+# endregion Metadata / Properties
+
+# region Metadata / Resource Types
+
+
+class ResourceTypeListResponse(OFSResponseList[ResourceType]):
+    pass
+
+
+# endregion Metadata / Resource Types
+
+# region Metadata / Routing Profiles
+# endregion Metadata / Routing Profiles
+
+# region Metadata / Shifts
+# endregion Metadata / Shifts
+
+# region Metadata / Time Slots
+
+
+class TimeSlot(BaseModel):
+    """Time slot model for Oracle Field Service."""
+
+    label: str
+    name: str
+    active: bool
+    isAllDay: bool
+    timeStart: Optional[time] = None
+    timeEnd: Optional[time] = None
+
+
+class TimeSlotListResponse(OFSResponseList[TimeSlot]):
+    """Response model for list of time slots."""
+
+    pass
+
+
+# endregion Metadata / Time Slots
+
+# region Metadata / Work Skills
+# endregion Metadata / Work Skills
+
+# region Metadata / Work Zones
+
+
+class Workzone(BaseModel):
+    workZoneLabel: str
+    workZoneName: str
+    status: str
+    travelArea: str
+    keys: Optional[list[str]] = None
+    shapes: Optional[list[str]] = None
+    organization: Optional[str] = None
+
+
+class WorkzoneList(RootModel[list[Workzone]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class WorkzoneListResponse(OFSResponseList[Workzone]):
+    """Response model for list of workzones"""
+
+    pass
+
+
+# endregion Metadata / Work Zones

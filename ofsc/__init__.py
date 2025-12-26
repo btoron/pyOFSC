@@ -1,15 +1,46 @@
-import logging
-
-from .common import FULL_RESPONSE, OBJ_RESPONSE, TEXT_RESPONSE
 from .capacity import OFSCapacity
+from .common import FULL_RESPONSE, OBJ_RESPONSE, TEXT_RESPONSE
 from .core import OFSCore
+from .exceptions import (
+    OFSAPIException,
+    OFSCApiError,
+    OFSCAuthenticationError,
+    OFSCAuthorizationError,
+    OFSCConflictError,
+    OFSCNetworkError,
+    OFSCNotFoundError,
+    OFSCRateLimitError,
+    OFSCServerError,
+    OFSCValidationError,
+)
 from .metadata import OFSMetadata
 from .models import OFSConfig
 from .oauth import OFSOauth2
 
+__all__ = [
+    "OFSC",
+    "OFSCapacity",
+    "OFSCore",
+    "OFSMetadata",
+    "OFSOauth2",
+    "OFSConfig",
+    "FULL_RESPONSE",
+    "OBJ_RESPONSE",
+    "TEXT_RESPONSE",
+    "OFSAPIException",
+    "OFSCApiError",
+    "OFSCAuthenticationError",
+    "OFSCAuthorizationError",
+    "OFSCConflictError",
+    "OFSCNetworkError",
+    "OFSCNotFoundError",
+    "OFSCRateLimitError",
+    "OFSCServerError",
+    "OFSCValidationError",
+]
+
 
 class OFSC:
-
     # the default URL becomes {companyname}.fs.ocs.oraclecloud.com
     def __init__(
         self,
@@ -22,7 +53,6 @@ class OFSC:
         enable_auto_raise=True,
         enable_auto_model=True,
     ):
-
         self._config = OFSConfig(
             baseURL=baseUrl,
             clientID=clientID,
