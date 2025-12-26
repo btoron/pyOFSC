@@ -21,6 +21,7 @@ Repository = "https://github.com/btoron/pyOFSC"
 dev = [
     "pytest>=8.3.3,<9",
     "pytest-asyncio>=0.24.0,<1",
+    "pytest-cov>=6.0.0,<7",
     "pyarmor>=7.6.0,<8",
     "Faker>=14.2.0,<15",
     "openpyxl>=3.0.10,<4",
