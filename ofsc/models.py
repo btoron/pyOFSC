@@ -1,6 +1,6 @@
 import base64
 import logging
-from datetime import date
+from datetime import date, time
 from enum import Enum
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 from urllib.parse import urljoin
@@ -1582,6 +1582,25 @@ class EnumerationValueList(OFSResponseList[EnumerationValue]):
 # endregion Metadata / Shifts
 
 # region Metadata / Time Slots
+
+
+class TimeSlot(BaseModel):
+    """Time slot model for Oracle Field Service."""
+
+    label: str
+    name: str
+    active: bool
+    isAllDay: bool
+    timeStart: Optional[time] = None
+    timeEnd: Optional[time] = None
+
+
+class TimeSlotListResponse(OFSResponseList[TimeSlot]):
+    """Response model for list of time slots."""
+
+    pass
+
+
 # endregion Metadata / Time Slots
 
 # region Metadata / Work Skills
