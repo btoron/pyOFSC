@@ -81,6 +81,24 @@ ENDPOINTS = {
             "body": None,
             "metadata": {"property_label": "NONEXISTENT_PROPERTY_12345"},
         },
+        {
+            "name": "get_enumeration_values_200_success",
+            "description": "Get enumeration values for a property",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/properties/complete_code/enumerationList",
+            "params": {"offset": 0, "limit": 100},
+            "body": None,
+            "metadata": {"property_label": "complete_code"},
+        },
+        {
+            "name": "get_enumeration_values_404_not_found",
+            "description": "Get enumeration values for non-existent property",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/properties/NONEXISTENT_PROPERTY_12345/enumerationList",
+            "params": None,
+            "body": None,
+            "metadata": {"property_label": "NONEXISTENT_PROPERTY_12345"},
+        },
     ],
 }
 
