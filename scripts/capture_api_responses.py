@@ -22,7 +22,6 @@ from typing import Any, Dict, Optional
 import httpx
 from dotenv import load_dotenv
 
-
 # Configuration for endpoints to capture
 ENDPOINTS = {
     "workzones": [
@@ -43,6 +42,15 @@ ENDPOINTS = {
             "params": None,
             "body": None,
             "metadata": {"workzone_label": "NONEXISTENT_WORKZONE_12345"},
+        },
+        {
+            "name": "get_workzones_200_success",
+            "description": "Get all workzones",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/workZones",
+            "params": None,
+            "body": None,
+            "metadata": {"workzone_label": "ALL_WORKZONES"},
         },
     ]
 }
