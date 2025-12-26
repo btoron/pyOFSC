@@ -1,5 +1,8 @@
 """Async tests for property operations."""
 
+import json
+from pathlib import Path
+
 import pytest
 
 from ofsc.exceptions import OFSCNotFoundError
@@ -10,6 +13,7 @@ class TestAsyncGetPropertiesLive:
     """Live tests against actual API."""
 
     @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
     async def test_get_properties(self, async_instance):
         """Test get_properties with actual API - validates structure"""
         properties = await async_instance.metadata.get_properties(offset=0, limit=100)
@@ -124,3 +128,54 @@ class TestAsyncGetProperty:
 
         # Verify it's a 404 error
         assert exc_info.value.status_code == 404
+
+
+class TestAsyncPropertySavedResponses:
+    """Test model validation against saved API responses."""
+
+    def test_property_list_response_validation(self):
+        """Test PropertyListResponse model validates against saved response"""
+        # Load saved response
+        saved_response_path = (
+            Path(__file__).parent.parent
+            / "saved_responses"
+            / "properties"
+            / "get_properties_200_success.json"
+        )
+
+        with open(saved_response_path) as f:
+            saved_data = json.load(f)
+
+        # Validate the response_data can be parsed by the model
+        response = PropertyListResponse.model_validate(saved_data["response_data"])
+
+        # Verify structure
+        assert isinstance(response, PropertyListResponse)
+        assert hasattr(response, "items")
+        assert hasattr(response, "totalResults")
+        assert len(response.items) > 0
+        assert all(isinstance(item, Property) for item in response.items)
+
+    def test_property_response_validation(self):
+        """Test Property model validates against saved response"""
+        # Load saved response
+        saved_response_path = (
+            Path(__file__).parent.parent
+            / "saved_responses"
+            / "properties"
+            / "get_property_200_success.json"
+        )
+
+        with open(saved_response_path) as f:
+            saved_data = json.load(f)
+
+        # Validate the response_data can be parsed by the model
+        property_obj = Property.model_validate(saved_data["response_data"])
+
+        # Verify structure
+        assert isinstance(property_obj, Property)
+        assert property_obj.label == "appt_number"
+        assert property_obj.name == "Work Order"
+        assert property_obj.type == "field"
+        assert property_obj.entity is not None
+        assert property_obj.gui == "text"

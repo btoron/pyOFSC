@@ -52,7 +52,36 @@ ENDPOINTS = {
             "body": None,
             "metadata": {"workzone_label": "ALL_WORKZONES"},
         },
-    ]
+    ],
+    "properties": [
+        {
+            "name": "get_properties_200_success",
+            "description": "Get all properties with pagination",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/properties",
+            "params": {"offset": 0, "limit": 100},
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_property_200_success",
+            "description": "Get a single property by label",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/properties/appt_number",
+            "params": None,
+            "body": None,
+            "metadata": {"property_label": "appt_number"},
+        },
+        {
+            "name": "get_property_404_not_found",
+            "description": "Get a non-existent property",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/properties/NONEXISTENT_PROPERTY_12345",
+            "params": None,
+            "body": None,
+            "metadata": {"property_label": "NONEXISTENT_PROPERTY_12345"},
+        },
+    ],
 }
 
 
