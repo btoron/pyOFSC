@@ -208,6 +208,35 @@ ENDPOINTS = {
             "metadata": {"activity_type_group_label": "NONEXISTENT_GROUP_12345"},
         },
     ],
+    "activity_types": [
+        {
+            "name": "get_activity_types_200_success",
+            "description": "Get all activity types with pagination",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/activityTypes",
+            "params": {"offset": 0, "limit": 100},
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_activity_type_200_success",
+            "description": "Get a single activity type by label",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/activityTypes/install",
+            "params": None,
+            "body": None,
+            "metadata": {"activity_type_label": "install"},
+        },
+        {
+            "name": "get_activity_type_404_not_found",
+            "description": "Get a non-existent activity type",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/activityTypes/NONEXISTENT_TYPE_12345",
+            "params": None,
+            "body": None,
+            "metadata": {"activity_type_label": "NONEXISTENT_TYPE_12345"},
+        },
+    ],
 }
 
 
