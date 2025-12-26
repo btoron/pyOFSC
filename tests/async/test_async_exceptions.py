@@ -313,3 +313,38 @@ async def test_error_response_parsing_non_json():
         # Should fallback to text content
         assert exc_info.value.detail == "Internal Server Error"
         assert exc_info.value.error_type == "about:blank"
+
+
+class TestAsyncExceptionLive:
+    """Live tests for exception handling with real API."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_not_found_error_detail_propagation(self, async_instance):
+        """Test that 404 error detail from OFSC API is properly propagated.
+
+        This test verifies that:
+        1. OFSCNotFoundError is raised for non-existent resources
+        2. All OFSC error fields (type, title, detail) are captured and accessible
+        3. The error detail contains meaningful information from the API
+        """
+        # Try to get a non-existent workzone
+        with pytest.raises(OFSCNotFoundError) as exc_info:
+            await async_instance.metadata.get_workzone("NONEXISTENT_WORKZONE_12345")
+
+        # Verify status code
+        assert exc_info.value.status_code == 404
+
+        # Verify all OFSC error fields are captured
+        assert exc_info.value.error_type is not None
+        assert exc_info.value.error_type.startswith("http://")
+
+        assert exc_info.value.title == "Not Found"
+
+        # Verify detail contains meaningful information
+        assert exc_info.value.detail is not None
+        assert "NONEXISTENT_WORKZONE_12345" in exc_info.value.detail
+        assert "not found" in exc_info.value.detail.lower()
+
+        # Verify the exception message includes the detail
+        assert exc_info.value.detail in str(exc_info.value)
