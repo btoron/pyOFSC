@@ -63,6 +63,54 @@ class CsvList(BaseModel):
         return f"CsvList(value='{self.value}', list={self.to_list()})"
 
 
+class OFSResponseBoundedList(BaseModel, Generic[T]):
+    model_config = ConfigDict(extra="allow")
+
+    items: List[T] = []
+    offset: Annotated[Optional[int], Field(alias="offset")] = None
+    limit: Annotated[Optional[int], Field(alias="limit")] = None
+    hasMore: Annotated[Optional[bool], Field(alias="hasMore")] = False
+
+    def __len__(self):
+        return len(self.items)
+
+    def __iter__(self):
+        return iter(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+    def __contains__(self, item):
+        return item in self.items
+
+    def __next__(self):
+        return next(self.items)
+
+
+class OFSResponseUnboundedList(BaseModel, Generic[T]):
+    model_config = ConfigDict(extra="allow")
+
+    items: List[T] = []
+    offset: Annotated[Optional[int], Field(alias="offset")] = None
+    limit: Annotated[Optional[int], Field(alias="limit")] = None
+    totalResults: int = -1
+
+    def __len__(self):
+        return len(self.items)
+
+    def __iter__(self):
+        return iter(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+    def __contains__(self, item):
+        return item in self.items
+
+    def __next__(self):
+        return next(self.items)
+
+
 class OFSResponseList(BaseModel, Generic[T]):
     model_config = ConfigDict(extra="allow")
 
