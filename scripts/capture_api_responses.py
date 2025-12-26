@@ -150,6 +150,35 @@ ENDPOINTS = {
             "metadata": {"property_label": "NONEXISTENT_PROPERTY_12345"},
         },
     ],
+    "time_slots": [
+        {
+            "name": "get_time_slots_200_success",
+            "description": "Get all time slots with pagination",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/timeSlots",
+            "params": {"offset": 0, "limit": 100},
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_time_slot_200_success",
+            "description": "Get a single time slot by label",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/timeSlots/08-10",
+            "params": None,
+            "body": None,
+            "metadata": {"time_slot_label": "08-10"},
+        },
+        {
+            "name": "get_time_slot_404_not_found",
+            "description": "Get a non-existent time slot",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/timeSlots/NONEXISTENT_TIME_SLOT_12345",
+            "params": None,
+            "body": None,
+            "metadata": {"time_slot_label": "NONEXISTENT_TIME_SLOT_12345"},
+        },
+    ],
 }
 
 
