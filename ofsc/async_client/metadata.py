@@ -60,6 +60,8 @@ class AsyncOFSMetadata:
 
     @property
     def baseUrl(self) -> str:
+        if self._config.baseURL is None:
+            raise ValueError("Base URL is not configured")
         return self._config.baseURL
 
     @property
@@ -220,7 +222,7 @@ class AsyncOFSMetadata:
     async def get_capacity_areas(
         self,
         expandParent: bool = False,
-        fields: list[str] = None,
+        fields: list[str] | None = None,
         activeOnly: bool = False,
         areasOnly: bool = False,
     ) -> CapacityAreaListResponse:
@@ -470,17 +472,17 @@ class AsyncOFSMetadata:
         try:
             response = await self._client.get(url, headers=self.headers, params=params)
             response.raise_for_status()
+            data = response.json()
+            # Remove links if not in model
+            if "links" in data and not hasattr(WorkzoneListResponse, "links"):
+                del data["links"]
+
+            return WorkzoneListResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(e, "Failed to get workzones")
+            raise  # This will never execute, but satisfies type checker
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
-
-        data = response.json()
-        # Remove links if not in model
-        if "links" in data and not hasattr(WorkzoneListResponse, "links"):
-            del data["links"]
-
-        return WorkzoneListResponse.model_validate(data)
 
     async def get_workzone(self, label: str) -> Workzone:
         """Get a single workzone by label.
@@ -503,17 +505,17 @@ class AsyncOFSMetadata:
         try:
             response = await self._client.get(url, headers=self.headers)
             response.raise_for_status()
+            data = response.json()
+            # Remove links if not in model
+            if "links" in data and not hasattr(Workzone, "links"):
+                del data["links"]
+
+            return Workzone.model_validate(data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(e, f"Failed to get workzone '{label}'")
+            raise  # This will never execute, but satisfies type checker
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
-
-        data = response.json()
-        # Remove links if not in model
-        if "links" in data and not hasattr(Workzone, "links"):
-            del data["links"]
-
-        return Workzone.model_validate(data)
 
     async def create_workzone(self, workzone: Workzone) -> Workzone:
         """Create a new workzone.
@@ -541,19 +543,19 @@ class AsyncOFSMetadata:
                 content=workzone.model_dump_json(exclude_none=True),
             )
             response.raise_for_status()
+            data = response.json()
+            # Remove links if not in model
+            if "links" in data and not hasattr(Workzone, "links"):
+                del data["links"]
+
+            return Workzone.model_validate(data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(
                 e, f"Failed to create workzone '{workzone.workZoneLabel}'"
             )
+            raise  # This will never execute, but satisfies type checker
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
-
-        data = response.json()
-        # Remove links if not in model
-        if "links" in data and not hasattr(Workzone, "links"):
-            del data["links"]
-
-        return Workzone.model_validate(data)
 
     async def replace_workzone(
         self, workzone: Workzone, auto_resolve_conflicts: bool = False
@@ -593,22 +595,23 @@ class AsyncOFSMetadata:
                 params=params if params else None,
             )
             response.raise_for_status()
+
+            # API returns 200 with body or 204 with no content
+            if response.status_code == 204:
+                return None
+
+            data = response.json()
+            # Remove links if not in model
+            if "links" in data and not hasattr(Workzone, "links"):
+                del data["links"]
+
+            return Workzone.model_validate(data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(
                 e, f"Failed to replace workzone '{workzone.workZoneLabel}'"
             )
-        except httpx.TransportError as e:
+            raise  # This will never execute, but satisfies type checker
+        except OFSCNetworkError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
-
-        # API returns 200 with body or 204 with no content
-        if response.status_code == 204:
-            return None
-
-        data = response.json()
-        # Remove links if not in model
-        if "links" in data and not hasattr(Workzone, "links"):
-            del data["links"]
-
-        return Workzone.model_validate(data)
 
     # endregion
