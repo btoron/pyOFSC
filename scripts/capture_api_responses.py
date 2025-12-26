@@ -266,6 +266,17 @@ ENDPOINTS = {
             "metadata": {"non_working_reason_label": "NONEXISTENT_REASON_12345"},
         },
     ],
+    "resource_types": [
+        {
+            "name": "get_resource_types_200_success",
+            "description": "Get all resource types",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/resourceTypes",
+            "params": None,
+            "body": None,
+            "metadata": {},
+        },
+    ],
 }
 
 

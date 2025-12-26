@@ -1588,6 +1588,12 @@ class EnumerationValueList(OFSResponseList[EnumerationValue]):
 # endregion Metadata / Properties
 
 # region Metadata / Resource Types
+
+
+class ResourceTypeListResponse(OFSResponseList[ResourceType]):
+    pass
+
+
 # endregion Metadata / Resource Types
 
 # region Metadata / Routing Profiles

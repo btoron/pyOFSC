@@ -39,6 +39,7 @@ from ..models import (
     OrganizationListResponse,
     Property,
     PropertyListResponse,
+    ResourceTypeListResponse,
     RoutingPlanData,
     RoutingPlanList,
     RoutingProfileList,
@@ -710,8 +711,34 @@ class AsyncOFSMetadata:
 
     # region Resource Types
 
-    async def get_resource_types(self):
-        raise NotImplementedError("Async method not yet implemented")
+    async def get_resource_types(self) -> ResourceTypeListResponse:
+        """Get all resource types.
+
+        Returns:
+            ResourceTypeListResponse: List of resource types
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/resourceTypes")
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            # Remove links if not in model
+            if "links" in data and not hasattr(ResourceTypeListResponse, "links"):
+                del data["links"]
+
+            return ResourceTypeListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get resource types")
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     # endregion
 
