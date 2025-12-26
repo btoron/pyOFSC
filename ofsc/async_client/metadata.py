@@ -32,6 +32,8 @@ from ..models import (
     EnumerationValueList,
     InventoryType,
     InventoryTypeListResponse,
+    Language,
+    LanguageListResponse,
     LinkTemplate,
     LinkTemplateListResponse,
     NonWorkingReason,
@@ -404,10 +406,43 @@ class AsyncOFSMetadata:
 
     # region Languages
 
-    async def get_languages(self, offset: int = 0, limit: int = 100):
-        raise NotImplementedError("Async method not yet implemented")
+    async def get_languages(
+        self, offset: int = 0, limit: int = 100
+    ) -> LanguageListResponse:
+        """Get languages with pagination.
 
-    async def get_language(self, label: str):
+        Args:
+            offset: Starting record number (default 0)
+            limit: Maximum number to return (default 100)
+
+        Returns:
+            LanguageListResponse: List with pagination info
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/languages")
+        params = {"offset": offset, "limit": limit}
+
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            data = response.json()
+            # Remove links if not in model
+            if "links" in data and not hasattr(LanguageListResponse, "links"):
+                del data["links"]
+
+            return LanguageListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get languages")
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_language(self, label: str) -> Language:
         raise NotImplementedError("Async method not yet implemented")
 
     # endregion

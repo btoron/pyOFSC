@@ -335,6 +335,35 @@ ENDPOINTS = {
             "metadata": {"link_template_label": "NONEXISTENT_TEMPLATE_12345"},
         },
     ],
+    "languages": [
+        {
+            "name": "get_languages_200_success",
+            "description": "Get all languages with pagination",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/languages",
+            "params": {"offset": 0, "limit": 100},
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_language_200_success",
+            "description": "Get a single language by label",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/languages/en-US",
+            "params": None,
+            "body": None,
+            "metadata": {"language_label": "en-US"},
+        },
+        {
+            "name": "get_language_404_not_found",
+            "description": "Get a non-existent language",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/languages/NONEXISTENT_LANG_12345",
+            "params": None,
+            "body": None,
+            "metadata": {"language_label": "NONEXISTENT_LANG_12345"},
+        },
+    ],
 }
 
 

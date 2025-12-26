@@ -1462,6 +1462,42 @@ class ActivityTypeListResponse(OFSResponseList[ActivityType]):
 # endregion Metadata / Inventory Types
 
 # region Metadata / Languages
+
+
+class LanguageTranslation(BaseModel):
+    """Translation of a language name into another language."""
+
+    language: str
+    languageISO: str
+    name: str
+
+
+class Language(BaseModel):
+    """Language configuration in OFSC."""
+
+    label: str
+    code: str
+    name: str
+    active: bool
+    translations: list[LanguageTranslation]
+
+
+class LanguageList(RootModel[list[Language]]):
+    """List of languages."""
+
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class LanguageListResponse(OFSResponseList[Language]):
+    """Response for get_languages with pagination metadata."""
+
+    pass
+
+
 # endregion Metadata / Languages
 
 # region Metadata / Link Templates
