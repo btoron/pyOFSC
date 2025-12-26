@@ -676,7 +676,7 @@ class OFSCore(OFSApi):
     def get_subscription_details(self, subscription_id):
         url = urljoin(
             self.baseUrl,
-            "/rest/ofscCore/v1/events/subscriptions/{}".format(str(subscription_id)),
+            f"/rest/ofscCore/v1/events/subscriptions/{subscription_id}",
         )
         response = requests.get(url, headers=self.headers)
         return response

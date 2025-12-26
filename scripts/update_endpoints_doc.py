@@ -134,25 +134,18 @@ def scan_file_for_endpoints(file_path: Path) -> dict[tuple[str, str], bool]:
     is_async = "async_client" in str(file_path)
 
     # Pattern to find URL construction: urljoin(..., "PATH") or urljoin(..., f"PATH")
-    # Also match .format() patterns like "/path/{}".format(var)
-    # Match both regular strings and f-strings
+    # Match both regular strings and f-strings (single or multi-line)
     # For f-strings, replace {variable} with {}
 
-    # Pattern 1: urljoin with direct string or f-string (single or multi-line)
+    # Pattern: urljoin with direct string or f-string (single or multi-line)
     url_pattern = (
         r'urljoin\([^,]+,\s*f?["\']([^"\']+)["\']\s*(?:f?["\']([^"\']*)["\'])?'
     )
-    raw_urls_from_urljoin = re.findall(url_pattern, content, re.MULTILINE)
-
-    # Pattern 2: ".format() patterns
-    format_pattern = r'["\']([^"\']*\/rest\/[^"\']+)["\']\.format\('
-    raw_urls_from_format = re.findall(format_pattern, content)
+    raw_urls = re.findall(url_pattern, content, re.MULTILINE)
 
     # Normalize f-string variables to {} and handle multi-line f-strings
     urls = []
-
-    # Handle urljoin URLs (might be tuples from multi-line f-strings)
-    for match in raw_urls_from_urljoin:
+    for match in raw_urls:
         if isinstance(match, tuple):
             # Multi-line f-string: concatenate parts
             url = "".join(part for part in match if part)
@@ -163,14 +156,6 @@ def scan_file_for_endpoints(file_path: Path) -> dict[tuple[str, str], bool]:
         # Remove query parameters from URL
         normalized = re.sub(r"\?[^/]*$", "", normalized)
         # Remove trailing slash if present (to match ENDPOINTS.md convention)
-        normalized = normalized.rstrip("/")
-        urls.append(normalized)
-
-    # Handle .format() URLs (already have {} placeholders)
-    for url in raw_urls_from_format:
-        # Remove query parameters
-        normalized = re.sub(r"\?[^/]*$", "", url)
-        # Remove trailing slash
         normalized = normalized.rstrip("/")
         urls.append(normalized)
 
