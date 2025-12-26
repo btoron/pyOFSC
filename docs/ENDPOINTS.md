@@ -1,6 +1,6 @@
 # OFSC API Endpoints Reference
 
-**Version:** 2.19.0
+**Version:** 2.20.0
 **Last Updated:** 2025-12-26
 
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints and their implementation status in pyOFSC.
@@ -97,7 +97,7 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 77 | `/rest/ofscMetadata/v1/workSkills/{label}` | metadata | DELETE | sync |
 | 78 | `/rest/ofscMetadata/v1/workZones` | metadata | GET | both |
 | 79 | `/rest/ofscMetadata/v1/workZones` | metadata | POST | async |
-| 80 | `/rest/ofscMetadata/v1/workZones` | metadata | PUT | both |
+| 80 | `/rest/ofscMetadata/v1/workZones` | metadata | PUT | - |
 | 81 | `/rest/ofscMetadata/v1/workZones` | metadata | PATCH | - |
 | 82 | `/rest/ofscMetadata/v1/workZones/{label}` | metadata | GET | both |
 | 83 | `/rest/ofscMetadata/v1/workZones/{label}` | metadata | PUT | both |
@@ -120,7 +120,7 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 | 100 | `/rest/ofscCollaboration/v1/chats/{chatId}/messages` | collaboration | POST | - |
 | 101 | `/rest/ofscCollaboration/v1/chats/{chatId}/participants` | collaboration | GET | - |
 | 102 | `/rest/ofscCollaboration/v1/chats/{chatId}/participants/invite` | collaboration | POST | - |
-| 103 | `/rest/ofscCore/v1/activities` | core | POST | sync |
+| 103 | `/rest/ofscCore/v1/activities` | core | POST | - |
 | 104 | `/rest/ofscCore/v1/activities` | core | GET | sync |
 | 105 | `/rest/ofscCore/v1/activities/{activityId}` | core | PATCH | sync |
 | 106 | `/rest/ofscCore/v1/activities/{activityId}` | core | DELETE | sync |
@@ -263,30 +263,39 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 
 
 
+## Implementation Summary
+
+- **Sync only**: 72 endpoints
+- **Async only**: 6 endpoints
+- **Both**: 17 endpoints
+- **Not implemented**: 147 endpoints
+- **Total sync**: 89 endpoints
+- **Total async**: 23 endpoints
+
 ## Implementation Statistics by Module and Method
 
 ### Synchronous Client
 
 | Module | GET | Write (POST/PUT/PATCH) | DELETE | Total |
 |:-------|----:|-----------------------:|-------:|------:|
-| metadata | 30/51 (58.8%) | 11/30 (36.7%) | 2/5 (40.0%) | 43/86 (50.0%) |
-| core | 25/51 (49.0%) | 16/56 (28.6%) | 5/20 (25.0%) | 46/127 (36.2%) |
+| metadata | 30/51 (58.8%) | 10/30 (33.3%) | 2/5 (40.0%) | 42/86 (48.8%) |
+| core | 25/51 (49.0%) | 15/56 (26.8%) | 5/20 (25.0%) | 45/127 (35.4%) |
 | capacity | 2/6 (33.3%) | 0/5 (0.0%) | 0/0 (0%) | 2/11 (18.2%) |
 | statistics | 0/3 (0.0%) | 0/3 (0.0%) | 0/0 (0%) | 0/6 (0.0%) |
 | partscatalog | 0/0 (0%) | 0/2 (0.0%) | 0/1 (0.0%) | 0/3 (0.0%) |
 | collaboration | 0/3 (0.0%) | 0/4 (0.0%) | 0/0 (0%) | 0/7 (0.0%) |
 | auth | 0/0 (0%) | 0/2 (0.0%) | 0/0 (0%) | 0/2 (0.0%) |
-| **Total** | **57/114 (50.0%)** | **27/102 (26.5%)** | **7/26 (26.9%)** | **91/242 (37.6%)** |
+| **Total** | **57/114 (50.0%)** | **25/102 (24.5%)** | **7/26 (26.9%)** | **89/242 (36.8%)** |
 
 ### Asynchronous Client
 
 | Module | GET | Write (POST/PUT/PATCH) | DELETE | Total |
 |:-------|----:|-----------------------:|-------:|------:|
-| metadata | 19/51 (37.3%) | 5/30 (16.7%) | 0/5 (0.0%) | 24/86 (27.9%) |
+| metadata | 19/51 (37.3%) | 4/30 (13.3%) | 0/5 (0.0%) | 23/86 (26.7%) |
 | core | 0/51 (0.0%) | 0/56 (0.0%) | 0/20 (0.0%) | 0/127 (0.0%) |
 | capacity | 0/6 (0.0%) | 0/5 (0.0%) | 0/0 (0%) | 0/11 (0.0%) |
 | statistics | 0/3 (0.0%) | 0/3 (0.0%) | 0/0 (0%) | 0/6 (0.0%) |
 | partscatalog | 0/0 (0%) | 0/2 (0.0%) | 0/1 (0.0%) | 0/3 (0.0%) |
 | collaboration | 0/3 (0.0%) | 0/4 (0.0%) | 0/0 (0%) | 0/7 (0.0%) |
 | auth | 0/0 (0%) | 0/2 (0.0%) | 0/0 (0%) | 0/2 (0.0%) |
-| **Total** | **19/114 (16.7%)** | **5/102 (4.9%)** | **0/26 (0.0%)** | **24/242 (9.9%)** |
+| **Total** | **19/114 (16.7%)** | **4/102 (3.9%)** | **0/26 (0.0%)** | **23/242 (9.5%)** |
