@@ -364,6 +364,35 @@ ENDPOINTS = {
             "metadata": {"language_label": "NONEXISTENT_LANG_12345"},
         },
     ],
+    "inventory_types": [
+        {
+            "name": "get_inventory_types_200_success",
+            "description": "Get all inventory types with pagination",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/inventoryTypes",
+            "params": {"offset": 0, "limit": 100},
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_inventory_type_200_success",
+            "description": "Get a single inventory type by label",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/inventoryTypes/gend205",
+            "params": None,
+            "body": None,
+            "metadata": {"inventory_type_label": "gend205"},
+        },
+        {
+            "name": "get_inventory_type_404_not_found",
+            "description": "Get a non-existent inventory type",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/inventoryTypes/NONEXISTENT_TYPE_12345",
+            "params": None,
+            "body": None,
+            "metadata": {"inventory_type_label": "NONEXISTENT_TYPE_12345"},
+        },
+    ],
 }
 
 

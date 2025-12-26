@@ -396,11 +396,77 @@ class AsyncOFSMetadata:
 
     # region Inventory Types
 
-    async def get_inventory_types(self) -> InventoryTypeListResponse:
-        raise NotImplementedError("Async method not yet implemented")
+    async def get_inventory_types(
+        self, offset: int = 0, limit: int = 100
+    ) -> InventoryTypeListResponse:
+        """Get inventory types with pagination.
+
+        Args:
+            offset: Starting record number (default 0)
+            limit: Maximum number to return (default 100)
+
+        Returns:
+            InventoryTypeListResponse: List with pagination info
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/inventoryTypes")
+        params = {"offset": offset, "limit": limit}
+
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            data = response.json()
+            # Remove links if not in model
+            if "links" in data and not hasattr(InventoryTypeListResponse, "links"):
+                del data["links"]
+
+            return InventoryTypeListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get inventory types")
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def get_inventory_type(self, label: str) -> InventoryType:
-        raise NotImplementedError("Async method not yet implemented")
+        """Get a single inventory type by label.
+
+        Args:
+            label: The inventory type label
+
+        Returns:
+            InventoryType: The inventory type details
+
+        Raises:
+            OFSCNotFoundError: If inventory type not found (404)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/inventoryTypes/{encoded_label}"
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            # Remove links if not in model
+            if "links" in data and not hasattr(InventoryType, "links"):
+                del data["links"]
+
+            return InventoryType.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, f"Failed to get inventory type '{label}'")
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     # endregion
 

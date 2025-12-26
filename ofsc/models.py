@@ -535,33 +535,6 @@ class CapacityCategoryListResponse(OFSResponseList[CapacityCategory]):
 
 #  endregion
 
-# region 202405 Inventory Types
-
-
-class InventoryType(BaseModel):
-    label: str
-    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
-        None
-    )
-    active: bool = True
-    model_property: Optional[str] = None
-    non_serialized: bool = False
-    quantityPrecision: Optional[int] = 0
-    model_config = ConfigDict(extra="allow")
-
-
-class InventoryTypeList(RootModel[List[InventoryType]]):
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
-class InventoryTypeListResponse(OFSResponseList[InventoryType]):
-    pass
-
-
 # region 202404 Metadata - Time Slots
 # endregion
 # region 202404 Metadata - Workzones
@@ -1459,6 +1432,32 @@ class ActivityTypeListResponse(OFSResponseList[ActivityType]):
 # endregion Metadata / Forms
 
 # region Metadata / Inventory Types
+
+
+class InventoryType(BaseModel):
+    label: str
+    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
+        None
+    )
+    active: bool = True
+    model_property: Optional[str] = None
+    non_serialized: bool = False
+    quantityPrecision: Optional[int] = 0
+    model_config = ConfigDict(extra="allow")
+
+
+class InventoryTypeList(RootModel[list[InventoryType]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class InventoryTypeListResponse(OFSResponseList[InventoryType]):
+    pass
+
+
 # endregion Metadata / Inventory Types
 
 # region Metadata / Languages
