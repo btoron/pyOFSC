@@ -1465,6 +1465,62 @@ class ActivityTypeListResponse(OFSResponseList[ActivityType]):
 # endregion Metadata / Languages
 
 # region Metadata / Link Templates
+
+
+class LinkTemplateType(str, Enum):
+    finishToStart = "finishToStart"
+    startToStart = "startToStart"
+    simultaneous = "simultaneous"
+    related = "related"
+
+
+class LinkTemplateInterval(str, Enum):
+    unlimited = "unlimited"
+    adjustable = "adjustable"
+    nonAdjustable = "nonAdjustable"
+
+
+class LinkTemplateSchedulingConstraint(str, Enum):
+    sameDay = "sameDay"
+    differentDays = "differentDays"
+
+
+class LinkTemplateAssignmentConstraint(str, Enum):
+    sameResource = "sameResource"
+    differentResources = "differentResources"
+
+
+class LinkTemplateTranslation(BaseModel):
+    language: str
+    name: str
+    reverseName: Optional[str] = None
+
+
+class LinkTemplate(BaseModel):
+    label: str
+    reverseLabel: Optional[str] = None
+    active: bool
+    linkType: LinkTemplateType
+    minInterval: Optional[LinkTemplateInterval] = None
+    maxInterval: Optional[LinkTemplateInterval] = None
+    minIntervalValue: Optional[int] = None
+    schedulingConstraint: Optional[LinkTemplateSchedulingConstraint] = None
+    assignmentConstraints: Optional[LinkTemplateAssignmentConstraint] = None
+    translations: list[LinkTemplateTranslation]
+
+
+class LinkTemplateList(RootModel[list[LinkTemplate]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class LinkTemplateListResponse(OFSResponseList[LinkTemplate]):
+    pass
+
+
 # endregion Metadata / Link Templates
 
 # region Metadata / Map Layers

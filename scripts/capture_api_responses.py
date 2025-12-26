@@ -306,6 +306,35 @@ ENDPOINTS = {
             "metadata": {"organization_label": "NONEXISTENT_ORG_12345"},
         },
     ],
+    "link_templates": [
+        {
+            "name": "get_link_templates_200_success",
+            "description": "Get all link templates with pagination",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/linkTemplates",
+            "params": {"offset": 0, "limit": 100},
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_link_template_200_success",
+            "description": "Get a single link template by label",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/linkTemplates/starts_after",
+            "params": None,
+            "body": None,
+            "metadata": {"link_template_label": "starts_after"},
+        },
+        {
+            "name": "get_link_template_404_not_found",
+            "description": "Get a non-existent link template",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/linkTemplates/NONEXISTENT_TEMPLATE_12345",
+            "params": None,
+            "body": None,
+            "metadata": {"link_template_label": "NONEXISTENT_TEMPLATE_12345"},
+        },
+    ],
 }
 
 

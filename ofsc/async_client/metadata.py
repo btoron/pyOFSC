@@ -32,6 +32,8 @@ from ..models import (
     EnumerationValueList,
     InventoryType,
     InventoryTypeListResponse,
+    LinkTemplate,
+    LinkTemplateListResponse,
     NonWorkingReason,
     NonWorkingReasonListResponse,
     OFSConfig,
@@ -412,11 +414,73 @@ class AsyncOFSMetadata:
 
     # region Link Templates
 
-    async def get_link_templates(self, offset: int = 0, limit: int = 100):
-        raise NotImplementedError("Async method not yet implemented")
+    async def get_link_templates(
+        self, offset: int = 0, limit: int = 100
+    ) -> LinkTemplateListResponse:
+        """Get link templates with pagination.
 
-    async def get_link_template(self, label: str):
-        raise NotImplementedError("Async method not yet implemented")
+        Args:
+            offset: Starting record number (default 0)
+            limit: Maximum number to return (default 100)
+
+        Returns:
+            LinkTemplateListResponse: List with pagination info
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/linkTemplates")
+        params = {"offset": offset, "limit": limit}
+
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data and not hasattr(LinkTemplateListResponse, "links"):
+                del data["links"]
+            return LinkTemplateListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get link templates")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_link_template(self, label: str) -> LinkTemplate:
+        """Get a single link template by label.
+
+        Args:
+            label: The link template label
+
+        Returns:
+            LinkTemplate: The link template details
+
+        Raises:
+            OFSCNotFoundError: If link template not found (404)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/linkTemplates/{encoded_label}"
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data and not hasattr(LinkTemplate, "links"):
+                del data["links"]
+            return LinkTemplate.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, f"Failed to get link template '{label}'")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     # endregion
 
