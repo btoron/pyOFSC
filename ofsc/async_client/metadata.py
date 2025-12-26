@@ -492,10 +492,65 @@ class AsyncOFSMetadata:
     # region Organizations
 
     async def get_organizations(self) -> OrganizationListResponse:
-        raise NotImplementedError("Async method not yet implemented")
+        """Get all organizations.
+
+        Returns:
+            OrganizationListResponse: List of organizations
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/organizations")
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data and not hasattr(OrganizationListResponse, "links"):
+                del data["links"]
+            return OrganizationListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get organizations")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def get_organization(self, label: str) -> Organization:
-        raise NotImplementedError("Async method not yet implemented")
+        """Get a single organization by label.
+
+        Args:
+            label: The organization label
+
+        Returns:
+            Organization: The organization details
+
+        Raises:
+            OFSCNotFoundError: If organization not found (404)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/organizations/{encoded_label}"
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data and not hasattr(Organization, "links"):
+                del data["links"]
+            return Organization.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, f"Failed to get organization '{label}'")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     # endregion
 

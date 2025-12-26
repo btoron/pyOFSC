@@ -642,25 +642,6 @@ class ApplicationListResponse(OFSResponseList[Application]):
     pass
 
 
-class Organization(BaseModel):
-    label: str
-    name: str
-    translations: TranslationList
-    type: str
-
-
-class OrganizationList(RootModel[List[Organization]]):
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
-class OrganizationListResponse(OFSResponseList[Organization]):
-    pass
-
-
 # endregion
 # region 202411 Calendars
 class RecurrenceType(str, Enum):
@@ -1514,6 +1495,32 @@ class NonWorkingReasonListResponse(OFSResponseList[NonWorkingReason]):
 # endregion Metadata / Non-working Reasons
 
 # region Metadata / Organizations
+
+
+class OrganizationType(str, Enum):
+    contractor = "contractor"
+    inhouse = "inhouse"
+
+
+class Organization(BaseModel):
+    label: str
+    name: str
+    translations: TranslationList
+    type: OrganizationType
+
+
+class OrganizationList(RootModel[list[Organization]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class OrganizationListResponse(OFSResponseList[Organization]):
+    pass
+
+
 # endregion Metadata / Organizations
 
 # region Metadata / Plugins

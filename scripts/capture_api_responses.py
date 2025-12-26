@@ -277,6 +277,35 @@ ENDPOINTS = {
             "metadata": {},
         },
     ],
+    "organizations": [
+        {
+            "name": "get_organizations_200_success",
+            "description": "Get all organizations",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/organizations",
+            "params": None,
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_organization_200_success",
+            "description": "Get a single organization by label",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/organizations/default",
+            "params": None,
+            "body": None,
+            "metadata": {"organization_label": "default"},
+        },
+        {
+            "name": "get_organization_404_not_found",
+            "description": "Get a non-existent organization",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/organizations/NONEXISTENT_ORG_12345",
+            "params": None,
+            "body": None,
+            "metadata": {"organization_label": "NONEXISTENT_ORG_12345"},
+        },
+    ],
 }
 
 
