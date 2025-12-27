@@ -14,6 +14,10 @@ from collections import defaultdict
 from datetime import date
 from pathlib import Path
 
+import io
+
+from pytablewriter import MarkdownTableWriter
+
 # Constants
 PROJECT_ROOT = Path(__file__).parent.parent
 PYPROJECT_PATH = PROJECT_ROOT / "pyproject.toml"
@@ -29,6 +33,37 @@ MODULE_FILE_MAP = {
     "partscatalog": (None, None),
     "collaboration": (None, None),
 }
+
+
+def dict_list_to_markdown_table(data: list[dict]) -> str:
+    """Convert list of dictionaries to GitHub-flavored markdown table.
+
+    Args:
+        data: List of dictionaries where keys are column headers
+
+    Returns:
+        Markdown table string
+    """
+    if not data:
+        return ""
+
+    # Extract headers from first row
+    headers = list(data[0].keys())
+
+    # Build value matrix
+    value_matrix = [[row[header] for header in headers] for row in data]
+
+    # Create table using pytablewriter
+    writer = MarkdownTableWriter(
+        headers=headers, value_matrix=value_matrix, flavor="github"
+    )
+
+    # Capture output
+    output = io.StringIO()
+    writer.stream = output
+    writer.write_table()
+
+    return output.getvalue().strip()
 
 
 def get_version_from_pyproject() -> str:
@@ -431,21 +466,25 @@ def generate_summary_tables(endpoints: list[dict]) -> str:
         [
             "### Synchronous Client",
             "",
-            "| Module | GET | Write (POST/PUT/PATCH) | DELETE | Total |",
-            "|:-------|----:|-----------------------:|-------:|------:|",
         ]
     )
 
     col_totals_sync = {cat: {"total": 0, "implemented": 0} for cat in method_cats}
     grand_total_sync = {"total": 0, "implemented": 0}
 
+    sync_table_data = []
     for module in all_modules:
         row_total = {"total": 0, "implemented": 0}
-        cells = [module]
+        row_data = {"Module": module}
 
         for method_cat in method_cats:
             data = sync_stats[module][method_cat]
-            cells.append(format_cell(data["implemented"], data["total"]))
+            if method_cat == "Write":
+                row_data["Write (POST/PUT/PATCH)"] = format_cell(
+                    data["implemented"], data["total"]
+                )
+            else:
+                row_data[method_cat] = format_cell(data["implemented"], data["total"])
             row_total["total"] += data["total"]
             row_total["implemented"] += data["implemented"]
             col_totals_sync[method_cat]["total"] += data["total"]
@@ -453,18 +492,24 @@ def generate_summary_tables(endpoints: list[dict]) -> str:
             grand_total_sync["total"] += data["total"]
             grand_total_sync["implemented"] += data["implemented"]
 
-        cells.append(format_cell(row_total["implemented"], row_total["total"]))
-        lines.append("| " + " | ".join(cells) + " |")
+        row_data["Total"] = format_cell(row_total["implemented"], row_total["total"])
+        sync_table_data.append(row_data)
 
-    # Totals row for sync
-    total_cells = ["**Total**"]
+    # Add totals row
+    totals_row = {"Module": "**Total**"}
     for method_cat in method_cats:
         data = col_totals_sync[method_cat]
-        total_cells.append(f"**{format_cell(data['implemented'], data['total'])}**")
-    total_cells.append(
+        formatted = f"**{format_cell(data['implemented'], data['total'])}**"
+        if method_cat == "Write":
+            totals_row["Write (POST/PUT/PATCH)"] = formatted
+        else:
+            totals_row[method_cat] = formatted
+    totals_row["Total"] = (
         f"**{format_cell(grand_total_sync['implemented'], grand_total_sync['total'])}**"
     )
-    lines.append("| " + " | ".join(total_cells) + " |")
+    sync_table_data.append(totals_row)
+
+    lines.append(dict_list_to_markdown_table(sync_table_data))
 
     lines.append("")
 
@@ -473,21 +518,25 @@ def generate_summary_tables(endpoints: list[dict]) -> str:
         [
             "### Asynchronous Client",
             "",
-            "| Module | GET | Write (POST/PUT/PATCH) | DELETE | Total |",
-            "|:-------|----:|-----------------------:|-------:|------:|",
         ]
     )
 
     col_totals_async = {cat: {"total": 0, "implemented": 0} for cat in method_cats}
     grand_total_async = {"total": 0, "implemented": 0}
 
+    async_table_data = []
     for module in all_modules:
         row_total = {"total": 0, "implemented": 0}
-        cells = [module]
+        row_data = {"Module": module}
 
         for method_cat in method_cats:
             data = async_stats[module][method_cat]
-            cells.append(format_cell(data["implemented"], data["total"]))
+            if method_cat == "Write":
+                row_data["Write (POST/PUT/PATCH)"] = format_cell(
+                    data["implemented"], data["total"]
+                )
+            else:
+                row_data[method_cat] = format_cell(data["implemented"], data["total"])
             row_total["total"] += data["total"]
             row_total["implemented"] += data["implemented"]
             col_totals_async[method_cat]["total"] += data["total"]
@@ -495,18 +544,24 @@ def generate_summary_tables(endpoints: list[dict]) -> str:
             grand_total_async["total"] += data["total"]
             grand_total_async["implemented"] += data["implemented"]
 
-        cells.append(format_cell(row_total["implemented"], row_total["total"]))
-        lines.append("| " + " | ".join(cells) + " |")
+        row_data["Total"] = format_cell(row_total["implemented"], row_total["total"])
+        async_table_data.append(row_data)
 
-    # Totals row for async
-    total_cells = ["**Total**"]
+    # Add totals row
+    totals_row = {"Module": "**Total**"}
     for method_cat in method_cats:
         data = col_totals_async[method_cat]
-        total_cells.append(f"**{format_cell(data['implemented'], data['total'])}**")
-    total_cells.append(
+        formatted = f"**{format_cell(data['implemented'], data['total'])}**"
+        if method_cat == "Write":
+            totals_row["Write (POST/PUT/PATCH)"] = formatted
+        else:
+            totals_row[method_cat] = formatted
+    totals_row["Total"] = (
         f"**{format_cell(grand_total_async['implemented'], grand_total_async['total'])}**"
     )
-    lines.append("| " + " | ".join(total_cells) + " |")
+    async_table_data.append(totals_row)
+
+    lines.append(dict_list_to_markdown_table(async_table_data))
 
     return "\n".join(lines)
 
@@ -541,15 +596,20 @@ def write_endpoints_md(endpoints: list[dict], version: str) -> None:
         "",
         "## Endpoints Table",
         "",
-        "| ID | Endpoint | Module | Method | Status |",
-        "|----|----------|--------|--------|--------|",
     ]
 
-    # Add endpoint rows
-    for ep in endpoints:
-        lines.append(
-            f"| {ep['id']} | `{ep['path']}` | {ep['module']} | {ep['method']} | {ep['status']} |"
-        )
+    # Add endpoint rows using pytablewriter
+    endpoint_data = [
+        {
+            "ID": ep["id"],
+            "Endpoint": f"`{ep['path']}`",
+            "Module": ep["module"],
+            "Method": ep["method"],
+            "Status": ep["status"],
+        }
+        for ep in endpoints
+    ]
+    lines.append(dict_list_to_markdown_table(endpoint_data))
 
     # Add implementation summary
     lines.extend(
@@ -587,25 +647,41 @@ def write_endpoints_md(endpoints: list[dict], version: str) -> None:
             "",
             "### Module Codes",
             "",
-            "| Code | Module |",
-            "|------|--------|",
-            "| `CO` | core |",
-            "| `ME` | metadata |",
-            "| `CA` | capacity |",
-            "| `CB` | collaboration |",
-            "| `ST` | statistics |",
-            "| `PC` | partscatalog |",
-            "| `AU` | auth |",
+        ]
+    )
+
+    # Module codes table
+    module_codes_data = [
+        {"Code": "`CO`", "Module": "core"},
+        {"Code": "`ME`", "Module": "metadata"},
+        {"Code": "`CA`", "Module": "capacity"},
+        {"Code": "`CB`", "Module": "collaboration"},
+        {"Code": "`ST`", "Module": "statistics"},
+        {"Code": "`PC`", "Module": "partscatalog"},
+        {"Code": "`AU`", "Module": "auth"},
+    ]
+    lines.append(dict_list_to_markdown_table(module_codes_data))
+
+    lines.extend(
+        [
             "",
             "### Method Codes",
             "",
-            "| Code | HTTP Method |",
-            "|------|-------------|",
-            "| `G` | GET |",
-            "| `P` | POST |",
-            "| `U` | PUT |",
-            "| `A` | PATCH |",
-            "| `D` | DELETE |",
+        ]
+    )
+
+    # Method codes table
+    method_codes_data = [
+        {"Code": "`G`", "HTTP Method": "GET"},
+        {"Code": "`P`", "HTTP Method": "POST"},
+        {"Code": "`U`", "HTTP Method": "PUT"},
+        {"Code": "`A`", "HTTP Method": "PATCH"},
+        {"Code": "`D`", "HTTP Method": "DELETE"},
+    ]
+    lines.append(dict_list_to_markdown_table(method_codes_data))
+
+    lines.extend(
+        [
             "",
             "### Examples",
             "",
