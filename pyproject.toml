@@ -29,6 +29,7 @@ dev = [
     "cryptography>=44.0.0,<45",
     "pytest-env>=1.1.5,<2",
     "python-dotenv>=1.0.1,<2",
+    "pytablewriter>=1.2.1,<2",
 ]
 
 [build-system]
