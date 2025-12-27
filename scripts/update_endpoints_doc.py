@@ -6,6 +6,7 @@ and updates the docs/ENDPOINTS.md file with current implementation status.
 """
 
 import argparse
+import ast
 import re
 import sys
 import tomllib
@@ -85,13 +86,13 @@ def parse_endpoints_md() -> list[dict]:
                 method = parts[4]
                 # Ignore current status - we'll recalculate it
 
-                # Skip if not a valid endpoint ID
-                if not endpoint_id.isdigit():
+                # Skip if not a valid endpoint ID (format: XXYYYM)
+                if not re.match(r"^[A-Z]{2}\d{3}[GPUAD]$", endpoint_id):
                     continue
 
                 endpoints.append(
                     {
-                        "id": int(endpoint_id),
+                        "id": endpoint_id,  # Keep as string
                         "path": path,
                         "module": module,
                         "method": method,
@@ -116,9 +117,99 @@ def normalize_path_for_matching(path: str) -> str:
     return pattern
 
 
+def _extract_url_from_ast_node(node: ast.expr) -> str | None:
+    """
+    Extract URL string from AST node (Constant or JoinedStr).
+
+    Args:
+        node: AST expression node containing URL
+
+    Returns:
+        Normalized URL string with {variables} as {}, or None if not extractable
+    """
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        # Simple string: "/rest/ofscCore/v1/activities"
+        return node.value
+
+    elif isinstance(node, ast.JoinedStr):
+        # F-string: f"/rest/ofscCore/v1/activities/{activity_id}"
+        parts = []
+        for value in node.values:
+            if isinstance(value, ast.Constant):
+                parts.append(value.value)
+            elif isinstance(value, ast.FormattedValue):
+                # Replace variable with placeholder
+                parts.append("{}")
+        return "".join(parts)
+
+    return None
+
+
+def _get_http_method_from_call(node: ast.Call) -> str | None:
+    """
+    Determine HTTP method from a requests or httpx client call.
+
+    Args:
+        node: ast.Call node
+
+    Returns:
+        HTTP method string (GET, POST, etc.) or None
+    """
+    func = node.func
+
+    # Pattern: requests.get(), requests.post(), self._client.get(), etc.
+    if isinstance(func, ast.Attribute):
+        attr_name = func.attr
+        method_map = {
+            "get": "GET",
+            "post": "POST",
+            "put": "PUT",
+            "patch": "PATCH",
+            "delete": "DELETE",
+        }
+        return method_map.get(attr_name)
+
+    return None
+
+
+def _function_raises_not_implemented(
+    func_node: ast.FunctionDef | ast.AsyncFunctionDef,
+) -> bool:
+    """
+    Check if a function raises NotImplementedError.
+
+    Args:
+        func_node: Function definition node
+
+    Returns:
+        True if function raises NotImplementedError
+    """
+    for node in ast.walk(func_node):
+        if isinstance(node, ast.Raise):
+            # Check if raising NotImplementedError
+            if node.exc and isinstance(node.exc, ast.Name):
+                if node.exc.id == "NotImplementedError":
+                    return True
+            elif node.exc and isinstance(node.exc, ast.Call):
+                if (
+                    isinstance(node.exc.func, ast.Name)
+                    and node.exc.func.id == "NotImplementedError"
+                ):
+                    return True
+    return False
+
+
 def scan_file_for_endpoints(file_path: Path) -> dict[tuple[str, str], bool]:
     """
-    Scan a Python file for implemented endpoints.
+    Scan a Python file for implemented endpoints using AST analysis.
+
+    This replaces ~180 lines of complex regex-based parsing with clean AST traversal.
+
+    Detection Strategy:
+        1. Parse file into AST
+        2. Find all urljoin() calls and extract URLs
+        3. Find HTTP method calls in the same function
+        4. For async files, check if function raises NotImplementedError (stub)
 
     Returns:
         dict: Maps (path, method) -> is_implemented
@@ -127,161 +218,64 @@ def scan_file_for_endpoints(file_path: Path) -> dict[tuple[str, str], bool]:
     if not file_path.exists():
         return {}
 
-    with open(file_path) as f:
-        content = f.read()
+    try:
+        with open(file_path) as f:
+            source = f.read()
+        tree = ast.parse(source)
+    except SyntaxError:
+        # Skip files with syntax errors
+        return {}
 
     endpoints = {}
     is_async = "async_client" in str(file_path)
 
-    # Pattern to find URL construction: urljoin(..., "PATH") or urljoin(..., f"PATH")
-    # Match both regular strings and f-strings (single or multi-line)
-    # For f-strings, replace {variable} with {}
-
-    # Pattern: urljoin with direct string or f-string (single or multi-line)
-    url_pattern = (
-        r'urljoin\([^,]+,\s*f?["\']([^"\']+)["\']\s*(?:f?["\']([^"\']*)["\'])?'
-    )
-    raw_urls = re.findall(url_pattern, content, re.MULTILINE)
-
-    # Normalize f-string variables to {} and handle multi-line f-strings
-    urls = []
-    for match in raw_urls:
-        if isinstance(match, tuple):
-            # Multi-line f-string: concatenate parts
-            url = "".join(part for part in match if part)
-        else:
-            url = match
-        # Replace {variable} with {} for f-string paths
-        normalized = re.sub(r"\{[^}]+\}", "{}", url)
-        # Remove query parameters from URL
-        normalized = re.sub(r"\?[^/]*$", "", normalized)
-        # Remove trailing slash if present (to match ENDPOINTS.md convention)
-        normalized = normalized.rstrip("/")
-        urls.append(normalized)
-
-    # For each URL found, try to find the HTTP method
-    for url in urls:
-        if not url.startswith("/rest/"):
+    # Walk the AST to find functions and their urljoin/HTTP method calls
+    for node in ast.walk(tree):
+        # Find function definitions (both regular and async)
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             continue
 
-        # Find the function/method containing this URL
-        # Strategy: Find any urljoin that contains this URL (even partial), then check HTTP method
-        # This handles multi-line f-strings, .format(), and other variations
+        # Check if this is a stub function (async only)
+        is_stub = is_async and _function_raises_not_implemented(node)
 
-        # Split URL into parts to handle multi-line f-strings
-        # For multi-line f-strings like:
-        #   f"/part1/{var1}/"
-        #   f"{var2}/part2"
-        # We need to find urljoin that might contain either part
+        # Look for urljoin calls and HTTP method calls within this function
+        urljoin_urls = []  # Store (url, line_no) tuples
+        http_methods = []  # Store (method, line_no) tuples
 
-        # Find all urljoin calls in the file and check which ones match this URL
-        # Strategy: Find lines containing this URL (or parts of it for multi-line f-strings)
-        # Then find the nearest urljoin above it
+        for child in ast.walk(node):
+            if not isinstance(child, ast.Call):
+                continue
 
-        urljoin_matches = []
+            # Check if this is a urljoin() call
+            func = child.func
+            if isinstance(func, ast.Name) and func.id == "urljoin":
+                # Extract URL from second argument
+                if len(child.args) >= 2:
+                    url = _extract_url_from_ast_node(child.args[1])
+                    if url:
+                        # Normalize URL: remove query params and trailing slash
+                        url = re.sub(r"\?[^/]*$", "", url).rstrip("/")
+                        if url.startswith("/rest/"):
+                            urljoin_urls.append((url, child.lineno))
 
-        # Find all occurrences of "url = urljoin"
-        all_urljoin = list(re.finditer(r"url\s*=\s*urljoin\s*\(", content))
+            # Check if this is an HTTP method call
+            http_method = _get_http_method_from_call(child)
+            if http_method:
+                http_methods.append((http_method, child.lineno))
 
-        for urljoin_start in all_urljoin:
-            # Get the code chunk from urljoin to the likely end (next 5 lines or 500 chars)
-            start_pos = urljoin_start.start()
-            end_search = min(len(content), start_pos + 500)
-
-            # Find the matching closing paren
-            paren_count = 0
-            in_urljoin = False
-            end_pos = start_pos
-
-            for i in range(start_pos, end_search):
-                if content[i] == "(":
-                    paren_count += 1
-                    in_urljoin = True
-                elif content[i] == ")" and in_urljoin:
-                    paren_count -= 1
-                    if paren_count == 0:
-                        end_pos = i + 1
-                        break
-
-            urljoin_chunk = content[start_pos:end_pos]
-
-            # Extract URLs from this chunk
-            chunk_url_parts = re.findall(r'f?["\']([^"\']+)["\']', urljoin_chunk)
-            if chunk_url_parts:
-                reconstructed = "".join(chunk_url_parts)
-                reconstructed_normalized = re.sub(r"\{[^}]+\}", "{}", reconstructed)
-                reconstructed_normalized = re.sub(
-                    r"\?[^/]*$", "", reconstructed_normalized
-                ).rstrip("/")
-
-                if reconstructed_normalized == url:
-                    # Create a match object-like structure
-                    class FakeMatch:
-                        def __init__(self, start, end):
-                            self._start = start
-                            self._end = end
-
-                        def start(self):
-                            return self._start
-
-                        def end(self):
-                            return self._end
-
-                        def group(self):
-                            return content[self._start : self._end]
-
-                    urljoin_matches.append(FakeMatch(start_pos, end_pos))
-
-        for urljoin_match in urljoin_matches:
-            # Look ahead from urljoin to find the HTTP method (within next 1500 chars)
-            # Some functions have long parameter processing before the HTTP call
-            start_pos = urljoin_match.end()
-            search_chunk = content[start_pos : start_pos + 1500]
-
-            # Patterns to find HTTP method calls
-            # Find the FIRST HTTP method call in the chunk
-            # (the chunk might contain multiple functions, we want the first one)
-            method_patterns = [
-                (r"requests\.get\s*\(", "GET"),
-                (r"requests\.post\s*\(", "POST"),
-                (r"requests\.put\s*\(", "PUT"),
-                (r"requests\.patch\s*\(", "PATCH"),
-                (r"requests\.delete\s*\(", "DELETE"),
-                (r"self\._client\.get\s*\(", "GET"),
-                (r"self\._client\.post\s*\(", "POST"),
-                (r"self\._client\.put\s*\(", "PUT"),
-                (r"self\._client\.patch\s*\(", "PATCH"),
-                (r"self\._client\.delete\s*\(", "DELETE"),
+        # Match urljoin calls with HTTP methods in the same function
+        # Heuristic: pair each urljoin with the closest HTTP method call after it
+        for url, urljoin_line in urljoin_urls:
+            # Find the first HTTP method call after this urljoin
+            matching_methods = [
+                (method, line) for method, line in http_methods if line >= urljoin_line
             ]
 
-            # Find all matches and take the one that appears first
-            http_method = None
-            first_pos = float("inf")
-            for pattern, method in method_patterns:
-                match = re.search(pattern, search_chunk)
-                if match and match.start() < first_pos:
-                    first_pos = match.start()
-                    http_method = method
-
-            if http_method:
-                # Check if this is a stub (async only)
-                is_implemented = True
-                if is_async:
-                    # Check if NotImplementedError appears between function start and urljoin
-                    # Find the function containing this URL
-                    before_urljoin = content[: urljoin_match.start()]
-                    func_matches = list(re.finditer(r"async def \w+", before_urljoin))
-                    if func_matches:
-                        last_func_match = func_matches[-1]
-                        # Check content between function start and urljoin
-                        func_to_urljoin = content[
-                            last_func_match.end() : urljoin_match.start()
-                        ]
-                        if "raise NotImplementedError" in func_to_urljoin:
-                            is_implemented = False
-
-                # Store this endpoint (don't break - there may be multiple methods for same URL)
-                endpoints[(url, http_method)] = is_implemented
+            if matching_methods:
+                # Use the first (closest) HTTP method
+                method, _ = matching_methods[0]
+                is_implemented = not is_stub
+                endpoints[(url, method)] = is_implemented
 
     return endpoints
 
@@ -576,6 +570,60 @@ def write_endpoints_md(endpoints: list[dict], version: str) -> None:
 
     # Add summary tables
     lines.append(generate_summary_tables(endpoints))
+
+    # Add Endpoint ID Reference section
+    lines.extend(
+        [
+            "",
+            "## Endpoint ID Reference",
+            "",
+            "### ID Format: `XXYYYM`",
+            "",
+            "Endpoint IDs are structured 6-character codes where:",
+            "",
+            "- **XX** = 2-character module code",
+            "- **YYY** = 3-digit zero-padded serial number (unique per endpoint path within module)",
+            "- **M** = 1-character HTTP method code",
+            "",
+            "### Module Codes",
+            "",
+            "| Code | Module |",
+            "|------|--------|",
+            "| `CO` | core |",
+            "| `ME` | metadata |",
+            "| `CA` | capacity |",
+            "| `CB` | collaboration |",
+            "| `ST` | statistics |",
+            "| `PC` | partscatalog |",
+            "| `AU` | auth |",
+            "",
+            "### Method Codes",
+            "",
+            "| Code | HTTP Method |",
+            "|------|-------------|",
+            "| `G` | GET |",
+            "| `P` | POST |",
+            "| `U` | PUT |",
+            "| `A` | PATCH |",
+            "| `D` | DELETE |",
+            "",
+            "### Examples",
+            "",
+            "- `CO001G` = Core module, first endpoint (GET method)",
+            "- `ME003P` = Metadata module, third endpoint (POST method)",
+            "- `CA002A` = Capacity module, second endpoint (PATCH method)",
+            "- `AU001P` = Auth module, first endpoint (POST method)",
+            "",
+            "### Adding New Endpoints",
+            "",
+            "When adding new endpoints:",
+            "",
+            "1. **New endpoint path**: Use the next available serial number for that module",
+            "2. **Existing path with new method**: Use the same serial number as the existing endpoint(s) for that path, with the appropriate method code",
+            "",
+            "**Example:** If `/rest/ofscCore/v1/activities` has `CO015G` (GET), adding POST would be `CO015P` (same serial number, different method letter).",
+        ]
+    )
 
     # Write file
     with open(ENDPOINTS_PATH, "w") as f:
