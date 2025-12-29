@@ -267,4 +267,4 @@ class TestAsyncCapacityAreasSavedResponses:
         area = CapacityArea.model_validate(saved_data["response_data"])
 
         assert isinstance(area, CapacityArea)
-        assert area.label == "SUNRISE"
+        assert area.label == "FLUSA"
