@@ -457,39 +457,6 @@ class BulkUpdateResponse(BaseModel):
     results: Optional[List[BulkUpdateResult]] = None
 
 
-# region 202403 Capacity Categories
-class Item(BaseModel):
-    label: str
-    name: Optional[str] = None
-
-
-class ItemList(RootModel[List[Item]]):
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
-class CapacityCategory(BaseModel):
-    label: str
-    name: str
-    timeSlots: Optional[ItemList] = None
-    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
-        None
-    )
-    workSkillGroups: Optional[ItemList] = None
-    workSkills: Optional[ItemList] = None
-    active: bool
-    model_config = ConfigDict(extra="allow")
-
-
-class CapacityCategoryListResponse(OFSResponseList[CapacityCategory]):
-    pass
-
-
-#  endregion
-
 # region 202404 Metadata - Time Slots
 # endregion
 # region 202404 Metadata - Workzones
@@ -1423,6 +1390,38 @@ class CapacityAreaListResponse(OFSResponseList[CapacityArea]):
 # endregion Metadata / Capacity Areas
 
 # region Metadata / Capacity Categories
+
+
+class Item(BaseModel):
+    label: str
+    name: Optional[str] = None
+
+
+class ItemList(RootModel[list[Item]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class CapacityCategory(BaseModel):
+    label: str
+    name: str
+    timeSlots: Optional[ItemList] = None
+    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
+        None
+    )
+    workSkillGroups: Optional[ItemList] = None
+    workSkills: Optional[ItemList] = None
+    active: bool
+    model_config = ConfigDict(extra="allow")
+
+
+class CapacityCategoryListResponse(OFSResponseList[CapacityCategory]):
+    pass
+
+
 # endregion Metadata / Capacity Categories
 
 # region Metadata / Forms

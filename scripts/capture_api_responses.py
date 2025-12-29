@@ -278,6 +278,35 @@ ENDPOINTS = {
             "metadata": {"capacity_area_label": "NONEXISTENT_AREA_12345"},
         },
     ],
+    "capacity_categories": [
+        {
+            "name": "get_capacity_categories_200_success",
+            "description": "Get all capacity categories with pagination",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/capacityCategories",
+            "params": {"offset": 0, "limit": 100},
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_capacity_category_200_success",
+            "description": "Get a single capacity category by label",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/capacityCategories/EST",
+            "params": None,
+            "body": None,
+            "metadata": {"capacity_category_label": "EST"},
+        },
+        {
+            "name": "get_capacity_category_404_not_found",
+            "description": "Get a non-existent capacity category",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/capacityCategories/NONEXISTENT_CATEGORY_12345",
+            "params": None,
+            "body": None,
+            "metadata": {"capacity_category_label": "NONEXISTENT_CATEGORY_12345"},
+        },
+    ],
     "non_working_reasons": [
         {
             "name": "get_non_working_reasons_200_success",
