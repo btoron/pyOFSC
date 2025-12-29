@@ -256,6 +256,13 @@ class EntityEnum(str, Enum):
     user = "user"
 
 
+class Status(str, Enum):
+    """Base status enum for entities with active/inactive states."""
+
+    active = "active"
+    inactive = "inactive"
+
+
 # class TranslationEnum(str, Enum):
 #     en = "en"
 #     es = "es"
@@ -1555,6 +1562,73 @@ class LinkTemplateListResponse(OFSResponseList[LinkTemplate]):
 # endregion Metadata / Link Templates
 
 # region Metadata / Map Layers
+
+
+class ShapeHintActionType(str, Enum):
+    """Action type for shape hint button."""
+
+    plugin = "plugin"
+    form = "form"
+
+
+class ShapeHintColumn(BaseModel):
+    """Shape hint column configuration for map layers.
+
+    From swagger: required fields are defaultName, sourceColumn, pluginFormField
+    """
+
+    defaultName: str
+    sourceColumn: str
+    pluginFormField: str
+
+
+class ShapeHintButton(BaseModel):
+    """Shape hint button configuration for map layers.
+
+    From swagger: actionType is enum ["plugin", "form"], label is required
+    """
+
+    actionType: ShapeHintActionType
+    label: str
+
+
+class MapLayer(BaseModel):
+    """Map layer (CustomMapLayer) configuration in OFSC.
+
+    From swagger:
+    - label: required, max 24 chars, pattern ^[A-Za-z0-9_]+$
+    - status: enum ["active", "inactive"]
+    - text: read-only, name in user's language
+    - translations: required for PUT/POST
+    """
+
+    label: str
+    status: Optional[Status] = None
+    text: Optional[str] = None  # Read-only name in user's language
+    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
+        None
+    )
+    shapeTitleColumn: Optional[str] = None
+    tableColumns: Optional[list[str]] = None
+    shapeHintColumns: Optional[list[ShapeHintColumn]] = None
+    shapeHintButton: Optional[ShapeHintButton] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class MapLayerList(RootModel[list[MapLayer]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class MapLayerListResponse(OFSResponseList[MapLayer]):
+    """Response from GET /rest/ofscMetadata/v1/mapLayers (CustomMapLayers)."""
+
+    pass
+
+
 # endregion Metadata / Map Layers
 
 # region Metadata / Non-working Reasons

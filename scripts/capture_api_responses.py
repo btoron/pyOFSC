@@ -405,6 +405,26 @@ ENDPOINTS = {
             "metadata": {"link_template_label": "NONEXISTENT_TEMPLATE_12345"},
         },
     ],
+    "map_layers": [
+        {
+            "name": "get_map_layers_200_success",
+            "description": "Get all map layers with pagination",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/mapLayers",
+            "params": {"offset": 0, "limit": 100},
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_map_layer_404_not_found",
+            "description": "Get a non-existent map layer",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/mapLayers/NONEXISTENT_LAYER_12345",
+            "params": None,
+            "body": None,
+            "metadata": {"map_layer_label": "NONEXISTENT_LAYER_12345"},
+        },
+    ],
     "languages": [
         {
             "name": "get_languages_200_success",
