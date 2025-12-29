@@ -19,7 +19,7 @@ from ofsc.models import (
     TranslationList,
     Workskill,
     WorkskillCondition,
-    WorskillConditionList,
+    WorkskillConditionList,
 )
 
 
