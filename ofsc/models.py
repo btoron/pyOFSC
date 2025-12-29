@@ -291,54 +291,6 @@ class TranslationList(RootModel[List[Translation]]):
         return {translation.language: translation for translation in self.root}
 
 
-class Workskill(BaseModel):
-    label: str
-    active: bool = True
-    name: str = ""
-    sharing: SharingEnum
-    translations: Annotated[Optional[TranslationList], Field(validate_default=True)] = (
-        None
-    )
-
-    @field_validator("translations")
-    def set_default(cls, field_value, values):
-        return field_value or TranslationList(
-            [Translation(name=values.data.get("name"))]
-        )
-
-
-class WorkskillList(RootModel[List[Workskill]]):
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
-class Condition(BaseModel):
-    label: str
-    function: str
-    value: Any = None
-    valueList: list = []
-
-
-class WorkskillCondition(BaseModel):
-    internalId: int
-    label: str
-    requiredLevel: int
-    preferableLevel: int
-    conditions: List[Condition]
-    dependencies: Any = None
-
-
-class WorskillConditionList(RootModel[List[WorkskillCondition]]):
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
 class Resource(BaseModel):
     resourceId: Optional[str] = None
     parentResourceId: Optional[str] = None
@@ -469,47 +421,7 @@ class BulkUpdateResponse(BaseModel):
 # region 202404 Metadata - Workzones
 # endregion
 
-# region 202410 Work Skill Groups
 
-
-class WorksSkillAssignments(BaseModel):
-    label: str
-    ratio: int = Field(gt=0, lt=101)
-    model_config = ConfigDict(extra="forbid")
-
-
-class WorkSkillAssignmentsList(RootModel[List[WorksSkillAssignments]]):
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
-class WorkSkillGroup(BaseModel):
-    label: str
-    name: str
-    active: bool
-    assignToResource: bool
-    addToCapacityCategory: bool
-    workSkills: WorkSkillAssignmentsList
-    translations: TranslationList
-    model_config = ConfigDict(extra="ignore")
-
-
-class WorkSkillGroupList(RootModel[List[WorkSkillGroup]]):
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
-class WorkSkillGroupListResponse(OFSResponseList[WorkSkillGroup]):
-    pass
-
-
-# endregion
 # region Users
 class BaseUser(BaseModel):
     login: str
@@ -1888,6 +1800,125 @@ class TimeSlotListResponse(OFSResponseList[TimeSlot]):
 # endregion Metadata / Time Slots
 
 # region Metadata / Work Skills
+
+
+class Workskill(BaseModel):
+    """Work skill entity in OFSC.
+
+    A work skill represents a specific capability or expertise that can be
+    assigned to resources and required by activities.
+    """
+
+    label: str
+    active: bool = True
+    name: str = ""
+    sharing: SharingEnum
+    translations: Annotated[Optional[TranslationList], Field(validate_default=True)] = (
+        None
+    )
+
+    @field_validator("translations")
+    def set_default(cls, field_value, values):
+        return field_value or TranslationList(
+            [Translation(name=values.data.get("name"))]
+        )
+
+
+class WorkskillList(RootModel[list[Workskill]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class WorkskillListResponse(OFSResponseList[Workskill]):
+    """Response from GET /rest/ofscMetadata/v1/workSkills."""
+
+    pass
+
+
+class Condition(BaseModel):
+    """Condition for work skill conditions."""
+
+    label: str
+    function: str
+    value: Any = None
+    valueList: list = []
+
+
+class WorkskillCondition(BaseModel):
+    """Work skill condition configuration in OFSC."""
+
+    internalId: int
+    label: str
+    requiredLevel: int
+    preferableLevel: int
+    conditions: list[Condition]
+    dependencies: Any = None
+
+
+class WorkskillConditionList(RootModel[list[WorkskillCondition]]):
+    """List of work skill conditions."""
+
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class WorkskillAssignment(BaseModel):
+    """Work skill assignment for work skill groups."""
+
+    label: str
+    ratio: int = Field(gt=0, lt=101)
+    model_config = ConfigDict(extra="forbid")
+
+
+class WorkskillAssignmentList(RootModel[list[WorkskillAssignment]]):
+    """List of work skill assignments."""
+
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class WorkskillGroup(BaseModel):
+    """Work skill group configuration in OFSC.
+
+    Work skill groups combine multiple work skills with ratios for
+    assignment to resources and capacity categories.
+    """
+
+    label: str
+    name: str
+    active: bool
+    assignToResource: bool
+    addToCapacityCategory: bool
+    workSkills: WorkskillAssignmentList
+    translations: TranslationList
+    model_config = ConfigDict(extra="ignore")
+
+
+class WorkskillGroupList(RootModel[list[WorkskillGroup]]):
+    """List of work skill groups."""
+
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class WorkskillGroupListResponse(OFSResponseList[WorkskillGroup]):
+    """Response from GET /rest/ofscMetadata/v1/workSkillGroups."""
+
+    pass
+
+
 # endregion Metadata / Work Skills
 
 # region Metadata / Work Zones

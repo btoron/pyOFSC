@@ -56,11 +56,12 @@ from ..models import (
     TimeSlot,
     TimeSlotListResponse,
     Workskill,
-    WorkSkillGroup,
-    WorkSkillGroupListResponse,
+    WorkskillListResponse,
+    WorkskillGroup,
+    WorkskillGroupListResponse,
+    WorkskillConditionList,
     Workzone,
     WorkzoneListResponse,
-    WorskillConditionList,
 )
 
 
@@ -1654,35 +1655,321 @@ class AsyncOFSMetadata:
 
     # region Work Skills
 
-    async def get_workskills(self, offset: int = 0, limit: int = 100):
-        raise NotImplementedError("Async method not yet implemented")
+    async def get_workskills(
+        self, offset: int = 0, limit: int = 100
+    ) -> WorkskillListResponse:
+        """Get all work skills with pagination.
 
-    async def get_workskill(self, label: str):
-        raise NotImplementedError("Async method not yet implemented")
+        Args:
+            offset: Starting record number (default 0)
+            limit: Maximum number to return (default 100)
 
-    async def create_or_update_workskill(self, skill: Workskill):
-        raise NotImplementedError("Async method not yet implemented")
+        Returns:
+            WorkskillListResponse: List of work skills with pagination info
 
-    async def delete_workskill(self, label: str):
-        raise NotImplementedError("Async method not yet implemented")
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkills")
+        params = {"offset": offset, "limit": limit}
 
-    async def get_workskill_conditions(self):
-        raise NotImplementedError("Async method not yet implemented")
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data:
+                del data["links"]
+            return WorkskillListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get work skills")
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def replace_workskill_conditions(self, data: WorskillConditionList):
-        raise NotImplementedError("Async method not yet implemented")
+    async def get_workskill(self, label: str) -> Workskill:
+        """Get a single work skill by label.
 
-    async def get_workskill_groups(self) -> WorkSkillGroupListResponse:
-        raise NotImplementedError("Async method not yet implemented")
+        Args:
+            label: The work skill label to retrieve
 
-    async def get_workskill_group(self, label: str) -> WorkSkillGroup:
-        raise NotImplementedError("Async method not yet implemented")
+        Returns:
+            Workskill: The work skill details
 
-    async def create_or_update_workskill_group(self, data: WorkSkillGroup):
-        raise NotImplementedError("Async method not yet implemented")
+        Raises:
+            OFSCNotFoundError: If work skill not found (404)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{encoded_label}")
 
-    async def delete_workskill_group(self, label: str):
-        raise NotImplementedError("Async method not yet implemented")
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data:
+                del data["links"]
+            return Workskill.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, f"Failed to get work skill '{label}'")
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def create_or_update_workskill(self, skill: Workskill) -> Workskill:
+        """Create or update a work skill.
+
+        Args:
+            skill: The work skill to create or update
+
+        Returns:
+            Workskill: The created or updated work skill
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCValidationError: If validation fails (400, 422)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(skill.label)
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{encoded_label}")
+
+        try:
+            response = await self._client.put(
+                url, headers=self.headers, json=skill.model_dump(exclude_none=True)
+            )
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data:
+                del data["links"]
+            return Workskill.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to create/update work skill '{skill.label}'"
+            )
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def delete_workskill(self, label: str) -> None:
+        """Delete a work skill.
+
+        Args:
+            label: The work skill label to delete
+
+        Raises:
+            OFSCNotFoundError: If work skill not found (404)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{encoded_label}")
+
+        try:
+            response = await self._client.delete(url, headers=self.headers)
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, f"Failed to delete work skill '{label}'")
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_workskill_conditions(self) -> WorkskillConditionList:
+        """Get all work skill conditions.
+
+        Returns:
+            WorkskillConditionList: List of work skill conditions
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillConditions")
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            items = data.get("items", [])
+            return WorkskillConditionList.model_validate(items)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get work skill conditions")
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def replace_workskill_conditions(
+        self, data: WorkskillConditionList
+    ) -> WorkskillConditionList:
+        """Replace all work skill conditions.
+
+        Note: Conditions not provided in the request are removed from the system.
+
+        Args:
+            data: List of work skill conditions to replace all existing ones
+
+        Returns:
+            WorkskillConditionList: The updated list of work skill conditions
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCValidationError: If validation fails (400, 422)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillConditions")
+        body = {"items": [item.model_dump(exclude_none=True) for item in data]}
+
+        try:
+            response = await self._client.put(url, headers=self.headers, json=body)
+            response.raise_for_status()
+            response_data = response.json()
+            items = response_data.get("items", [])
+            return WorkskillConditionList.model_validate(items)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to replace work skill conditions")
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_workskill_groups(self) -> WorkskillGroupListResponse:
+        """Get all work skill groups.
+
+        Returns:
+            WorkskillGroupListResponse: List of work skill groups with pagination info
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillGroups")
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data:
+                del data["links"]
+            return WorkskillGroupListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get work skill groups")
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_workskill_group(self, label: str) -> WorkskillGroup:
+        """Get a single work skill group by label.
+
+        Args:
+            label: The work skill group label to retrieve
+
+        Returns:
+            WorkskillGroup: The work skill group details
+
+        Raises:
+            OFSCNotFoundError: If work skill group not found (404)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/workSkillGroups/{encoded_label}"
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data:
+                del data["links"]
+            return WorkskillGroup.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, f"Failed to get work skill group '{label}'")
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def create_or_update_workskill_group(
+        self, data: WorkskillGroup
+    ) -> WorkskillGroup:
+        """Create or update a work skill group.
+
+        Args:
+            data: The work skill group to create or update
+
+        Returns:
+            WorkskillGroup: The created or updated work skill group
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCValidationError: If validation fails (400, 422)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(data.label)
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/workSkillGroups/{encoded_label}"
+        )
+
+        try:
+            response = await self._client.put(
+                url, headers=self.headers, json=data.model_dump(exclude_none=True)
+            )
+            response.raise_for_status()
+            response_data = response.json()
+            if "links" in response_data:
+                del response_data["links"]
+            return WorkskillGroup.model_validate(response_data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to create/update work skill group '{data.label}'"
+            )
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def delete_workskill_group(self, label: str) -> None:
+        """Delete a work skill group.
+
+        Args:
+            label: The work skill group label to delete
+
+        Raises:
+            OFSCNotFoundError: If work skill group not found (404)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/workSkillGroups/{encoded_label}"
+        )
+
+        try:
+            response = await self._client.delete(url, headers=self.headers)
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, f"Failed to delete work skill group '{label}'")
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     # endregion
 
