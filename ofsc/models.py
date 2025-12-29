@@ -1372,7 +1372,7 @@ class CapacityArea(BaseModel):
     label: str
     name: Optional[str] = None
     type: Optional[str] = "area"
-    status: Optional[str] = "active"
+    status: Optional[Status] = Status.active
     configuration: Optional[CapacityAreaConfiguration] = None
     parentLabel: Optional[str] = None
     parent: Annotated[Optional[CapacityAreaParent], Field(alias="parent")] = None
@@ -1802,7 +1802,7 @@ class TimeSlotListResponse(OFSResponseList[TimeSlot]):
 class Workzone(BaseModel):
     workZoneLabel: str
     workZoneName: str
-    status: str
+    status: Status
     travelArea: str
     keys: Optional[list[str]] = None
     shapes: Optional[list[str]] = None
