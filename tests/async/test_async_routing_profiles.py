@@ -482,9 +482,17 @@ class TestAsyncRoutingProfileSavedResponses:
 
         response = RoutingPlanData.model_validate(saved_data["response_data"])
         assert isinstance(response, RoutingPlanData)
-        assert hasattr(response, "routing_plan")
-        assert hasattr(response, "sign")
-        assert hasattr(response, "version")
+        # The export response may contain either full plan data or just metadata
+        # Verify the model can handle both formats
+        assert hasattr(response, "mediaType")
+        if response.mediaType == "application/octet-stream":
+            # Metadata-only response
+            assert response.mediaType is not None
+        else:
+            # Full plan data response
+            assert response.routing_plan is not None
+            assert response.sign is not None
+            assert response.version is not None
 
     def test_import_routing_plan_validation(self):
         """Test import response validates against saved response."""

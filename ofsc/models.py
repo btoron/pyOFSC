@@ -1142,14 +1142,22 @@ class RoutingPlanData(BaseModel):
     """Complete routing plan export response
 
     Contains the full routing plan configuration along with signature
-    and version information.
+    and version information. Fields are optional as API may return
+    different formats (metadata only vs full plan data).
     """
 
-    routing_plan: RoutingPlanConfig = Field(
-        description="Complete routing plan configuration"
+    routing_plan: Optional[RoutingPlanConfig] = Field(
+        default=None, description="Complete routing plan configuration"
     )
-    sign: str = Field(description="Signature for the routing plan")
-    version: str = Field(description="Version of the routing plan format")
+    sign: Optional[str] = Field(
+        default=None, description="Signature for the routing plan"
+    )
+    version: Optional[str] = Field(
+        default=None, description="Version of the routing plan format"
+    )
+    mediaType: Optional[str] = Field(
+        default=None, description="Media type of the export response"
+    )
     model_config = ConfigDict(extra="allow")
 
 
