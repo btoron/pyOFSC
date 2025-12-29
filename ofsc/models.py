@@ -83,9 +83,6 @@ class OFSResponseBoundedList(BaseModel, Generic[T]):
     def __contains__(self, item):
         return item in self.items
 
-    def __next__(self):
-        return next(self.items)
-
 
 class OFSResponseUnboundedList(BaseModel, Generic[T]):
     model_config = ConfigDict(extra="allow")
@@ -106,9 +103,6 @@ class OFSResponseUnboundedList(BaseModel, Generic[T]):
 
     def __contains__(self, item):
         return item in self.items
-
-    def __next__(self):
-        return next(self.items)
 
 
 class OFSResponseList(BaseModel, Generic[T]):
@@ -137,9 +131,6 @@ class OFSResponseList(BaseModel, Generic[T]):
 
     def __contains__(self, item):
         return item in self.items
-
-    def __next__(self):
-        return next(self.items)
 
 
 class OFSConfig(BaseModel):
@@ -187,8 +178,9 @@ class OFSApi:
         return self._config
 
     @property
-    def baseUrl(self):
-        return self._config.baseURL
+    def baseUrl(self) -> str:
+        """Return the base URL. The validator ensures this is never None."""
+        return self._config.baseURL  # type: ignore[return-value]
 
     @cached(
         cache=TTLCache(maxsize=1, ttl=3000)
@@ -521,7 +513,9 @@ class ResourceWorkScheduleItem(BaseModel):
     nonWorkingReason: Optional[str] = None
     points: Optional[int] = None
     recordType: CalendarViewItemRecordType
-    recurrence: Optional[Recurrence] = Recurrence(recurEvery=1, recurrenceType="daily")
+    recurrence: Optional[Recurrence] = Recurrence(
+        recurEvery=1, recurrenceType=RecurrenceType.daily
+    )
     scheduleItemId: Optional[int] = None
     scheduleLabel: Optional[str] = None
     scheduleShifts: Optional[list[CalendarViewItem]] = None
@@ -594,7 +588,9 @@ class LocationListResponse(OFSResponseList[Location]):
 # region 202505 Daily Extracts
 
 
-class Link(BaseModel):
+class DailyExtractLink(BaseModel):
+    """Link in daily extract responses."""
+
     href: AnyHttpUrl
     rel: str
     mediaType: Optional[str] = None
@@ -604,7 +600,7 @@ class DailyExtractItem(BaseModel):
     name: str
     bytes: Optional[int] = None
     mediaType: Optional[str] = None
-    links: list[Link]
+    links: list[DailyExtractLink]
 
 
 class DailyExtractItemList(BaseModel):
@@ -661,7 +657,7 @@ class CapacityRequest(BaseModel):
 
     def get_areas_list(self) -> list[str]:
         """Get areas as a list of strings"""
-        return self.areas.to_list()
+        return self.areas.to_list() if self.areas is not None else []
 
     def get_categories_list(self) -> list[str]:
         """Get categories as a list of strings"""
@@ -839,7 +835,11 @@ class ActivityTypeGroup(BaseModel):
 
     @property
     def activityTypes(self):
-        return [_activityType["label"] for _activityType in self._activityTypes]
+        return (
+            [_activityType["label"] for _activityType in self._activityTypes]
+            if self._activityTypes is not None
+            else []
+        )
 
 
 class ActivityTypeGroupList(RootModel[list[ActivityTypeGroup]]):
@@ -944,9 +944,9 @@ class ApplicationsResourcestoAllow(BaseModel):
 class Application(BaseModel):
     label: str
     name: str
-    resourcesToAllow: list[ApplicationsResourcestoAllow] = None
-    allowedCorsDomains: list[str] = None
-    IPAddressesToAllow: list[str] = None
+    resourcesToAllow: Optional[list[ApplicationsResourcestoAllow]] = None
+    allowedCorsDomains: Optional[list[str]] = None
+    IPAddressesToAllow: Optional[list[str]] = None
     status: str
     tokenService: str
 
@@ -1491,11 +1491,15 @@ class Property(BaseModel):
     type: str
     entity: Optional[EntityEnum] = None
     gui: Optional[str] = None
-    translations: Annotated[TranslationList, Field(validate_default=True)] = []
+    translations: Annotated[Optional[TranslationList], Field(validate_default=True)] = (
+        None
+    )
 
     @field_validator("translations")
     def set_default(cls, field_value, values):
-        return field_value or [Translation(name=values.name)]
+        if field_value is None:
+            return TranslationList([Translation(name=values.name)])
+        return field_value
 
     @field_validator("gui")
     @classmethod
