@@ -967,26 +967,254 @@ class AsyncOFSMetadata:
     async def get_routing_profiles(
         self, offset: int = 0, limit: int = 100
     ) -> RoutingProfileList:
-        raise NotImplementedError("Async method not yet implemented")
+        """Get all routing profiles with pagination.
+
+        Args:
+            offset: Starting record number (default 0)
+            limit: Maximum number to return (default 100)
+
+        Returns:
+            RoutingProfileList: List of routing profiles with pagination info
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/routingProfiles")
+        params = {"offset": offset, "limit": limit}
+
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            data = response.json()
+            # Remove links if not in model
+            if "links" in data and not hasattr(RoutingProfileList, "links"):
+                del data["links"]
+
+            return RoutingProfileList.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get routing profiles")
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def get_routing_profile_plans(
         self, profile_label: str, offset: int = 0, limit: int = 100
     ) -> RoutingPlanList:
-        raise NotImplementedError("Async method not yet implemented")
+        """Get all routing plans for a routing profile.
+
+        Args:
+            profile_label: Routing profile label
+            offset: Starting record number (default 0)
+            limit: Maximum number to return (default 100)
+
+        Returns:
+            RoutingPlanList: List of routing plans with pagination info
+
+        Raises:
+            OFSCNotFoundError: If routing profile not found (404)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(profile_label)
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/routingProfiles/{encoded_label}/plans"
+        )
+        params = {"offset": offset, "limit": limit}
+
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            data = response.json()
+            # Remove links if not in model
+            if "links" in data and not hasattr(RoutingPlanList, "links"):
+                del data["links"]
+
+            return RoutingPlanList.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get routing plans for profile '{profile_label}'"
+            )
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def export_routing_plan(
         self, profile_label: str, plan_label: str
     ) -> RoutingPlanData:
-        raise NotImplementedError("Async method not yet implemented")
+        """Export a routing plan.
+
+        Args:
+            profile_label: Routing profile label
+            plan_label: Routing plan label
+
+        Returns:
+            RoutingPlanData: Complete routing plan configuration
+
+        Raises:
+            OFSCNotFoundError: If routing profile or plan not found (404)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_profile = quote_plus(profile_label)
+        encoded_plan = quote_plus(plan_label)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/routingProfiles/{encoded_profile}/plans/{encoded_plan}/custom-actions/export",
+        )
+
+        # Use Accept: application/octet-stream to get the actual plan data
+        headers = self.headers.copy()
+        headers["Accept"] = "application/octet-stream"
+
+        try:
+            response = await self._client.get(url, headers=headers)
+            response.raise_for_status()
+            # Response is JSON in bytes, need to parse it
+            data = response.json()
+            # Remove links if not in model
+            if "links" in data and not hasattr(RoutingPlanData, "links"):
+                del data["links"]
+
+            return RoutingPlanData.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e,
+                f"Failed to export routing plan '{plan_label}' from profile '{profile_label}'",
+            )
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def export_plan_file(self, profile_label: str, plan_label: str) -> bytes:
-        raise NotImplementedError("Async method not yet implemented")
+        """Export a routing plan as binary file.
 
-    async def import_routing_plan(self, profile_label: str, plan_data: bytes):
-        raise NotImplementedError("Async method not yet implemented")
+        Args:
+            profile_label: Routing profile label
+            plan_label: Routing plan label
 
-    async def force_import_routing_plan(self, profile_label: str, plan_data: bytes):
-        raise NotImplementedError("Async method not yet implemented")
+        Returns:
+            bytes: Raw binary content of the routing plan file
+
+        Raises:
+            OFSCNotFoundError: If routing profile or plan not found (404)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_profile = quote_plus(profile_label)
+        encoded_plan = quote_plus(plan_label)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/routingProfiles/{encoded_profile}/plans/{encoded_plan}/custom-actions/export",
+        )
+
+        # Use Accept: application/octet-stream for binary download
+        headers = self.headers.copy()
+        headers["Accept"] = "application/octet-stream"
+
+        try:
+            response = await self._client.get(url, headers=headers)
+            response.raise_for_status()
+            return response.content
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e,
+                f"Failed to export plan file '{plan_label}' from profile '{profile_label}'",
+            )
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def import_routing_plan(self, profile_label: str, plan_data: bytes) -> None:
+        """Import a routing plan.
+
+        Args:
+            profile_label: Routing profile label
+            plan_data: Binary plan data to import
+
+        Returns:
+            None: Success returns None
+
+        Raises:
+            OFSCNotFoundError: If routing profile not found (404)
+            OFSCConflictError: If plan already exists (409)
+            OFSCValidationError: If validation fails (400)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_profile = quote_plus(profile_label)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/routingProfiles/{encoded_profile}/plans/custom-actions/import",
+        )
+
+        # Use Content-Type: application/octet-stream for binary upload
+        headers = self.headers.copy()
+        headers["Content-Type"] = "application/octet-stream"
+
+        try:
+            response = await self._client.put(url, headers=headers, content=plan_data)
+            response.raise_for_status()
+            # API returns success message, no need to parse
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to import routing plan to profile '{profile_label}'"
+            )
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def force_import_routing_plan(
+        self, profile_label: str, plan_data: bytes
+    ) -> None:
+        """Force import a routing plan (overwrite if exists).
+
+        Args:
+            profile_label: Routing profile label
+            plan_data: Binary plan data to import
+
+        Returns:
+            None: Success returns None
+
+        Raises:
+            OFSCNotFoundError: If routing profile not found (404)
+            OFSCValidationError: If validation fails (400)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_profile = quote_plus(profile_label)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/routingProfiles/{encoded_profile}/plans/custom-actions/forceImport",
+        )
+
+        # Use Content-Type: application/octet-stream for binary upload
+        headers = self.headers.copy()
+        headers["Content-Type"] = "application/octet-stream"
+
+        try:
+            response = await self._client.put(url, headers=headers, content=plan_data)
+            response.raise_for_status()
+            # API returns success message, no need to parse
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to force import routing plan to profile '{profile_label}'"
+            )
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def start_routing_plan(
         self,
@@ -994,8 +1222,45 @@ class AsyncOFSMetadata:
         plan_label: str,
         resource_external_id: str,
         date: str,
-    ):
-        raise NotImplementedError("Async method not yet implemented")
+    ) -> None:
+        """Start a routing plan for a resource on a specific date.
+
+        Args:
+            profile_label: Routing profile label
+            plan_label: Routing plan label
+            resource_external_id: External ID of the resource
+            date: Date in format YYYY-MM-DD
+
+        Returns:
+            None
+
+        Raises:
+            OFSCNotFoundError: If routing profile, plan, or resource not found (404)
+            OFSCValidationError: If validation fails (400)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_profile = quote_plus(profile_label)
+        encoded_plan = quote_plus(plan_label)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/routingProfiles/{encoded_profile}/plans/{encoded_plan}/{resource_external_id}/{date}/custom-actions/start",
+        )
+
+        try:
+            response = await self._client.post(url, headers=self.headers)
+            response.raise_for_status()
+            # POST returns 200 with empty or minimal response
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e,
+                f"Failed to start routing plan '{plan_label}' for resource '{resource_external_id}' on date '{date}'",
+            )
+            raise  # This will never execute, but satisfies type checker
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     # endregion
 

@@ -393,6 +393,59 @@ ENDPOINTS = {
             "metadata": {"inventory_type_label": "NONEXISTENT_TYPE_12345"},
         },
     ],
+    "routing_profiles": [
+        {
+            "name": "get_routing_profiles_200_success",
+            "description": "Get all routing profiles",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/routingProfiles",
+            "params": {"offset": 0, "limit": 100},
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_routing_profile_plans_200_success",
+            "description": "Get all routing plans for a profile",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/routingProfiles/MaintenanceRoutingProfile/plans",
+            "params": {"offset": 0, "limit": 100},
+            "body": None,
+            "metadata": {"profile_label": "MaintenanceRoutingProfile"},
+        },
+        {
+            "name": "get_routing_profile_plans_404_not_found",
+            "description": "Get plans for a non-existent routing profile",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/routingProfiles/NONEXISTENT_PROFILE_12345/plans",
+            "params": None,
+            "body": None,
+            "metadata": {"profile_label": "NONEXISTENT_PROFILE_12345"},
+        },
+        {
+            "name": "export_routing_plan_200_success",
+            "description": "Export a routing plan",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/routingProfiles/MaintenanceRoutingProfile/plans/Optimization/custom-actions/export",
+            "params": None,
+            "body": None,
+            "metadata": {
+                "profile_label": "MaintenanceRoutingProfile",
+                "plan_label": "Optimization",
+            },
+        },
+        {
+            "name": "export_routing_plan_404_not_found",
+            "description": "Export a non-existent routing plan",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/routingProfiles/MaintenanceRoutingProfile/plans/NONEXISTENT_PLAN_12345/custom-actions/export",
+            "params": None,
+            "body": None,
+            "metadata": {
+                "profile_label": "MaintenanceRoutingProfile",
+                "plan_label": "NONEXISTENT_PLAN_12345",
+            },
+        },
+    ],
 }
 
 
