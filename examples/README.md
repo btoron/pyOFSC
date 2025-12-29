@@ -28,4 +28,6 @@
 
 `async_antipatterns.py`: educational example showing UNSAFE patterns (threading, shared event loops) to avoid when using AsyncOFSC
 
+`async_parallel_pagination.py`: demonstrates how to parallelize paginated API requests using `asyncio.gather()`, with three approaches (sequential, parallel, controlled concurrency) and performance comparisons
+
 **Note:** Async examples require the async client. Use `asyncio.gather()` for concurrent requests, NOT threading.
