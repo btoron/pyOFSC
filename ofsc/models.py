@@ -2,7 +2,7 @@ import base64
 import logging
 from datetime import date, time
 from enum import Enum
-from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
+from typing import Any, Dict, Generic, Optional, TypeVar, Union
 from urllib.parse import urljoin
 
 import requests
@@ -31,7 +31,7 @@ class CsvList(BaseModel):
     value: str = ""
 
     @classmethod
-    def from_list(cls, string_list: List[str]) -> "CsvList":
+    def from_list(cls, string_list: list[str]) -> "CsvList":
         """Create CsvList from a list of strings
 
         Args:
@@ -44,7 +44,7 @@ class CsvList(BaseModel):
             return cls(value="")
         return cls(value=",".join(string_list))
 
-    def to_list(self) -> List[str]:
+    def to_list(self) -> list[str]:
         """Convert CsvList to a list of strings
 
         Returns:
@@ -66,7 +66,7 @@ class CsvList(BaseModel):
 class OFSResponseBoundedList(BaseModel, Generic[T]):
     model_config = ConfigDict(extra="allow")
 
-    items: List[T] = []
+    items: list[T] = []
     offset: Annotated[Optional[int], Field(alias="offset")] = None
     limit: Annotated[Optional[int], Field(alias="limit")] = None
     hasMore: Annotated[Optional[bool], Field(alias="hasMore")] = False
@@ -74,7 +74,7 @@ class OFSResponseBoundedList(BaseModel, Generic[T]):
     def __len__(self):
         return len(self.items)
 
-    def __iter__(self):
+    def __iter__(self):  # type: ignore
         return iter(self.items)
 
     def __getitem__(self, item):
@@ -90,7 +90,7 @@ class OFSResponseBoundedList(BaseModel, Generic[T]):
 class OFSResponseUnboundedList(BaseModel, Generic[T]):
     model_config = ConfigDict(extra="allow")
 
-    items: List[T] = []
+    items: list[T] = []
     offset: Annotated[Optional[int], Field(alias="offset")] = None
     limit: Annotated[Optional[int], Field(alias="limit")] = None
     totalResults: int = -1
@@ -98,7 +98,7 @@ class OFSResponseUnboundedList(BaseModel, Generic[T]):
     def __len__(self):
         return len(self.items)
 
-    def __iter__(self):
+    def __iter__(self):  # type: ignore
         return iter(self.items)
 
     def __getitem__(self, item):
@@ -114,7 +114,7 @@ class OFSResponseUnboundedList(BaseModel, Generic[T]):
 class OFSResponseList(BaseModel, Generic[T]):
     model_config = ConfigDict(extra="allow")
 
-    items: List[T] = []
+    items: list[T] = []
     offset: Annotated[Optional[int], Field(alias="offset")] = None
     limit: Annotated[Optional[int], Field(alias="limit")] = None
     hasMore: Annotated[Optional[bool], Field(alias="hasMore")] = False
@@ -129,7 +129,7 @@ class OFSResponseList(BaseModel, Generic[T]):
     def __len__(self):
         return len(self.items)
 
-    def __iter__(self):
+    def __iter__(self):  # type: ignore
         return iter(self.items)
 
     def __getitem__(self, item):
@@ -280,8 +280,8 @@ class Translation(BaseModel):
     languageISO: Optional[str] = None
 
 
-class TranslationList(RootModel[List[Translation]]):
-    def __iter__(self):
+class TranslationList(RootModel[list[Translation]]):
+    def __iter__(self):  # type: ignore[override]
         return iter(self.root)
 
     def __getitem__(self, item):
@@ -308,8 +308,8 @@ class Resource(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
-class ResourceList(RootModel[List[Resource]]):
-    def __iter__(self):
+class ResourceList(RootModel[list[Resource]]):
+    def __iter__(self):  # type: ignore[override]
         return iter(self.root)
 
     def __getitem__(self, item):
@@ -324,8 +324,8 @@ class ResourceType(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
-class ResourceTypeList(RootModel[List[ResourceType]]):
-    def __iter__(self):
+class ResourceTypeList(RootModel[list[ResourceType]]):
+    def __iter__(self):  # type: ignore[override]
         return iter(self.root)
 
     def __getitem__(self, item):
@@ -378,13 +378,13 @@ class BulkUpdateActivityItem(Activity):
 class BulkUpdateParameters(BaseModel):
     fallbackResource: Optional[str] = None
     identifyActivityBy: Optional[str] = None
-    ifExistsThenDoNotUpdateFields: Optional[List[str]] = None
+    ifExistsThenDoNotUpdateFields: Optional[list[str]] = None
     ifInFinalStatusThen: Optional[str] = None
     inventoryPropertiesUpdateMode: Optional[str] = None
 
 
 class BulkUpdateRequest(BaseModel):
-    activities: List[BulkUpdateActivityItem]
+    activities: list[BulkUpdateActivityItem]
     updateParameters: BulkUpdateParameters
 
 
@@ -406,14 +406,14 @@ class BulkUpdateWarning(BaseModel):
 
 class BulkUpdateResult(BaseModel):
     activityKeys: Optional[ActivityKeys] = None
-    errors: Optional[List[BulkUpdateError]] = None
-    operationsFailed: Optional[List[str]] = None
-    operationsPerformed: Optional[List[str]] = None
-    warnings: Optional[List[BulkUpdateWarning]] = None
+    errors: Optional[list[BulkUpdateError]] = None
+    operationsFailed: Optional[list[str]] = None
+    operationsPerformed: Optional[list[str]] = None
+    warnings: Optional[list[BulkUpdateWarning]] = None
 
 
 class BulkUpdateResponse(BaseModel):
-    results: Optional[List[BulkUpdateResult]] = None
+    results: Optional[list[BulkUpdateResult]] = None
 
 
 # region Users
@@ -423,7 +423,7 @@ class BaseUser(BaseModel):
 
 class ResourceUsersListResponse(OFSResponseList[BaseUser]):
     @property
-    def users(self) -> List[str]:
+    def users(self) -> list[str]:
         return [item.login for item in self.items]
 
 
@@ -453,7 +453,7 @@ class Recurrence(BaseModel):
     dayTo: Optional[date] = None
     recurEvery: int = Field(ge=1, le=255)
     recurrenceType: RecurrenceType
-    weekDays: Optional[List[str]] = None
+    weekDays: Optional[list[str]] = None
 
     @model_validator(mode="after")
     def check_week_days(cls, values):
@@ -487,8 +487,8 @@ class CalendarViewItem(BaseModel):
     workTimeStart: Optional[str] = None
 
 
-class CalendarViewList(RootModel[List[CalendarViewItem]]):
-    def __iter__(self):
+class CalendarViewList(RootModel[list[CalendarViewItem]]):
+    def __iter__(self):  # type: ignore[override]
         return iter(self.root)
 
     def __getitem__(self, item):
@@ -503,7 +503,7 @@ class CalendarViewShift(BaseModel):
 
 
 class CalendarView(RootModel[Dict[str, CalendarViewShift]]):
-    def __iter__(self):
+    def __iter__(self):  # type: ignore[override]
         return iter(self.root)
 
     def __getitem__(self, item):
@@ -524,7 +524,7 @@ class ResourceWorkScheduleItem(BaseModel):
     recurrence: Optional[Recurrence] = Recurrence(recurEvery=1, recurrenceType="daily")
     scheduleItemId: Optional[int] = None
     scheduleLabel: Optional[str] = None
-    scheduleShifts: Optional[List[CalendarViewItem]] = None
+    scheduleShifts: Optional[list[CalendarViewItem]] = None
     shiftLabel: Optional[str] = None
     shiftType: Optional[str] = None
     startDate: Optional[date] = date.today()
@@ -532,8 +532,8 @@ class ResourceWorkScheduleItem(BaseModel):
     workTimeStart: Optional[str] = None
 
 
-class ResourceWorkScheduleResponseList(RootModel[List[ResourceWorkScheduleItem]]):
-    def __iter__(self):
+class ResourceWorkScheduleResponseList(RootModel[list[ResourceWorkScheduleItem]]):
+    def __iter__(self):  # type: ignore[override]
         return iter(self.root)
 
     def __getitem__(self, item):
@@ -561,8 +561,8 @@ class Location(BaseModel):
     status: Optional[str] = None
 
 
-class LocationList(RootModel[List[Location]]):
-    def __iter__(self):
+class LocationList(RootModel[list[Location]]):
+    def __iter__(self):  # type: ignore[override]
         return iter(self.root)
 
     def __getitem__(self, item):
@@ -659,19 +659,19 @@ class CapacityRequest(BaseModel):
                 f"Expected list[str], CsvList, str, dict with 'value' key, or None, got {type(v)}"
             )
 
-    def get_areas_list(self) -> List[str]:
+    def get_areas_list(self) -> list[str]:
         """Get areas as a list of strings"""
         return self.areas.to_list()
 
-    def get_categories_list(self) -> List[str]:
+    def get_categories_list(self) -> list[str]:
         """Get categories as a list of strings"""
         return self.categories.to_list() if self.categories is not None else []
 
-    def get_dates_list(self) -> List[str]:
+    def get_dates_list(self) -> list[str]:
         """Get dates as a list of strings"""
         return self.dates.to_list()
 
-    def get_fields_list(self) -> List[str]:
+    def get_fields_list(self) -> list[str]:
         """Get fields as a list of strings"""
         return self.fields.to_list() if self.fields is not None else []
 
@@ -679,8 +679,8 @@ class CapacityRequest(BaseModel):
 class CapacityMetrics(BaseModel):
     """Model for capacity metrics with count and optional minutes arrays"""
 
-    count: List[int] = []
-    minutes: Optional[List[int]] = None
+    count: list[int] = []
+    minutes: Optional[list[int]] = None
 
 
 class CapacityCategoryItem(BaseModel):
@@ -698,20 +698,20 @@ class CapacityAreaResponseItem(BaseModel):
     name: Optional[str] = None
     calendar: Optional[CapacityMetrics] = None
     available: Optional[CapacityMetrics] = None
-    categories: List[CapacityCategoryItem] = []
+    categories: list[CapacityCategoryItem] = []
 
 
 class CapacityResponseItem(BaseModel):
     """Model for individual capacity response item by date"""
 
     date: str
-    areas: List[CapacityAreaResponseItem] = []
+    areas: list[CapacityAreaResponseItem] = []
 
 
 class GetCapacityResponse(BaseModel):
     """Model for complete capacity response"""
 
-    items: List[CapacityResponseItem] = []
+    items: list[CapacityResponseItem] = []
 
 
 class QuotaTimeInterval(BaseModel):
@@ -740,7 +740,7 @@ class QuotaCategoryItem(BaseModel):
     bookedActivities: Optional[int] = None
     quotaIsClosed: Optional[bool] = None
     quotaIsAutoClosed: Optional[bool] = None
-    intervals: List[QuotaTimeInterval] = []
+    intervals: list[QuotaTimeInterval] = []
     model_config = ConfigDict(extra="allow")
 
 
@@ -759,8 +759,8 @@ class QuotaAreaItem(BaseModel):
     bookedActivities: Optional[int] = None
     quotaIsClosed: Optional[bool] = None  # Added
     quotaIsAutoClosed: Optional[bool] = None  # Added
-    intervals: List[QuotaTimeInterval] = []  # Added
-    categories: List[QuotaCategoryItem] = []  # Added
+    intervals: list[QuotaTimeInterval] = []  # Added
+    categories: list[QuotaCategoryItem] = []  # Added
     model_config = ConfigDict(extra="allow")
 
 
@@ -768,13 +768,13 @@ class QuotaResponseItem(BaseModel):
     """Model for individual quota response item by date"""
 
     date: str
-    areas: List[QuotaAreaItem] = []
+    areas: list[QuotaAreaItem] = []
 
 
 class GetQuotaResponse(BaseModel):
     """Model for complete quota response"""
 
-    items: List[QuotaResponseItem] = []
+    items: list[QuotaResponseItem] = []
 
 
 class GetQuotaRequest(BaseModel):
@@ -813,15 +813,15 @@ class GetQuotaRequest(BaseModel):
                 f"Expected list[str], CsvList, str, dict with 'value' key, or None, got {type(v)}"
             )
 
-    def get_areas_list(self) -> List[str]:
+    def get_areas_list(self) -> list[str]:
         """Get areas as a list of strings"""
         return self.areas.to_list() if self.areas is not None else []
 
-    def get_categories_list(self) -> List[str]:
+    def get_categories_list(self) -> list[str]:
         """Get categories as a list of strings"""
         return self.categories.to_list() if self.categories is not None else []
 
-    def get_dates_list(self) -> List[str]:
+    def get_dates_list(self) -> list[str]:
         """Get dates as a list of strings"""
         return self.dates.to_list()
 
@@ -944,9 +944,9 @@ class ApplicationsResourcestoAllow(BaseModel):
 class Application(BaseModel):
     label: str
     name: str
-    resourcesToAllow: List[ApplicationsResourcestoAllow] = None
-    allowedCorsDomains: List[str] = None
-    IPAddressesToAllow: List[str] = None
+    resourcesToAllow: list[ApplicationsResourcestoAllow] = None
+    allowedCorsDomains: list[str] = None
+    IPAddressesToAllow: list[str] = None
     status: str
     tokenService: str
 
@@ -1521,7 +1521,7 @@ class Property(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
 
-class PropertyList(RootModel[List[Property]]):
+class PropertyList(RootModel[list[Property]]):
     def __iter__(self):  # type: ignore[override]
         return iter(self.root)
 
@@ -1609,7 +1609,7 @@ class RoutingPlanExport(BaseModel):
         default="application/octet-stream",
         description="MIME type of the exported content",
     )
-    links: List[Link] = Field(default_factory=list, description="Download links")
+    links: list[Link] = Field(default_factory=list, description="Download links")
     model_config = ConfigDict(extra="allow")
 
 
@@ -1644,7 +1644,7 @@ class RoutingActivityGroup(BaseModel):
     sla_policy: int = Field(default=0, description="SLA policy")
     bundling_policy: int = Field(default=0, description="Bundling policy")
     filterLabel: str = Field(description="Filter label for this activity group")
-    providerGroups: List[RoutingProviderGroup] = Field(
+    providerGroups: list[RoutingProviderGroup] = Field(
         default_factory=list, description="List of provider groups"
     )
     model_config = ConfigDict(extra="allow")
@@ -1829,7 +1829,7 @@ class RoutingPlanConfig(BaseModel):
     triggerFilterLabel: str = Field(default="Other", description="Trigger filter label")
 
     # Activity groups
-    activityGroups: List[RoutingActivityGroup] = Field(
+    activityGroups: list[RoutingActivityGroup] = Field(
         default_factory=list, description="List of activity groups"
     )
 
