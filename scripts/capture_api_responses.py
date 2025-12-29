@@ -565,6 +565,35 @@ ENDPOINTS = {
             },
         },
     ],
+    "shifts": [
+        {
+            "name": "get_shifts_200_success",
+            "description": "Get all shifts with pagination",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/shifts",
+            "params": {"offset": 0, "limit": 100},
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_shift_200_success",
+            "description": "Get a single shift by label",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/shifts/8-17",
+            "params": None,
+            "body": None,
+            "metadata": {"shift_label": "8-17"},
+        },
+        {
+            "name": "get_shift_404_not_found",
+            "description": "Get a non-existent shift",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/shifts/NONEXISTENT_SHIFT_12345",
+            "params": None,
+            "body": None,
+            "metadata": {"shift_label": "NONEXISTENT_SHIFT_12345"},
+        },
+    ],
 }
 
 

@@ -51,6 +51,8 @@ from ..models import (
     RoutingPlanData,
     RoutingPlanList,
     RoutingProfileList,
+    Shift,
+    ShiftListResponse,
     TimeSlot,
     TimeSlotListResponse,
     Workskill,
@@ -1522,11 +1524,69 @@ class AsyncOFSMetadata:
 
     # region Shifts
 
-    async def get_shifts(self, offset: int = 0, limit: int = 100):
-        raise NotImplementedError("Async method not yet implemented")
+    async def get_shifts(self, offset: int = 0, limit: int = 100) -> ShiftListResponse:
+        """Get all shifts with pagination.
 
-    async def get_shift(self, label: str):
-        raise NotImplementedError("Async method not yet implemented")
+        Args:
+            offset: Starting record number (default 0)
+            limit: Maximum number to return (default 100)
+
+        Returns:
+            ShiftListResponse: List of shifts
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/shifts")
+        params = {"offset": offset, "limit": limit}
+
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data and not hasattr(ShiftListResponse, "links"):
+                del data["links"]
+            return ShiftListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get shifts")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_shift(self, label: str) -> Shift:
+        """Get a single shift by label.
+
+        Args:
+            label: The shift label to retrieve
+
+        Returns:
+            Shift: The shift details
+
+        Raises:
+            OFSCNotFoundError: If shift not found (404)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/shifts/{encoded_label}")
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data and not hasattr(Shift, "links"):
+                del data["links"]
+            return Shift.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, f"Failed to get shift '{label}'")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     # endregion
 

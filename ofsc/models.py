@@ -1804,6 +1804,65 @@ class ResourceTypeListResponse(OFSResponseList[ResourceType]):
 # endregion Metadata / Routing Profiles
 
 # region Metadata / Shifts
+
+
+class ShiftType(str, Enum):
+    """Type of a shift."""
+
+    regular = "regular"
+    on_call = "on-call"
+
+
+class ShiftDecoration(str, Enum):
+    """Decoration color for on-call shifts."""
+
+    yellow = "yellow"
+    orange = "orange"
+    red = "red"
+    blue = "blue"
+    green = "green"
+    purple = "purple"
+
+
+class Shift(BaseModel):
+    """Shift configuration in OFSC.
+
+    From swagger and actual API response:
+    - label: the shift identifier (e.g., "8-17", "on-call")
+    - name: the display name (e.g., "First shift 8-17")
+    - active: boolean, whether shift appears in dropdown
+    - type: enum ["regular", "on-call"]
+    - workTimeStart: time (HH:MM:SS format)
+    - workTimeEnd: time (HH:MM:SS format)
+    - points: optional, integer
+    - decoration: optional, enum for on-call shifts (6 colors)
+    """
+
+    label: str
+    name: str
+    active: bool
+    type: ShiftType
+    workTimeStart: time
+    workTimeEnd: time
+    points: Optional[int] = None
+    decoration: Optional[ShiftDecoration] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ShiftList(RootModel[list[Shift]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class ShiftListResponse(OFSResponseList[Shift]):
+    """Response from GET /rest/ofscMetadata/v1/shifts."""
+
+    pass
+
+
 # endregion Metadata / Shifts
 
 # region Metadata / Time Slots
