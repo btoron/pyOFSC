@@ -28,11 +28,11 @@ from .models import (
     RoutingPlanList,
     RoutingProfileList,
     Workskill,
-    WorkSkillGroup,
-    WorkSkillGroupListResponse,
+    WorkskillGroup,
+    WorkskillGroupListResponse,
     Workzone,
     WorkzoneListResponse,
-    WorskillConditionList,
+    WorkskillConditionList,
 )
 
 
@@ -218,7 +218,7 @@ class OFSMetadata(OFSApi):
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def replace_workskill_conditions(
-        self, data: WorskillConditionList, response_type=FULL_RESPONSE
+        self, data: WorkskillConditionList, response_type=FULL_RESPONSE
     ):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillConditions")
         content = '{"items":' + data.model_dump_json(exclude_none=True) + "}"
@@ -356,21 +356,21 @@ class OFSMetadata(OFSApi):
 
     # region 202410 Metadata - Workskill Groups
     @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=WorkSkillGroupListResponse
+        response_type=OBJ_RESPONSE, expected=[200], model=WorkskillGroupListResponse
     )
     def get_workskill_groups(self):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillGroups")
         response = requests.get(url, headers=self.headers)
         return response
 
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=WorkSkillGroup)
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=WorkskillGroup)
     def get_workskill_group(self, label: str):
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillGroups/{label}")
         response = requests.get(url, headers=self.headers)
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
-    def create_or_update_workskill_group(self, data: WorkSkillGroup):
+    def create_or_update_workskill_group(self, data: WorkskillGroup):
         label = data.label
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillGroups/{label}")
         response = requests.put(url, headers=self.headers, json=data.model_dump())
