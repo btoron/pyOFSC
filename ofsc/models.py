@@ -457,51 +457,6 @@ class BulkUpdateResponse(BaseModel):
     results: Optional[List[BulkUpdateResult]] = None
 
 
-# region Capacity Areas
-
-
-class CapacityAreaParent(BaseModel):
-    label: str
-    name: Optional[str] = None
-
-
-class CapacityAreaConfiguration(BaseModel):
-    isTimeSlotBase: bool
-    byCapacityCategory: str
-    byDay: str
-    byTimeSlot: str
-    isAllowCloseOnWorkzoneLevel: bool
-    definitionLevel: List[str]
-
-
-class CapacityArea(BaseModel):
-    label: str
-    name: Optional[str] = None
-    type: Optional[str] = "area"
-    status: Optional[str] = "active"
-    configuration: CapacityAreaConfiguration = None
-    parentLabel: Optional[str] = None
-    parent: Annotated[Optional[CapacityAreaParent], Field(alias="parent")] = None
-    status: str
-    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
-        None
-    )
-    # Note: as of 24A the additional fields returned are just HREFs so we won't include them here
-
-
-class CapacityAreaList(RootModel[List[CapacityArea]]):
-    def __iter__(self):
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
-class CapacityAreaListResponse(OFSResponseList[CapacityArea]):
-    pass
-
-
-# endregion
 # region 202403 Capacity Categories
 class Item(BaseModel):
     label: str
@@ -1423,6 +1378,48 @@ class ActivityTypeListResponse(OFSResponseList[ActivityType]):
 # endregion Metadata / Applications
 
 # region Metadata / Capacity Areas
+
+
+class CapacityAreaParent(BaseModel):
+    label: str
+    name: Optional[str] = None
+
+
+class CapacityAreaConfiguration(BaseModel):
+    isTimeSlotBase: bool
+    byCapacityCategory: str
+    byDay: str
+    byTimeSlot: str
+    isAllowCloseOnWorkzoneLevel: bool
+    definitionLevel: list[str]
+
+
+class CapacityArea(BaseModel):
+    label: str
+    name: Optional[str] = None
+    type: Optional[str] = "area"
+    status: Optional[str] = "active"
+    configuration: Optional[CapacityAreaConfiguration] = None
+    parentLabel: Optional[str] = None
+    parent: Annotated[Optional[CapacityAreaParent], Field(alias="parent")] = None
+    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
+        None
+    )
+    # Note: as of 24A the additional fields returned are just HREFs so we won't include them here
+
+
+class CapacityAreaList(RootModel[list[CapacityArea]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class CapacityAreaListResponse(OFSResponseList[CapacityArea]):
+    pass
+
+
 # endregion Metadata / Capacity Areas
 
 # region Metadata / Capacity Categories

@@ -365,10 +365,84 @@ class AsyncOFSMetadata:
         activeOnly: bool = False,
         areasOnly: bool = False,
     ) -> CapacityAreaListResponse:
-        raise NotImplementedError("Async method not yet implemented")
+        """Get all capacity areas with optional filtering.
+
+        Args:
+            expandParent: If True, expands parent area details
+            fields: List of fields to return (default: all fields)
+            activeOnly: If True, return only active areas
+            areasOnly: If True, return only areas (not categories)
+
+        Returns:
+            CapacityAreaListResponse: List of capacity areas
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/capacityAreas")
+
+        # Build params - None values are excluded by httpx
+        params = {}
+        if expandParent:
+            params["expand"] = "parent"
+        if fields:
+            params["fields"] = ",".join(fields)
+        if activeOnly:
+            params["status"] = "active"
+        if areasOnly:
+            params["type"] = "area"
+
+        try:
+            response = await self._client.get(
+                url, headers=self.headers, params=params if params else None
+            )
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data and not hasattr(CapacityAreaListResponse, "links"):
+                del data["links"]
+            return CapacityAreaListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get capacity areas")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def get_capacity_area(self, label: str) -> CapacityArea:
-        raise NotImplementedError("Async method not yet implemented")
+        """Get a single capacity area by label.
+
+        Args:
+            label: The capacity area label to retrieve
+
+        Returns:
+            CapacityArea: The capacity area details
+
+        Raises:
+            OFSCNotFoundError: If capacity area not found (404)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}"
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data and not hasattr(CapacityArea, "links"):
+                del data["links"]
+            return CapacityArea.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, f"Failed to get capacity area '{label}'")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     # endregion
 

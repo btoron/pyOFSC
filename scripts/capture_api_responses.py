@@ -237,6 +237,47 @@ ENDPOINTS = {
             "metadata": {"activity_type_label": "NONEXISTENT_TYPE_12345"},
         },
     ],
+    "capacity_areas": [
+        {
+            "name": "get_capacity_areas_200_success",
+            "description": "Get all capacity areas with default fields",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/capacityAreas",
+            "params": None,
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_capacity_areas_expanded_200_success",
+            "description": "Get all capacity areas with parent expansion and all fields",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/capacityAreas",
+            "params": {
+                "expand": "parent",
+                "fields": "label,name,type,status,parent.name,parent.label",
+            },
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_capacity_area_200_success",
+            "description": "Get a single capacity area by label",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/capacityAreas/FLUSA",
+            "params": None,
+            "body": None,
+            "metadata": {"capacity_area_label": "FLUSA"},
+        },
+        {
+            "name": "get_capacity_area_404_not_found",
+            "description": "Get a non-existent capacity area",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/capacityAreas/NONEXISTENT_AREA_12345",
+            "params": None,
+            "body": None,
+            "metadata": {"capacity_area_label": "NONEXISTENT_AREA_12345"},
+        },
+    ],
     "non_working_reasons": [
         {
             "name": "get_non_working_reasons_200_success",
