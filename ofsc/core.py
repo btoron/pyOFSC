@@ -34,25 +34,19 @@ class OFSCore(OFSApi):
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_activity(self, activity_id):
-        url = urljoin(
-            self.baseUrl, "/rest/ofscCore/v1/activities/{}".format(activity_id)
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/activities/{activity_id}")
         response = requests.get(url, headers=self.headers)
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def update_activity(self, activity_id, data):
-        url = urljoin(
-            self.baseUrl, "/rest/ofscCore/v1/activities/{}".format(activity_id)
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/activities/{activity_id}")
         response = requests.patch(url, headers=self.headers, data=data)
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
     def delete_activity(self, activity_id):
-        url = urljoin(
-            self.baseUrl, "/rest/ofscCore/v1/activities/{}".format(activity_id)
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/activities/{activity_id}")
         response = requests.delete(url, headers=self.headers)
         return response
 
@@ -94,9 +88,7 @@ class OFSCore(OFSApi):
         workZones=False,
         workSchedules=False,
     ):
-        url = urljoin(
-            self.baseUrl, "/rest/ofscCore/v1/resources/{}".format(str(resource_id))
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}")
         data = {}
         expand = ""
         if inventories:
@@ -154,7 +146,7 @@ class OFSCore(OFSApi):
     def get_position_history(self, resource_id, date):
         url = urljoin(
             self.baseUrl,
-            "/rest/ofscCore/v1/resources/{}/positionHistory".format(str(resource_id)),
+            f"/rest/ofscCore/v1/resources/{resource_id}/positionHistory",
         )
         params = {}
         params["date"] = date
@@ -167,7 +159,7 @@ class OFSCore(OFSApi):
     ):
         url = urljoin(
             self.baseUrl,
-            "/rest/ofscCore/v1/resources/{}/routes/{}".format(str(resource_id), date),
+            f"/rest/ofscCore/v1/resources/{resource_id}/routes/{date}",
         )
         params = {}
         if activityFields is not None:
@@ -189,7 +181,7 @@ class OFSCore(OFSApi):
     ):
         url = urljoin(
             self.baseUrl,
-            "/rest/ofscCore/v1/resources/{}/descendants".format(str(resource_id)),
+            f"/rest/ofscCore/v1/resources/{resource_id}/descendants",
         )
         # Calculate expand
         params = {}
@@ -514,13 +506,13 @@ class OFSCore(OFSApi):
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_user(self, login):
-        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/users/{}".format(login))
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/users/{login}")
         response = requests.get(url, headers=self.headers)
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def update_user(self, login, data):
-        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/users/{}".format(login))
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/users/{login}")
         response = requests.patch(url, headers=self.headers, data=data)
         return response
 
@@ -684,7 +676,7 @@ class OFSCore(OFSApi):
     def get_subscription_details(self, subscription_id):
         url = urljoin(
             self.baseUrl,
-            "/rest/ofscCore/v1/events/subscriptions/{}".format(str(subscription_id)),
+            f"/rest/ofscCore/v1/events/subscriptions/{subscription_id}",
         )
         response = requests.get(url, headers=self.headers)
         return response

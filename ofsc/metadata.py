@@ -264,7 +264,7 @@ class OFSMetadata(OFSApi):
     def get_activity_type(self, label):
         encoded_label = urllib.parse.quote_plus(label)
         url = urljoin(
-            self.baseUrl, "/rest/ofscMetadata/v1/activityTypes/{}".format(encoded_label)
+            self.baseUrl, f"/rest/ofscMetadata/v1/activityTypes/{encoded_label}"
         )
         response = requests.get(url, headers=self.headers)
         return response

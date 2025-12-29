@@ -38,10 +38,18 @@ __all__ = [
 
 
 class AsyncOFSC:
-    """Async version of OFSC client using httpx.AsyncClient.
+    """Async version of OFSC client using httpx.AsyncClient with HTTP/2 support.
 
     This class provides the same interface as OFSC but uses async/await patterns.
     It must be used as an async context manager to properly manage the HTTP client lifecycle.
+
+    HTTP/2 is enabled by default for efficient stream multiplexing and improved performance
+    when making parallel API calls using asyncio.gather().
+
+    Warning:
+        This client is task-safe but NOT thread-safe. Do not share a single AsyncOFSC
+        instance across multiple threads or event loops. For parallel requests, use
+        asyncio.gather() within the same async context.
 
     Example:
         async with AsyncOFSC(
@@ -49,7 +57,14 @@ class AsyncOFSC:
             companyName="my_company",
             secret="my_secret",
         ) as client:
+            # Single request
             result = await client.core.get_resource("resource_id")
+
+            # Parallel requests (recommended for bulk operations)
+            workzones, properties = await asyncio.gather(
+                client.metadata.get_workzones(),
+                client.metadata.get_properties(),
+            )
     """
 
     def __init__(
@@ -81,7 +96,7 @@ class AsyncOFSC:
 
     async def __aenter__(self) -> "AsyncOFSC":
         """Enter async context manager - create shared httpx.AsyncClient."""
-        self._client = httpx.AsyncClient()
+        self._client = httpx.AsyncClient(http2=True)
         self._core = AsyncOFSCore(config=self._config, client=self._client)
         self._metadata = AsyncOFSMetadata(config=self._config, client=self._client)
         self._capacity = AsyncOFSCapacity(config=self._config, client=self._client)
