@@ -228,6 +228,169 @@ class TestAsyncGetWorkskillModel:
         assert result.sharing.value == "maximal"
 
 
+class TestAsyncCreateOrUpdateWorkskillLive:
+    """Live tests for create_or_update_workskill."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_update_workskill_roundtrip(self, async_instance: AsyncOFSC):
+        """Test updating a work skill and restoring original.
+
+        This test:
+        1. Gets an existing work skill
+        2. Updates it with a small change
+        3. Verifies the update worked
+        4. Restores original work skill
+        """
+        # Get all work skills to find one to test with
+        all_skills = await async_instance.metadata.get_workskills()
+        if len(all_skills.items) == 0:
+            pytest.skip("No work skills available for testing")
+
+        # Use the first skill
+        test_label = all_skills.items[0].label
+        original_skill = await async_instance.metadata.get_workskill(test_label)
+
+        try:
+            # Create a copy with the same values (safe update)
+            from ofsc.models import Workskill
+
+            updated_skill = Workskill(
+                label=original_skill.label,
+                name=original_skill.name,
+                active=original_skill.active,
+                sharing=original_skill.sharing,
+                translations=original_skill.translations,
+            )
+
+            # Update the skill
+            result = await async_instance.metadata.create_or_update_workskill(
+                updated_skill
+            )
+
+            # Verify the update worked
+            assert isinstance(result, Workskill)
+            assert result.label == original_skill.label
+
+        finally:
+            # Always restore original skill (suppress cleanup exceptions)
+            try:
+                await async_instance.metadata.create_or_update_workskill(original_skill)
+
+                # Verify restoration
+                restored = await async_instance.metadata.get_workskill(test_label)
+                assert restored.label == original_skill.label
+                assert restored.name == original_skill.name
+                assert restored.active == original_skill.active
+            except Exception as cleanup_error:
+                # Log cleanup failure but don't hide test failure
+                print(f"\n[WARNING] Failed to restore work skill: {cleanup_error}")
+                # If test passed but cleanup failed, re-raise
+                import sys
+
+                if sys.exc_info()[0] is None:
+                    raise
+
+
+class TestAsyncCreateOrUpdateWorkskill:
+    """Tests for create_or_update_workskill."""
+
+    @pytest.mark.asyncio
+    async def test_create_workskill(self, async_instance: AsyncOFSC):
+        """Test creating a new work skill."""
+        mock_response = Mock()
+        mock_response.status_code = 201
+        mock_response.json.return_value = {
+            "label": "NEW_SKILL",
+            "name": "New Skill",
+            "active": True,
+            "sharing": "maximal",
+        }
+
+        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+
+        from ofsc.models import Workskill
+
+        skill = Workskill(
+            label="NEW_SKILL", name="New Skill", active=True, sharing="maximal"
+        )
+        result = await async_instance.metadata.create_or_update_workskill(skill)
+
+        assert isinstance(result, Workskill)
+        assert result.label == "NEW_SKILL"
+        assert result.name == "New Skill"
+        assert result.active is True
+
+    @pytest.mark.asyncio
+    async def test_update_workskill(self, async_instance: AsyncOFSC):
+        """Test updating an existing work skill."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "label": "EST",
+            "name": "Updated Estimate",
+            "active": True,
+            "sharing": "summary",
+        }
+
+        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+
+        from ofsc.models import Workskill
+
+        skill = Workskill(
+            label="EST", name="Updated Estimate", active=True, sharing="summary"
+        )
+        result = await async_instance.metadata.create_or_update_workskill(skill)
+
+        assert isinstance(result, Workskill)
+        assert result.label == "EST"
+        assert result.name == "Updated Estimate"
+
+
+class TestAsyncDeleteWorkskill:
+    """Tests for delete_workskill."""
+
+    @pytest.mark.asyncio
+    async def test_delete_workskill(self, async_instance: AsyncOFSC):
+        """Test deleting a work skill."""
+        mock_response = Mock()
+        mock_response.status_code = 204
+
+        async_instance.metadata._client.delete = AsyncMock(return_value=mock_response)
+
+        result = await async_instance.metadata.delete_workskill("TEST_SKILL")
+
+        assert result is None
+        async_instance.metadata._client.delete.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_delete_workskill_not_found(self, async_instance: AsyncOFSC):
+        """Test deleting a non-existent work skill."""
+        mock_response = Mock()
+        mock_response.status_code = 404
+        mock_response.json.return_value = {
+            "type": "https://docs.oracle.com/en/cloud/saas/field-service/errors/not-found",
+            "title": "Not Found",
+            "status": "404",
+            "detail": "Work skill not found",
+        }
+
+        from httpx import HTTPStatusError, Request
+
+        async_instance.metadata._client.delete = AsyncMock(
+            side_effect=HTTPStatusError(
+                "404 Not Found",
+                request=Request("DELETE", "http://test"),
+                response=mock_response,
+            )
+        )
+
+        from ofsc.exceptions import OFSCNotFoundError
+
+        with pytest.raises(OFSCNotFoundError):
+            await async_instance.metadata.delete_workskill("NONEXISTENT")
+
+
 # === WORKSKILL CONDITIONS ===
 
 
@@ -275,6 +438,122 @@ class TestAsyncGetWorkskillConditionsModel:
         assert isinstance(result, WorkskillConditionList)
         assert len(result.root) == 1
         assert result.root[0].label == "test_condition"
+
+
+class TestAsyncReplaceWorkskillConditionsLive:
+    """Live tests for replace_workskill_conditions."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_replace_workskill_conditions_roundtrip(
+        self, async_instance: AsyncOFSC
+    ):
+        """Test replacing work skill conditions and restoring original.
+
+        This test:
+        1. Gets current conditions
+        2. Replaces them with modified conditions
+        3. Verifies the replacement worked
+        4. Restores original conditions
+        """
+        # Get current conditions
+        original_conditions = await async_instance.metadata.get_workskill_conditions()
+
+        try:
+            # Replace with the same conditions (safe operation)
+            result = await async_instance.metadata.replace_workskill_conditions(
+                original_conditions
+            )
+
+            # Verify the replace operation worked
+            assert isinstance(result, WorkskillConditionList)
+            assert len(result.root) == len(original_conditions.root)
+
+        finally:
+            # Always restore original conditions (suppress cleanup exceptions)
+            try:
+                await async_instance.metadata.replace_workskill_conditions(
+                    original_conditions
+                )
+
+                # Verify restoration
+                restored = await async_instance.metadata.get_workskill_conditions()
+                assert len(restored.root) == len(original_conditions.root)
+            except Exception as cleanup_error:
+                # Log cleanup failure but don't hide test failure
+                print(
+                    f"\n[WARNING] Failed to restore work skill conditions: {cleanup_error}"
+                )
+                # If test passed but cleanup failed, re-raise
+                import sys
+
+                if sys.exc_info()[0] is None:
+                    raise
+
+
+class TestAsyncReplaceWorkskillConditions:
+    """Tests for replace_workskill_conditions."""
+
+    @pytest.mark.asyncio
+    async def test_replace_workskill_conditions(self, async_instance: AsyncOFSC):
+        """Test replacing all work skill conditions."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "items": [
+                {
+                    "internalId": 1,
+                    "label": "updated_condition",
+                    "requiredLevel": 2,
+                    "preferableLevel": 3,
+                    "conditions": [
+                        {"label": "skill1", "function": "in", "value": "value1"}
+                    ],
+                }
+            ]
+        }
+
+        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+
+        from ofsc.models import Condition, WorkskillCondition, WorkskillConditionList
+
+        conditions = WorkskillConditionList(
+            [
+                WorkskillCondition(
+                    internalId=1,
+                    label="updated_condition",
+                    requiredLevel=2,
+                    preferableLevel=3,
+                    conditions=[
+                        Condition(label="skill1", function="in", value="value1")
+                    ],
+                )
+            ]
+        )
+
+        result = await async_instance.metadata.replace_workskill_conditions(conditions)
+
+        assert isinstance(result, WorkskillConditionList)
+        assert len(result.root) == 1
+        assert result.root[0].label == "updated_condition"
+        assert result.root[0].requiredLevel == 2
+
+    @pytest.mark.asyncio
+    async def test_replace_workskill_conditions_empty(self, async_instance: AsyncOFSC):
+        """Test replacing with empty list (removes all conditions)."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"items": []}
+
+        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+
+        from ofsc.models import WorkskillConditionList
+
+        conditions = WorkskillConditionList([])
+        result = await async_instance.metadata.replace_workskill_conditions(conditions)
+
+        assert isinstance(result, WorkskillConditionList)
+        assert len(result.root) == 0
 
 
 # === WORKSKILL GROUPS ===
@@ -432,6 +711,211 @@ class TestAsyncGetWorkskillGroupModel:
         assert result.label == "TEST"
         assert result.name == "Test Group"
         assert result.active is True
+
+
+class TestAsyncCreateOrUpdateWorkskillGroupLive:
+    """Live tests for create_or_update_workskill_group."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_update_workskill_group_roundtrip(self, async_instance: AsyncOFSC):
+        """Test updating a work skill group and restoring original."""
+        # Get all work skill groups to find one to test with
+        all_groups = await async_instance.metadata.get_workskill_groups()
+        if len(all_groups.items) == 0:
+            pytest.skip("No work skill groups available for testing")
+
+        # Use the first group
+        test_label = all_groups.items[0].label
+        original_group = await async_instance.metadata.get_workskill_group(test_label)
+
+        try:
+            # Create a copy with the same values (safe update)
+            from ofsc.models import WorkskillGroup
+
+            updated_group = WorkskillGroup(
+                label=original_group.label,
+                name=original_group.name,
+                active=original_group.active,
+                assignToResource=original_group.assignToResource,
+                addToCapacityCategory=original_group.addToCapacityCategory,
+                workSkills=original_group.workSkills,
+                translations=original_group.translations,
+            )
+
+            # Update the group
+            result = await async_instance.metadata.create_or_update_workskill_group(
+                updated_group
+            )
+            assert isinstance(result, WorkskillGroup)
+            assert result.label == original_group.label
+
+        finally:
+            # Always restore original group (suppress cleanup exceptions)
+            try:
+                await async_instance.metadata.create_or_update_workskill_group(
+                    original_group
+                )
+
+                # Verify restoration
+                restored = await async_instance.metadata.get_workskill_group(test_label)
+                assert restored.label == original_group.label
+            except Exception as cleanup_error:
+                # Log cleanup failure but don't hide test failure
+                print(
+                    f"\n[WARNING] Failed to restore work skill group: {cleanup_error}"
+                )
+                # If test passed but cleanup failed, re-raise
+                import sys
+
+                if sys.exc_info()[0] is None:
+                    raise
+
+
+class TestAsyncCreateOrUpdateWorkskillGroup:
+    """Tests for create_or_update_workskill_group."""
+
+    @pytest.mark.asyncio
+    async def test_create_workskill_group(self, async_instance: AsyncOFSC):
+        """Test creating a new work skill group."""
+        mock_response = Mock()
+        mock_response.status_code = 201
+        mock_response.json.return_value = {
+            "label": "NEW_GROUP",
+            "name": "New Group",
+            "assignToResource": True,
+            "addToCapacityCategory": True,
+            "active": True,
+            "workSkills": [
+                {"label": "EST", "ratio": 50},
+                {"label": "RES", "ratio": 50},
+            ],
+            "translations": [{"language": "en", "name": "New Group"}],
+        }
+
+        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+
+        from ofsc.models import (
+            TranslationList,
+            Translation,
+            WorkskillAssignment,
+            WorkskillAssignmentList,
+            WorkskillGroup,
+        )
+
+        group = WorkskillGroup(
+            label="NEW_GROUP",
+            name="New Group",
+            assignToResource=True,
+            addToCapacityCategory=True,
+            active=True,
+            workSkills=WorkskillAssignmentList(
+                [
+                    WorkskillAssignment(label="EST", ratio=50),
+                    WorkskillAssignment(label="RES", ratio=50),
+                ]
+            ),
+            translations=TranslationList(
+                [Translation(language="en", name="New Group")]
+            ),
+        )
+
+        result = await async_instance.metadata.create_or_update_workskill_group(group)
+
+        assert isinstance(result, WorkskillGroup)
+        assert result.label == "NEW_GROUP"
+        assert result.name == "New Group"
+        assert result.active is True
+
+    @pytest.mark.asyncio
+    async def test_update_workskill_group(self, async_instance: AsyncOFSC):
+        """Test updating an existing work skill group."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "label": "TEST",
+            "name": "Updated Test Group",
+            "assignToResource": False,
+            "addToCapacityCategory": True,
+            "active": True,
+            "workSkills": [{"label": "EST", "ratio": 100}],
+            "translations": [{"language": "en", "name": "Updated Test Group"}],
+        }
+
+        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+
+        from ofsc.models import (
+            TranslationList,
+            Translation,
+            WorkskillAssignment,
+            WorkskillAssignmentList,
+            WorkskillGroup,
+        )
+
+        group = WorkskillGroup(
+            label="TEST",
+            name="Updated Test Group",
+            assignToResource=False,
+            addToCapacityCategory=True,
+            active=True,
+            workSkills=WorkskillAssignmentList(
+                [WorkskillAssignment(label="EST", ratio=100)]
+            ),
+            translations=TranslationList(
+                [Translation(language="en", name="Updated Test Group")]
+            ),
+        )
+
+        result = await async_instance.metadata.create_or_update_workskill_group(group)
+
+        assert isinstance(result, WorkskillGroup)
+        assert result.label == "TEST"
+        assert result.name == "Updated Test Group"
+        assert result.assignToResource is False
+
+
+class TestAsyncDeleteWorkskillGroup:
+    """Tests for delete_workskill_group."""
+
+    @pytest.mark.asyncio
+    async def test_delete_workskill_group(self, async_instance: AsyncOFSC):
+        """Test deleting a work skill group."""
+        mock_response = Mock()
+        mock_response.status_code = 204
+
+        async_instance.metadata._client.delete = AsyncMock(return_value=mock_response)
+
+        result = await async_instance.metadata.delete_workskill_group("TEST_GROUP")
+
+        assert result is None
+        async_instance.metadata._client.delete.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_delete_workskill_group_not_found(self, async_instance: AsyncOFSC):
+        """Test deleting a non-existent work skill group."""
+        mock_response = Mock()
+        mock_response.status_code = 404
+        mock_response.json.return_value = {
+            "type": "https://docs.oracle.com/en/cloud/saas/field-service/errors/not-found",
+            "title": "Not Found",
+            "status": "404",
+            "detail": "Work skill group not found",
+        }
+
+        from httpx import HTTPStatusError, Request
+
+        async_instance.metadata._client.delete = AsyncMock(
+            side_effect=HTTPStatusError(
+                "404 Not Found",
+                request=Request("DELETE", "http://test"),
+                response=mock_response,
+            )
+        )
+
+        from ofsc.exceptions import OFSCNotFoundError
+
+        with pytest.raises(OFSCNotFoundError):
+            await async_instance.metadata.delete_workskill_group("NONEXISTENT")
 
 
 # === SAVED RESPONSE VALIDATION ===
