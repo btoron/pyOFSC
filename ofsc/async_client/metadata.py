@@ -30,6 +30,8 @@ from ..models import (
     CapacityCategoryListResponse,
     EnumerationValue,
     EnumerationValueList,
+    Form,
+    FormListResponse,
     InventoryType,
     InventoryTypeListResponse,
     Language,
@@ -522,11 +524,69 @@ class AsyncOFSMetadata:
 
     # region Forms
 
-    async def get_forms(self, offset: int = 0, limit: int = 100):
-        raise NotImplementedError("Async method not yet implemented")
+    async def get_forms(self, offset: int = 0, limit: int = 100) -> FormListResponse:
+        """Get all forms with pagination.
 
-    async def get_form(self, label: str):
-        raise NotImplementedError("Async method not yet implemented")
+        Args:
+            offset: Starting record number (default 0)
+            limit: Maximum number to return (default 100)
+
+        Returns:
+            FormListResponse: List of forms
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/forms")
+        params = {"offset": offset, "limit": limit}
+
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data and not hasattr(FormListResponse, "links"):
+                del data["links"]
+            return FormListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get forms")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_form(self, label: str) -> Form:
+        """Get a single form by label.
+
+        Args:
+            label: The form label to retrieve
+
+        Returns:
+            Form: The form details
+
+        Raises:
+            OFSCNotFoundError: If form not found (404)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/forms/{encoded_label}")
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data and not hasattr(Form, "links"):
+                del data["links"]
+            return Form.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, f"Failed to get form '{label}'")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     # endregion
 

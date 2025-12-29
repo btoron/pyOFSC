@@ -1432,6 +1432,41 @@ class CapacityCategoryListResponse(OFSResponseList[CapacityCategory]):
 # endregion Metadata / Capacity Categories
 
 # region Metadata / Forms
+
+
+class Form(BaseModel):
+    """Form entity in Oracle Field Service.
+
+    From swagger:
+    - label: required, min 1, max 40 chars
+    - name: required, min 1, max 255 chars
+    - translations: array of Translation objects (optional, returned if no language param)
+    - content: JSON string describing form content (optional, only in FormDetails)
+    """
+
+    label: str
+    name: str
+    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
+        None
+    )
+    content: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class FormList(RootModel[list[Form]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class FormListResponse(OFSResponseList[Form]):
+    """Response from GET /rest/ofscMetadata/v1/forms."""
+
+    pass
+
+
 # endregion Metadata / Forms
 
 # region Metadata / Inventory Types
