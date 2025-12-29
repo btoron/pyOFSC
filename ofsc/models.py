@@ -2,7 +2,7 @@ import base64
 import logging
 from datetime import date, time
 from enum import Enum
-from typing import Any, Dict, Generic, List, Optional, TypeVar
+from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
 from urllib.parse import urljoin
 
 import requests
@@ -1261,6 +1261,162 @@ class ActivityTypeListResponse(OFSResponseList[ActivityType]):
 # endregion Metadata / Activity Types
 
 # region Metadata / Applications
+
+
+class Link(BaseModel):
+    """Represents a link in API responses."""
+
+    rel: str
+    href: str
+    model_config = ConfigDict(extra="allow")
+
+
+class ApiMethod(BaseModel):
+    """Represents an API method permission."""
+
+    label: str
+    status: str  # "on" or "off"
+    model_config = ConfigDict(extra="allow")
+
+
+class ApiEntity(BaseModel):
+    """Represents an API entity permission."""
+
+    label: str
+    access: str  # "ReadWrite", "ReadOnly", etc.
+    model_config = ConfigDict(extra="allow")
+
+
+class BaseApiAccess(BaseModel):
+    """Base class for application API access with common fields."""
+
+    label: str
+    name: str
+    status: Status
+    links: Optional[list[Link]] = None
+
+
+class SimpleApiAccess(BaseApiAccess):
+    """API access for simple APIs with entity-based permissions.
+
+    Used by: coreAPI, metadataAPI, statisticsAPI, fieldCollaborationAPI
+    """
+
+    apiEntities: list[ApiEntity]
+    model_config = ConfigDict(extra="forbid")
+
+
+class CapacityApiAccess(BaseApiAccess):
+    """API access for capacity API with method-based permissions.
+
+    Used by: capacityAPI
+    """
+
+    apiMethods: list[ApiMethod]
+    model_config = ConfigDict(extra="forbid")
+
+
+class StructuredApiAccess(BaseApiAccess):
+    """API access for structured APIs with no detailed permissions.
+
+    Used by: partsCatalogAPI, outboundAPI
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class InboundApiAccess(BaseApiAccess):
+    """API access for inbound API with field configurations.
+
+    Used by: inboundAPI
+    """
+
+    activityFields: Optional[list[Any]] = None
+    inventoryFields: Optional[list[Any]] = None
+    providerFields: Optional[list[Any]] = None
+    model_config = ConfigDict(extra="forbid")
+
+
+# Mapping of API labels to their types
+API_TYPE_MAP = {
+    "coreAPI": SimpleApiAccess,
+    "metadataAPI": SimpleApiAccess,
+    "statisticsAPI": SimpleApiAccess,
+    "fieldCollaborationAPI": SimpleApiAccess,
+    "capacityAPI": CapacityApiAccess,
+    "inboundAPI": InboundApiAccess,
+    # Default to StructuredApiAccess for others
+}
+
+
+def parse_application_api_access(
+    data: dict[str, Any],
+) -> Union[SimpleApiAccess, CapacityApiAccess, InboundApiAccess, StructuredApiAccess]:
+    """Parse API access data into the appropriate subclass based on label.
+
+    Args:
+        data: Raw API response data
+
+    Returns:
+        Appropriate ApplicationApiAccess subclass instance
+    """
+    label = data.get("label", "")
+    access_class = API_TYPE_MAP.get(label, StructuredApiAccess)
+    return access_class.model_validate(data)
+
+
+# Type alias for the discriminated union
+ApplicationApiAccess = Union[
+    SimpleApiAccess, CapacityApiAccess, InboundApiAccess, StructuredApiAccess
+]
+
+
+class ApplicationApiAccessList(RootModel[list[ApplicationApiAccess]]):
+    """List of application API accesses."""
+
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
+class ApplicationApiAccessListResponse(BaseModel):
+    """Response from GET /rest/ofscMetadata/v1/applications/{label}/apiAccess."""
+
+    items: list[ApplicationApiAccess]
+    links: Optional[list[Link]] = None
+    model_config = ConfigDict(extra="allow")
+
+    @field_validator("items", mode="before")
+    @classmethod
+    def parse_items(cls, v):
+        """Parse each item into the appropriate ApplicationApiAccess subclass.
+
+        Note: List endpoint returns basic fields only, so items will be
+        StructuredApiAccess unless they have permission details.
+        """
+        if isinstance(v, list):
+            parsed_items = []
+            for item in v:
+                if isinstance(item, dict):
+                    # List responses only have basic fields, use StructuredApiAccess
+                    # unless the item has detailed permission fields
+                    if (
+                        "apiEntities" in item
+                        or "apiMethods" in item
+                        or "activityFields" in item
+                    ):
+                        parsed_items.append(parse_application_api_access(item))
+                    else:
+                        # Basic fields only - use StructuredApiAccess
+                        parsed_items.append(StructuredApiAccess.model_validate(item))
+                else:
+                    parsed_items.append(item)
+            return parsed_items
+        return v
+
+
 # endregion Metadata / Applications
 
 # region Metadata / Capacity Areas

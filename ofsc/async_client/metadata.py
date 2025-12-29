@@ -23,6 +23,8 @@ from ..models import (
     ActivityTypeGroupListResponse,
     ActivityTypeListResponse,
     Application,
+    ApplicationApiAccess,
+    ApplicationApiAccessListResponse,
     ApplicationListResponse,
     CapacityArea,
     CapacityAreaListResponse,
@@ -350,16 +352,149 @@ class AsyncOFSMetadata:
     # region Applications
 
     async def get_applications(self) -> ApplicationListResponse:
-        raise NotImplementedError("Async method not yet implemented")
+        """Get all applications.
+
+        Returns:
+            ApplicationListResponse: List of applications
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/applications")
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data:
+                del data["links"]
+            return ApplicationListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get applications")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def get_application(self, label: str) -> Application:
-        raise NotImplementedError("Async method not yet implemented")
+        """Get a single application by label.
 
-    async def get_application_api_accesses(self, label: str):
-        raise NotImplementedError("Async method not yet implemented")
+        Args:
+            label: The application label to retrieve
 
-    async def get_application_api_access(self, label: str, accessId: str):
-        raise NotImplementedError("Async method not yet implemented")
+        Returns:
+            Application: The application details
+
+        Raises:
+            OFSCNotFoundError: If application not found (404)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/applications/{encoded_label}"
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data:
+                del data["links"]
+            return Application.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, f"Failed to get application '{label}'")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_application_api_accesses(
+        self, label: str
+    ) -> ApplicationApiAccessListResponse:
+        """Get all API accesses for an application.
+
+        Args:
+            label: The application label
+
+        Returns:
+            ApplicationApiAccessListResponse: List of API accesses
+
+        Raises:
+            OFSCNotFoundError: If application not found (404)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/applications/{encoded_label}/apiAccess",
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data:
+                del data["links"]
+            return ApplicationApiAccessListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get API accesses for application '{label}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_application_api_access(
+        self, label: str, access_id: str
+    ) -> ApplicationApiAccess:
+        """Get a single API access for an application.
+
+        Args:
+            label: The application label
+            access_id: The API access ID (e.g., "capacityAPI", "coreAPI")
+
+        Returns:
+            ApplicationApiAccess: The API access details
+
+        Raises:
+            OFSCNotFoundError: If application or API access not found (404)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        encoded_access_id = quote_plus(access_id)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/applications/{encoded_label}/apiAccess/{encoded_access_id}",
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data:
+                del data["links"]
+            # Import parse function from models
+            from ..models import parse_application_api_access
+
+            return parse_application_api_access(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e,
+                f"Failed to get API access '{access_id}' for application '{label}'",
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     # endregion
 
@@ -980,11 +1115,71 @@ class AsyncOFSMetadata:
 
     # region Plugins
 
-    async def import_plugin_file(self, plugin: Path):
-        raise NotImplementedError("Async method not yet implemented")
+    async def import_plugin_file(self, plugin: Path) -> None:
+        """Import a plugin from a file.
 
-    async def import_plugin(self, plugin: str):
-        raise NotImplementedError("Async method not yet implemented")
+        Args:
+            plugin: Path to the plugin XML file
+
+        Returns:
+            None on success (204 No Content)
+
+        Raises:
+            OFSCValidationError: If plugin XML is invalid (400)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(
+            self.baseUrl, "/rest/ofscMetadata/v1/plugins/custom-actions/import"
+        )
+
+        try:
+            # Read file content and create multipart form data
+            files = {"pluginFile": (plugin.name, plugin.read_text(), "text/xml")}
+            response = await self._client.post(url, headers=self.headers, files=files)
+            response.raise_for_status()
+            # 204 No Content - return None
+            return None
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, f"Failed to import plugin from '{plugin}'")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def import_plugin(self, plugin: str) -> None:
+        """Import a plugin from a string.
+
+        Args:
+            plugin: Plugin XML content as string
+
+        Returns:
+            None on success (204 No Content)
+
+        Raises:
+            OFSCValidationError: If plugin XML is invalid (400)
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(
+            self.baseUrl, "/rest/ofscMetadata/v1/plugins/custom-actions/import"
+        )
+
+        try:
+            # Create multipart form data from string content
+            files = {"pluginFile": ("plugin.xml", plugin, "text/xml")}
+            response = await self._client.post(url, headers=self.headers, files=files)
+            response.raise_for_status()
+            # 204 No Content - return None
+            return None
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to import plugin")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     # endregion
 
