@@ -1648,6 +1648,7 @@ class Property(BaseModel):
             "email",
             "capture",
             "geo",
+            "attachments",
         ]:
             raise ValueError(f"{v} is not a valid GUI value")
         return v
