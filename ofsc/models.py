@@ -416,12 +416,6 @@ class BulkUpdateResponse(BaseModel):
     results: Optional[List[BulkUpdateResult]] = None
 
 
-# region 202404 Metadata - Time Slots
-# endregion
-# region 202404 Metadata - Workzones
-# endregion
-
-
 # region Users
 class BaseUser(BaseModel):
     login: str
@@ -434,29 +428,8 @@ class ResourceUsersListResponse(OFSResponseList[BaseUser]):
 
 
 # endregion
-# region 202412 Applications
 
 
-class ApplicationsResourcestoAllow(BaseModel):
-    resourceId: str
-    resourceInternalId: int
-
-
-class Application(BaseModel):
-    label: str
-    name: str
-    resourcesToAllow: List[ApplicationsResourcestoAllow] = None
-    allowedCorsDomains: List[str] = None
-    IPAddressesToAllow: List[str] = None
-    status: str
-    tokenService: str
-
-
-class ApplicationListResponse(OFSResponseList[Application]):
-    pass
-
-
-# endregion
 # region 202411 Calendars
 class RecurrenceType(str, Enum):
     daily = "daily"
@@ -855,314 +828,6 @@ class GetQuotaRequest(BaseModel):
 
 # endregion
 
-# region 202510 Routing Profiles
-
-
-class RoutingProfile(BaseModel):
-    """Model for routing profile entity
-
-    A routing profile is a group of routing plans that enables assignment
-    to multiple buckets without duplicating plans.
-    """
-
-    profileLabel: str = Field(
-        ..., description="Unique identifier for the routing profile"
-    )
-    model_config = ConfigDict(extra="allow")
-
-
-class RoutingProfileList(OFSResponseList[RoutingProfile]):
-    """Response model for list of routing profiles"""
-
-    pass
-
-
-class RoutingPlan(BaseModel):
-    """Model for routing plan entity
-
-    A routing plan is a configuration within a routing profile that defines
-    routing behavior and parameters.
-    """
-
-    planLabel: str = Field(..., description="Unique identifier for the routing plan")
-    model_config = ConfigDict(extra="allow")
-
-
-class RoutingPlanList(OFSResponseList[RoutingPlan]):
-    """Response model for list of routing plans within a profile"""
-
-    pass
-
-
-class RoutingPlanExport(BaseModel):
-    """Model for routing plan export response
-
-    Contains links to download the exported routing plan data.
-    """
-
-    mediaType: str = Field(
-        default="application/octet-stream",
-        description="MIME type of the exported content",
-    )
-    links: List[Link] = Field(default_factory=list, description="Download links")
-    model_config = ConfigDict(extra="allow")
-
-
-class RoutingProviderGroup(BaseModel):
-    """Model for provider group within a routing activity group"""
-
-    priority: str = Field(description="Priority value for this provider group")
-    filterLabel: str = Field(description="Filter label identifying the provider")
-    model_config = ConfigDict(extra="allow")
-
-
-class RoutingActivityGroup(BaseModel):
-    """Model for activity group within a routing plan"""
-
-    activity_location: str = Field(
-        description="Location type (e.g., 'resource_routing_date', 'bucket_routing_date')"
-    )
-    unacceptable_overdue: int = Field(
-        default=0, description="Unacceptable overdue time"
-    )
-    overdue_cost: int = Field(default=50, description="Cost for overdue activities")
-    non_assignment_cost: int = Field(
-        default=0, description="Cost for non-assigned activities"
-    )
-    sla_cost_coeff: int = Field(default=3, description="SLA cost coefficient")
-    sla_overdue_cost: int = Field(default=-1, description="SLA overdue cost")
-    sla_violation_fact_cost: int = Field(
-        default=-1, description="SLA violation fact cost"
-    )
-    is_multiday: int = Field(default=0, description="Is multiday activity")
-    autoordering_type: int = Field(default=0, description="Auto-ordering type")
-    sla_policy: int = Field(default=0, description="SLA policy")
-    bundling_policy: int = Field(default=0, description="Bundling policy")
-    filterLabel: str = Field(description="Filter label for this activity group")
-    providerGroups: List[RoutingProviderGroup] = Field(
-        default_factory=list, description="List of provider groups"
-    )
-    model_config = ConfigDict(extra="allow")
-
-
-class RoutingPlanConfig(BaseModel):
-    """Model for complete routing plan configuration
-
-    Contains all routing plan settings including optimization parameters,
-    time limits, costs, and activity group configurations.
-    """
-
-    # Basic plan information
-    rpname: str = Field(description="Routing plan name")
-    rpactive: int = Field(default=1, description="Plan active status (0/1)")
-    rptype: str = Field(default="manual", description="Plan type")
-    rpdate: int = Field(default=0, description="Plan date")
-    rp_label: str = Field(description="Routing plan label")
-    rpdescription: Optional[str] = Field(default="", description="Plan description")
-
-    # Time settings
-    rpfrom_time: Optional[str] = Field(default=None, description="Start time")
-    rpto_time: Optional[str] = Field(default=None, description="End time")
-    rpinterval: Optional[str] = Field(default=None, description="Time interval")
-    rpweekdays: Optional[str | int] = Field(
-        default=None, description="Weekdays (string or int)"
-    )
-    rptime_limit: int = Field(default=30, description="Time limit in minutes")
-    rptime_slr_limit_percent: int = Field(
-        default=50, description="SLR time limit percentage"
-    )
-
-    # Optimization settings
-    rpoptimization: str = Field(default="fastest", description="Optimization type")
-    rpgoal_based_optimization: str = Field(
-        default="maximize_jobs", description="Goal-based optimization strategy"
-    )
-    rpauto_ordering: int = Field(default=0, description="Auto ordering enabled")
-
-    # Fitness coefficients
-    rpfitness_coeff_uniformity: float = Field(
-        default=0.0, description="Fitness coefficient for uniformity"
-    )
-    rpfitness_coeff_window_reservation: float = Field(
-        default=0.2, description="Fitness coefficient for window reservation"
-    )
-
-    # Dynamic settings
-    rpdynamic_cut_time: int = Field(default=0, description="Dynamic cut time")
-    rpdynamic_cut_nappt: int = Field(
-        default=0, description="Dynamic cut number of appointments"
-    )
-    rpinvert_cut: int = Field(default=0, description="Invert cut setting")
-
-    # Zone and distance settings
-    rphome_zone_radius_overstep_weight: int = Field(
-        default=4, description="Home zone radius overstep weight"
-    )
-    rpunacceptable_travel_time: int = Field(
-        default=0, description="Unacceptable travel time"
-    )
-    rpunacceptable_travel_distance: int = Field(
-        default=0, description="Unacceptable travel distance"
-    )
-
-    # Machine operation settings
-    rpmachine_operation_deadline_shift: int = Field(
-        default=20, description="Machine operation deadline shift"
-    )
-
-    # SLR and points settings
-    rpuse_slr: int = Field(default=0, description="Use SLR")
-    rpload_technicians_by_points: int = Field(
-        default=0, description="Load technicians by points"
-    )
-    rpdefault_appt_points: int = Field(
-        default=0, description="Default appointment points"
-    )
-    rpget_technician_points_from_calendar: int = Field(
-        default=0, description="Get technician points from calendar"
-    )
-    rpdefault_tech_points: int = Field(default=0, description="Default tech points")
-    rpcalendar_point_size: int = Field(default=0, description="Calendar point size")
-    rpcalendar_reserved: int = Field(default=0, description="Calendar reserved")
-
-    # Assurance and skill settings
-    rpassurance_still_limit: Optional[int] = Field(
-        default=20, description="Assurance still limit"
-    )
-    rpinsufficient_skill_factor: float = Field(
-        default=1.0, description="Insufficient skill factor"
-    )
-
-    # Center point settings
-    rpdefault_center_point_radius: int = Field(
-        default=0, description="Default center point radius"
-    )
-    rpcenter_point_enable: int = Field(default=0, description="Center point enabled")
-
-    # Inventory and reoptimization
-    rpuse_required_inventory: int = Field(
-        default=0, description="Use required inventory"
-    )
-    rpreoptimization_enable: int = Field(
-        default=1, description="Reoptimization enabled"
-    )
-    rpreoptimization_reduce_overdue_threshold: Optional[int] = Field(
-        default=None, description="Reoptimization reduce overdue threshold"
-    )
-
-    # Algorithm and bundling
-    rpimmediate_algorithm: str = Field(default="", description="Immediate algorithm")
-    rpbundling_from: int = Field(default=0, description="Bundling from")
-    rpbundling_to: int = Field(default=0, description="Bundling to")
-
-    # Assignment settings
-    rpassignment_from: int = Field(default=0, description="Assignment from")
-    rpassignment_to: int = Field(default=1, description="Assignment to")
-    rpassign_bucket_resource: int = Field(
-        default=1, description="Assign bucket resource"
-    )
-
-    # Subtype and broadcast
-    rpsubtype: str = Field(default="normal", description="Plan subtype")
-    rpbroadcast_timeout: int = Field(default=0, description="Broadcast timeout")
-
-    # Advanced settings
-    rpadvanced_reoptimization_cost_override: int = Field(
-        default=0, description="Advanced reoptimization cost override"
-    )
-    rpadvanced_reoptimization_cost: int = Field(
-        default=0, description="Advanced reoptimization cost"
-    )
-    rpadvanced_reserved_part_of_service_window_override: int = Field(
-        default=0, description="Advanced reserved part of service window override"
-    )
-    rpadvanced_reserved_part_of_service_window: int = Field(
-        default=0, description="Advanced reserved part of service window"
-    )
-
-    # Routing and workzone
-    rprouting_to_contractor: int = Field(default=0, description="Routing to contractor")
-    rpignore_workzone_mismatch: int = Field(
-        default=0, description="Ignore workzone mismatch"
-    )
-
-    # Inventory waiting
-    rpinventory_waiting_days: int = Field(
-        default=0, description="Inventory waiting days"
-    )
-
-    # Daily distance
-    daily_distance_limit_is_used: int = Field(
-        default=0, description="Daily distance limit is used"
-    )
-    unacceptable_daily_distance: Optional[int] = Field(
-        default=None, description="Unacceptable daily distance"
-    )
-
-    # Flags and recommendations
-    flags: int = Field(default=0, description="Plan flags")
-    rprecomended_min_time_limit: int = Field(
-        default=-1, description="Recommended min time limit"
-    )
-    rprecomended_max_time_limit: int = Field(
-        default=-1, description="Recommended max time limit"
-    )
-    rprecomended_balanced_time_limit: int = Field(
-        default=-1, description="Recommended balanced time limit"
-    )
-
-    # Related labels
-    messageFlowLabel: str = Field(
-        default="MessageFlowIsNotSet", description="Message flow label"
-    )
-    warehouseVisitWorkTypeLabel: str = Field(
-        default="ActivityTypeIsNotSet", description="Warehouse visit work type label"
-    )
-    predecessorLabel: str = Field(
-        default="RoutingPlanLabelIsNotSet", description="Predecessor label"
-    )
-    triggerFilterLabel: str = Field(default="Other", description="Trigger filter label")
-
-    # Activity groups
-    activityGroups: List[RoutingActivityGroup] = Field(
-        default_factory=list, description="List of activity groups"
-    )
-
-    # Audit fields
-    last_updated_by: str = Field(default="", description="Last updated by")
-    last_update_date: str = Field(default="", description="Last update date")
-    last_update_login: str = Field(default="", description="Last update login")
-    created_by: str = Field(default="", description="Created by")
-    creation_date: str = Field(default="", description="Creation date")
-
-    model_config = ConfigDict(extra="allow")
-
-
-class RoutingPlanData(BaseModel):
-    """Complete routing plan export response
-
-    Contains the full routing plan configuration along with signature
-    and version information. Fields are optional as API may return
-    different formats (metadata only vs full plan data).
-    """
-
-    routing_plan: Optional[RoutingPlanConfig] = Field(
-        default=None, description="Complete routing plan configuration"
-    )
-    sign: Optional[str] = Field(
-        default=None, description="Signature for the routing plan"
-    )
-    version: Optional[str] = Field(
-        default=None, description="Version of the routing plan format"
-    )
-    mediaType: Optional[str] = Field(
-        default=None, description="Media type of the export response"
-    )
-    model_config = ConfigDict(extra="allow")
-
-
-# endregion
-
 # region Metadata / Activity Type Groups
 
 
@@ -1269,6 +934,25 @@ class ActivityTypeListResponse(OFSResponseList[ActivityType]):
 # endregion Metadata / Activity Types
 
 # region Metadata / Applications
+
+
+class ApplicationsResourcestoAllow(BaseModel):
+    resourceId: str
+    resourceInternalId: int
+
+
+class Application(BaseModel):
+    label: str
+    name: str
+    resourcesToAllow: List[ApplicationsResourcestoAllow] = None
+    allowedCorsDomains: List[str] = None
+    IPAddressesToAllow: List[str] = None
+    status: str
+    tokenService: str
+
+
+class ApplicationListResponse(OFSResponseList[Application]):
+    pass
 
 
 class Link(BaseModel):
@@ -1877,6 +1561,311 @@ class ResourceTypeListResponse(OFSResponseList[ResourceType]):
 # endregion Metadata / Resource Types
 
 # region Metadata / Routing Profiles
+
+
+class RoutingProfile(BaseModel):
+    """Model for routing profile entity
+
+    A routing profile is a group of routing plans that enables assignment
+    to multiple buckets without duplicating plans.
+    """
+
+    profileLabel: str = Field(
+        ..., description="Unique identifier for the routing profile"
+    )
+    model_config = ConfigDict(extra="allow")
+
+
+class RoutingProfileList(OFSResponseList[RoutingProfile]):
+    """Response model for list of routing profiles"""
+
+    pass
+
+
+class RoutingPlan(BaseModel):
+    """Model for routing plan entity
+
+    A routing plan is a configuration within a routing profile that defines
+    routing behavior and parameters.
+    """
+
+    planLabel: str = Field(..., description="Unique identifier for the routing plan")
+    model_config = ConfigDict(extra="allow")
+
+
+class RoutingPlanList(OFSResponseList[RoutingPlan]):
+    """Response model for list of routing plans within a profile"""
+
+    pass
+
+
+class RoutingPlanExport(BaseModel):
+    """Model for routing plan export response
+
+    Contains links to download the exported routing plan data.
+    """
+
+    mediaType: str = Field(
+        default="application/octet-stream",
+        description="MIME type of the exported content",
+    )
+    links: List[Link] = Field(default_factory=list, description="Download links")
+    model_config = ConfigDict(extra="allow")
+
+
+class RoutingProviderGroup(BaseModel):
+    """Model for provider group within a routing activity group"""
+
+    priority: str = Field(description="Priority value for this provider group")
+    filterLabel: str = Field(description="Filter label identifying the provider")
+    model_config = ConfigDict(extra="allow")
+
+
+class RoutingActivityGroup(BaseModel):
+    """Model for activity group within a routing plan"""
+
+    activity_location: str = Field(
+        description="Location type (e.g., 'resource_routing_date', 'bucket_routing_date')"
+    )
+    unacceptable_overdue: int = Field(
+        default=0, description="Unacceptable overdue time"
+    )
+    overdue_cost: int = Field(default=50, description="Cost for overdue activities")
+    non_assignment_cost: int = Field(
+        default=0, description="Cost for non-assigned activities"
+    )
+    sla_cost_coeff: int = Field(default=3, description="SLA cost coefficient")
+    sla_overdue_cost: int = Field(default=-1, description="SLA overdue cost")
+    sla_violation_fact_cost: int = Field(
+        default=-1, description="SLA violation fact cost"
+    )
+    is_multiday: int = Field(default=0, description="Is multiday activity")
+    autoordering_type: int = Field(default=0, description="Auto-ordering type")
+    sla_policy: int = Field(default=0, description="SLA policy")
+    bundling_policy: int = Field(default=0, description="Bundling policy")
+    filterLabel: str = Field(description="Filter label for this activity group")
+    providerGroups: List[RoutingProviderGroup] = Field(
+        default_factory=list, description="List of provider groups"
+    )
+    model_config = ConfigDict(extra="allow")
+
+
+class RoutingPlanConfig(BaseModel):
+    """Model for complete routing plan configuration
+
+    Contains all routing plan settings including optimization parameters,
+    time limits, costs, and activity group configurations.
+    """
+
+    # Basic plan information
+    rpname: str = Field(description="Routing plan name")
+    rpactive: int = Field(default=1, description="Plan active status (0/1)")
+    rptype: str = Field(default="manual", description="Plan type")
+    rpdate: int = Field(default=0, description="Plan date")
+    rp_label: str = Field(description="Routing plan label")
+    rpdescription: Optional[str] = Field(default="", description="Plan description")
+
+    # Time settings
+    rpfrom_time: Optional[str] = Field(default=None, description="Start time")
+    rpto_time: Optional[str] = Field(default=None, description="End time")
+    rpinterval: Optional[str] = Field(default=None, description="Time interval")
+    rpweekdays: Optional[str | int] = Field(
+        default=None, description="Weekdays (string or int)"
+    )
+    rptime_limit: int = Field(default=30, description="Time limit in minutes")
+    rptime_slr_limit_percent: int = Field(
+        default=50, description="SLR time limit percentage"
+    )
+
+    # Optimization settings
+    rpoptimization: str = Field(default="fastest", description="Optimization type")
+    rpgoal_based_optimization: str = Field(
+        default="maximize_jobs", description="Goal-based optimization strategy"
+    )
+    rpauto_ordering: int = Field(default=0, description="Auto ordering enabled")
+
+    # Fitness coefficients
+    rpfitness_coeff_uniformity: float = Field(
+        default=0.0, description="Fitness coefficient for uniformity"
+    )
+    rpfitness_coeff_window_reservation: float = Field(
+        default=0.2, description="Fitness coefficient for window reservation"
+    )
+
+    # Dynamic settings
+    rpdynamic_cut_time: int = Field(default=0, description="Dynamic cut time")
+    rpdynamic_cut_nappt: int = Field(
+        default=0, description="Dynamic cut number of appointments"
+    )
+    rpinvert_cut: int = Field(default=0, description="Invert cut setting")
+
+    # Zone and distance settings
+    rphome_zone_radius_overstep_weight: int = Field(
+        default=4, description="Home zone radius overstep weight"
+    )
+    rpunacceptable_travel_time: int = Field(
+        default=0, description="Unacceptable travel time"
+    )
+    rpunacceptable_travel_distance: int = Field(
+        default=0, description="Unacceptable travel distance"
+    )
+
+    # Machine operation settings
+    rpmachine_operation_deadline_shift: int = Field(
+        default=20, description="Machine operation deadline shift"
+    )
+
+    # SLR and points settings
+    rpuse_slr: int = Field(default=0, description="Use SLR")
+    rpload_technicians_by_points: int = Field(
+        default=0, description="Load technicians by points"
+    )
+    rpdefault_appt_points: int = Field(
+        default=0, description="Default appointment points"
+    )
+    rpget_technician_points_from_calendar: int = Field(
+        default=0, description="Get technician points from calendar"
+    )
+    rpdefault_tech_points: int = Field(default=0, description="Default tech points")
+    rpcalendar_point_size: int = Field(default=0, description="Calendar point size")
+    rpcalendar_reserved: int = Field(default=0, description="Calendar reserved")
+
+    # Assurance and skill settings
+    rpassurance_still_limit: Optional[int] = Field(
+        default=20, description="Assurance still limit"
+    )
+    rpinsufficient_skill_factor: float = Field(
+        default=1.0, description="Insufficient skill factor"
+    )
+
+    # Center point settings
+    rpdefault_center_point_radius: int = Field(
+        default=0, description="Default center point radius"
+    )
+    rpcenter_point_enable: int = Field(default=0, description="Center point enabled")
+
+    # Inventory and reoptimization
+    rpuse_required_inventory: int = Field(
+        default=0, description="Use required inventory"
+    )
+    rpreoptimization_enable: int = Field(
+        default=1, description="Reoptimization enabled"
+    )
+    rpreoptimization_reduce_overdue_threshold: Optional[int] = Field(
+        default=None, description="Reoptimization reduce overdue threshold"
+    )
+
+    # Algorithm and bundling
+    rpimmediate_algorithm: str = Field(default="", description="Immediate algorithm")
+    rpbundling_from: int = Field(default=0, description="Bundling from")
+    rpbundling_to: int = Field(default=0, description="Bundling to")
+
+    # Assignment settings
+    rpassignment_from: int = Field(default=0, description="Assignment from")
+    rpassignment_to: int = Field(default=1, description="Assignment to")
+    rpassign_bucket_resource: int = Field(
+        default=1, description="Assign bucket resource"
+    )
+
+    # Subtype and broadcast
+    rpsubtype: str = Field(default="normal", description="Plan subtype")
+    rpbroadcast_timeout: int = Field(default=0, description="Broadcast timeout")
+
+    # Advanced settings
+    rpadvanced_reoptimization_cost_override: int = Field(
+        default=0, description="Advanced reoptimization cost override"
+    )
+    rpadvanced_reoptimization_cost: int = Field(
+        default=0, description="Advanced reoptimization cost"
+    )
+    rpadvanced_reserved_part_of_service_window_override: int = Field(
+        default=0, description="Advanced reserved part of service window override"
+    )
+    rpadvanced_reserved_part_of_service_window: int = Field(
+        default=0, description="Advanced reserved part of service window"
+    )
+
+    # Routing and workzone
+    rprouting_to_contractor: int = Field(default=0, description="Routing to contractor")
+    rpignore_workzone_mismatch: int = Field(
+        default=0, description="Ignore workzone mismatch"
+    )
+
+    # Inventory waiting
+    rpinventory_waiting_days: int = Field(
+        default=0, description="Inventory waiting days"
+    )
+
+    # Daily distance
+    daily_distance_limit_is_used: int = Field(
+        default=0, description="Daily distance limit is used"
+    )
+    unacceptable_daily_distance: Optional[int] = Field(
+        default=None, description="Unacceptable daily distance"
+    )
+
+    # Flags and recommendations
+    flags: int = Field(default=0, description="Plan flags")
+    rprecomended_min_time_limit: int = Field(
+        default=-1, description="Recommended min time limit"
+    )
+    rprecomended_max_time_limit: int = Field(
+        default=-1, description="Recommended max time limit"
+    )
+    rprecomended_balanced_time_limit: int = Field(
+        default=-1, description="Recommended balanced time limit"
+    )
+
+    # Related labels
+    messageFlowLabel: str = Field(
+        default="MessageFlowIsNotSet", description="Message flow label"
+    )
+    warehouseVisitWorkTypeLabel: str = Field(
+        default="ActivityTypeIsNotSet", description="Warehouse visit work type label"
+    )
+    predecessorLabel: str = Field(
+        default="RoutingPlanLabelIsNotSet", description="Predecessor label"
+    )
+    triggerFilterLabel: str = Field(default="Other", description="Trigger filter label")
+
+    # Activity groups
+    activityGroups: List[RoutingActivityGroup] = Field(
+        default_factory=list, description="List of activity groups"
+    )
+
+    # Audit fields
+    last_updated_by: str = Field(default="", description="Last updated by")
+    last_update_date: str = Field(default="", description="Last update date")
+    last_update_login: str = Field(default="", description="Last update login")
+    created_by: str = Field(default="", description="Created by")
+    creation_date: str = Field(default="", description="Creation date")
+
+    model_config = ConfigDict(extra="allow")
+
+
+class RoutingPlanData(BaseModel):
+    """Complete routing plan export response
+
+    Contains the full routing plan configuration along with signature
+    and version information. Fields are optional as API may return
+    different formats (metadata only vs full plan data).
+    """
+
+    routing_plan: Optional[RoutingPlanConfig] = Field(
+        default=None, description="Complete routing plan configuration"
+    )
+    sign: Optional[str] = Field(
+        default=None, description="Signature for the routing plan"
+    )
+    version: Optional[str] = Field(
+        default=None, description="Version of the routing plan format"
+    )
+    mediaType: Optional[str] = Field(
+        default=None, description="Media type of the export response"
+    )
+    model_config = ConfigDict(extra="allow")
+
+
 # endregion Metadata / Routing Profiles
 
 # region Metadata / Shifts
