@@ -1,6 +1,6 @@
 # OFSC API Endpoints Reference
 
-**Version:** 2.20.0
+**Version:** 2.21.0
 **Last Updated:** 2025-12-29
 
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints and their implementation status in pyOFSC.
