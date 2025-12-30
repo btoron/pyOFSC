@@ -106,11 +106,10 @@ class AsyncOFSMetadata:
             "detail": "string"
         }
 
-        Args:
-            response: The httpx Response object
-
-        Returns:
-            dict: Error information with type, title, and detail keys
+        :param response: The httpx Response object
+        :type response: httpx.Response
+        :return: Error information with type, title, and detail keys
+        :rtype: dict
         """
         try:
             error_data = response.json()
@@ -130,19 +129,18 @@ class AsyncOFSMetadata:
     def _handle_http_error(self, e: httpx.HTTPStatusError, context: str = "") -> None:
         """Convert httpx exceptions to OFSC exceptions with error details.
 
-        Args:
-            e: The httpx HTTPStatusError exception
-            context: Additional context for the error message
-
-        Raises:
-            OFSCAuthenticationError: For 401 errors
-            OFSCAuthorizationError: For 403 errors
-            OFSCNotFoundError: For 404 errors
-            OFSCConflictError: For 409 errors
-            OFSCRateLimitError: For 429 errors
-            OFSCValidationError: For 400, 422 errors
-            OFSCServerError: For 5xx errors
-            OFSCApiError: For other HTTP errors
+        :param e: The httpx HTTPStatusError exception
+        :type e: httpx.HTTPStatusError
+        :param context: Additional context for the error message
+        :type context: str
+        :raises OFSCAuthenticationError: For 401 errors
+        :raises OFSCAuthorizationError: For 403 errors
+        :raises OFSCNotFoundError: For 404 errors
+        :raises OFSCConflictError: For 409 errors
+        :raises OFSCRateLimitError: For 429 errors
+        :raises OFSCValidationError: For 400, 422 errors
+        :raises OFSCServerError: For 5xx errors
+        :raises OFSCApiError: For other HTTP errors
         """
         status = e.response.status_code
         error_info = self._parse_error_response(e.response)
@@ -204,18 +202,16 @@ class AsyncOFSMetadata:
     ) -> ActivityTypeGroupListResponse:
         """Get activity type groups with pagination.
 
-        Args:
-            offset: Starting record number (default 0)
-            limit: Maximum number of activity type groups to return (default 100)
-
-        Returns:
-            ActivityTypeGroupListResponse: List of activity type groups with pagination info
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param offset: Starting record number (default 0)
+        :type offset: int
+        :param limit: Maximum number of activity type groups to return (default 100)
+        :type limit: int
+        :return: List of activity type groups with pagination info
+        :rtype: ActivityTypeGroupListResponse
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/activityTypeGroups")
         params = {"offset": offset, "limit": limit}
@@ -238,18 +234,15 @@ class AsyncOFSMetadata:
     async def get_activity_type_group(self, label: str) -> ActivityTypeGroup:
         """Get a single activity type group by label.
 
-        Args:
-            label: The activity type group label to retrieve
-
-        Returns:
-            ActivityTypeGroup: The activity type group details
-
-        Raises:
-            OFSCNotFoundError: If activity type group not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The activity type group label to retrieve
+        :type label: str
+        :return: The activity type group details
+        :rtype: ActivityTypeGroup
+        :raises OFSCNotFoundError: If activity type group not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
         url = urljoin(
@@ -280,18 +273,16 @@ class AsyncOFSMetadata:
     ) -> ActivityTypeListResponse:
         """Get activity types with pagination.
 
-        Args:
-            offset: Starting record number (default 0)
-            limit: Maximum number of activity types to return (default 100)
-
-        Returns:
-            ActivityTypeListResponse: List of activity types with pagination info
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param offset: Starting record number (default 0)
+        :type offset: int
+        :param limit: Maximum number of activity types to return (default 100)
+        :type limit: int
+        :return: List of activity types with pagination info
+        :rtype: ActivityTypeListResponse
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/activityTypes")
         params = {"offset": offset, "limit": limit}
@@ -314,18 +305,15 @@ class AsyncOFSMetadata:
     async def get_activity_type(self, label: str) -> ActivityType:
         """Get a single activity type by label.
 
-        Args:
-            label: The activity type label to retrieve
-
-        Returns:
-            ActivityType: The activity type details
-
-        Raises:
-            OFSCNotFoundError: If activity type not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The activity type label to retrieve
+        :type label: str
+        :return: The activity type details
+        :rtype: ActivityType
+        :raises OFSCNotFoundError: If activity type not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
         url = urljoin(
@@ -354,14 +342,12 @@ class AsyncOFSMetadata:
     async def get_applications(self) -> ApplicationListResponse:
         """Get all applications.
 
-        Returns:
-            ApplicationListResponse: List of applications
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :return: List of applications
+        :rtype: ApplicationListResponse
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/applications")
 
@@ -381,18 +367,15 @@ class AsyncOFSMetadata:
     async def get_application(self, label: str) -> Application:
         """Get a single application by label.
 
-        Args:
-            label: The application label to retrieve
-
-        Returns:
-            Application: The application details
-
-        Raises:
-            OFSCNotFoundError: If application not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The application label to retrieve
+        :type label: str
+        :return: The application details
+        :rtype: Application
+        :raises OFSCNotFoundError: If application not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
         url = urljoin(
@@ -417,18 +400,15 @@ class AsyncOFSMetadata:
     ) -> ApplicationApiAccessListResponse:
         """Get all API accesses for an application.
 
-        Args:
-            label: The application label
-
-        Returns:
-            ApplicationApiAccessListResponse: List of API accesses
-
-        Raises:
-            OFSCNotFoundError: If application not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The application label
+        :type label: str
+        :return: List of API accesses
+        :rtype: ApplicationApiAccessListResponse
+        :raises OFSCNotFoundError: If application not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
         url = urljoin(
@@ -456,19 +436,17 @@ class AsyncOFSMetadata:
     ) -> ApplicationApiAccess:
         """Get a single API access for an application.
 
-        Args:
-            label: The application label
-            access_id: The API access ID (e.g., "capacityAPI", "coreAPI")
-
-        Returns:
-            ApplicationApiAccess: The API access details
-
-        Raises:
-            OFSCNotFoundError: If application or API access not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The application label
+        :type label: str
+        :param access_id: The API access ID (e.g., "capacityAPI", "coreAPI")
+        :type access_id: str
+        :return: The API access details
+        :rtype: ApplicationApiAccess
+        :raises OFSCNotFoundError: If application or API access not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
         encoded_access_id = quote_plus(access_id)
@@ -509,20 +487,20 @@ class AsyncOFSMetadata:
     ) -> CapacityAreaListResponse:
         """Get all capacity areas with optional filtering.
 
-        Args:
-            expandParent: If True, expands parent area details
-            fields: List of fields to return (default: all fields)
-            activeOnly: If True, return only active areas
-            areasOnly: If True, return only areas (not categories)
-
-        Returns:
-            CapacityAreaListResponse: List of capacity areas
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param expandParent: If True, expands parent area details
+        :type expandParent: bool
+        :param fields: List of fields to return (default: all fields)
+        :type fields: list[str] | None
+        :param activeOnly: If True, return only active areas
+        :type activeOnly: bool
+        :param areasOnly: If True, return only areas (not categories)
+        :type areasOnly: bool
+        :return: List of capacity areas
+        :rtype: CapacityAreaListResponse
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/capacityAreas")
 
@@ -555,18 +533,15 @@ class AsyncOFSMetadata:
     async def get_capacity_area(self, label: str) -> CapacityArea:
         """Get a single capacity area by label.
 
-        Args:
-            label: The capacity area label to retrieve
-
-        Returns:
-            CapacityArea: The capacity area details
-
-        Raises:
-            OFSCNotFoundError: If capacity area not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The capacity area label to retrieve
+        :type label: str
+        :return: The capacity area details
+        :rtype: CapacityArea
+        :raises OFSCNotFoundError: If capacity area not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
         url = urljoin(
@@ -595,18 +570,16 @@ class AsyncOFSMetadata:
     ) -> CapacityCategoryListResponse:
         """Get all capacity categories with pagination.
 
-        Args:
-            offset: Starting record number (default 0)
-            limit: Maximum number to return (default 100)
-
-        Returns:
-            CapacityCategoryListResponse: List of capacity categories
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param offset: Starting record number (default 0)
+        :type offset: int
+        :param limit: Maximum number to return (default 100)
+        :type limit: int
+        :return: List of capacity categories
+        :rtype: CapacityCategoryListResponse
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/capacityCategories")
         params = {"offset": offset, "limit": limit}
@@ -627,18 +600,15 @@ class AsyncOFSMetadata:
     async def get_capacity_category(self, label: str) -> CapacityCategory:
         """Get a single capacity category by label.
 
-        Args:
-            label: The capacity category label to retrieve
-
-        Returns:
-            CapacityCategory: The capacity category details
-
-        Raises:
-            OFSCNotFoundError: If capacity category not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The capacity category label to retrieve
+        :type label: str
+        :return: The capacity category details
+        :rtype: CapacityCategory
+        :raises OFSCNotFoundError: If capacity category not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
         url = urljoin(
@@ -665,18 +635,16 @@ class AsyncOFSMetadata:
     async def get_forms(self, offset: int = 0, limit: int = 100) -> FormListResponse:
         """Get all forms with pagination.
 
-        Args:
-            offset: Starting record number (default 0)
-            limit: Maximum number to return (default 100)
-
-        Returns:
-            FormListResponse: List of forms
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param offset: Starting record number (default 0)
+        :type offset: int
+        :param limit: Maximum number to return (default 100)
+        :type limit: int
+        :return: List of forms
+        :rtype: FormListResponse
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/forms")
         params = {"offset": offset, "limit": limit}
@@ -697,18 +665,15 @@ class AsyncOFSMetadata:
     async def get_form(self, label: str) -> Form:
         """Get a single form by label.
 
-        Args:
-            label: The form label to retrieve
-
-        Returns:
-            Form: The form details
-
-        Raises:
-            OFSCNotFoundError: If form not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The form label to retrieve
+        :type label: str
+        :return: The form details
+        :rtype: Form
+        :raises OFSCNotFoundError: If form not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/forms/{encoded_label}")
@@ -735,18 +700,16 @@ class AsyncOFSMetadata:
     ) -> InventoryTypeListResponse:
         """Get inventory types with pagination.
 
-        Args:
-            offset: Starting record number (default 0)
-            limit: Maximum number to return (default 100)
-
-        Returns:
-            InventoryTypeListResponse: List with pagination info
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param offset: Starting record number (default 0)
+        :type offset: int
+        :param limit: Maximum number to return (default 100)
+        :type limit: int
+        :return: List with pagination info
+        :rtype: InventoryTypeListResponse
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/inventoryTypes")
         params = {"offset": offset, "limit": limit}
@@ -769,18 +732,15 @@ class AsyncOFSMetadata:
     async def get_inventory_type(self, label: str) -> InventoryType:
         """Get a single inventory type by label.
 
-        Args:
-            label: The inventory type label
-
-        Returns:
-            InventoryType: The inventory type details
-
-        Raises:
-            OFSCNotFoundError: If inventory type not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The inventory type label
+        :type label: str
+        :return: The inventory type details
+        :rtype: InventoryType
+        :raises OFSCNotFoundError: If inventory type not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
         url = urljoin(
@@ -811,18 +771,16 @@ class AsyncOFSMetadata:
     ) -> LanguageListResponse:
         """Get languages with pagination.
 
-        Args:
-            offset: Starting record number (default 0)
-            limit: Maximum number to return (default 100)
-
-        Returns:
-            LanguageListResponse: List with pagination info
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param offset: Starting record number (default 0)
+        :type offset: int
+        :param limit: Maximum number to return (default 100)
+        :type limit: int
+        :return: List with pagination info
+        :rtype: LanguageListResponse
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/languages")
         params = {"offset": offset, "limit": limit}
@@ -854,18 +812,16 @@ class AsyncOFSMetadata:
     ) -> LinkTemplateListResponse:
         """Get link templates with pagination.
 
-        Args:
-            offset: Starting record number (default 0)
-            limit: Maximum number to return (default 100)
-
-        Returns:
-            LinkTemplateListResponse: List with pagination info
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param offset: Starting record number (default 0)
+        :type offset: int
+        :param limit: Maximum number to return (default 100)
+        :type limit: int
+        :return: List with pagination info
+        :rtype: LinkTemplateListResponse
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/linkTemplates")
         params = {"offset": offset, "limit": limit}
@@ -886,18 +842,15 @@ class AsyncOFSMetadata:
     async def get_link_template(self, label: str) -> LinkTemplate:
         """Get a single link template by label.
 
-        Args:
-            label: The link template label
-
-        Returns:
-            LinkTemplate: The link template details
-
-        Raises:
-            OFSCNotFoundError: If link template not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The link template label
+        :type label: str
+        :return: The link template details
+        :rtype: LinkTemplate
+        :raises OFSCNotFoundError: If link template not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
         url = urljoin(
@@ -926,18 +879,16 @@ class AsyncOFSMetadata:
     ) -> MapLayerListResponse:
         """Get all map layers with pagination.
 
-        Args:
-            offset: Starting record number (default 0)
-            limit: Maximum number to return (default 100)
-
-        Returns:
-            MapLayerListResponse: List of map layers
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param offset: Starting record number (default 0)
+        :type offset: int
+        :param limit: Maximum number to return (default 100)
+        :type limit: int
+        :return: List of map layers
+        :rtype: MapLayerListResponse
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/mapLayers")
         params = {"offset": offset, "limit": limit}
@@ -958,18 +909,15 @@ class AsyncOFSMetadata:
     async def get_map_layer(self, label: str) -> MapLayer:
         """Get a single map layer by label.
 
-        Args:
-            label: The map layer label to retrieve
-
-        Returns:
-            MapLayer: The map layer details
-
-        Raises:
-            OFSCNotFoundError: If map layer not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The map layer label to retrieve
+        :type label: str
+        :return: The map layer details
+        :rtype: MapLayer
+        :raises OFSCNotFoundError: If map layer not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/mapLayers/{encoded_label}")
@@ -996,18 +944,16 @@ class AsyncOFSMetadata:
     ) -> NonWorkingReasonListResponse:
         """Get non-working reasons with pagination.
 
-        Args:
-            offset: Starting record number (default 0)
-            limit: Maximum number of non-working reasons to return (default 100)
-
-        Returns:
-            NonWorkingReasonListResponse: List of non-working reasons with pagination info
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param offset: Starting record number (default 0)
+        :type offset: int
+        :param limit: Maximum number of non-working reasons to return (default 100)
+        :type limit: int
+        :return: List of non-working reasons with pagination info
+        :rtype: NonWorkingReasonListResponse
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/nonWorkingReasons")
         params = {"offset": offset, "limit": limit}
@@ -1035,11 +981,9 @@ class AsyncOFSMetadata:
             non-working reasons by label. This method raises NotImplementedError.
             Use get_non_working_reasons() and filter the results instead.
 
-        Args:
-            label: The non-working reason label to retrieve
-
-        Raises:
-            NotImplementedError: This operation is not supported by the API
+        :param label: The non-working reason label to retrieve
+        :type label: str
+        :raises NotImplementedError: This operation is not supported by the API
         """
         raise NotImplementedError(
             "Oracle Field Service API does not support retrieving individual non-working reasons by label. "
@@ -1053,14 +997,12 @@ class AsyncOFSMetadata:
     async def get_organizations(self) -> OrganizationListResponse:
         """Get all organizations.
 
-        Returns:
-            OrganizationListResponse: List of organizations
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :return: List of organizations
+        :rtype: OrganizationListResponse
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/organizations")
 
@@ -1080,18 +1022,15 @@ class AsyncOFSMetadata:
     async def get_organization(self, label: str) -> Organization:
         """Get a single organization by label.
 
-        Args:
-            label: The organization label
-
-        Returns:
-            Organization: The organization details
-
-        Raises:
-            OFSCNotFoundError: If organization not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The organization label
+        :type label: str
+        :return: The organization details
+        :rtype: Organization
+        :raises OFSCNotFoundError: If organization not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
         url = urljoin(
@@ -1118,18 +1057,15 @@ class AsyncOFSMetadata:
     async def import_plugin_file(self, plugin: Path) -> None:
         """Import a plugin from a file.
 
-        Args:
-            plugin: Path to the plugin XML file
-
-        Returns:
-            None on success (204 No Content)
-
-        Raises:
-            OFSCValidationError: If plugin XML is invalid (400)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param plugin: Path to the plugin XML file
+        :type plugin: Path
+        :return: None on success (204 No Content)
+        :rtype: None
+        :raises OFSCValidationError: If plugin XML is invalid (400)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(
             self.baseUrl, "/rest/ofscMetadata/v1/plugins/custom-actions/import"
@@ -1151,18 +1087,15 @@ class AsyncOFSMetadata:
     async def import_plugin(self, plugin: str) -> None:
         """Import a plugin from a string.
 
-        Args:
-            plugin: Plugin XML content as string
-
-        Returns:
-            None on success (204 No Content)
-
-        Raises:
-            OFSCValidationError: If plugin XML is invalid (400)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param plugin: Plugin XML content as string
+        :type plugin: str
+        :return: None on success (204 No Content)
+        :rtype: None
+        :raises OFSCValidationError: If plugin XML is invalid (400)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(
             self.baseUrl, "/rest/ofscMetadata/v1/plugins/custom-actions/import"
@@ -1190,18 +1123,16 @@ class AsyncOFSMetadata:
     ) -> PropertyListResponse:
         """Get properties with pagination.
 
-        Args:
-            offset: Starting record number (default 0)
-            limit: Maximum number of properties to return (default 100)
-
-        Returns:
-            PropertyListResponse: List of properties with pagination info
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param offset: Starting record number (default 0)
+        :type offset: int
+        :param limit: Maximum number of properties to return (default 100)
+        :type limit: int
+        :return: List of properties with pagination info
+        :rtype: PropertyListResponse
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/properties")
         params = {"offset": offset, "limit": limit}
@@ -1224,18 +1155,15 @@ class AsyncOFSMetadata:
     async def get_property(self, label: str) -> Property:
         """Get a single property by label.
 
-        Args:
-            label: The property label to retrieve
-
-        Returns:
-            Property: The property details
-
-        Raises:
-            OFSCNotFoundError: If property not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The property label to retrieve
+        :type label: str
+        :return: The property details
+        :rtype: Property
+        :raises OFSCNotFoundError: If property not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/properties/{label}")
 
@@ -1257,18 +1185,15 @@ class AsyncOFSMetadata:
     async def create_or_replace_property(self, property: Property) -> Property:
         """Create or replace a property.
 
-        Args:
-            property: The property object to create or replace
-
-        Returns:
-            Property: The created or updated property
-
-        Raises:
-            OFSCValidationError: If validation fails (400)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param property: The property object to create or replace
+        :type property: Property
+        :return: The created or updated property
+        :rtype: Property
+        :raises OFSCValidationError: If validation fails (400)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(
             self.baseUrl, f"/rest/ofscMetadata/v1/properties/{property.label}"
@@ -1300,20 +1225,19 @@ class AsyncOFSMetadata:
     ) -> EnumerationValueList:
         """Get enumeration values for a property.
 
-        Args:
-            label: The property label
-            offset: Starting record number (default 0)
-            limit: Maximum number of values to return (default 100)
-
-        Returns:
-            EnumerationValueList: List of enumeration values with pagination info
-
-        Raises:
-            OFSCNotFoundError: If property not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The property label
+        :type label: str
+        :param offset: Starting record number (default 0)
+        :type offset: int
+        :param limit: Maximum number of values to return (default 100)
+        :type limit: int
+        :return: List of enumeration values with pagination info
+        :rtype: EnumerationValueList
+        :raises OFSCNotFoundError: If property not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(
             self.baseUrl, f"/rest/ofscMetadata/v1/properties/{label}/enumerationList"
@@ -1342,20 +1266,18 @@ class AsyncOFSMetadata:
     ) -> EnumerationValueList:
         """Create or update enumeration values for a property.
 
-        Args:
-            label: The property label
-            value: Tuple of EnumerationValue objects to create or update
-
-        Returns:
-            EnumerationValueList: Updated list of enumeration values
-
-        Raises:
-            OFSCNotFoundError: If property not found (404)
-            OFSCValidationError: If validation fails (400)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The property label
+        :type label: str
+        :param value: Tuple of EnumerationValue objects to create or update
+        :type value: Tuple[EnumerationValue, ...]
+        :return: Updated list of enumeration values
+        :rtype: EnumerationValueList
+        :raises OFSCNotFoundError: If property not found (404)
+        :raises OFSCValidationError: If validation fails (400)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(
             self.baseUrl,
@@ -1388,14 +1310,12 @@ class AsyncOFSMetadata:
     async def get_resource_types(self) -> ResourceTypeListResponse:
         """Get all resource types.
 
-        Returns:
-            ResourceTypeListResponse: List of resource types
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :return: List of resource types
+        :rtype: ResourceTypeListResponse
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/resourceTypes")
 
@@ -1423,18 +1343,16 @@ class AsyncOFSMetadata:
     ) -> RoutingProfileList:
         """Get all routing profiles with pagination.
 
-        Args:
-            offset: Starting record number (default 0)
-            limit: Maximum number to return (default 100)
-
-        Returns:
-            RoutingProfileList: List of routing profiles with pagination info
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param offset: Starting record number (default 0)
+        :type offset: int
+        :param limit: Maximum number to return (default 100)
+        :type limit: int
+        :return: List of routing profiles with pagination info
+        :rtype: RoutingProfileList
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/routingProfiles")
         params = {"offset": offset, "limit": limit}
@@ -1459,20 +1377,19 @@ class AsyncOFSMetadata:
     ) -> RoutingPlanList:
         """Get all routing plans for a routing profile.
 
-        Args:
-            profile_label: Routing profile label
-            offset: Starting record number (default 0)
-            limit: Maximum number to return (default 100)
-
-        Returns:
-            RoutingPlanList: List of routing plans with pagination info
-
-        Raises:
-            OFSCNotFoundError: If routing profile not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param profile_label: Routing profile label
+        :type profile_label: str
+        :param offset: Starting record number (default 0)
+        :type offset: int
+        :param limit: Maximum number to return (default 100)
+        :type limit: int
+        :return: List of routing plans with pagination info
+        :rtype: RoutingPlanList
+        :raises OFSCNotFoundError: If routing profile not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(profile_label)
         url = urljoin(
@@ -1502,19 +1419,17 @@ class AsyncOFSMetadata:
     ) -> RoutingPlanData:
         """Export a routing plan.
 
-        Args:
-            profile_label: Routing profile label
-            plan_label: Routing plan label
-
-        Returns:
-            RoutingPlanData: Complete routing plan configuration
-
-        Raises:
-            OFSCNotFoundError: If routing profile or plan not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param profile_label: Routing profile label
+        :type profile_label: str
+        :param plan_label: Routing plan label
+        :type plan_label: str
+        :return: Complete routing plan configuration
+        :rtype: RoutingPlanData
+        :raises OFSCNotFoundError: If routing profile or plan not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_profile = quote_plus(profile_label)
         encoded_plan = quote_plus(plan_label)
@@ -1549,19 +1464,17 @@ class AsyncOFSMetadata:
     async def export_plan_file(self, profile_label: str, plan_label: str) -> bytes:
         """Export a routing plan as binary file.
 
-        Args:
-            profile_label: Routing profile label
-            plan_label: Routing plan label
-
-        Returns:
-            bytes: Raw binary content of the routing plan file
-
-        Raises:
-            OFSCNotFoundError: If routing profile or plan not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param profile_label: Routing profile label
+        :type profile_label: str
+        :param plan_label: Routing plan label
+        :type plan_label: str
+        :return: Raw binary content of the routing plan file
+        :rtype: bytes
+        :raises OFSCNotFoundError: If routing profile or plan not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_profile = quote_plus(profile_label)
         encoded_plan = quote_plus(plan_label)
@@ -1590,21 +1503,19 @@ class AsyncOFSMetadata:
     async def import_routing_plan(self, profile_label: str, plan_data: bytes) -> None:
         """Import a routing plan.
 
-        Args:
-            profile_label: Routing profile label
-            plan_data: Binary plan data to import
-
-        Returns:
-            None: Success returns None
-
-        Raises:
-            OFSCNotFoundError: If routing profile not found (404)
-            OFSCConflictError: If plan already exists (409)
-            OFSCValidationError: If validation fails (400)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param profile_label: Routing profile label
+        :type profile_label: str
+        :param plan_data: Binary plan data to import
+        :type plan_data: bytes
+        :return: Success returns None
+        :rtype: None
+        :raises OFSCNotFoundError: If routing profile not found (404)
+        :raises OFSCConflictError: If plan already exists (409)
+        :raises OFSCValidationError: If validation fails (400)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_profile = quote_plus(profile_label)
         url = urljoin(
@@ -1633,20 +1544,18 @@ class AsyncOFSMetadata:
     ) -> None:
         """Force import a routing plan (overwrite if exists).
 
-        Args:
-            profile_label: Routing profile label
-            plan_data: Binary plan data to import
-
-        Returns:
-            None: Success returns None
-
-        Raises:
-            OFSCNotFoundError: If routing profile not found (404)
-            OFSCValidationError: If validation fails (400)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param profile_label: Routing profile label
+        :type profile_label: str
+        :param plan_data: Binary plan data to import
+        :type plan_data: bytes
+        :return: Success returns None
+        :rtype: None
+        :raises OFSCNotFoundError: If routing profile not found (404)
+        :raises OFSCValidationError: If validation fails (400)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_profile = quote_plus(profile_label)
         url = urljoin(
@@ -1679,22 +1588,22 @@ class AsyncOFSMetadata:
     ) -> None:
         """Start a routing plan for a resource on a specific date.
 
-        Args:
-            profile_label: Routing profile label
-            plan_label: Routing plan label
-            resource_external_id: External ID of the resource
-            date: Date in format YYYY-MM-DD
-
-        Returns:
-            None
-
-        Raises:
-            OFSCNotFoundError: If routing profile, plan, or resource not found (404)
-            OFSCValidationError: If validation fails (400)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param profile_label: Routing profile label
+        :type profile_label: str
+        :param plan_label: Routing plan label
+        :type plan_label: str
+        :param resource_external_id: External ID of the resource
+        :type resource_external_id: str
+        :param date: Date in format YYYY-MM-DD
+        :type date: str
+        :return: None
+        :rtype: None
+        :raises OFSCNotFoundError: If routing profile, plan, or resource not found (404)
+        :raises OFSCValidationError: If validation fails (400)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_profile = quote_plus(profile_label)
         encoded_plan = quote_plus(plan_label)
@@ -1723,18 +1632,16 @@ class AsyncOFSMetadata:
     async def get_shifts(self, offset: int = 0, limit: int = 100) -> ShiftListResponse:
         """Get all shifts with pagination.
 
-        Args:
-            offset: Starting record number (default 0)
-            limit: Maximum number to return (default 100)
-
-        Returns:
-            ShiftListResponse: List of shifts
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param offset: Starting record number (default 0)
+        :type offset: int
+        :param limit: Maximum number to return (default 100)
+        :type limit: int
+        :return: List of shifts
+        :rtype: ShiftListResponse
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/shifts")
         params = {"offset": offset, "limit": limit}
@@ -1755,18 +1662,15 @@ class AsyncOFSMetadata:
     async def get_shift(self, label: str) -> Shift:
         """Get a single shift by label.
 
-        Args:
-            label: The shift label to retrieve
-
-        Returns:
-            Shift: The shift details
-
-        Raises:
-            OFSCNotFoundError: If shift not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The shift label to retrieve
+        :type label: str
+        :return: The shift details
+        :rtype: Shift
+        :raises OFSCNotFoundError: If shift not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/shifts/{encoded_label}")
@@ -1793,18 +1697,16 @@ class AsyncOFSMetadata:
     ) -> TimeSlotListResponse:
         """Get time slots with pagination.
 
-        Args:
-            offset: Starting record number (default 0)
-            limit: Maximum number of time slots to return (default 100)
-
-        Returns:
-            TimeSlotListResponse: List of time slots with pagination info
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param offset: Starting record number (default 0)
+        :type offset: int
+        :param limit: Maximum number of time slots to return (default 100)
+        :type limit: int
+        :return: List of time slots with pagination info
+        :rtype: TimeSlotListResponse
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/timeSlots")
         params = {"offset": offset, "limit": limit}
@@ -1832,14 +1734,11 @@ class AsyncOFSMetadata:
             time slots by label. This method raises NotImplementedError.
             Use get_time_slots() and filter the results instead.
 
-        Args:
-            label: The time slot label to retrieve
-
-        Returns:
-            TimeSlot: The time slot details
-
-        Raises:
-            NotImplementedError: This operation is not supported by the Oracle API
+        :param label: The time slot label to retrieve
+        :type label: str
+        :return: The time slot details
+        :rtype: TimeSlot
+        :raises NotImplementedError: This operation is not supported by the Oracle API
         """
         raise NotImplementedError(
             "Oracle Field Service API does not support retrieving individual time slots by label. "
@@ -1855,18 +1754,16 @@ class AsyncOFSMetadata:
     ) -> WorkskillListResponse:
         """Get all work skills with pagination.
 
-        Args:
-            offset: Starting record number (default 0)
-            limit: Maximum number to return (default 100)
-
-        Returns:
-            WorkskillListResponse: List of work skills with pagination info
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param offset: Starting record number (default 0)
+        :type offset: int
+        :param limit: Maximum number to return (default 100)
+        :type limit: int
+        :return: List of work skills with pagination info
+        :rtype: WorkskillListResponse
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkills")
         params = {"offset": offset, "limit": limit}
@@ -1887,18 +1784,15 @@ class AsyncOFSMetadata:
     async def get_workskill(self, label: str) -> Workskill:
         """Get a single work skill by label.
 
-        Args:
-            label: The work skill label to retrieve
-
-        Returns:
-            Workskill: The work skill details
-
-        Raises:
-            OFSCNotFoundError: If work skill not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The work skill label to retrieve
+        :type label: str
+        :return: The work skill details
+        :rtype: Workskill
+        :raises OFSCNotFoundError: If work skill not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{encoded_label}")
@@ -1919,18 +1813,15 @@ class AsyncOFSMetadata:
     async def create_or_update_workskill(self, skill: Workskill) -> Workskill:
         """Create or update a work skill.
 
-        Args:
-            skill: The work skill to create or update
-
-        Returns:
-            Workskill: The created or updated work skill
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCValidationError: If validation fails (400, 422)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param skill: The work skill to create or update
+        :type skill: Workskill
+        :return: The created or updated work skill
+        :rtype: Workskill
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCValidationError: If validation fails (400, 422)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(skill.label)
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{encoded_label}")
@@ -1955,15 +1846,13 @@ class AsyncOFSMetadata:
     async def delete_workskill(self, label: str) -> None:
         """Delete a work skill.
 
-        Args:
-            label: The work skill label to delete
-
-        Raises:
-            OFSCNotFoundError: If work skill not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The work skill label to delete
+        :type label: str
+        :raises OFSCNotFoundError: If work skill not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{encoded_label}")
@@ -1980,14 +1869,12 @@ class AsyncOFSMetadata:
     async def get_workskill_conditions(self) -> WorkskillConditionList:
         """Get all work skill conditions.
 
-        Returns:
-            WorkskillConditionList: List of work skill conditions
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :return: List of work skill conditions
+        :rtype: WorkskillConditionList
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillConditions")
 
@@ -2010,18 +1897,15 @@ class AsyncOFSMetadata:
 
         Note: Conditions not provided in the request are removed from the system.
 
-        Args:
-            data: List of work skill conditions to replace all existing ones
-
-        Returns:
-            WorkskillConditionList: The updated list of work skill conditions
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCValidationError: If validation fails (400, 422)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param data: List of work skill conditions to replace all existing ones
+        :type data: WorkskillConditionList
+        :return: The updated list of work skill conditions
+        :rtype: WorkskillConditionList
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCValidationError: If validation fails (400, 422)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillConditions")
         body = {"items": [item.model_dump(exclude_none=True) for item in data]}
@@ -2041,14 +1925,12 @@ class AsyncOFSMetadata:
     async def get_workskill_groups(self) -> WorkskillGroupListResponse:
         """Get all work skill groups.
 
-        Returns:
-            WorkskillGroupListResponse: List of work skill groups with pagination info
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :return: List of work skill groups with pagination info
+        :rtype: WorkskillGroupListResponse
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillGroups")
 
@@ -2068,18 +1950,15 @@ class AsyncOFSMetadata:
     async def get_workskill_group(self, label: str) -> WorkskillGroup:
         """Get a single work skill group by label.
 
-        Args:
-            label: The work skill group label to retrieve
-
-        Returns:
-            WorkskillGroup: The work skill group details
-
-        Raises:
-            OFSCNotFoundError: If work skill group not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The work skill group label to retrieve
+        :type label: str
+        :return: The work skill group details
+        :rtype: WorkskillGroup
+        :raises OFSCNotFoundError: If work skill group not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
         url = urljoin(
@@ -2104,18 +1983,15 @@ class AsyncOFSMetadata:
     ) -> WorkskillGroup:
         """Create or update a work skill group.
 
-        Args:
-            data: The work skill group to create or update
-
-        Returns:
-            WorkskillGroup: The created or updated work skill group
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCValidationError: If validation fails (400, 422)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param data: The work skill group to create or update
+        :type data: WorkskillGroup
+        :return: The created or updated work skill group
+        :rtype: WorkskillGroup
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCValidationError: If validation fails (400, 422)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(data.label)
         url = urljoin(
@@ -2142,15 +2018,13 @@ class AsyncOFSMetadata:
     async def delete_workskill_group(self, label: str) -> None:
         """Delete a work skill group.
 
-        Args:
-            label: The work skill group label to delete
-
-        Raises:
-            OFSCNotFoundError: If work skill group not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The work skill group label to delete
+        :type label: str
+        :raises OFSCNotFoundError: If work skill group not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
         url = urljoin(
@@ -2175,18 +2049,16 @@ class AsyncOFSMetadata:
     ) -> WorkzoneListResponse:
         """Get workzones with pagination.
 
-        Args:
-            offset: Starting record number (default 0)
-            limit: Maximum number of workzones to return (default 100)
-
-        Returns:
-            WorkzoneListResponse: List of workzones with pagination info
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param offset: Starting record number (default 0)
+        :type offset: int
+        :param limit: Maximum number of workzones to return (default 100)
+        :type limit: int
+        :return: List of workzones with pagination info
+        :rtype: WorkzoneListResponse
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workZones")
         params = {"offset": offset, "limit": limit}
@@ -2209,18 +2081,15 @@ class AsyncOFSMetadata:
     async def get_workzone(self, label: str) -> Workzone:
         """Get a single workzone by label.
 
-        Args:
-            label: The workzone label to retrieve
-
-        Returns:
-            Workzone: The workzone details
-
-        Raises:
-            OFSCNotFoundError: If workzone not found (404)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param label: The workzone label to retrieve
+        :type label: str
+        :return: The workzone details
+        :rtype: Workzone
+        :raises OFSCNotFoundError: If workzone not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workZones/{label}")
 
@@ -2242,19 +2111,16 @@ class AsyncOFSMetadata:
     async def create_workzone(self, workzone: Workzone) -> Workzone:
         """Create a new workzone.
 
-        Args:
-            workzone: The workzone object to create
-
-        Returns:
-            Workzone: The created workzone
-
-        Raises:
-            OFSCConflictError: If the workzone already exists (409)
-            OFSCValidationError: If validation fails (400)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param workzone: The workzone object to create
+        :type workzone: Workzone
+        :return: The created workzone
+        :rtype: Workzone
+        :raises OFSCConflictError: If the workzone already exists (409)
+        :raises OFSCValidationError: If validation fails (400)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workZones")
 
@@ -2284,21 +2150,19 @@ class AsyncOFSMetadata:
     ) -> Workzone | None:
         """Replace an existing workzone.
 
-        Args:
-            workzone: The workzone object with updated data
-            auto_resolve_conflicts: If True, automatically resolve conflicts (default False)
-
-        Returns:
-            Workzone | None: The updated workzone if status is 200, None if status is 204
-
-        Raises:
-            OFSCNotFoundError: If workzone not found (404)
-            OFSCConflictError: If there are conflicts (409)
-            OFSCValidationError: If validation fails (400)
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
+        :param workzone: The workzone object with updated data
+        :type workzone: Workzone
+        :param auto_resolve_conflicts: If True, automatically resolve conflicts (default False)
+        :type auto_resolve_conflicts: bool
+        :return: The updated workzone if status is 200, None if status is 204
+        :rtype: Workzone | None
+        :raises OFSCNotFoundError: If workzone not found (404)
+        :raises OFSCConflictError: If there are conflicts (409)
+        :raises OFSCValidationError: If validation fails (400)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(
             self.baseUrl,
