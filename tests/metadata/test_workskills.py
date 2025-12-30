@@ -5,7 +5,7 @@ from ofsc.models import (
     Workskill,
     WorkskillCondition,
     WorkskillList,
-    WorskillConditionList,
+    WorkskillConditionList,
 )
 
 

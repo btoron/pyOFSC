@@ -1,5 +1,5 @@
 from ofsc.common import FULL_RESPONSE, OBJ_RESPONSE
-from ofsc.models import TranslationList, WorkSkillAssignmentsList, WorkSkillGroup
+from ofsc.models import TranslationList, WorkskillAssignmentList, WorkskillGroup
 
 # [DONE]
 
@@ -36,13 +36,13 @@ _workskill_group = {
 
 
 def test_workskill_group_model_base():
-    obj = WorkSkillGroup.model_validate(_workskill_group)
+    obj = WorkskillGroup.model_validate(_workskill_group)
     assert obj.label == _workskill_group["label"]
     assert obj.name == _workskill_group["name"]
     assert obj.assignToResource == _workskill_group["assignToResource"]
     assert obj.addToCapacityCategory == _workskill_group["addToCapacityCategory"]
     assert obj.active == _workskill_group["active"]
-    assert obj.workSkills == WorkSkillAssignmentsList.model_validate(
+    assert obj.workSkills == WorkskillAssignmentList.model_validate(
         _workskill_group["workSkills"]
     )
     assert obj.translations == TranslationList.model_validate(
@@ -52,7 +52,7 @@ def test_workskill_group_model_base():
 
 def test_get_workskill_group_full(instance):
     instance.metadata.create_or_update_workskill_group(
-        WorkSkillGroup.model_validate(_workskill_group), response_type=FULL_RESPONSE
+        WorkskillGroup.model_validate(_workskill_group), response_type=FULL_RESPONSE
     )
     metadata_response = instance.metadata.get_workskill_group(
         label="TESTGROUP", response_type=FULL_RESPONSE
@@ -60,19 +60,19 @@ def test_get_workskill_group_full(instance):
     response = metadata_response.json()
     assert response["label"] == "TESTGROUP"
     assert response["name"] == "Just a test"
-    group = WorkSkillGroup.model_validate(response)
+    group = WorkskillGroup.model_validate(response)
     assert group.label == "TESTGROUP"
     instance.metadata.delete_workskill_group(label="TESTGROUP")
 
 
 def test_get_workskill_group_obj(instance):
     instance.metadata.create_or_update_workskill_group(
-        WorkSkillGroup.model_validate(_workskill_group), response_type=FULL_RESPONSE
+        WorkskillGroup.model_validate(_workskill_group), response_type=FULL_RESPONSE
     )
     response = instance.metadata.get_workskill_group(
         label="TESTGROUP", response_type=OBJ_RESPONSE
     )
-    assert isinstance(response, WorkSkillGroup)
+    assert isinstance(response, WorkskillGroup)
     assert response.label == "TESTGROUP"
     assert response.name == "Just a test"
     instance.metadata.delete_workskill_group(label="TESTGROUP")
@@ -80,7 +80,7 @@ def test_get_workskill_group_obj(instance):
 
 def test_get_workskill_groups_base(instance):
     instance.metadata.create_or_update_workskill_group(
-        WorkSkillGroup.model_validate(_workskill_group), response_type=FULL_RESPONSE
+        WorkskillGroup.model_validate(_workskill_group), response_type=FULL_RESPONSE
     )
     metadata_response = instance.metadata.get_workskill_groups(
         response_type=FULL_RESPONSE
@@ -93,10 +93,10 @@ def test_get_workskill_groups_base(instance):
         assert item["name"] is not None
         assert item["workSkills"] is not None
         assert item["translations"] is not None
-        group = WorkSkillGroup.model_validate(item)
+        group = WorkskillGroup.model_validate(item)
         assert group.label == item["label"]
         assert group.name == item["name"]
-        assert group.workSkills == WorkSkillAssignmentsList.model_validate(
+        assert group.workSkills == WorkskillAssignmentList.model_validate(
             item["workSkills"]
         )
         assert group.translations == TranslationList.model_validate(
@@ -107,18 +107,18 @@ def test_get_workskill_groups_base(instance):
 
 def test_workskill_groups_obj(instance):
     instance.metadata.create_or_update_workskill_group(
-        WorkSkillGroup.model_validate(_workskill_group), response_type=FULL_RESPONSE
+        WorkskillGroup.model_validate(_workskill_group), response_type=FULL_RESPONSE
     )
     response = instance.metadata.get_workskill_groups(response_type=OBJ_RESPONSE)
     assert response.totalResults > 0
     assert len(response.items) == response.totalResults
     for item in response.items:
-        assert isinstance(item, WorkSkillGroup)
+        assert isinstance(item, WorkskillGroup)
     instance.metadata.delete_workskill_group(label="TESTGROUP")
 
 
 def test_create_or_update_workskill_group(instance):
-    group = WorkSkillGroup(
+    group = WorkskillGroup(
         label="TESTGROUP2",
         name="Just a test",
         assignToResource=True,
@@ -142,7 +142,7 @@ def test_create_or_update_workskill_group(instance):
         group, response_type=FULL_RESPONSE
     )
     assert response.status_code == 201
-    created_group = WorkSkillGroup.model_validate(response.json())
+    created_group = WorkskillGroup.model_validate(response.json())
     assert created_group.label == "TESTGROUP2"
     assert created_group.name == "Just a test"
     assert created_group.assignToResource
