@@ -26,12 +26,19 @@ class TestAsyncGetActivitiesLive:
     @pytest.mark.uses_real_data
     async def test_get_activities(self, async_instance: AsyncOFSC):
         """Test get_activities with actual API - validates structure."""
+        from calendar import monthrange
         from datetime import date
+
+        # Calculate date range for current month (day 1 to last day)
+        today = date.today()
+        date_from = date(today.year, today.month, 1)
+        last_day = monthrange(today.year, today.month)[1]
+        date_to = date(today.year, today.month, last_day)
 
         result = await async_instance.core.get_activities(
             params={
-                "dateFrom": date(2025, 12, 1),
-                "dateTo": date(2025, 12, 31),
+                "dateFrom": date_from,
+                "dateTo": date_to,
                 "resources": ["SUNRISE"],
                 "includeChildren": "all",
             },
