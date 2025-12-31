@@ -408,6 +408,140 @@ class BulkUpdateResponse(BaseModel):
     results: Optional[list[BulkUpdateResult]] = None
 
 
+# Core / Activities - List Responses and Nested Models
+
+
+class ActivityListResponse(OFSResponseList[Activity]):
+    """List response for activities with pagination."""
+
+    pass
+
+
+# Core / Activities - Submitted Forms
+
+
+class FormIdentifier(BaseModel):
+    """Form identifier with submit ID and label."""
+
+    formSubmitId: Optional[int] = None
+    formLabel: Optional[str] = None
+
+
+class SubmittedForm(BaseModel):
+    """Submitted form associated with an activity."""
+
+    formIdentifier: Optional[FormIdentifier] = None
+    user: Optional[str] = None
+    time: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class SubmittedFormsResponse(BaseModel):
+    """Response for submitted forms with pagination."""
+
+    items: list[SubmittedForm] = []
+    offset: Optional[int] = None
+    limit: Optional[int] = None
+    totalResults: Optional[int] = None
+    hasMore: Optional[bool] = None
+
+
+# Core / Activities - Resource Preferences
+
+
+class ResourcePreference(BaseModel):
+    """Resource preference for an activity."""
+
+    resourceId: Optional[str] = None
+    resourceInternalId: Optional[int] = None
+    preferenceType: Optional[str] = None  # required, preferred, forbidden
+
+
+class ResourcePreferencesResponse(BaseModel):
+    """Response for resource preferences (no pagination)."""
+
+    items: list[ResourcePreference] = []
+
+
+# Core / Activities - Required Inventories
+
+
+class RequiredInventory(BaseModel):
+    """Required inventory item for an activity."""
+
+    inventoryType: str
+    model: str
+    quantity: float
+
+
+class RequiredInventoriesResponse(BaseModel):
+    """Response for required inventories."""
+
+    items: list[RequiredInventory] = []
+    offset: Optional[int] = None
+    limit: Optional[int] = None
+    totalResults: Optional[int] = None
+
+
+# Core / Activities - Inventories (Common for customer/installed/deinstalled)
+
+
+class Inventory(BaseModel):
+    """Inventory item (customer, installed, or deinstalled)."""
+
+    inventoryId: Optional[int] = None
+    activityId: Optional[int] = None
+    inventoryType: Optional[str] = None
+    status: Optional[str] = None  # customer, resource, installed, deinstalled
+    quantity: Optional[float] = None
+    serialNumber: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class InventoryListResponse(BaseModel):
+    """Response for inventory lists."""
+
+    items: list[Inventory] = []
+    offset: Optional[str | int] = None  # Can be string or int from API
+    limit: Optional[str | int] = None  # Can be string or int from API
+    totalResults: Optional[int] = None
+
+
+# Core / Activities - Linked Activities
+
+
+class LinkedActivity(BaseModel):
+    """Linked activity relationship."""
+
+    fromActivityId: int
+    toActivityId: int
+    linkType: str
+    minIntervalValue: Optional[int] = None
+    alerts: Optional[int] = None
+
+
+class LinkedActivitiesResponse(BaseModel):
+    """Response for linked activities (no pagination)."""
+
+    items: list[LinkedActivity] = []
+
+
+# Core / Activities - Capacity Categories
+
+
+class ActivityCapacityCategory(BaseModel):
+    """Capacity category for an activity."""
+
+    capacityCategory: str
+
+
+class ActivityCapacityCategoriesResponse(BaseModel):
+    """Response for activity capacity categories."""
+
+    items: list[ActivityCapacityCategory] = []
+    totalResults: Optional[int] = None
+
+
 # region Users
 class BaseUser(BaseModel):
     login: str

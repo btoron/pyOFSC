@@ -719,6 +719,137 @@ ENDPOINTS = {
             "metadata": {"work_skill_group_label": "NONEXISTENT_GROUP_12345"},
         },
     ],
+    "activities": [
+        # 1. get_activities - list with pagination
+        {
+            "name": "get_activities_200_success",
+            "description": "Get activities list with pagination",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/activities",
+            "params": {
+                "dateFrom": "2025-12-01",
+                "dateTo": "2025-12-31",
+                "resources": "SUNRISE",
+                "limit": 10,
+            },
+            "body": None,
+            "metadata": {},
+        },
+        # 2. get_activity - single activity
+        {
+            "name": "get_activity_200_success",
+            "description": "Get a single activity by ID",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/activities/3954799",
+            "params": None,
+            "body": None,
+            "metadata": {"activity_id": "3954799"},
+        },
+        {
+            "name": "get_activity_404_not_found",
+            "description": "Get a non-existent activity",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/activities/999999999",
+            "params": None,
+            "body": None,
+            "metadata": {"activity_id": "999999999"},
+        },
+        # 3. get_multiday_segments - SKIPPED (no test data)
+        # 5. get_submitted_forms - forms with pagination
+        {
+            "name": "get_submitted_forms_200_success",
+            "description": "Get submitted forms for an activity",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/activities/3954799/submittedForms",
+            "params": {"offset": 0, "limit": 100},
+            "body": None,
+            "metadata": {"activity_id": "3954799"},
+        },
+        # 6. get_resource_preferences - no pagination
+        {
+            "name": "get_resource_preferences_200_success",
+            "description": "Get resource preferences for an activity",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/activities/3954799/resourcePreferences",
+            "params": None,
+            "body": None,
+            "metadata": {"activity_id": "3954799"},
+        },
+        # 7. get_required_inventories - items array
+        {
+            "name": "get_required_inventories_200_success",
+            "description": "Get required inventories for an activity",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/activities/3954799/requiredInventories",
+            "params": None,
+            "body": None,
+            "metadata": {"activity_id": "3954799"},
+        },
+        # 8. get_customer_inventories - uses common Inventory schema
+        {
+            "name": "get_customer_inventories_200_success",
+            "description": "Get customer inventories for an activity",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/activities/3954799/customerInventories",
+            "params": {"offset": 0, "limit": 100},
+            "body": None,
+            "metadata": {"activity_id": "3954799"},
+        },
+        # 9. get_installed_inventories
+        {
+            "name": "get_installed_inventories_200_success",
+            "description": "Get installed inventories for an activity",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/activities/3954799/installedInventories",
+            "params": {"offset": 0, "limit": 100},
+            "body": None,
+            "metadata": {"activity_id": "3954799"},
+        },
+        # 10. get_deinstalled_inventories
+        {
+            "name": "get_deinstalled_inventories_200_success",
+            "description": "Get deinstalled inventories for an activity",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/activities/3954799/deinstalledInventories",
+            "params": {"offset": 0, "limit": 100},
+            "body": None,
+            "metadata": {"activity_id": "3954799"},
+        },
+        # 11. get_linked_activities - items array
+        {
+            "name": "get_linked_activities_200_success",
+            "description": "Get linked activities",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/activities/3954799/linkedActivities",
+            "params": None,
+            "body": None,
+            "metadata": {"activity_id": "3954799"},
+        },
+        # 12. get_activity_link - single link details
+        {
+            "name": "get_activity_link_200_success",
+            "description": "Get specific activity link details",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/activities/3954799/linkedActivities/4224073/linkTypes/start_before",
+            "params": None,
+            "body": None,
+            "metadata": {
+                "activity_id": "3954799",
+                "linked_activity_id": "4224073",
+                "link_type": "start_before",
+            },
+        },
+        # 13. get_capacity_categories - items + totalResults
+        {
+            "name": "get_capacity_categories_200_success",
+            "description": "Get capacity categories for an activity",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/activities/3954799/capacityCategories",
+            "params": None,
+            "body": None,
+            "metadata": {"activity_id": "3954799"},
+        },
+    ],
 }
 
 
