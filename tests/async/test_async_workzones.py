@@ -121,6 +121,7 @@ class TestAsyncGetWorkzone:
 class TestAsyncReplaceWorkzone:
     """Test async replace_workzone method."""
 
+    @pytest.mark.serial
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
     async def test_replace_workzone(self, async_instance, faker):
@@ -150,6 +151,7 @@ class TestAsyncReplaceWorkzone:
         # Restore original workzone
         await async_instance.metadata.replace_workzone(original_workzone)
 
+    @pytest.mark.serial
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
     async def test_replace_workzone_with_auto_resolve_conflicts(
@@ -181,6 +183,7 @@ class TestAsyncReplaceWorkzone:
         # Restore original workzone
         await async_instance.metadata.replace_workzone(original_workzone)
 
+    @pytest.mark.serial
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
     async def test_replace_workzone_returns_workzone(self, async_instance, faker):
@@ -233,6 +236,7 @@ class TestAsyncReplaceWorkzone:
 class TestAsyncCreateWorkzone:
     """Test async create_workzone method."""
 
+    @pytest.mark.serial
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
     async def test_create_workzone(self, async_instance, faker):

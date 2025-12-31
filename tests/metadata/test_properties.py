@@ -1,5 +1,7 @@
 import logging
 
+import pytest
+
 from ofsc import OFSC
 from ofsc.common import FULL_RESPONSE
 from ofsc.models import (
@@ -34,6 +36,7 @@ def test_get_properties(instance, demo_data):
     assert response["items"][0]["label"] == "ITEM_NUMBER"
 
 
+@pytest.mark.serial
 def test_create_replace_property(instance: OFSC, faker):
     property = Property.model_validate(
         {
@@ -65,6 +68,7 @@ def test_create_replace_property(instance: OFSC, faker):
     property = Property.model_validate(response)
 
 
+@pytest.mark.serial
 def test_create_replace_property_noansi(instance: OFSC, request_logging, faker):
     property = Property.model_validate(
         {
