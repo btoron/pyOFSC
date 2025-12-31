@@ -140,26 +140,6 @@ class TestAsyncOFSCConfiguration:
             assert "mycompany" in str(client)
 
 
-class TestAsyncOFSCoreStubs:
-    """Test that AsyncOFSCore methods raise NotImplementedError."""
-
-    @pytest.mark.asyncio
-    async def test_get_activities_not_implemented(self):
-        async with AsyncOFSC(
-            clientID="test", companyName="test", secret="test"
-        ) as client:
-            with pytest.raises(NotImplementedError):
-                await client.core.get_activities({})
-
-    @pytest.mark.asyncio
-    async def test_get_resource_not_implemented(self):
-        async with AsyncOFSC(
-            clientID="test", companyName="test", secret="test"
-        ) as client:
-            with pytest.raises(NotImplementedError):
-                await client.core.get_resource("resource_id")
-
-
 class TestAsyncOFSMetadataStubs:
     """Test that AsyncOFSMetadata stub methods raise NotImplementedError."""
 
