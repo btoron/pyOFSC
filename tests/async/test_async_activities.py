@@ -26,11 +26,13 @@ class TestAsyncGetActivitiesLive:
     @pytest.mark.uses_real_data
     async def test_get_activities(self, async_instance: AsyncOFSC):
         """Test get_activities with actual API - validates structure."""
+        from datetime import date
+
         result = await async_instance.core.get_activities(
             params={
-                "dateFrom": "2025-12-01",
-                "dateTo": "2025-12-31",
-                "resources": "SUNRISE",
+                "dateFrom": date(2025, 12, 1),
+                "dateTo": date(2025, 12, 31),
+                "resources": ["SUNRISE"],
             },
             limit=5,
         )

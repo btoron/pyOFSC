@@ -26,6 +26,7 @@ from ..models import (
     CalendarView,
     DailyExtractFiles,
     DailyExtractFolders,
+    GetActivitiesParams,
     InventoryListResponse,
     LinkedActivitiesResponse,
     LinkedActivity,
@@ -171,12 +172,12 @@ class AsyncOFSCore:
     # region Activities
 
     async def get_activities(
-        self, params: dict, offset: int = 0, limit: int = 100
+        self, params: GetActivitiesParams | dict, offset: int = 0, limit: int = 100
     ) -> ActivityListResponse:
         """Get activities list with filters and pagination.
 
-        :param params: Query parameters (dateFrom, dateTo, resources, etc.)
-        :type params: dict
+        :param params: Query parameters (accepts GetActivitiesParams or dict)
+        :type params: GetActivitiesParams | dict
         :param offset: Starting record number (default 0)
         :type offset: int
         :param limit: Maximum number to return (default 100)
@@ -189,11 +190,23 @@ class AsyncOFSCore:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
+        # Validate params through model
+        if isinstance(params, dict):
+            validated_params = GetActivitiesParams.model_validate(params)
+        else:
+            validated_params = params
+
+        # Convert to API params and add pagination
+        api_params = validated_params.to_api_params()
+        api_params["offset"] = offset
+        api_params["limit"] = limit
+
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/activities")
-        params = {**params, "offset": offset, "limit": limit}
 
         try:
-            response = await self._client.get(url, headers=self.headers, params=params)
+            response = await self._client.get(
+                url, headers=self.headers, params=api_params
+            )
             response.raise_for_status()
             data = response.json()
 

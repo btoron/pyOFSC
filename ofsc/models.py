@@ -2,7 +2,7 @@ import base64
 import logging
 from datetime import date, time
 from enum import Enum
-from typing import Any, Dict, Generic, Optional, TypeVar, Union
+from typing import Any, Dict, Generic, Literal, Optional, TypeVar, Union
 from urllib.parse import urljoin
 
 import requests
@@ -332,29 +332,64 @@ class Activity(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
-class GetActivityRequest(BaseModel):
+class GetActivitiesParams(BaseModel):
+    """Parameters for get_activities API endpoint.
+
+    Note: offset and limit are handled separately as method parameters.
+    """
+
+    resources: Optional[list[str]] = None
+    includeChildren: Optional[Literal["none", "immediate", "all"]] = "all"
+    q: Optional[str] = None
     dateFrom: Optional[date] = None
     dateTo: Optional[date] = None
     fields: Optional[list[str]] = None
-    includeChildren: Optional[str] = "all"
-    offset: Optional[int] = 0
     includeNonScheduled: Optional[bool] = False
-    limit: Optional[int] = 5000
-    q: Optional[str] = None
-    model_config = ConfigDict(extra="allow")
-    resources: list[str]
+    svcWorkOrderId: Optional[int] = None
+
+    model_config = ConfigDict(extra="forbid")
 
     @model_validator(mode="after")
-    def check_date_range(self):
+    def validate_date_requirements(self):
+        # dateFrom and dateTo must both be specified or both be None
+        if (self.dateFrom is None) != (self.dateTo is None):
+            raise ValueError(
+                "dateFrom and dateTo must both be specified or both omitted"
+            )
+
+        # Check date range is valid
         if self.dateFrom and self.dateTo and self.dateFrom > self.dateTo:
-            raise ValueError("dateFrom must be before dateTo")
-        return self
-        if not self.includeNonScheduled:
-            if self.dateFrom is None or self.dateTo is None:
+            raise ValueError("dateFrom must be before or equal to dateTo")
+
+        # If no dates and no svcWorkOrderId, must have includeNonScheduled=True
+        if self.dateFrom is None and self.svcWorkOrderId is None:
+            if not self.includeNonScheduled:
                 raise ValueError(
-                    "dateFrom and dateTo are required when includeNonScheduled is False"
+                    "Either dateFrom/dateTo, svcWorkOrderId, or includeNonScheduled=True is required"
                 )
+
         return self
+
+    def to_api_params(self) -> dict:
+        """Convert to API query parameters."""
+        params = {}
+        if self.resources:
+            params["resources"] = ",".join(self.resources)
+        if self.includeChildren:
+            params["includeChildren"] = self.includeChildren
+        if self.q:
+            params["q"] = self.q
+        if self.dateFrom:
+            params["dateFrom"] = self.dateFrom.isoformat()
+        if self.dateTo:
+            params["dateTo"] = self.dateTo.isoformat()
+        if self.fields:
+            params["fields"] = ",".join(self.fields)
+        if self.includeNonScheduled:
+            params["includeNonScheduled"] = "true"
+        if self.svcWorkOrderId:
+            params["svcWorkOrderId"] = self.svcWorkOrderId
+        return params
 
 
 class BulkUpdateActivityItem(Activity):
