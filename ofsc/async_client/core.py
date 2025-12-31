@@ -1222,13 +1222,103 @@ class AsyncOFSCore:
     # region Daily Extract
 
     async def get_daily_extract_dates(self) -> DailyExtractFolders:
-        raise NotImplementedError("Async method not yet implemented")
+        """Get available daily extract dates (folders).
+
+        Returns:
+            DailyExtractFolders: Response containing available extract dates
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/folders/dailyExtract/folders/")
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+
+            return DailyExtractFolders.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get daily extract dates")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def get_daily_extract_files(self, date: str) -> DailyExtractFiles:
-        raise NotImplementedError("Async method not yet implemented")
+        """Get files available for a specific daily extract date.
+
+        Args:
+            date: Date string in YYYY-MM-DD format
+
+        Returns:
+            DailyExtractFiles: Response containing available files for the date
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCNotFoundError: If the date doesn't exist (404)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/folders/dailyExtract/folders/{date}/files",
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+
+            return DailyExtractFiles.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get daily extract files for date '{date}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def get_daily_extract_file(self, date: str, filename: str) -> bytes:
-        raise NotImplementedError("Async method not yet implemented")
+        """Download a specific daily extract file.
+
+        Args:
+            date: Date string in YYYY-MM-DD format
+            filename: Name of the file to download
+
+        Returns:
+            bytes: Raw file content as bytes
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCNotFoundError: If the file doesn't exist (404)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/folders/dailyExtract/folders/{date}/files/{filename}",
+        )
+
+        headers = self.headers.copy()
+        headers["Accept"] = "application/octet-stream"
+
+        try:
+            response = await self._client.get(url, headers=headers)
+            response.raise_for_status()
+
+            return response.content
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get daily extract file '{filename}' for date '{date}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     # endregion
 

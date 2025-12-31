@@ -1039,6 +1039,28 @@ ENDPOINTS = {
             "metadata": {},
         },
     ],
+    "daily_extracts": [
+        {
+            "name": "get_daily_extract_dates_200_success",
+            "description": "Get available daily extract dates (folders)",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/folders/dailyExtract/folders/",
+            "params": None,
+            "body": None,
+            "metadata": {},
+        },
+        # Note: The following endpoints require a valid date from get_daily_extract_dates
+        # They should be run after capturing the dates response
+        # {
+        #     "name": "get_daily_extract_files_200_success",
+        #     "description": "Get files for a specific date",
+        #     "method": "GET",
+        #     "path": "/rest/ofscCore/v1/folders/dailyExtract/folders/YYYY-MM-DD/files",
+        #     "params": None,
+        #     "body": None,
+        #     "metadata": {"date": "YYYY-MM-DD"},
+        # },
+    ],
 }
 
 
