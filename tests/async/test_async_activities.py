@@ -33,15 +33,17 @@ class TestAsyncGetActivitiesLive:
                 "dateFrom": date(2025, 12, 1),
                 "dateTo": date(2025, 12, 31),
                 "resources": ["SUNRISE"],
+                "includeChildren": "all",
             },
-            limit=5,
+            limit=100,
         )
 
         assert isinstance(result, ActivityListResponse)
         assert hasattr(result, "items")
         assert hasattr(result, "offset")
         assert hasattr(result, "limit")
-        assert len(result.items) <= 5
+        assert len(result.items) > 5, f"Expected more than 5 activities, got {len(result.items)}"
+        assert len(result.items) <= 100
 
 
 class TestAsyncGetActivities:
