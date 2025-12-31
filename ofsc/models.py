@@ -22,6 +22,8 @@ from typing_extensions import Annotated
 
 from ofsc.common import FULL_RESPONSE, wrap_return
 
+# region Generic Models
+
 T = TypeVar("T")
 
 
@@ -283,48 +285,11 @@ class TranslationList(RootModel[list[Translation]]):
         return {translation.language: translation for translation in self.root}
 
 
-class Resource(BaseModel):
-    resourceId: Optional[str] = None
-    parentResourceId: Optional[str] = None
-    resourceType: str
-    name: str
-    status: str = "active"
-    organization: str = "default"
-    language: str
-    languageISO: Optional[str] = None
-    timeZone: str
-    timeFormat: str = "24-hour"
-    dateFormat: str = "mm/dd/yy"
-    email: Optional[str] = None
-    phone: Optional[str] = None
-    model_config = ConfigDict(extra="allow")
+# endregion Generic Models
+
+# region Core / Activities
 
 
-class ResourceList(RootModel[list[Resource]]):
-    def __iter__(self):  # type: ignore[override]
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
-class ResourceType(BaseModel):
-    label: str
-    name: str
-    active: bool
-    role: str  # TODO: change to enum
-    model_config = ConfigDict(extra="allow")
-
-
-class ResourceTypeList(RootModel[list[ResourceType]]):
-    def __iter__(self):  # type: ignore[override]
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
-# Core / Activities
 class Activity(BaseModel):
     activityId: Optional[int] = None
     activityType: Optional[str] = None
@@ -577,7 +542,37 @@ class ActivityCapacityCategoriesResponse(BaseModel):
     totalResults: Optional[int] = None
 
 
-# region Users
+# endregion Core / Activities
+
+
+# region Core / Resources
+
+
+class Resource(BaseModel):
+    resourceId: Optional[str] = None
+    parentResourceId: Optional[str] = None
+    resourceType: str
+    name: str
+    status: str = "active"
+    organization: str = "default"
+    language: str
+    languageISO: Optional[str] = None
+    timeZone: str
+    timeFormat: str = "24-hour"
+    dateFormat: str = "mm/dd/yy"
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceList(RootModel[list[Resource]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
 class BaseUser(BaseModel):
     login: str
 
@@ -588,10 +583,6 @@ class ResourceUsersListResponse(OFSResponseList[BaseUser]):
         return [item.login for item in self.items]
 
 
-# endregion
-
-
-# region 202411 Calendars
 class RecurrenceType(str, Enum):
     daily = "daily"
     weekly = "weekly"
@@ -671,10 +662,6 @@ class CalendarView(RootModel[Dict[str, CalendarViewShift]]):
         return self.root[item]
 
 
-# endregion
-# region 202503 ResourceWorkSchedule
-
-
 class ResourceWorkScheduleItem(BaseModel):
     comments: Optional[str] = None
     endDate: Optional[date] = None
@@ -707,10 +694,6 @@ class ResourceWorkScheduleResponse(OFSResponseList[ResourceWorkScheduleItem]):
     pass
 
 
-# endregion
-
-
-# region 202504 Locations
 class Location(BaseModel):
     label: str
     postalCode: Optional[str] = ""
@@ -753,8 +736,118 @@ class LocationListResponse(OFSResponseList[Location]):
     pass
 
 
-# endregion
-# region 202505 Daily Extracts
+class ResourceListResponse(OFSResponseList[Resource]):
+    """Paginated list of resources."""
+
+    pass
+
+
+class ResourceAssistant(BaseModel):
+    """Assistant resource assignment."""
+
+    resourceId: Optional[str] = None
+    parentResourceId: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceAssistantsResponse(OFSResponseList[ResourceAssistant]):
+    """List of assistant resources."""
+
+    pass
+
+
+class ResourceWorkskillAssignment(BaseModel):
+    """Workskill assigned to a resource."""
+
+    workSkill: Optional[str] = None
+    ratio: Optional[int] = None
+    startDate: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceWorkskillListResponse(OFSResponseList[ResourceWorkskillAssignment]):
+    """Workskills assigned to a resource."""
+
+    pass
+
+
+class ResourceWorkzoneAssignment(BaseModel):
+    """Workzone assigned to a resource."""
+
+    workZoneLabel: Optional[str] = None
+    ratio: Optional[int] = None
+    startDate: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceWorkzoneListResponse(OFSResponseList[ResourceWorkzoneAssignment]):
+    """Workzones assigned to a resource."""
+
+    pass
+
+
+class PositionHistoryItem(BaseModel):
+    """Position history entry."""
+
+    time: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class PositionHistoryResponse(OFSResponseList[PositionHistoryItem]):
+    """Position history response."""
+
+    pass
+
+
+class ResourceRouteActivity(BaseModel):
+    """Activity in a resource route."""
+
+    activityId: Optional[int] = None
+    activityType: Optional[str] = None
+    status: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceRouteResponse(OFSResponseList[ResourceRouteActivity]):
+    """Resource route for a specific date."""
+
+    routeStartTime: Optional[str] = None
+
+
+class ResourcePlan(BaseModel):
+    """Resource routing plan."""
+
+    label: Optional[str] = None
+    name: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourcePlansResponse(OFSResponseList[ResourcePlan]):
+    """Resource plans response."""
+
+    pass
+
+
+class Calendar(BaseModel):
+    """Calendar definition."""
+
+    label: Optional[str] = None
+    name: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class CalendarsListResponse(OFSResponseList[Calendar]):
+    """List of calendars."""
+
+    pass
+
+
+# endregion Core / Resources
+
+
+# region Core / Daily Extracts
 
 
 class DailyExtractLink(BaseModel):
@@ -784,6 +877,9 @@ class DailyExtractFolders(BaseModel):
 class DailyExtractFiles(BaseModel):
     name: str = "files"
     files: Optional[DailyExtractItemList] = None
+
+
+# endregion Core / Daily Extracts
 
 
 # region Capacity
@@ -1727,6 +1823,22 @@ class EnumerationValueList(OFSResponseList[EnumerationValue]):
 # region Metadata / Resource Types
 
 
+class ResourceType(BaseModel):
+    label: str
+    name: str
+    active: bool
+    role: str  # TODO: change to enum
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceTypeList(RootModel[list[ResourceType]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
 class ResourceTypeListResponse(OFSResponseList[ResourceType]):
     pass
 
@@ -2275,117 +2387,3 @@ class WorkzoneListResponse(OFSResponseList[Workzone]):
 
 
 # endregion Metadata / Work Zones
-
-
-# region Core / Resources
-
-
-class ResourceListResponse(OFSResponseList[Resource]):
-    """Paginated list of resources."""
-
-    pass
-
-
-class ResourceAssistant(BaseModel):
-    """Assistant resource assignment."""
-
-    resourceId: Optional[str] = None
-    parentResourceId: Optional[str] = None
-    model_config = ConfigDict(extra="allow")
-
-
-class ResourceAssistantsResponse(OFSResponseList[ResourceAssistant]):
-    """List of assistant resources."""
-
-    pass
-
-
-class ResourceWorkskillAssignment(BaseModel):
-    """Workskill assigned to a resource."""
-
-    workSkill: Optional[str] = None
-    ratio: Optional[int] = None
-    startDate: Optional[str] = None
-    model_config = ConfigDict(extra="allow")
-
-
-class ResourceWorkskillListResponse(OFSResponseList[ResourceWorkskillAssignment]):
-    """Workskills assigned to a resource."""
-
-    pass
-
-
-class ResourceWorkzoneAssignment(BaseModel):
-    """Workzone assigned to a resource."""
-
-    workZoneLabel: Optional[str] = None
-    ratio: Optional[int] = None
-    startDate: Optional[str] = None
-    model_config = ConfigDict(extra="allow")
-
-
-class ResourceWorkzoneListResponse(OFSResponseList[ResourceWorkzoneAssignment]):
-    """Workzones assigned to a resource."""
-
-    pass
-
-
-class PositionHistoryItem(BaseModel):
-    """Position history entry."""
-
-    time: Optional[str] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-    model_config = ConfigDict(extra="allow")
-
-
-class PositionHistoryResponse(OFSResponseList[PositionHistoryItem]):
-    """Position history response."""
-
-    pass
-
-
-class ResourceRouteActivity(BaseModel):
-    """Activity in a resource route."""
-
-    activityId: Optional[int] = None
-    activityType: Optional[str] = None
-    status: Optional[str] = None
-    model_config = ConfigDict(extra="allow")
-
-
-class ResourceRouteResponse(OFSResponseList[ResourceRouteActivity]):
-    """Resource route for a specific date."""
-
-    routeStartTime: Optional[str] = None
-
-
-class ResourcePlan(BaseModel):
-    """Resource routing plan."""
-
-    label: Optional[str] = None
-    name: Optional[str] = None
-    model_config = ConfigDict(extra="allow")
-
-
-class ResourcePlansResponse(OFSResponseList[ResourcePlan]):
-    """Resource plans response."""
-
-    pass
-
-
-class Calendar(BaseModel):
-    """Calendar definition."""
-
-    label: Optional[str] = None
-    name: Optional[str] = None
-    model_config = ConfigDict(extra="allow")
-
-
-class CalendarsListResponse(OFSResponseList[Calendar]):
-    """List of calendars."""
-
-    pass
-
-
-# endregion Core / Resources
