@@ -2275,3 +2275,117 @@ class WorkzoneListResponse(OFSResponseList[Workzone]):
 
 
 # endregion Metadata / Work Zones
+
+
+# region Core / Resources
+
+
+class ResourceListResponse(OFSResponseList[Resource]):
+    """Paginated list of resources."""
+
+    pass
+
+
+class ResourceAssistant(BaseModel):
+    """Assistant resource assignment."""
+
+    resourceId: Optional[str] = None
+    parentResourceId: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceAssistantsResponse(OFSResponseList[ResourceAssistant]):
+    """List of assistant resources."""
+
+    pass
+
+
+class ResourceWorkskillAssignment(BaseModel):
+    """Workskill assigned to a resource."""
+
+    workSkill: Optional[str] = None
+    ratio: Optional[int] = None
+    startDate: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceWorkskillListResponse(OFSResponseList[ResourceWorkskillAssignment]):
+    """Workskills assigned to a resource."""
+
+    pass
+
+
+class ResourceWorkzoneAssignment(BaseModel):
+    """Workzone assigned to a resource."""
+
+    workZoneLabel: Optional[str] = None
+    ratio: Optional[int] = None
+    startDate: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceWorkzoneListResponse(OFSResponseList[ResourceWorkzoneAssignment]):
+    """Workzones assigned to a resource."""
+
+    pass
+
+
+class PositionHistoryItem(BaseModel):
+    """Position history entry."""
+
+    time: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class PositionHistoryResponse(OFSResponseList[PositionHistoryItem]):
+    """Position history response."""
+
+    pass
+
+
+class ResourceRouteActivity(BaseModel):
+    """Activity in a resource route."""
+
+    activityId: Optional[int] = None
+    activityType: Optional[str] = None
+    status: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceRouteResponse(OFSResponseList[ResourceRouteActivity]):
+    """Resource route for a specific date."""
+
+    routeStartTime: Optional[str] = None
+
+
+class ResourcePlan(BaseModel):
+    """Resource routing plan."""
+
+    label: Optional[str] = None
+    name: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourcePlansResponse(OFSResponseList[ResourcePlan]):
+    """Resource plans response."""
+
+    pass
+
+
+class Calendar(BaseModel):
+    """Calendar definition."""
+
+    label: Optional[str] = None
+    name: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class CalendarsListResponse(OFSResponseList[Calendar]):
+    """List of calendars."""
+
+    pass
+
+
+# endregion Core / Resources

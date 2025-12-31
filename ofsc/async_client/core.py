@@ -24,6 +24,7 @@ from ..models import (
     AssignedLocationsResponse,
     BulkUpdateRequest,
     CalendarView,
+    CalendarsListResponse,
     DailyExtractFiles,
     DailyExtractFolders,
     GetActivitiesParams,
@@ -34,11 +35,19 @@ from ..models import (
     LocationListResponse,
     OFSConfig,
     OFSResponseList,
+    PositionHistoryResponse,
     RequiredInventoriesResponse,
+    Resource,
+    ResourceAssistantsResponse,
+    ResourceListResponse,
+    ResourcePlansResponse,
     ResourcePreferencesResponse,
+    ResourceRouteResponse,
     ResourceUsersListResponse,
     ResourceWorkScheduleItem,
     ResourceWorkScheduleResponse,
+    ResourceWorkskillListResponse,
+    ResourceWorkzoneListResponse,
     SubmittedFormsResponse,
 )
 
@@ -637,16 +646,514 @@ class AsyncOFSCore:
 
     # region Resources
 
+    def _build_expand_param(
+        self,
+        inventories: bool,
+        workskills: bool,
+        workzones: bool,
+        workschedules: bool,
+    ) -> str | None:
+        """Build expand query parameter for resource requests."""
+        parts = []
+        if inventories:
+            parts.append("inventories")
+        if workskills:
+            parts.append("workSkills")
+        if workzones:
+            parts.append("workZones")
+        if workschedules:
+            parts.append("workSchedules")
+        return ",".join(parts) if parts else None
+
+    async def get_assigned_locations(
+        self,
+        resource_id: str,
+        date_from: date,
+        date_to: date,
+    ) -> AssignedLocationsResponse:
+        """Get assigned locations for a resource."""
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/assignedLocations"
+        )
+        params = {
+            "dateFrom": date_from.isoformat(),
+            "dateTo": date_to.isoformat(),
+        }
+
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            data = response.json()
+
+            return AssignedLocationsResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get assigned locations for resource '{resource_id}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_calendars(self) -> CalendarsListResponse:
+        """Get all calendars."""
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/calendars")
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+
+            if "links" in data:
+                del data["links"]
+
+            return CalendarsListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get calendars")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_position_history(
+        self, resource_id: str, position_date: date
+    ) -> PositionHistoryResponse:
+        """Get position history for a resource on a specific date."""
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/positionHistory"
+        )
+        params = {"date": position_date.isoformat()}
+
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            data = response.json()
+
+            if "links" in data:
+                del data["links"]
+
+            return PositionHistoryResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get position history for resource '{resource_id}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
     async def get_resource(
         self,
         resource_id: str,
-        inventories: bool = False,
-        workSkills: bool = False,
-        workZones: bool = False,
-        workSchedules: bool = False,
-    ):
-        raise NotImplementedError("Async method not yet implemented")
+        expand_inventories: bool = False,
+        expand_workskills: bool = False,
+        expand_workzones: bool = False,
+        expand_workschedules: bool = False,
+    ) -> Resource:
+        """Get a single resource by ID."""
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}")
 
+        params = {}
+        expand = self._build_expand_param(
+            expand_inventories,
+            expand_workskills,
+            expand_workzones,
+            expand_workschedules,
+        )
+        if expand:
+            params["expand"] = expand
+
+        try:
+            response = await self._client.get(
+                url, headers=self.headers, params=params if params else None
+            )
+            response.raise_for_status()
+            data = response.json()
+
+            return Resource.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, f"Failed to get resource '{resource_id}'")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_resource_assistants(
+        self, resource_id: str
+    ) -> ResourceAssistantsResponse:
+        """Get assistant resources."""
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/assistants"
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+
+            if "links" in data:
+                del data["links"]
+
+            return ResourceAssistantsResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get assistants for resource '{resource_id}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_resource_calendar(
+        self, resource_id: str, date_from: date, date_to: date
+    ) -> CalendarView:
+        """Get calendar view for a resource."""
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{resource_id}/workSchedules/calendarView",
+        )
+        params = {"dateFrom": date_from.isoformat(), "dateTo": date_to.isoformat()}
+
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            data = response.json()
+
+            if "links" in data:
+                del data["links"]
+
+            return CalendarView.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get calendar for resource '{resource_id}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_resource_children(
+        self, resource_id: str, offset: int = 0, limit: int = 100
+    ) -> ResourceListResponse:
+        """Get child resources."""
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/children"
+        )
+        params = {"offset": offset, "limit": limit}
+
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            data = response.json()
+
+            if "links" in data:
+                del data["links"]
+
+            return ResourceListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get children for resource '{resource_id}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_resource_descendants(
+        self,
+        resource_id: str,
+        offset: int = 0,
+        limit: int = 100,
+        fields: list[str] | None = None,
+        expand_inventories: bool = False,
+        expand_workskills: bool = False,
+        expand_workzones: bool = False,
+        expand_workschedules: bool = False,
+    ) -> ResourceListResponse:
+        """Get descendant resources."""
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/descendants"
+        )
+
+        params = {"offset": offset, "limit": limit}
+        if fields:
+            params["resourceFields"] = ",".join(fields)
+        expand = self._build_expand_param(
+            expand_inventories,
+            expand_workskills,
+            expand_workzones,
+            expand_workschedules,
+        )
+        if expand:
+            params["expand"] = expand
+
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            data = response.json()
+
+            if "links" in data:
+                del data["links"]
+
+            return ResourceListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get descendants for resource '{resource_id}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_resource_inventories(self, resource_id: str) -> InventoryListResponse:
+        """Get inventories assigned to a resource."""
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/inventories"
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+
+            if "links" in data:
+                del data["links"]
+
+            return InventoryListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get inventories for resource '{resource_id}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_resource_location(
+        self, resource_id: str, location_id: int
+    ) -> Location:
+        """Get a single location for a resource."""
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{resource_id}/locations/{location_id}",
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+
+            return Location.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e,
+                f"Failed to get location {location_id} for resource '{resource_id}'",
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_resource_locations(self, resource_id: str) -> LocationListResponse:
+        """Get locations for a resource."""
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/locations"
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+
+            if "links" in data:
+                del data["links"]
+
+            return LocationListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get locations for resource '{resource_id}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_resource_plans(self, resource_id: str) -> ResourcePlansResponse:
+        """Get routing plans for a resource."""
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/plans")
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+
+            if "links" in data:
+                del data["links"]
+
+            return ResourcePlansResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get plans for resource '{resource_id}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_resource_route(
+        self, resource_id: str, route_date: date, offset: int = 0, limit: int = 100
+    ) -> ResourceRouteResponse:
+        """Get route for a resource on a specific date."""
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{resource_id}/routes/{route_date.isoformat()}",
+        )
+        params = {"offset": offset, "limit": limit}
+
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            data = response.json()
+
+            if "links" in data:
+                del data["links"]
+
+            return ResourceRouteResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e,
+                f"Failed to get route for resource '{resource_id}' on {route_date.isoformat()}",
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_resource_users(self, resource_id: str) -> ResourceUsersListResponse:
+        """Get users assigned to a resource."""
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/users")
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+
+            if "links" in data:
+                del data["links"]
+
+            return ResourceUsersListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get users for resource '{resource_id}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_resource_workschedules(
+        self, resource_id: str, actual_date: date
+    ) -> ResourceWorkScheduleResponse:
+        """Get workschedules for a resource."""
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/workSchedules"
+        )
+        params = {"actualDate": actual_date.isoformat()}
+
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            data = response.json()
+
+            if "links" in data:
+                del data["links"]
+
+            return ResourceWorkScheduleResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get workschedules for resource '{resource_id}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_resource_workskills(
+        self, resource_id: str
+    ) -> ResourceWorkskillListResponse:
+        """Get workskills assigned to a resource."""
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/workSkills"
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+
+            if "links" in data:
+                del data["links"]
+
+            return ResourceWorkskillListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get workskills for resource '{resource_id}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_resource_workzones(
+        self, resource_id: str
+    ) -> ResourceWorkzoneListResponse:
+        """Get workzones assigned to a resource."""
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/workZones"
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+
+            if "links" in data:
+                del data["links"]
+
+            return ResourceWorkzoneListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get workzones for resource '{resource_id}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_resources(
+        self,
+        offset: int = 0,
+        limit: int = 100,
+        fields: list[str] | None = None,
+        expand_inventories: bool = False,
+        expand_workskills: bool = False,
+        expand_workzones: bool = False,
+        expand_workschedules: bool = False,
+    ) -> ResourceListResponse:
+        """Get all resources with pagination."""
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/resources")
+
+        params = {"offset": offset, "limit": limit}
+        if fields:
+            params["fields"] = ",".join(fields)
+        expand = self._build_expand_param(
+            expand_inventories,
+            expand_workskills,
+            expand_workzones,
+            expand_workschedules,
+        )
+        if expand:
+            params["expand"] = expand
+
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            data = response.json()
+
+            if "links" in data:
+                del data["links"]
+
+            return ResourceListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get resources")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    # TODO: Implement remaining resource write operations (create, update, delete)
     async def create_resource(self, resourceId: str, data):
         raise NotImplementedError("Async method not yet implemented")
 
@@ -658,80 +1165,15 @@ class AsyncOFSCore:
     ):
         raise NotImplementedError("Async method not yet implemented")
 
-    async def get_position_history(self, resource_id: str, date: str):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_resource_route(
-        self,
-        resource_id: str,
-        date: str,
-        activityFields: Optional[str] = None,
-        offset: int = 0,
-        limit: int = 100,
-    ):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_resource_descendants(
-        self,
-        resource_id: str,
-        resourceFields: Optional[str] = None,
-        offset: int = 0,
-        limit: int = 100,
-        inventories: bool = False,
-        workSkills: bool = False,
-        workZones: bool = False,
-        workSchedules: bool = False,
-    ):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_resources(
-        self,
-        canBeTeamHolder: Optional[bool] = None,
-        canParticipateInTeam: Optional[bool] = None,
-        fields: Optional[list[str]] = None,
-        offset: int = 0,
-        limit: int = 100,
-        inventories: bool = False,
-        workSkills: bool = False,
-        workZones: bool = False,
-        workSchedules: bool = False,
-    ):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_resource_users(self, resource_id: str) -> ResourceUsersListResponse:
-        raise NotImplementedError("Async method not yet implemented")
-
     async def set_resource_users(self, *, resource_id: str, users: tuple[str, ...]):
         raise NotImplementedError("Async method not yet implemented")
 
     async def delete_resource_users(self, resource_id: str):
         raise NotImplementedError("Async method not yet implemented")
 
-    async def get_resource_workschedules(
-        self, resource_id: str, actualDate: date
-    ) -> ResourceWorkScheduleResponse:
-        raise NotImplementedError("Async method not yet implemented")
-
     async def set_resource_workschedules(
         self, resource_id: str, data: ResourceWorkScheduleItem
     ) -> ResourceWorkScheduleResponse:
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_resource_calendar(
-        self, resource_id: str, dateFrom: date, dateTo: date
-    ) -> CalendarView:
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_resource_inventories(self, resource_id: str):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_resource_assigned_locations(self, resource_id: str):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_resource_workzones(self, resource_id: str):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_resource_workskills(self, resource_id: str):
         raise NotImplementedError("Async method not yet implemented")
 
     async def bulk_update_resource_workzones(self, *, data):
@@ -743,24 +1185,12 @@ class AsyncOFSCore:
     async def bulk_update_resource_workschedules(self, *, data):
         raise NotImplementedError("Async method not yet implemented")
 
-    async def get_resource_locations(self, resource_id: str) -> LocationListResponse:
-        raise NotImplementedError("Async method not yet implemented")
-
     async def create_resource_location(
         self, resource_id: str, *, location: Location
     ) -> Location:
         raise NotImplementedError("Async method not yet implemented")
 
     async def delete_resource_location(self, resource_id: str, location_id: int):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_assigned_locations(
-        self,
-        resource_id: str,
-        *,
-        dateFrom: date = None,
-        dateTo: date = None,
-    ) -> AssignedLocationsResponse:
         raise NotImplementedError("Async method not yet implemented")
 
     async def set_assigned_locations(
