@@ -25,8 +25,10 @@ from ..models import (
     BulkUpdateRequest,
     CalendarView,
     CalendarsListResponse,
+    CreateSubscriptionRequest,
     DailyExtractFiles,
     DailyExtractFolders,
+    EventListResponse,
     GetActivitiesParams,
     InventoryListResponse,
     LinkedActivitiesResponse,
@@ -49,6 +51,8 @@ from ..models import (
     ResourceWorkskillListResponse,
     ResourceWorkzoneListResponse,
     SubmittedFormsResponse,
+    Subscription,
+    SubscriptionListResponse,
 )
 
 
@@ -639,8 +643,34 @@ class AsyncOFSCore:
 
     # region Events
 
-    async def get_events(self, params: dict):
-        raise NotImplementedError("Async method not yet implemented")
+    async def get_events(self, params: dict) -> EventListResponse:
+        """Get events from subscriptions.
+
+        Args:
+            params: Query parameters (e.g., subscriptionId, since, offset, limit)
+
+        Returns:
+            EventListResponse: List of events
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/events")
+
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            data = response.json()
+
+            return EventListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get events")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     # endregion
 
@@ -1324,17 +1354,134 @@ class AsyncOFSCore:
 
     # region Subscriptions
 
-    async def get_subscriptions(self):
-        raise NotImplementedError("Async method not yet implemented")
+    async def create_subscription(
+        self, subscription: CreateSubscriptionRequest
+    ) -> Subscription:
+        """Create a new event subscription.
 
-    async def create_subscription(self, data):
-        raise NotImplementedError("Async method not yet implemented")
+        Args:
+            subscription: Subscription request with events and title
 
-    async def delete_subscription(self, subscription_id: str):
-        raise NotImplementedError("Async method not yet implemented")
+        Returns:
+            Subscription: Created subscription with ID
 
-    async def get_subscription_details(self, subscription_id: str):
-        raise NotImplementedError("Async method not yet implemented")
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCValidationError: If request data is invalid (400)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/events/subscriptions")
+
+        try:
+            response = await self._client.post(
+                url,
+                headers=self.headers,
+                content=subscription.model_dump_json(exclude_none=True),
+            )
+            response.raise_for_status()
+            data = response.json()
+
+            return Subscription.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to create subscription")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def delete_subscription(self, subscription_id: str) -> None:
+        """Delete an event subscription.
+
+        Args:
+            subscription_id: ID of the subscription to delete
+
+        Returns:
+            None
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCNotFoundError: If subscription doesn't exist (404)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscCore/v1/events/subscriptions/{subscription_id}"
+        )
+
+        try:
+            response = await self._client.delete(url, headers=self.headers)
+            response.raise_for_status()
+            # 204 No Content - nothing to return
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to delete subscription '{subscription_id}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_subscription(self, subscription_id: str) -> Subscription:
+        """Get details of a specific subscription.
+
+        Args:
+            subscription_id: ID of the subscription
+
+        Returns:
+            Subscription: Subscription details
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCNotFoundError: If subscription doesn't exist (404)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/events/subscriptions/{subscription_id}",
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+
+            return Subscription.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get subscription '{subscription_id}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_subscriptions(self) -> SubscriptionListResponse:
+        """Get all event subscriptions.
+
+        Returns:
+            SubscriptionListResponse: List of all subscriptions
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/events/subscriptions")
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+
+            return SubscriptionListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get subscriptions")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     # endregion
 

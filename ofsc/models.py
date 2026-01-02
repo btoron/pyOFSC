@@ -882,6 +882,57 @@ class DailyExtractFiles(BaseModel):
 # endregion Core / Daily Extracts
 
 
+# region Core / Events & Subscriptions
+
+
+class Subscription(BaseModel):
+    """Subscription to OFSC events."""
+
+    subscriptionId: Optional[str] = None
+    title: Optional[str] = None
+    events: list[str] = []
+    apiVersion: Optional[str] = None
+    active: Optional[bool] = None
+    createdTime: Optional[str] = None
+    links: Optional[list[dict]] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class SubscriptionListResponse(OFSResponseList[Subscription]):
+    """Paginated list of subscriptions."""
+
+    pass
+
+
+class CreateSubscriptionRequest(BaseModel):
+    """Request to create a new subscription."""
+
+    events: list[str]
+    title: str
+    apiVersion: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class Event(BaseModel):
+    """OFSC event from subscription."""
+
+    eventType: Optional[str] = None
+    subscriptionId: Optional[str] = None
+    eventTime: Optional[str] = None
+    activityId: Optional[int] = None
+    resourceId: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class EventListResponse(OFSResponseList[Event]):
+    """List of events."""
+
+    pass
+
+
+# endregion Core / Events & Subscriptions
+
+
 # region Capacity
 
 

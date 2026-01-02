@@ -119,24 +119,27 @@ The models are based on the Pydantic BaseModel, so it is possible to build an en
 
 ## Testing
 
-pyOFSC includes a comprehensive test suite with 500+ tests. Tests run in parallel by default for faster execution.
+pyOFSC includes a comprehensive test suite with 500+ tests. Tests can run in parallel for 10x faster execution using pytest-xdist.
 
 ### Running Tests
 
 ```bash
-# Run all tests in parallel (auto-detect CPU cores)
+# Run all tests sequentially (default)
+uv run pytest
+
+# Run all tests in parallel (10x faster - auto-detect CPU cores)
 uv run pytest -n auto
 
 # Run tests with specific number of workers
 uv run pytest -n 4
 
 # Run only mocked tests (no API credentials needed)
+uv run pytest -m "not uses_real_data"
+
+# Run mocked tests in parallel
 uv run pytest -m "not uses_real_data" -n auto
 
-# Run tests sequentially (if needed)
-uv run pytest -n 0
-
-# Run specific test file
+# Run specific test file in parallel
 uv run pytest tests/async/test_async_workzones.py -n auto
 ```
 
