@@ -2,7 +2,7 @@ import base64
 import logging
 from datetime import date, time
 from enum import Enum
-from typing import Any, Dict, Generic, Optional, TypeVar, Union
+from typing import Any, Dict, Generic, Literal, Optional, TypeVar, Union
 from urllib.parse import urljoin
 
 import requests
@@ -21,6 +21,8 @@ from pydantic import (
 from typing_extensions import Annotated
 
 from ofsc.common import FULL_RESPONSE, wrap_return
+
+# region Generic Models
 
 T = TypeVar("T")
 
@@ -283,48 +285,11 @@ class TranslationList(RootModel[list[Translation]]):
         return {translation.language: translation for translation in self.root}
 
 
-class Resource(BaseModel):
-    resourceId: Optional[str] = None
-    parentResourceId: Optional[str] = None
-    resourceType: str
-    name: str
-    status: str = "active"
-    organization: str = "default"
-    language: str
-    languageISO: Optional[str] = None
-    timeZone: str
-    timeFormat: str = "24-hour"
-    dateFormat: str = "mm/dd/yy"
-    email: Optional[str] = None
-    phone: Optional[str] = None
-    model_config = ConfigDict(extra="allow")
+# endregion Generic Models
+
+# region Core / Activities
 
 
-class ResourceList(RootModel[list[Resource]]):
-    def __iter__(self):  # type: ignore[override]
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
-class ResourceType(BaseModel):
-    label: str
-    name: str
-    active: bool
-    role: str  # TODO: change to enum
-    model_config = ConfigDict(extra="allow")
-
-
-class ResourceTypeList(RootModel[list[ResourceType]]):
-    def __iter__(self):  # type: ignore[override]
-        return iter(self.root)
-
-    def __getitem__(self, item):
-        return self.root[item]
-
-
-# Core / Activities
 class Activity(BaseModel):
     activityId: Optional[int] = None
     activityType: Optional[str] = None
@@ -332,29 +297,64 @@ class Activity(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
-class GetActivityRequest(BaseModel):
+class GetActivitiesParams(BaseModel):
+    """Parameters for get_activities API endpoint.
+
+    Note: offset and limit are handled separately as method parameters.
+    """
+
+    resources: Optional[list[str]] = None
+    includeChildren: Optional[Literal["none", "immediate", "all"]] = "all"
+    q: Optional[str] = None
     dateFrom: Optional[date] = None
     dateTo: Optional[date] = None
     fields: Optional[list[str]] = None
-    includeChildren: Optional[str] = "all"
-    offset: Optional[int] = 0
     includeNonScheduled: Optional[bool] = False
-    limit: Optional[int] = 5000
-    q: Optional[str] = None
-    model_config = ConfigDict(extra="allow")
-    resources: list[str]
+    svcWorkOrderId: Optional[int] = None
+
+    model_config = ConfigDict(extra="forbid")
 
     @model_validator(mode="after")
-    def check_date_range(self):
+    def validate_date_requirements(self):
+        # dateFrom and dateTo must both be specified or both be None
+        if (self.dateFrom is None) != (self.dateTo is None):
+            raise ValueError(
+                "dateFrom and dateTo must both be specified or both omitted"
+            )
+
+        # Check date range is valid
         if self.dateFrom and self.dateTo and self.dateFrom > self.dateTo:
-            raise ValueError("dateFrom must be before dateTo")
-        return self
-        if not self.includeNonScheduled:
-            if self.dateFrom is None or self.dateTo is None:
+            raise ValueError("dateFrom must be before or equal to dateTo")
+
+        # If no dates and no svcWorkOrderId, must have includeNonScheduled=True
+        if self.dateFrom is None and self.svcWorkOrderId is None:
+            if not self.includeNonScheduled:
                 raise ValueError(
-                    "dateFrom and dateTo are required when includeNonScheduled is False"
+                    "Either dateFrom/dateTo, svcWorkOrderId, or includeNonScheduled=True is required"
                 )
+
         return self
+
+    def to_api_params(self) -> dict:
+        """Convert to API query parameters."""
+        params = {}
+        if self.resources:
+            params["resources"] = ",".join(self.resources)
+        if self.includeChildren:
+            params["includeChildren"] = self.includeChildren
+        if self.q:
+            params["q"] = self.q
+        if self.dateFrom:
+            params["dateFrom"] = self.dateFrom.isoformat()
+        if self.dateTo:
+            params["dateTo"] = self.dateTo.isoformat()
+        if self.fields:
+            params["fields"] = ",".join(self.fields)
+        if self.includeNonScheduled:
+            params["includeNonScheduled"] = "true"
+        if self.svcWorkOrderId:
+            params["svcWorkOrderId"] = self.svcWorkOrderId
+        return params
 
 
 class BulkUpdateActivityItem(Activity):
@@ -408,7 +408,171 @@ class BulkUpdateResponse(BaseModel):
     results: Optional[list[BulkUpdateResult]] = None
 
 
-# region Users
+# Core / Activities - List Responses and Nested Models
+
+
+class ActivityListResponse(OFSResponseList[Activity]):
+    """List response for activities with pagination."""
+
+    pass
+
+
+# Core / Activities - Submitted Forms
+
+
+class FormIdentifier(BaseModel):
+    """Form identifier with submit ID and label."""
+
+    formSubmitId: Optional[int] = None
+    formLabel: Optional[str] = None
+
+
+class SubmittedForm(BaseModel):
+    """Submitted form associated with an activity."""
+
+    formIdentifier: Optional[FormIdentifier] = None
+    user: Optional[str] = None
+    time: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class SubmittedFormsResponse(BaseModel):
+    """Response for submitted forms with pagination."""
+
+    items: list[SubmittedForm] = []
+    offset: Optional[int] = None
+    limit: Optional[int] = None
+    totalResults: Optional[int] = None
+    hasMore: Optional[bool] = None
+
+
+# Core / Activities - Resource Preferences
+
+
+class ResourcePreference(BaseModel):
+    """Resource preference for an activity."""
+
+    resourceId: Optional[str] = None
+    resourceInternalId: Optional[int] = None
+    preferenceType: Optional[str] = None  # required, preferred, forbidden
+
+
+class ResourcePreferencesResponse(BaseModel):
+    """Response for resource preferences (no pagination)."""
+
+    items: list[ResourcePreference] = []
+
+
+# Core / Activities - Required Inventories
+
+
+class RequiredInventory(BaseModel):
+    """Required inventory item for an activity."""
+
+    inventoryType: str
+    model: str
+    quantity: float
+
+
+class RequiredInventoriesResponse(BaseModel):
+    """Response for required inventories."""
+
+    items: list[RequiredInventory] = []
+    offset: Optional[int] = None
+    limit: Optional[int] = None
+    totalResults: Optional[int] = None
+
+
+# Core / Activities - Inventories (Common for customer/installed/deinstalled)
+
+
+class Inventory(BaseModel):
+    """Inventory item (customer, installed, or deinstalled)."""
+
+    inventoryId: Optional[int] = None
+    activityId: Optional[int] = None
+    inventoryType: Optional[str] = None
+    status: Optional[str] = None  # customer, resource, installed, deinstalled
+    quantity: Optional[float] = None
+    serialNumber: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class InventoryListResponse(BaseModel):
+    """Response for inventory lists."""
+
+    items: list[Inventory] = []
+    offset: Optional[str | int] = None  # Can be string or int from API
+    limit: Optional[str | int] = None  # Can be string or int from API
+    totalResults: Optional[int] = None
+
+
+# Core / Activities - Linked Activities
+
+
+class LinkedActivity(BaseModel):
+    """Linked activity relationship."""
+
+    fromActivityId: int
+    toActivityId: int
+    linkType: str
+    minIntervalValue: Optional[int] = None
+    alerts: Optional[int] = None
+
+
+class LinkedActivitiesResponse(BaseModel):
+    """Response for linked activities (no pagination)."""
+
+    items: list[LinkedActivity] = []
+
+
+# Core / Activities - Capacity Categories
+
+
+class ActivityCapacityCategory(BaseModel):
+    """Capacity category for an activity."""
+
+    capacityCategory: str
+
+
+class ActivityCapacityCategoriesResponse(BaseModel):
+    """Response for activity capacity categories."""
+
+    items: list[ActivityCapacityCategory] = []
+    totalResults: Optional[int] = None
+
+
+# endregion Core / Activities
+
+
+# region Core / Resources
+
+
+class Resource(BaseModel):
+    resourceId: Optional[str] = None
+    parentResourceId: Optional[str] = None
+    resourceType: str
+    name: str
+    status: str = "active"
+    organization: str = "default"
+    language: str
+    languageISO: Optional[str] = None
+    timeZone: str
+    timeFormat: str = "24-hour"
+    dateFormat: str = "mm/dd/yy"
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceList(RootModel[list[Resource]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+
 class BaseUser(BaseModel):
     login: str
 
@@ -419,10 +583,6 @@ class ResourceUsersListResponse(OFSResponseList[BaseUser]):
         return [item.login for item in self.items]
 
 
-# endregion
-
-
-# region 202411 Calendars
 class RecurrenceType(str, Enum):
     daily = "daily"
     weekly = "weekly"
@@ -502,10 +662,6 @@ class CalendarView(RootModel[Dict[str, CalendarViewShift]]):
         return self.root[item]
 
 
-# endregion
-# region 202503 ResourceWorkSchedule
-
-
 class ResourceWorkScheduleItem(BaseModel):
     comments: Optional[str] = None
     endDate: Optional[date] = None
@@ -538,10 +694,6 @@ class ResourceWorkScheduleResponse(OFSResponseList[ResourceWorkScheduleItem]):
     pass
 
 
-# endregion
-
-
-# region 202504 Locations
 class Location(BaseModel):
     label: str
     postalCode: Optional[str] = ""
@@ -584,8 +736,118 @@ class LocationListResponse(OFSResponseList[Location]):
     pass
 
 
-# endregion
-# region 202505 Daily Extracts
+class ResourceListResponse(OFSResponseList[Resource]):
+    """Paginated list of resources."""
+
+    pass
+
+
+class ResourceAssistant(BaseModel):
+    """Assistant resource assignment."""
+
+    resourceId: Optional[str] = None
+    parentResourceId: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceAssistantsResponse(OFSResponseList[ResourceAssistant]):
+    """List of assistant resources."""
+
+    pass
+
+
+class ResourceWorkskillAssignment(BaseModel):
+    """Workskill assigned to a resource."""
+
+    workSkill: Optional[str] = None
+    ratio: Optional[int] = None
+    startDate: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceWorkskillListResponse(OFSResponseList[ResourceWorkskillAssignment]):
+    """Workskills assigned to a resource."""
+
+    pass
+
+
+class ResourceWorkzoneAssignment(BaseModel):
+    """Workzone assigned to a resource."""
+
+    workZoneLabel: Optional[str] = None
+    ratio: Optional[int] = None
+    startDate: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceWorkzoneListResponse(OFSResponseList[ResourceWorkzoneAssignment]):
+    """Workzones assigned to a resource."""
+
+    pass
+
+
+class PositionHistoryItem(BaseModel):
+    """Position history entry."""
+
+    time: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class PositionHistoryResponse(OFSResponseList[PositionHistoryItem]):
+    """Position history response."""
+
+    pass
+
+
+class ResourceRouteActivity(BaseModel):
+    """Activity in a resource route."""
+
+    activityId: Optional[int] = None
+    activityType: Optional[str] = None
+    status: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceRouteResponse(OFSResponseList[ResourceRouteActivity]):
+    """Resource route for a specific date."""
+
+    routeStartTime: Optional[str] = None
+
+
+class ResourcePlan(BaseModel):
+    """Resource routing plan."""
+
+    label: Optional[str] = None
+    name: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourcePlansResponse(OFSResponseList[ResourcePlan]):
+    """Resource plans response."""
+
+    pass
+
+
+class Calendar(BaseModel):
+    """Calendar definition."""
+
+    label: Optional[str] = None
+    name: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class CalendarsListResponse(OFSResponseList[Calendar]):
+    """List of calendars."""
+
+    pass
+
+
+# endregion Core / Resources
+
+
+# region Core / Daily Extracts
 
 
 class DailyExtractLink(BaseModel):
@@ -615,6 +877,9 @@ class DailyExtractFolders(BaseModel):
 class DailyExtractFiles(BaseModel):
     name: str = "files"
     files: Optional[DailyExtractItemList] = None
+
+
+# endregion Core / Daily Extracts
 
 
 # region Capacity
@@ -1556,6 +1821,22 @@ class EnumerationValueList(OFSResponseList[EnumerationValue]):
 # endregion Metadata / Properties
 
 # region Metadata / Resource Types
+
+
+class ResourceType(BaseModel):
+    label: str
+    name: str
+    active: bool
+    role: str  # TODO: change to enum
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceTypeList(RootModel[list[ResourceType]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
 
 
 class ResourceTypeListResponse(OFSResponseList[ResourceType]):

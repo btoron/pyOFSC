@@ -117,6 +117,46 @@ The models are based on the Pydantic BaseModel, so it is possible to build an en
 - **Translation**: Multi-language translation support
 - **OFSAPIError**: Standardized API error responses
 
+## Testing
+
+pyOFSC includes a comprehensive test suite with 500+ tests. Tests run in parallel by default for faster execution.
+
+### Running Tests
+
+```bash
+# Run all tests in parallel (auto-detect CPU cores)
+uv run pytest -n auto
+
+# Run tests with specific number of workers
+uv run pytest -n 4
+
+# Run only mocked tests (no API credentials needed)
+uv run pytest -m "not uses_real_data" -n auto
+
+# Run tests sequentially (if needed)
+uv run pytest -n 0
+
+# Run specific test file
+uv run pytest tests/async/test_async_workzones.py -n auto
+```
+
+### Test Requirements
+
+- **Mocked tests**: No special requirements, use saved API responses
+- **Live tests** (marked with `@pytest.mark.uses_real_data`): Require API credentials in `.env` file:
+  ```
+  OFSC_CLIENT_ID=your_client_id
+  OFSC_COMPANY=your_company
+  OFSC_CLIENT_SECRET=your_secret
+  ```
+
+### Test Markers
+
+- `@pytest.mark.uses_real_data` - Tests that require API credentials
+- `@pytest.mark.serial` - Tests that must run sequentially (modify shared API state)
+- `@pytest.mark.slow` - Slow-running tests
+- `@pytest.mark.integration` - Integration tests
+
 ## Functions implemented
 
 

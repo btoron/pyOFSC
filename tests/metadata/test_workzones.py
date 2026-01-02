@@ -74,6 +74,7 @@ def test_get_workzone_with_response_type(instance):
     assert "status" in workzone_data
 
 
+@pytest.mark.serial
 @pytest.mark.uses_real_data
 def test_replace_workzone(instance, faker):
     """Test replacing an existing workzone"""
@@ -107,6 +108,7 @@ def test_replace_workzone(instance, faker):
     assert restore_response.status_code in [200, 204]
 
 
+@pytest.mark.serial
 @pytest.mark.uses_real_data
 def test_replace_workzone_with_auto_resolve_conflicts(instance, faker):
     """Test replacing a workzone with auto_resolve_conflicts parameter"""
@@ -168,6 +170,7 @@ def test_replace_workzone_model_validation():
     assert minimal_workzone.organization is None
 
 
+@pytest.mark.serial
 @pytest.mark.uses_real_data
 def test_replace_workzone_with_model(instance, faker):
     """Test that replace_workzone returns Workzone when using model parameter and status is 200"""

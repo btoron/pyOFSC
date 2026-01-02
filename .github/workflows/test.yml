@@ -1,0 +1,33 @@
+name: Tests
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Run tests (mocked only)
+        run: uv run pytest -m "not uses_real_data" -n auto
+
+      - name: Check code quality
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
