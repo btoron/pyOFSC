@@ -1039,6 +1039,50 @@ ENDPOINTS = {
             "metadata": {},
         },
     ],
+    "daily_extracts": [
+        {
+            "name": "get_daily_extract_dates_200_success",
+            "description": "Get available daily extract dates (folders)",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/folders/dailyExtract/folders/",
+            "params": None,
+            "body": None,
+            "metadata": {},
+        },
+        # Note: The following endpoints require a valid date from get_daily_extract_dates
+        # They should be run after capturing the dates response
+        # {
+        #     "name": "get_daily_extract_files_200_success",
+        #     "description": "Get files for a specific date",
+        #     "method": "GET",
+        #     "path": "/rest/ofscCore/v1/folders/dailyExtract/folders/YYYY-MM-DD/files",
+        #     "params": None,
+        #     "body": None,
+        #     "metadata": {"date": "YYYY-MM-DD"},
+        # },
+    ],
+    "subscriptions": [
+        {
+            "name": "get_subscriptions_200_success",
+            "description": "Get all event subscriptions",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/events/subscriptions",
+            "params": None,
+            "body": None,
+            "metadata": {},
+        },
+        # Note: The following endpoints require creating a subscription first
+        # They should be tested manually or in live tests
+        # {
+        #     "name": "get_subscription_200_success",
+        #     "description": "Get a single subscription by ID",
+        #     "method": "GET",
+        #     "path": "/rest/ofscCore/v1/events/subscriptions/{subscriptionId}",
+        #     "params": None,
+        #     "body": None,
+        #     "metadata": {"subscriptionId": "12345"},
+        # },
+    ],
 }
 
 

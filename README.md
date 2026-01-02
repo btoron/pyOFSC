@@ -119,26 +119,31 @@ The models are based on the Pydantic BaseModel, so it is possible to build an en
 
 ## Testing
 
-pyOFSC includes a comprehensive test suite with 500+ tests. Tests run in parallel by default for faster execution.
+pyOFSC includes a comprehensive test suite with 500+ tests. Tests run in parallel by default using pytest-xdist for 10x faster execution.
 
 ### Running Tests
 
 ```bash
-# Run all tests in parallel (auto-detect CPU cores)
-uv run pytest -n auto
+# Run all tests (parallel for safe tests, sequential for serial tests)
+uv run pytest
 
 # Run tests with specific number of workers
-uv run pytest -n 4
+uv run pytest -n 4 -m "not serial"
 
-# Run only mocked tests (no API credentials needed)
-uv run pytest -m "not uses_real_data" -n auto
-
-# Run tests sequentially (if needed)
+# Run all tests sequentially (disable parallel execution)
 uv run pytest -n 0
 
+# Run only serial tests (sequential execution)
+uv run pytest -m serial -n 0
+
+# Run only mocked tests (no API credentials needed)
+uv run pytest -m "not uses_real_data"
+
 # Run specific test file
-uv run pytest tests/async/test_async_workzones.py -n auto
+uv run pytest tests/async/test_async_workzones.py
 ```
+
+**Note:** By default, tests marked with `@pytest.mark.serial` are excluded from parallel execution to prevent conflicts when modifying shared API state. To run all tests including serial ones, use: `uv run pytest -m "" -n auto && uv run pytest -m serial -n 0`
 
 ### Test Requirements
 
@@ -153,7 +158,7 @@ uv run pytest tests/async/test_async_workzones.py -n auto
 ### Test Markers
 
 - `@pytest.mark.uses_real_data` - Tests that require API credentials
-- `@pytest.mark.serial` - Tests that must run sequentially (modify shared API state)
+- `@pytest.mark.serial` - Tests that must run sequentially (automatically excluded from parallel execution)
 - `@pytest.mark.slow` - Slow-running tests
 - `@pytest.mark.integration` - Integration tests
 
