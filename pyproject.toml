@@ -1,6 +1,6 @@
 [project]
 name = "ofsc"
-version = "2.21.0"
+version = "2.22.0"
 description = "Python wrapper for Oracle Field Service API"
 authors = [{ name = "Borja Toron", email = "borja.toron@gmail.com" }]
 requires-python = "~=3.11.0"
