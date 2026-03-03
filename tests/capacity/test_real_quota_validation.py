@@ -5,6 +5,8 @@ Test to validate QuotaResponse models against real API response data
 import json
 from pathlib import Path
 
+import pytest
+
 from ofsc.models import GetQuotaResponse
 
 
@@ -13,6 +15,8 @@ def test_real_quota_json_validation():
 
     # Read the real JSON file
     json_file = Path(__file__).parent / "_REAL_get_quota.json"
+    if not json_file.exists():
+        pytest.skip(f"Fixture file not found: {json_file}")
     with open(json_file, "r") as f:
         json_data = json.load(f)
 
@@ -90,6 +94,8 @@ def test_quota_model_fields_coverage():
 
     # Read the real JSON file
     json_file = Path(__file__).parent / "REAL_get_quota.json"
+    if not json_file.exists():
+        pytest.skip(f"Fixture file not found: {json_file}")
     with open(json_file, "r") as f:
         json_data = json.load(f)
 

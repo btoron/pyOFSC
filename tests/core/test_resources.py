@@ -31,6 +31,7 @@ def new_data(faker):
     }
 
 
+@pytest.mark.uses_real_data
 def test_create_resource(instance, new_data, request_logging):
     raw_response = instance.core.create_resource(
         resourceId=new_data["externalId"],
@@ -43,6 +44,7 @@ def test_create_resource(instance, new_data, request_logging):
     assert response["name"] == new_data["name"]
 
 
+@pytest.mark.uses_real_data
 def test_create_resource_dict(instance, new_data, request_logging):
     raw_response = instance.core.create_resource(
         resourceId=new_data["externalId"],
@@ -53,6 +55,7 @@ def test_create_resource_dict(instance, new_data, request_logging):
     assert raw_response.status_code >= 299
 
 
+@pytest.mark.uses_real_data
 def test_create_resource_from_obj_dict(instance, new_data, request_logging):
     raw_response = instance.core.create_resource_from_obj(
         resourceId=new_data["externalId"],
@@ -63,6 +66,7 @@ def test_create_resource_from_obj_dict(instance, new_data, request_logging):
     assert raw_response.status_code == 200
 
 
+@pytest.mark.uses_real_data
 def test_get_resource_no_expand(instance, demo_data):
     raw_response = instance.core.get_resource(55001, response_type=FULL_RESPONSE)
     assert raw_response.status_code == 200
@@ -71,6 +75,7 @@ def test_get_resource_no_expand(instance, demo_data):
     assert response["resourceInternalId"] == 5000001
 
 
+@pytest.mark.uses_real_data
 def test_get_resource_expand(instance, demo_data):
     raw_response = instance.core.get_resource(
         55001, workSkills=True, workZones=True, response_type=FULL_RESPONSE
@@ -80,6 +85,7 @@ def test_get_resource_expand(instance, demo_data):
     assert response["resourceInternalId"] == 5000001
 
 
+@pytest.mark.uses_real_data
 def test_get_position_history(instance, demo_data, current_date):
     raw_response = instance.core.get_position_history(
         33001, date=current_date, response_type=FULL_RESPONSE
@@ -90,6 +96,7 @@ def test_get_position_history(instance, demo_data, current_date):
     assert response["totalResults"] > 200
 
 
+@pytest.mark.uses_real_data
 def test_get_resource_route_nofields(instance, pp, demo_data, current_date):
     raw_response = instance.core.get_resource_route(
         33001, date=current_date, response_type=FULL_RESPONSE
@@ -101,6 +108,7 @@ def test_get_resource_route_nofields(instance, pp, demo_data, current_date):
     assert response["totalResults"] == 13
 
 
+@pytest.mark.uses_real_data
 def test_get_resource_route_twofields(instance, current_date, pp):
     raw_response = instance.core.get_resource_route(
         33001,
@@ -114,6 +122,7 @@ def test_get_resource_route_twofields(instance, current_date, pp):
     assert response["totalResults"] == 13
 
 
+@pytest.mark.uses_real_data
 def test_get_resource_descendants_noexpand(instance):
     raw_response = instance.core.get_resource_descendants(
         "FLUSA", response_type=FULL_RESPONSE
@@ -123,6 +132,7 @@ def test_get_resource_descendants_noexpand(instance):
     assert response["totalResults"] == 37
 
 
+@pytest.mark.uses_real_data
 def test_get_resource_descendants_expand(instance):
     raw_response = instance.core.get_resource_descendants(
         "FLUSA",
@@ -136,6 +146,7 @@ def test_get_resource_descendants_expand(instance):
     assert response["totalResults"] == 37
 
 
+@pytest.mark.uses_real_data
 def test_get_resource_descendants_noexpand_fields(instance, pp):
     raw_response = instance.core.get_resource_descendants(
         "FLUSA", resourceFields="resourceId,phone", response_type=FULL_RESPONSE
@@ -151,6 +162,8 @@ def demo_data():
     """Demo data setup fixture."""
     return True
 
+
+@pytest.mark.uses_real_data
 def test_get_resources_basic(instance, pp, demo_data):
     """Test basic get_resources call without any filters or expansions."""
     raw_response = instance.core.get_resources(
@@ -165,6 +178,7 @@ def test_get_resources_basic(instance, pp, demo_data):
     assert len(response["items"]) <= 10
 
 
+@pytest.mark.uses_real_data
 def test_get_resources_with_fields(instance, pp, demo_data):
     """Test get_resources with specific fields."""
     raw_response = instance.core.get_resources(
@@ -181,14 +195,18 @@ def test_get_resources_with_fields(instance, pp, demo_data):
         assert any(
             [
                 "resourceId" in item,
-                "resourceInternalId" in item and any(
+                "resourceInternalId" in item
+                and any(
                     "resourceInternalId" in link["href"]
                     for link in item.get("links", [])
                     if "href" in link
-                )
+                ),
             ]
         )
         assert "name" in item
+
+
+@pytest.mark.uses_real_data
 def test_get_resources_with_expand(instance, pp, demo_data):
     """Test get_resources with expanded sub-entities."""
     raw_response = instance.core.get_resources(
@@ -202,14 +220,15 @@ def test_get_resources_with_expand(instance, pp, demo_data):
     if response["totalResults"] > 0:
         # Check that at least one item has the expanded data or links
         item = response["items"][0]
-        assert any(
-            key in item for key in ["workZones", "links"]
-        ), "Expected workZones data or links"
-        assert any(
-            key in item for key in ["workSkills", "links"]
-        ), "Expected workSkills data or links"
+        assert any(key in item for key in ["workZones", "links"]), (
+            "Expected workZones data or links"
+        )
+        assert any(key in item for key in ["workSkills", "links"]), (
+            "Expected workSkills data or links"
+        )
 
 
+@pytest.mark.uses_real_data
 def test_get_resources_team_filter(instance, pp, demo_data):
     """Test get_resources with team-related filters."""
     raw_response = instance.core.get_resources(
@@ -223,6 +242,7 @@ def test_get_resources_team_filter(instance, pp, demo_data):
     logging.debug(pp.pformat(response))
 
 
+@pytest.mark.uses_real_data
 def test_update_resource(instance, demo_data, request_logging):
     raw_response = instance.core.update_resource(
         "FLUSA", data={"name": "FLUSA-1"}, response_type=FULL_RESPONSE
@@ -235,6 +255,7 @@ def test_update_resource(instance, demo_data, request_logging):
     )
 
 
+@pytest.mark.uses_real_data
 def test_update_resource_external_id(instance, demo_data, request_logging):
     raw_response = instance.core.update_resource(
         "8100308",
@@ -267,6 +288,7 @@ def test_update_resource_external_id(instance, demo_data, request_logging):
     assert response["resourceId"] == "FLUSA"
 
 
+@pytest.mark.uses_real_data
 def test_get_resource_users_base(instance, demo_data):
     raw_response = instance.core.get_resource_users(
         "55001", response_type=FULL_RESPONSE
@@ -277,6 +299,7 @@ def test_get_resource_users_base(instance, demo_data):
     assert response["items"][0]["login"] == "walter.ambriz"
 
 
+@pytest.mark.uses_real_data
 def test_get_resource_users_obj(instance, demo_data):
     response = instance.core.get_resource_users("55001", response_type=OBJ_RESPONSE)
     assert isinstance(response, ResourceUsersListResponse)
@@ -284,6 +307,7 @@ def test_get_resource_users_obj(instance, demo_data):
     assert response.users[0] == "walter.ambriz"
 
 
+@pytest.mark.uses_real_data
 def test_set_resource_users(instance, demo_data):
     initial_data = instance.core.get_resource_users("33001", response_type=OBJ_RESPONSE)
     assert initial_data.totalResults == 1
@@ -306,6 +330,7 @@ def test_set_resource_users(instance, demo_data):
     assert False
 
 
+@pytest.mark.uses_real_data
 def test_reset_resource_users(instance, demo_data):
     instance.core.delete_resource_users(resource_id="100000490999044")
     raw_response = instance.core.set_resource_users(
@@ -325,6 +350,7 @@ def test_reset_resource_users(instance, demo_data):
     assert response["totalResults"] == 1
 
 
+@pytest.mark.uses_real_data
 def test_reset2_resource_users(instance, demo_data):
     raw_response = instance.core.set_resource_users(
         resource_id="33001", users=["william.arndt"], response_type=FULL_RESPONSE
@@ -342,6 +368,7 @@ def test_reset2_resource_users(instance, demo_data):
     assert response["items"][0]["login"] == "william.arndt"
 
 
+@pytest.mark.uses_real_data
 def test_delete_resource_users(instance, demo_data):
     initial_data = instance.core.get_resource_users("33001", response_type=OBJ_RESPONSE)
     assert initial_data.totalResults == 1
@@ -359,6 +386,7 @@ def test_delete_resource_users(instance, demo_data):
     instance.core.set_resource_users(resource_id="33001", users=initial_data.users)
 
 
+@pytest.mark.uses_real_data
 def test_add_resource_users(instance, demo_data):
     raw_response = instance.core.set_resource_users(
         resource_id="33001",
@@ -372,6 +400,7 @@ def test_add_resource_users(instance, demo_data):
     assert response["items"][1]["login"] == "admin"
 
 
+@pytest.mark.uses_real_data
 def test_get_calendar_view_basic(instance, demo_data):
     raw_response = instance.core.get_resource_calendar(
         "33001",
@@ -393,6 +422,7 @@ def test_get_calendar_view_basic(instance, demo_data):
             data = CalendarViewItem.model_validate(record)
 
 
+@pytest.mark.uses_real_data
 def test_get_calendar_view_object(instance, demo_data):
     response: CalendarView = instance.core.get_resource_calendar(
         "33008",
@@ -410,6 +440,7 @@ def test_get_calendar_view_object(instance, demo_data):
             assert isinstance(shift.on_call, CalendarViewItem)
 
 
+@pytest.mark.uses_real_data
 def test_get_resource_workschedules_base(instance):
     raw_response = instance.core.get_resource_workschedules(
         "33003", actualDate=date.today(), response_type=FULL_RESPONSE
@@ -417,6 +448,7 @@ def test_get_resource_workschedules_base(instance):
     assert raw_response.status_code == 200
 
 
+@pytest.mark.uses_real_data
 def test_get_resource_workschedules_obj(instance):
     response = instance.core.get_resource_workschedules(
         "33003", actualDate=date.today(), response_type=OBJ_RESPONSE
@@ -426,6 +458,7 @@ def test_get_resource_workschedules_obj(instance):
         assert isinstance(item, ResourceWorkScheduleItem)
 
 
+@pytest.mark.uses_real_data
 def test_set_resource_workschedules_obj(instance, request_logging):
     schedule = ResourceWorkScheduleItem(shiftLabel="9-18", recordType="shift")
     response = instance.core.set_resource_workschedules(
@@ -436,6 +469,7 @@ def test_set_resource_workschedules_obj(instance, request_logging):
     assert response.status_code == 200, f"Error: {response.json()}"
 
 
+@pytest.mark.uses_real_data
 def test_get_resource_locations_base(instance):
     raw_response = instance.core.get_resource_locations(
         "FLUSA", response_type=FULL_RESPONSE
@@ -446,6 +480,7 @@ def test_get_resource_locations_base(instance):
     assert response["items"][0]["postalCode"] == "32817"
 
 
+@pytest.mark.uses_real_data
 def test_get_resource_locations_obj(instance):
     response = instance.core.get_resource_locations("FLUSA", response_type=OBJ_RESPONSE)
     assert isinstance(response, LocationListResponse)
@@ -453,6 +488,7 @@ def test_get_resource_locations_obj(instance):
         assert isinstance(item, Location)
 
 
+@pytest.mark.uses_real_data
 def test_create_resource_location_basic(instance, request_logging):
     location = Location(
         address="3232 Coral Way",
@@ -480,6 +516,7 @@ def test_create_resource_location_basic(instance, request_logging):
     assert raw_response.status_code == 204
 
 
+@pytest.mark.uses_real_data
 def test_create_resource_location_obj(instance, request_logging):
     location = Location(
         address="3232 Coral Way",
@@ -496,6 +533,7 @@ def test_create_resource_location_obj(instance, request_logging):
     )
 
 
+@pytest.mark.uses_real_data
 def test_get_assigned_locations_basic(instance):
     raw_response = instance.core.get_assigned_locations(
         "33003", response_type=FULL_RESPONSE
@@ -505,11 +543,13 @@ def test_get_assigned_locations_basic(instance):
     assert isinstance(response, dict)
 
 
+@pytest.mark.uses_real_data
 def test_get_assigned_locations_obj(instance):
     response = instance.core.get_assigned_locations("33003", response_type=OBJ_RESPONSE)
     assert isinstance(response, AssignedLocationsResponse)
 
 
+@pytest.mark.uses_real_data
 def test_set_assigned_locations_obj(instance):
     location = Location(
         address="3232 Coral Way",

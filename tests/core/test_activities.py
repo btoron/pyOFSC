@@ -2,10 +2,13 @@ import logging
 import os
 from datetime import date, timedelta
 
+import pytest
+
 from ofsc.common import FULL_RESPONSE
 from ofsc.models import BulkUpdateRequest, BulkUpdateResponse
 
 
+@pytest.mark.uses_real_data
 def test_get_activity(instance):
     raw_response = instance.core.get_activity(3951935, response_type=FULL_RESPONSE)
     response = raw_response.json()
@@ -13,11 +16,13 @@ def test_get_activity(instance):
     assert response["customerNumber"] == "019895700"
 
 
+@pytest.mark.uses_real_data
 def test_get_all_activities(instance):
     response = instance.core.get_all_activities()
     assert len(response) > 0
 
 
+@pytest.mark.uses_real_data
 def test_get_all_activities_with_date_range(instance):
     response = instance.core.get_all_activities(
         date_from=None,
@@ -27,17 +32,20 @@ def test_get_all_activities_with_date_range(instance):
     assert len(response) > 0
 
 
+@pytest.mark.uses_real_data
 def test_get_activity_error(instance):
     raw_response = instance.core.get_activity(99999, response_type=FULL_RESPONSE)
     assert raw_response.status_code == 404
 
 
+@pytest.mark.uses_real_data
 def test_delete_activity_error(instance):
     """Test that deleting a non-existent activity returns 404"""
     raw_response = instance.core.delete_activity(99999, response_type=FULL_RESPONSE)
     assert raw_response.status_code == 404
 
 
+@pytest.mark.uses_real_data
 def test_delete_activity_success(instance):
     """Test successful deletion of a pending activity for FLUSA"""
     # Get a pending activity for FLUSA from all activities
@@ -50,7 +58,8 @@ def test_delete_activity_success(instance):
 
     # Find a pending activity for FLUSA
     pending_flusa = [
-        a for a in response.items
+        a
+        for a in response.items
         if a.get("status") == "pending" and a.get("resourceId") == "FLUSA"
     ]
 
@@ -71,6 +80,7 @@ def test_delete_activity_success(instance):
     assert get_response.status_code == 404
 
 
+@pytest.mark.uses_real_data
 def test_search_activities_001(instance):
     params = {
         "searchInField": "customerPhone",
@@ -84,6 +94,7 @@ def test_search_activities_001(instance):
     assert response.json()["totalResults"] == 2  # 202206 Modified in demo 22B
 
 
+@pytest.mark.uses_real_data
 def test_get_activities_no_offset(instance, current_date, demo_data, request_logging):
     start = date.fromisoformat(current_date) - timedelta(days=5)
     end = start + timedelta(days=20)
@@ -113,6 +124,7 @@ def test_get_activities_no_offset(instance, current_date, demo_data, request_log
     }
 
 
+@pytest.mark.uses_real_data
 def test_get_activities_offset(instance, current_date, demo_data, request_logging):
     start = date.fromisoformat(current_date) - timedelta(days=5)
     end = start + timedelta(days=20)
@@ -141,6 +153,7 @@ def test_get_activities_offset(instance, current_date, demo_data, request_loggin
     }
 
 
+@pytest.mark.uses_real_data
 def test_model_bulk_update_simple(instance, request_logging):
     data = {
         "updateParameters": {
@@ -213,6 +226,7 @@ def test_model_bulk_update_simple(instance, request_logging):
     output = BulkUpdateResponse.model_validate(response)
 
 
+@pytest.mark.uses_real_data
 def test_get_file_property_01(instance, pp, demo_data):
     activity_id = demo_data.get("get_file_property").get("activity_id")
     # Get all properties from the activity
@@ -238,6 +252,7 @@ def test_get_file_property_01(instance, pp, demo_data):
     assert response["name"] == "signature.png"
 
 
+@pytest.mark.uses_real_data
 def test_get_file_property_02(instance, pp, demo_data):
     logging.info("...C.P.02 Get File Property content")
     activity_id = demo_data.get("get_file_property").get("activity_id")

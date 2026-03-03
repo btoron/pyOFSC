@@ -87,9 +87,7 @@ def test_get_routing_profile_plans_obj(instance):
     profile_label = profiles_response.items[0].profileLabel
 
     # Test getting plans for the profile
-    response = instance.metadata.get_routing_profile_plans(
-        profile_label=profile_label
-    )
+    response = instance.metadata.get_routing_profile_plans(profile_label=profile_label)
     assert isinstance(response, RoutingPlanList)
     assert hasattr(response, "items")
     assert hasattr(response, "totalResults")

@@ -25,15 +25,17 @@ class TestRoutingProfileWriteMocked:
     def ofsc_instance(self):
         """Create OFSC instance for testing"""
         return OFSC(
-            clientID="test_client",
-            secret="test_secret",
-            companyName="test_company"
+            clientID="test_client", secret="test_secret", companyName="test_company"
         )
 
     @pytest.fixture
     def sample_plan_data(self):
         """Load sample plan data from saved responses"""
-        response_file = Path("tests/saved_responses/routing_profiles/export_routing_plan_actual_data.json")
+        response_file = Path(
+            "tests/saved_responses/routing_profiles/export_routing_plan_actual_data.json"
+        )
+        if not response_file.exists():
+            pytest.skip(f"Fixture file not found: {response_file}")
         with open(response_file, "r") as f:
             data = json.load(f)
         return data["response_data"]
@@ -47,8 +49,8 @@ class TestRoutingProfileWriteMocked:
                 "title": "Fail",
                 "status": "409",
                 "force": "required",
-                "detail": "The routing plan already exist."
-            }
+                "detail": "The routing plan already exist.",
+            },
         }
 
     @pytest.fixture
@@ -59,8 +61,8 @@ class TestRoutingProfileWriteMocked:
             "json_data": {
                 "title": "Ok",
                 "status": "200",
-                "detail": "The routing plan was successfully imported."
-            }
+                "detail": "The routing plan was successfully imported.",
+            },
         }
 
     @pytest.fixture
@@ -71,8 +73,8 @@ class TestRoutingProfileWriteMocked:
             "json_data": {
                 "title": "Ok",
                 "status": "200",
-                "detail": "The routing plan was successfully imported."
-            }
+                "detail": "The routing plan was successfully imported.",
+            },
         }
 
     @pytest.fixture
@@ -83,8 +85,8 @@ class TestRoutingProfileWriteMocked:
             "json_data": {
                 "title": "Ok",
                 "status": "200",
-                "detail": "The routing plan was successfully started."
-            }
+                "detail": "The routing plan was successfully started.",
+            },
         }
 
     @pytest.fixture
@@ -96,15 +98,17 @@ class TestRoutingProfileWriteMocked:
                 "type": "http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5",
                 "title": "Not Found",
                 "status": "404",
-                "detail": "Resource 'INVALID_RESOURCE' not found"
-            }
+                "detail": "Resource 'INVALID_RESOURCE' not found",
+            },
         }
 
     # Import Routing Plan Tests
 
-    def test_import_routing_plan_409_conflict(self, ofsc_instance, sample_plan_data, mock_import_409_response):
+    def test_import_routing_plan_409_conflict(
+        self, ofsc_instance, sample_plan_data, mock_import_409_response
+    ):
         """Test import routing plan returns 409 when plan already exists"""
-        with patch('requests.put') as mock_put:
+        with patch("requests.put") as mock_put:
             mock_response = Mock()
             mock_response.status_code = mock_import_409_response["status_code"]
             mock_response.json.return_value = mock_import_409_response["json_data"]
@@ -113,12 +117,12 @@ class TestRoutingProfileWriteMocked:
 
             # Convert plan data to JSON bytes (as implementation will do)
             plan_json = json.dumps(sample_plan_data)
-            plan_bytes = plan_json.encode('utf-8')
+            plan_bytes = plan_json.encode("utf-8")
 
             response = ofsc_instance.metadata.import_routing_plan(
                 profile_label="MaintenanceRoutingProfile",
                 plan_data=plan_bytes,
-                response_type=FULL_RESPONSE
+                response_type=FULL_RESPONSE,
             )
 
             assert response.status_code == 409
@@ -127,9 +131,11 @@ class TestRoutingProfileWriteMocked:
             assert data["force"] == "required"
             assert "already exist" in data["detail"]
 
-    def test_import_routing_plan_200_success(self, ofsc_instance, sample_plan_data, mock_import_200_response):
+    def test_import_routing_plan_200_success(
+        self, ofsc_instance, sample_plan_data, mock_import_200_response
+    ):
         """Test import routing plan returns 200 for new plan"""
-        with patch('requests.put') as mock_put:
+        with patch("requests.put") as mock_put:
             mock_response = Mock()
             mock_response.status_code = mock_import_200_response["status_code"]
             mock_response.json.return_value = mock_import_200_response["json_data"]
@@ -137,12 +143,12 @@ class TestRoutingProfileWriteMocked:
             mock_put.return_value = mock_response
 
             plan_json = json.dumps(sample_plan_data)
-            plan_bytes = plan_json.encode('utf-8')
+            plan_bytes = plan_json.encode("utf-8")
 
             response = ofsc_instance.metadata.import_routing_plan(
                 profile_label="NewProfile",
                 plan_data=plan_bytes,
-                response_type=FULL_RESPONSE
+                response_type=FULL_RESPONSE,
             )
 
             assert response.status_code == 200
@@ -152,22 +158,26 @@ class TestRoutingProfileWriteMocked:
 
     # Force Import Routing Plan Tests
 
-    def test_force_import_routing_plan_200_success(self, ofsc_instance, sample_plan_data, mock_force_import_200_response):
+    def test_force_import_routing_plan_200_success(
+        self, ofsc_instance, sample_plan_data, mock_force_import_200_response
+    ):
         """Test force import routing plan returns 200 on success"""
-        with patch('requests.put') as mock_put:
+        with patch("requests.put") as mock_put:
             mock_response = Mock()
             mock_response.status_code = mock_force_import_200_response["status_code"]
-            mock_response.json.return_value = mock_force_import_200_response["json_data"]
+            mock_response.json.return_value = mock_force_import_200_response[
+                "json_data"
+            ]
             mock_response.text = json.dumps(mock_force_import_200_response["json_data"])
             mock_put.return_value = mock_response
 
             plan_json = json.dumps(sample_plan_data)
-            plan_bytes = plan_json.encode('utf-8')
+            plan_bytes = plan_json.encode("utf-8")
 
             response = ofsc_instance.metadata.force_import_routing_plan(
                 profile_label="MaintenanceRoutingProfile",
                 plan_data=plan_bytes,
-                response_type=FULL_RESPONSE
+                response_type=FULL_RESPONSE,
             )
 
             assert response.status_code == 200
@@ -175,23 +185,27 @@ class TestRoutingProfileWriteMocked:
             assert data["status"] == "200"
             assert "successfully imported" in data["detail"]
 
-    def test_force_import_overrides_existing_plan(self, ofsc_instance, sample_plan_data, mock_force_import_200_response):
+    def test_force_import_overrides_existing_plan(
+        self, ofsc_instance, sample_plan_data, mock_force_import_200_response
+    ):
         """Test force import can override existing plan"""
-        with patch('requests.put') as mock_put:
+        with patch("requests.put") as mock_put:
             mock_response = Mock()
             mock_response.status_code = 200
-            mock_response.json.return_value = mock_force_import_200_response["json_data"]
+            mock_response.json.return_value = mock_force_import_200_response[
+                "json_data"
+            ]
             mock_response.text = json.dumps(mock_force_import_200_response["json_data"])
             mock_put.return_value = mock_response
 
             plan_json = json.dumps(sample_plan_data)
-            plan_bytes = plan_json.encode('utf-8')
+            plan_bytes = plan_json.encode("utf-8")
 
             # Should succeed even if plan exists
             response = ofsc_instance.metadata.force_import_routing_plan(
                 profile_label="MaintenanceRoutingProfile",
                 plan_data=plan_bytes,
-                response_type=FULL_RESPONSE
+                response_type=FULL_RESPONSE,
             )
 
             assert response.status_code == 200
@@ -201,9 +215,11 @@ class TestRoutingProfileWriteMocked:
 
     # Start Routing Plan Tests
 
-    def test_start_routing_plan_200_success(self, ofsc_instance, mock_start_200_response):
+    def test_start_routing_plan_200_success(
+        self, ofsc_instance, mock_start_200_response
+    ):
         """Test start routing plan returns 200 on success"""
-        with patch('requests.post') as mock_post:
+        with patch("requests.post") as mock_post:
             mock_response = Mock()
             mock_response.status_code = mock_start_200_response["status_code"]
             mock_response.json.return_value = mock_start_200_response["json_data"]
@@ -215,7 +231,7 @@ class TestRoutingProfileWriteMocked:
                 plan_label="Optimization",
                 resource_external_id="TEST_RESOURCE",
                 date="2025-10-23",
-                response_type=FULL_RESPONSE
+                response_type=FULL_RESPONSE,
             )
 
             assert response.status_code == 200
@@ -223,9 +239,11 @@ class TestRoutingProfileWriteMocked:
             assert data["status"] == "200"
             assert "successfully started" in data["detail"]
 
-    def test_start_routing_plan_404_invalid_resource(self, ofsc_instance, mock_start_404_response):
+    def test_start_routing_plan_404_invalid_resource(
+        self, ofsc_instance, mock_start_404_response
+    ):
         """Test start routing plan returns 404 for invalid resource"""
-        with patch('requests.post') as mock_post:
+        with patch("requests.post") as mock_post:
             mock_response = Mock()
             mock_response.status_code = mock_start_404_response["status_code"]
             mock_response.json.return_value = mock_start_404_response["json_data"]
@@ -237,7 +255,7 @@ class TestRoutingProfileWriteMocked:
                 plan_label="Optimization",
                 resource_external_id="INVALID_RESOURCE",
                 date="2025-10-23",
-                response_type=FULL_RESPONSE
+                response_type=FULL_RESPONSE,
             )
 
             assert response.status_code == 404
@@ -245,9 +263,11 @@ class TestRoutingProfileWriteMocked:
             assert data["status"] == "404"
             assert "not found" in data["detail"].lower()
 
-    def test_start_routing_plan_url_encoding(self, ofsc_instance, mock_start_200_response):
+    def test_start_routing_plan_url_encoding(
+        self, ofsc_instance, mock_start_200_response
+    ):
         """Test start routing plan properly encodes URL parameters"""
-        with patch('requests.post') as mock_post:
+        with patch("requests.post") as mock_post:
             mock_response = Mock()
             mock_response.status_code = 200
             mock_response.json.return_value = mock_start_200_response["json_data"]
@@ -260,7 +280,7 @@ class TestRoutingProfileWriteMocked:
                 plan_label="Plan/Label",
                 resource_external_id="RESOURCE@123",
                 date="2025-10-23",
-                response_type=FULL_RESPONSE
+                response_type=FULL_RESPONSE,
             )
 
             # Verify URL encoding was applied
@@ -273,6 +293,7 @@ class TestRoutingProfileWriteMocked:
 
 # Real API Tests (marked with uses_real_data)
 
+
 @pytest.mark.uses_real_data
 class TestRoutingProfileWriteRealAPI:
     """Real API tests for routing profile write operations
@@ -284,7 +305,9 @@ class TestRoutingProfileWriteRealAPI:
     @pytest.fixture
     def sample_plan_data(self):
         """Load sample plan data from saved responses"""
-        response_file = Path("tests/saved_responses/routing_profiles/export_routing_plan_actual_data.json")
+        response_file = Path(
+            "tests/saved_responses/routing_profiles/export_routing_plan_actual_data.json"
+        )
         with open(response_file, "r") as f:
             data = json.load(f)
         return data["response_data"]
@@ -292,12 +315,12 @@ class TestRoutingProfileWriteRealAPI:
     def test_import_routing_plan_real_409(self, instance, sample_plan_data):
         """Test real API import returns 409 for existing plan"""
         plan_json = json.dumps(sample_plan_data)
-        plan_bytes = plan_json.encode('utf-8')
+        plan_bytes = plan_json.encode("utf-8")
 
         response = instance.metadata.import_routing_plan(
             profile_label="MaintenanceRoutingProfile",
             plan_data=plan_bytes,
-            response_type=FULL_RESPONSE
+            response_type=FULL_RESPONSE,
         )
 
         # Should return 409 since Optimization plan already exists
@@ -308,12 +331,12 @@ class TestRoutingProfileWriteRealAPI:
     def test_force_import_routing_plan_real_200(self, instance, sample_plan_data):
         """Test real API force import succeeds with 200"""
         plan_json = json.dumps(sample_plan_data)
-        plan_bytes = plan_json.encode('utf-8')
+        plan_bytes = plan_json.encode("utf-8")
 
         response = instance.metadata.force_import_routing_plan(
             profile_label="MaintenanceRoutingProfile",
             plan_data=plan_bytes,
-            response_type=FULL_RESPONSE
+            response_type=FULL_RESPONSE,
         )
 
         # Should return 200 and successfully overwrite
@@ -330,19 +353,19 @@ class TestRoutingProfileWriteRealAPI:
         export_response = instance.metadata.export_routing_plan(
             profile_label=profile_label,
             plan_label=plan_label,
-            response_type=FULL_RESPONSE
+            response_type=FULL_RESPONSE,
         )
         assert export_response.status_code == 200
 
         # The export should return JSON plan data
         plan_data = export_response.json()
-        plan_bytes = json.dumps(plan_data).encode('utf-8')
+        plan_bytes = json.dumps(plan_data).encode("utf-8")
 
         # Step 2: Force import it back (since it already exists)
         import_response = instance.metadata.force_import_routing_plan(
             profile_label=profile_label,
             plan_data=plan_bytes,
-            response_type=FULL_RESPONSE
+            response_type=FULL_RESPONSE,
         )
 
         assert import_response.status_code == 200
@@ -374,8 +397,7 @@ class TestRoutingProfileWriteRealAPI:
 
         # Step 3: Export plan as raw file (returns bytes ready for import)
         plan_bytes = instance.metadata.export_plan_file(
-            profile_label=profile_label,
-            plan_label=plan_label
+            profile_label=profile_label, plan_label=plan_label
         )
 
         # Verify we got bytes
@@ -387,11 +409,13 @@ class TestRoutingProfileWriteRealAPI:
         response = instance.metadata.force_import_routing_plan(
             profile_label=profile_label,
             plan_data=plan_bytes,
-            response_type=FULL_RESPONSE
+            response_type=FULL_RESPONSE,
         )
 
         # Step 5: Verify success
         assert response.status_code == 200, f"Force import failed: {response.text}"
         data = response.json()
         assert "successfully imported" in data["detail"]
-        print(f"✓ Complete export→import cycle succeeded for {profile_label}/{plan_label}")
+        print(
+            f"✓ Complete export→import cycle succeeded for {profile_label}/{plan_label}"
+        )

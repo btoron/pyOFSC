@@ -1,9 +1,12 @@
 import logging
 
+import pytest
+
 from ofsc.common import FULL_RESPONSE
 from ofsc.models import OFSOAuthRequest
 
 
+@pytest.mark.uses_real_data
 def test_get_token(instance_with_token):
     logging.info("...401: Get token")
     raw_response = instance_with_token.oauth2.get_token(response_type=FULL_RESPONSE)
@@ -15,6 +18,7 @@ def test_get_token(instance_with_token):
     assert response["expires_in"] == 3600
 
 
+@pytest.mark.uses_real_data
 def test_cache_token(instance_with_token):
     logging.info("...402: Verify token cache")
     raw_response = instance_with_token.oauth2.get_token(response_type=FULL_RESPONSE)
@@ -29,6 +33,7 @@ def test_cache_token(instance_with_token):
     assert first_token == response["access_token"]
 
 
+@pytest.mark.uses_real_data
 def test_token_assertion(instance, assertion, request_logging):
     logging.info("...403: Get token with assertion")
     request = OFSOAuthRequest(

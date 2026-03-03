@@ -13,6 +13,7 @@ from ofsc.models import (
 )
 
 
+@pytest.mark.uses_real_data
 def test_get_property(instance):
     metadata_response = instance.metadata.get_property(
         "XA_CASE_ACCOUNT", response_type=FULL_RESPONSE
@@ -26,6 +27,7 @@ def test_get_property(instance):
     property = Property.model_validate(response)
 
 
+@pytest.mark.uses_real_data
 def test_get_properties(instance, demo_data):
     metadata_response = instance.metadata.get_properties(response_type=FULL_RESPONSE)
     expected_properties = demo_data.get("metadata").get("expected_properties")
@@ -37,6 +39,7 @@ def test_get_properties(instance, demo_data):
 
 
 @pytest.mark.serial
+@pytest.mark.uses_real_data
 def test_create_replace_property(instance: OFSC, faker):
     property = Property.model_validate(
         {
@@ -69,6 +72,7 @@ def test_create_replace_property(instance: OFSC, faker):
 
 
 @pytest.mark.serial
+@pytest.mark.uses_real_data
 def test_create_replace_property_noansi(instance: OFSC, request_logging, faker):
     property = Property.model_validate(
         {
@@ -100,6 +104,7 @@ def test_create_replace_property_noansi(instance: OFSC, request_logging, faker):
     property = Property.model_validate(response)
 
 
+@pytest.mark.uses_real_data
 def test_get_enumeration_values_full(instance: OFSC):
     metadata_response = instance.metadata.get_enumeration_values(
         "complete_code", response_type=FULL_RESPONSE
@@ -109,6 +114,7 @@ def test_get_enumeration_values_full(instance: OFSC):
     assert response["totalResults"]
 
 
+@pytest.mark.uses_real_data
 def test_get_enumeration_values_obj(instance: OFSC):
     response = instance.metadata.get_enumeration_values("complete_code")
     assert isinstance(response, EnumerationValueList)
@@ -117,6 +123,7 @@ def test_get_enumeration_values_obj(instance: OFSC):
         assert value.map.get("en") is not None
 
 
+@pytest.mark.uses_real_data
 def test_create_or_update_enumeration_value(instance: OFSC):
     # Get existing values for property XA_SEVERITY
     label = "XA_SEVERITY"

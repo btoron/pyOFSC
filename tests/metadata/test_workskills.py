@@ -1,3 +1,5 @@
+import pytest
+
 from ofsc.common import FULL_RESPONSE, OBJ_RESPONSE
 from ofsc.models import (
     Condition,
@@ -9,6 +11,7 @@ from ofsc.models import (
 )
 
 
+@pytest.mark.uses_real_data
 def test_get_workskills_basic(instance):
     response = instance.metadata.get_workskills(response_type=FULL_RESPONSE)
     assert response.status_code == 200
@@ -17,6 +20,7 @@ def test_get_workskills_basic(instance):
     assert len(data["items"]) > 0
 
 
+@pytest.mark.uses_real_data
 def test_get_workskills(instance, demo_data):
     metadata_response = instance.metadata.get_workskills(response_type=FULL_RESPONSE)
     response = metadata_response.json()
@@ -27,12 +31,14 @@ def test_get_workskills(instance, demo_data):
     assert response["items"][1]["name"] == "Residential"
 
 
+@pytest.mark.uses_real_data
 def test_get_workskills_obj(instance):
     response = instance.metadata.get_workskills()
     assert isinstance(response, WorkskillList)
     assert len(response.items) > 0
 
 
+@pytest.mark.uses_real_data
 def test_get_workskill_basic(instance):
     response = instance.metadata.get_workskill("COM", response_type=FULL_RESPONSE)
     assert response.status_code == 200
@@ -40,6 +46,7 @@ def test_get_workskill_basic(instance):
     assert data["label"] == "COM"
 
 
+@pytest.mark.uses_real_data
 def test_get_workskill(instance):
     metadata_response = instance.metadata.get_workskill(
         label="RES", response_type=FULL_RESPONSE
@@ -49,12 +56,14 @@ def test_get_workskill(instance):
     assert response["name"] == "Residential"
 
 
+@pytest.mark.uses_real_data
 def test_get_workskill_obj(instance):
     response = instance.metadata.get_workskill("COM")
     assert isinstance(response, Workskill)
     assert response.label == "COM"
 
 
+@pytest.mark.uses_real_data
 def test_create_workskill(instance, pp):
     skill = Workskill(label="TEST", name="test", sharing=SharingEnum.maximal)
     metadata_response = instance.metadata.create_or_update_workskill(
@@ -68,6 +77,7 @@ def test_create_workskill(instance, pp):
     instance.metadata.delete_workskill(label=skill.label, response_type=FULL_RESPONSE)
 
 
+@pytest.mark.uses_real_data
 def test_delete_workskill(instance):
     skill = Workskill(label="TEST", name="test", sharing=SharingEnum.maximal)
     metadata_response = instance.metadata.create_or_update_workskill(
@@ -83,6 +93,7 @@ def test_delete_workskill(instance):
     assert metadata_response.status_code == 204
 
 
+@pytest.mark.uses_real_data
 def test_get_workskill_conditions(instance, pp, demo_data):
     metadata_response = instance.metadata.get_workskill_conditions(
         response_type=FULL_RESPONSE
@@ -101,6 +112,7 @@ def test_get_workskill_conditions(instance, pp, demo_data):
             assert isinstance(condition, Condition)
 
 
+@pytest.mark.uses_real_data
 def test_replace_workskill_conditions(instance, pp, demo_data):
     response = instance.metadata.get_workskill_conditions(response_type=OBJ_RESPONSE)
     expected_workskill_conditions = demo_data.get("metadata").get(
