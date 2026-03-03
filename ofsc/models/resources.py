@@ -33,6 +33,22 @@ class Resource(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
+class ResourceCreate(BaseModel):
+    """Resource creation model enforcing required fields."""
+
+    parentResourceId: str
+    resourceType: str
+    name: str
+    language: str
+    timeZone: str
+    status: Optional[str] = None
+    organization: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    timeFormat: Optional[str] = None
+    dateFormat: Optional[str] = None
+
+
 class ResourceList(RootModel[list[Resource]]):
     def __iter__(self):  # type: ignore[override]
         return iter(self.root)

@@ -17,6 +17,7 @@ from ...models.resources import (
     PositionHistoryResponse,
     Resource,
     ResourceAssistantsResponse,
+    ResourceCreate,
     ResourceListResponse,
     ResourcePlansResponse,
     ResourceRouteResponse,
@@ -569,7 +570,9 @@ class AsyncOFSCoreResourcesMixin:
     # region Write / Delete Operations
 
     async def create_resource(
-        self: _CoreBaseProtocol, resource_id: str, data: "Resource | dict"
+        self: _CoreBaseProtocol,
+        resource_id: str,
+        data: "ResourceCreate | Resource | dict",
     ) -> Resource:
         """Create or replace a resource (PUT — idempotent).
 
@@ -587,10 +590,15 @@ class AsyncOFSCoreResourcesMixin:
             OFSCApiError: For other API errors
             OFSCNetworkError: For network/transport errors
         """
-        if isinstance(data, dict):
-            body = data
-        else:
+        if isinstance(data, ResourceCreate):
             body = data.model_dump(exclude_none=True)
+        elif isinstance(data, dict):
+            body = ResourceCreate.model_validate(data).model_dump(exclude_none=True)
+        else:
+            # Resource or other BaseModel — validate required create fields
+            body = ResourceCreate.model_validate(
+                data.model_dump(exclude_none=True)
+            ).model_dump(exclude_none=True)
 
         url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}")
 

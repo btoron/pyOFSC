@@ -52,6 +52,7 @@ from .resources import (
     Recurrence as Recurrence,
     RecurrenceType as RecurrenceType,
     Resource as Resource,
+    ResourceCreate as ResourceCreate,
     ResourceAssistant as ResourceAssistant,
     ResourceAssistantsResponse as ResourceAssistantsResponse,
     ResourceList as ResourceList,
