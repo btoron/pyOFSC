@@ -169,13 +169,13 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |CO032G|`/rest/ofscCore/v1/events/subscriptions`                                                                                 |core         |GET   |both  |
 |CO032P|`/rest/ofscCore/v1/events/subscriptions`                                                                                 |core         |POST  |both  |
 |CO033G|`/rest/ofscCore/v1/events`                                                                                               |core         |GET   |both  |
-|CO034P|`/rest/ofscCore/v1/inventories`                                                                                          |core         |POST  |-     |
-|CO035A|`/rest/ofscCore/v1/inventories/{inventoryId}`                                                                            |core         |PATCH |-     |
-|CO035G|`/rest/ofscCore/v1/inventories/{inventoryId}`                                                                            |core         |GET   |-     |
-|CO035D|`/rest/ofscCore/v1/inventories/{inventoryId}`                                                                            |core         |DELETE|-     |
-|CO036U|`/rest/ofscCore/v1/inventories/{inventoryId}/{propertyLabel}`                                                            |core         |PUT   |-     |
-|CO036G|`/rest/ofscCore/v1/inventories/{inventoryId}/{propertyLabel}`                                                            |core         |GET   |-     |
-|CO036D|`/rest/ofscCore/v1/inventories/{inventoryId}/{propertyLabel}`                                                            |core         |DELETE|-     |
+|CO034P|`/rest/ofscCore/v1/inventories`                                                                                          |core         |POST  |async |
+|CO035A|`/rest/ofscCore/v1/inventories/{inventoryId}`                                                                            |core         |PATCH |async |
+|CO035G|`/rest/ofscCore/v1/inventories/{inventoryId}`                                                                            |core         |GET   |async |
+|CO035D|`/rest/ofscCore/v1/inventories/{inventoryId}`                                                                            |core         |DELETE|async |
+|CO036U|`/rest/ofscCore/v1/inventories/{inventoryId}/{propertyLabel}`                                                            |core         |PUT   |async |
+|CO036G|`/rest/ofscCore/v1/inventories/{inventoryId}/{propertyLabel}`                                                            |core         |GET   |async |
+|CO036D|`/rest/ofscCore/v1/inventories/{inventoryId}/{propertyLabel}`                                                            |core         |DELETE|async |
 |CO037P|`/rest/ofscCore/v1/inventories/{inventoryId}/custom-actions/undoInstall`                                                 |core         |POST  |-     |
 |CO038P|`/rest/ofscCore/v1/inventories/{inventoryId}/custom-actions/undoDeinstall`                                               |core         |POST  |-     |
 |CO039P|`/rest/ofscCore/v1/inventories/{inventoryId}/custom-actions/install`                                                     |core         |POST  |-     |
@@ -267,11 +267,11 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 ## Implementation Summary
 
 - **Sync only**: 6 endpoints
-- **Async only**: 52 endpoints
+- **Async only**: 59 endpoints
 - **Both**: 83 endpoints
-- **Not implemented**: 102 endpoints
+- **Not implemented**: 95 endpoints
 - **Total sync**: 89 endpoints
-- **Total async**: 135 endpoints
+- **Total async**: 142 endpoints
 
 ## Implementation Statistics by Module and Method
 
@@ -293,13 +293,13 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |   Module    |       GET        |Write (POST/PUT/PATCH)|     DELETE      |       Total       |
 |-------------|------------------|----------------------|-----------------|-------------------|
 |metadata     |41/51 (80.4%)     |10/30 (33.3%)         |2/5 (40.0%)      |53/86 (61.6%)      |
-|core         |40/51 (78.4%)     |27/56 (48.2%)         |15/20 (75.0%)    |82/127 (64.6%)     |
+|core         |42/51 (82.4%)     |30/56 (53.6%)         |17/20 (85.0%)    |89/127 (70.1%)     |
 |capacity     |0/7 (0.0%)        |0/5 (0.0%)            |0/0 (0%)         |0/12 (0.0%)        |
 |statistics   |0/3 (0.0%)        |0/3 (0.0%)            |0/0 (0%)         |0/6 (0.0%)         |
 |partscatalog |0/0 (0%)          |0/2 (0.0%)            |0/1 (0.0%)       |0/3 (0.0%)         |
 |collaboration|0/3 (0.0%)        |0/4 (0.0%)            |0/0 (0%)         |0/7 (0.0%)         |
 |auth         |0/0 (0%)          |0/2 (0.0%)            |0/0 (0%)         |0/2 (0.0%)         |
-|**Total**    |**81/115 (70.4%)**|**37/102 (36.3%)**    |**17/26 (65.4%)**|**135/243 (55.6%)**|
+|**Total**    |**83/115 (72.2%)**|**40/102 (39.2%)**    |**19/26 (73.1%)**|**142/243 (58.4%)**|
 
 ## Endpoint ID Reference
 

@@ -247,6 +247,20 @@ uv run pytest tests/async/test_async_workzones.py
     delete_resource_workschedule(self, resource_id, schedule_item_id)  [Async]
     update_resource_location(self, resource_id, location_id, data)  [Async]
 
+### Core / Inventories (Standalone)
+    get_inventories(self, offset=0, limit=100)  [Async]
+    create_inventory(self, data)  [Async]
+    get_inventory(self, inventory_id)  [Async]
+    update_inventory(self, inventory_id, data)  [Async]
+    delete_inventory(self, inventory_id)  [Async]
+    get_inventory_property(self, inventory_id, label)  [Async]
+    set_inventory_property(self, inventory_id, label, content, filename, content_type)  [Async]
+    delete_inventory_property(self, inventory_id, label)  [Async]
+    inventory_install(self, inventory_id, data=None)  [Async]
+    inventory_deinstall(self, inventory_id, data=None)  [Async]
+    inventory_undo_install(self, inventory_id, data=None)  [Async]
+    inventory_undo_deinstall(self, inventory_id, data=None)  [Async]
+
 ### Core / Users
     get_users(self, offset=0, limit=100, response_type=OBJ_RESPONSE)  [Sync & Async]
     get_user(self, login, response_type=OBJ_RESPONSE)  [Sync & Async]

@@ -177,6 +177,15 @@ from .metadata import (
     WorkzoneListResponse as WorkzoneListResponse,
 )
 
+from .inventories import (
+    Inventory as Inventory,
+    InventoryCreate as InventoryCreate,
+    InventoryCustomAction as InventoryCustomAction,
+    InventoryListResponse as InventoryListResponse,
+    RequiredInventoriesResponse as RequiredInventoriesResponse,
+    RequiredInventory as RequiredInventory,
+)
+
 # region Core / Activities
 
 
@@ -353,50 +362,6 @@ class ResourcePreferencesResponse(BaseModel):
     items: list[ResourcePreference] = []
 
 
-# Core / Activities - Required Inventories
-
-
-class RequiredInventory(BaseModel):
-    """Required inventory item for an activity."""
-
-    inventoryType: str
-    model: str
-    quantity: float
-
-
-class RequiredInventoriesResponse(BaseModel):
-    """Response for required inventories."""
-
-    items: list[RequiredInventory] = []
-    offset: Optional[int] = None
-    limit: Optional[int] = None
-    totalResults: Optional[int] = None
-
-
-# Core / Activities - Inventories (Common for customer/installed/deinstalled)
-
-
-class Inventory(BaseModel):
-    """Inventory item (customer, installed, or deinstalled)."""
-
-    inventoryId: Optional[int] = None
-    activityId: Optional[int] = None
-    inventoryType: Optional[str] = None
-    status: Optional[str] = None  # customer, resource, installed, deinstalled
-    quantity: Optional[float] = None
-    serialNumber: Optional[str] = None
-    model_config = ConfigDict(extra="allow")
-
-
-class InventoryListResponse(BaseModel):
-    """Response for inventory lists."""
-
-    items: list[Inventory] = []
-    offset: Optional[str | int] = None  # Can be string or int from API
-    limit: Optional[str | int] = None  # Can be string or int from API
-    totalResults: Optional[int] = None
-
-
 # Core / Activities - Linked Activities
 
 
@@ -433,8 +398,6 @@ class ActivityCapacityCategoriesResponse(BaseModel):
 
 
 # endregion Core / Activities
-
-
 
 
 # region Core / Daily Extracts
