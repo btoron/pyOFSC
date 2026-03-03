@@ -1,6 +1,6 @@
 # OFSC API Endpoints Reference
 
-**Version:** 2.22.0
+**Version:** 2.23.0
 **Last Updated:** 2026-03-03
 
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints and their implementation status in pyOFSC.
@@ -236,17 +236,17 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |CO077G|`/rest/ofscCore/v1/serviceRequests/{requestId}`                                                                          |core         |GET   |-     |
 |CO078P|`/rest/ofscCore/v1/serviceRequests`                                                                                      |core         |POST  |-     |
 |CO079G|`/rest/ofscCore/v1/serviceRequests/{requestId}/{propertyLabel}`                                                          |core         |GET   |-     |
-|CO080G|`/rest/ofscCore/v1/users`                                                                                                |core         |GET   |sync  |
-|CO081G|`/rest/ofscCore/v1/users/{login}`                                                                                        |core         |GET   |sync  |
-|CO081U|`/rest/ofscCore/v1/users/{login}`                                                                                        |core         |PUT   |sync  |
-|CO081A|`/rest/ofscCore/v1/users/{login}`                                                                                        |core         |PATCH |sync  |
-|CO081D|`/rest/ofscCore/v1/users/{login}`                                                                                        |core         |DELETE|sync  |
-|CO082U|`/rest/ofscCore/v1/users/{login}/{propertyLabel}`                                                                        |core         |PUT   |-     |
-|CO082G|`/rest/ofscCore/v1/users/{login}/{propertyLabel}`                                                                        |core         |GET   |-     |
-|CO082D|`/rest/ofscCore/v1/users/{login}/{propertyLabel}`                                                                        |core         |DELETE|-     |
-|CO083G|`/rest/ofscCore/v1/users/{login}/collaborationGroups`                                                                    |core         |GET   |-     |
-|CO083P|`/rest/ofscCore/v1/users/{login}/collaborationGroups`                                                                    |core         |POST  |-     |
-|CO083D|`/rest/ofscCore/v1/users/{login}/collaborationGroups`                                                                    |core         |DELETE|-     |
+|CO080G|`/rest/ofscCore/v1/users`                                                                                                |core         |GET   |both  |
+|CO081G|`/rest/ofscCore/v1/users/{login}`                                                                                        |core         |GET   |both  |
+|CO081U|`/rest/ofscCore/v1/users/{login}`                                                                                        |core         |PUT   |both  |
+|CO081A|`/rest/ofscCore/v1/users/{login}`                                                                                        |core         |PATCH |both  |
+|CO081D|`/rest/ofscCore/v1/users/{login}`                                                                                        |core         |DELETE|both  |
+|CO082U|`/rest/ofscCore/v1/users/{login}/{propertyLabel}`                                                                        |core         |PUT   |async |
+|CO082G|`/rest/ofscCore/v1/users/{login}/{propertyLabel}`                                                                        |core         |GET   |async |
+|CO082D|`/rest/ofscCore/v1/users/{login}/{propertyLabel}`                                                                        |core         |DELETE|async |
+|CO083G|`/rest/ofscCore/v1/users/{login}/collaborationGroups`                                                                    |core         |GET   |async |
+|CO083P|`/rest/ofscCore/v1/users/{login}/collaborationGroups`                                                                    |core         |POST  |async |
+|CO083D|`/rest/ofscCore/v1/users/{login}/collaborationGroups`                                                                    |core         |DELETE|async |
 |AU001P|`/rest/oauthTokenService/v1/token`                                                                                       |auth         |POST  |-     |
 |AU002P|`/rest/oauthTokenService/v2/token`                                                                                       |auth         |POST  |-     |
 |CA001G|`/rest/ofscCapacity/v1/activityBookingOptions`                                                                           |capacity     |GET   |-     |
@@ -266,12 +266,12 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 
 ## Implementation Summary
 
-- **Sync only**: 22 endpoints
-- **Async only**: 38 endpoints
-- **Both**: 67 endpoints
-- **Not implemented**: 116 endpoints
+- **Sync only**: 17 endpoints
+- **Async only**: 44 endpoints
+- **Both**: 72 endpoints
+- **Not implemented**: 110 endpoints
 - **Total sync**: 89 endpoints
-- **Total async**: 105 endpoints
+- **Total async**: 116 endpoints
 
 ## Implementation Statistics by Module and Method
 
@@ -290,16 +290,16 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 
 ### Asynchronous Client
 
-|   Module    |       GET        |Write (POST/PUT/PATCH)|     DELETE     |       Total       |
-|-------------|------------------|----------------------|----------------|-------------------|
-|metadata     |41/51 (80.4%)     |10/30 (33.3%)         |2/5 (40.0%)     |53/86 (61.6%)      |
-|core         |36/51 (70.6%)     |9/56 (16.1%)          |7/20 (35.0%)    |52/127 (40.9%)     |
-|capacity     |0/7 (0.0%)        |0/5 (0.0%)            |0/0 (0%)        |0/12 (0.0%)        |
-|statistics   |0/3 (0.0%)        |0/3 (0.0%)            |0/0 (0%)        |0/6 (0.0%)         |
-|partscatalog |0/0 (0%)          |0/2 (0.0%)            |0/1 (0.0%)      |0/3 (0.0%)         |
-|collaboration|0/3 (0.0%)        |0/4 (0.0%)            |0/0 (0%)        |0/7 (0.0%)         |
-|auth         |0/0 (0%)          |0/2 (0.0%)            |0/0 (0%)        |0/2 (0.0%)         |
-|**Total**    |**77/115 (67.0%)**|**19/102 (18.6%)**    |**9/26 (34.6%)**|**105/243 (43.2%)**|
+|   Module    |       GET        |Write (POST/PUT/PATCH)|     DELETE      |       Total       |
+|-------------|------------------|----------------------|-----------------|-------------------|
+|metadata     |41/51 (80.4%)     |10/30 (33.3%)         |2/5 (40.0%)      |53/86 (61.6%)      |
+|core         |40/51 (78.4%)     |13/56 (23.2%)         |10/20 (50.0%)    |63/127 (49.6%)     |
+|capacity     |0/7 (0.0%)        |0/5 (0.0%)            |0/0 (0%)         |0/12 (0.0%)        |
+|statistics   |0/3 (0.0%)        |0/3 (0.0%)            |0/0 (0%)         |0/6 (0.0%)         |
+|partscatalog |0/0 (0%)          |0/2 (0.0%)            |0/1 (0.0%)       |0/3 (0.0%)         |
+|collaboration|0/3 (0.0%)        |0/4 (0.0%)            |0/0 (0%)         |0/7 (0.0%)         |
+|auth         |0/0 (0%)          |0/2 (0.0%)            |0/0 (0%)         |0/2 (0.0%)         |
+|**Total**    |**81/115 (70.4%)**|**23/102 (22.5%)**    |**12/26 (46.2%)**|**116/243 (47.7%)**|
 
 ## Endpoint ID Reference
 

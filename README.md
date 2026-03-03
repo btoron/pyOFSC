@@ -235,11 +235,17 @@ uv run pytest tests/async/test_async_workzones.py
     set_assigned_locations(self, resource_id: str, data: AssignedLocationsResponse, response_type=OBJ_RESPONSE)
 
 ### Core / Users
-    get_users(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
-    get_user(self, login, response_type=OBJ_RESPONSE)
-    update_user(self, login, data, response_type=OBJ_RESPONSE)
-    create_user(self, login, data, response_type=OBJ_RESPONSE)
-    delete_user(self, login, response_type=OBJ_RESPONSE)
+    get_users(self, offset=0, limit=100, response_type=OBJ_RESPONSE)  [Sync & Async]
+    get_user(self, login, response_type=OBJ_RESPONSE)  [Sync & Async]
+    update_user(self, login, data, response_type=OBJ_RESPONSE)  [Sync & Async]
+    create_user(self, login, data, response_type=OBJ_RESPONSE)  [Sync & Async]
+    delete_user(self, login, response_type=OBJ_RESPONSE)  [Sync & Async]
+    get_user_property(self, login, property_label)  [Async]
+    set_user_property(self, login, property_label, content, filename, content_type)  [Async]
+    delete_user_property(self, login, property_label)  [Async]
+    get_user_collab_groups(self, login)  [Async]
+    set_user_collab_groups(self, login, groups)  [Async]
+    delete_user_collab_groups(self, login)  [Async]
 
 ### Core / Daily Extract
     get_daily_extract_dates(self, response_type=OBJ_RESPONSE)

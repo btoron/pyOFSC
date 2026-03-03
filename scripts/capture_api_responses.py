@@ -24,6 +24,35 @@ from dotenv import load_dotenv
 
 # Configuration for endpoints to capture
 ENDPOINTS = {
+    "users": [
+        {
+            "name": "get_users_200_success",
+            "description": "Get all users with pagination",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/users",
+            "params": {"offset": 0, "limit": 100},
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_user_200_success",
+            "description": "Get a single user by login",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/users/demoauth",
+            "params": None,
+            "body": None,
+            "metadata": {"user_login": "demoauth"},
+        },
+        {
+            "name": "get_user_404_not_found",
+            "description": "Get a non-existent user",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/users/NONEXISTENT_12345",
+            "params": None,
+            "body": None,
+            "metadata": {"user_login": "NONEXISTENT_12345"},
+        },
+    ],
     "workzones": [
         {
             "name": "get_workzone_200_success",

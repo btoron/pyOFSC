@@ -1,4 +1,4 @@
-"""Async version of OFSCore API module."""
+"""Base class for AsyncOFSCore - contains all non-user methods."""
 
 from datetime import date
 from typing import Optional
@@ -6,7 +6,7 @@ from urllib.parse import urljoin
 
 import httpx
 
-from ..exceptions import (
+from ...exceptions import (
     OFSCApiError,
     OFSCAuthenticationError,
     OFSCAuthorizationError,
@@ -17,7 +17,7 @@ from ..exceptions import (
     OFSCServerError,
     OFSCValidationError,
 )
-from ..models import (
+from ...models import (
     Activity,
     ActivityCapacityCategoriesResponse,
     ActivityListResponse,
@@ -59,8 +59,8 @@ from ..models import (
 )
 
 
-class AsyncOFSCore:
-    """Async version of OFSCore API module."""
+class _AsyncOFSCoreBase:
+    """Base class for AsyncOFSCore - all non-user methods."""
 
     def __init__(self, config: OFSConfig, client: httpx.AsyncClient):
         self._config = config
@@ -1725,25 +1725,6 @@ class AsyncOFSCore:
     async def set_assigned_locations(
         self, resource_id: str, data: AssignedLocationsResponse
     ) -> AssignedLocationsResponse:
-        raise NotImplementedError("Async method not yet implemented")
-
-    # endregion
-
-    # region Users
-
-    async def get_users(self, offset: int = 0, limit: int = 100):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def get_user(self, login: str):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def update_user(self, login: str, data):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def create_user(self, login: str, data):
-        raise NotImplementedError("Async method not yet implemented")
-
-    async def delete_user(self, login: str):
         raise NotImplementedError("Async method not yet implemented")
 
     # endregion
