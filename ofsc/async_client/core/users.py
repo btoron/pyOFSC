@@ -8,7 +8,7 @@ import httpx
 from ...exceptions import (
     OFSCNetworkError,
 )
-from ...models import (
+from ...models.users import (
     CollaborationGroupsResponse,
     User,
     UserCreate,
