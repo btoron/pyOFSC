@@ -623,9 +623,10 @@ class TestAsyncInventoriesLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_inventory_crud_lifecycle(self, async_instance: AsyncOFSC):
-        """Test full inventory CRUD lifecycle with cleanup."""
-        # Fetch a real resource to use as context
+    async def test_serialized_inventory_crud_lifecycle(
+        self, async_instance: AsyncOFSC, serialized_inventory_type: str
+    ):
+        """Test full CRUD lifecycle for a serialized inventory type."""
         resources = await async_instance.core.get_resources(limit=1)
         if not resources.items:
             pytest.skip("No resources available")
@@ -634,28 +635,61 @@ class TestAsyncInventoriesLive:
         if not sample.resourceId:
             pytest.skip("Sample resource has no resourceId")
 
-        # Fetch a valid inventory type from metadata
-        inv_types = await async_instance.metadata.get_inventory_types(limit=1)
-        if not inv_types.items:
-            pytest.skip("No inventory types available")
-        inv_type_label = inv_types.items[0].label
-
         created_id = None
         try:
-            # Create inventory linked to a real resource
             inv = await async_instance.core.create_inventory(
-                {"inventoryType": inv_type_label, "resourceId": sample.resourceId}
+                {
+                    "inventoryType": serialized_inventory_type,
+                    "resourceId": sample.resourceId,
+                }
             )
             assert isinstance(inv, Inventory)
             assert inv.inventoryId is not None
             created_id = inv.inventoryId
 
-            # Get
             fetched = await async_instance.core.get_inventory(created_id)
             assert isinstance(fetched, Inventory)
             assert fetched.inventoryId == created_id
 
-            # Update
+            updated = await async_instance.core.update_inventory(
+                created_id, {"serialNumber": "SN-TEST-001"}
+            )
+            assert isinstance(updated, Inventory)
+
+        finally:
+            if created_id is not None:
+                await async_instance.core.delete_inventory(created_id)
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_non_serialized_inventory_crud_lifecycle(
+        self, async_instance: AsyncOFSC, non_serialized_inventory_type: str
+    ):
+        """Test full CRUD lifecycle for a non-serialized inventory type."""
+        resources = await async_instance.core.get_resources(limit=1)
+        if not resources.items:
+            pytest.skip("No resources available")
+
+        sample = resources.items[0]
+        if not sample.resourceId:
+            pytest.skip("Sample resource has no resourceId")
+
+        created_id = None
+        try:
+            inv = await async_instance.core.create_inventory(
+                {
+                    "inventoryType": non_serialized_inventory_type,
+                    "resourceId": sample.resourceId,
+                }
+            )
+            assert isinstance(inv, Inventory)
+            assert inv.inventoryId is not None
+            created_id = inv.inventoryId
+
+            fetched = await async_instance.core.get_inventory(created_id)
+            assert isinstance(fetched, Inventory)
+            assert fetched.inventoryId == created_id
+
             updated = await async_instance.core.update_inventory(
                 created_id, {"quantity": 5.0}
             )

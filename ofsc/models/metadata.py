@@ -428,10 +428,10 @@ class InventoryType(BaseModel):
         None
     )
     active: bool = True
-    model_property: Optional[str] = None
-    non_serialized: bool = False
+    model_property: Optional[str] = Field(default=None, alias="modelProperty")
+    non_serialized: bool = Field(default=False, alias="nonSerialized")
     quantityPrecision: Optional[int] = 0
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="allow", populate_by_name=True)
 
 
 class InventoryTypeList(RootModel[list[InventoryType]]):

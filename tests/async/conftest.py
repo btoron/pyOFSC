@@ -56,6 +56,32 @@ async def fresh_activity(async_instance, bucket_activity_type):
 
 
 @pytest.fixture
+async def serialized_inventory_type(async_instance):
+    """Get a serialized inventory type label (nonSerialized=False)."""
+    inv_types = await async_instance.metadata.get_inventory_types(limit=100)
+    label = next(
+        (it.label for it in inv_types.items if not it.non_serialized),
+        None,
+    )
+    if label is None:
+        pytest.skip("No serialized inventory types available")
+    return label
+
+
+@pytest.fixture
+async def non_serialized_inventory_type(async_instance):
+    """Get a non-serialized inventory type label (nonSerialized=True)."""
+    inv_types = await async_instance.metadata.get_inventory_types(limit=100)
+    label = next(
+        (it.label for it in inv_types.items if it.non_serialized),
+        None,
+    )
+    if label is None:
+        pytest.skip("No non-serialized inventory types available")
+    return label
+
+
+@pytest.fixture
 async def fresh_activity_pair(async_instance, bucket_activity_type):
     """Create two temporary activities for link testing, delete both after."""
     act1 = await async_instance.core.create_activity(

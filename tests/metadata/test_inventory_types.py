@@ -32,10 +32,15 @@ def test_inventory_types_demo(instance, demo_data):
 
 
 @pytest.mark.uses_real_data
-def test_inventory_types_create_replace(instance, demo_data, request_logging):
-    data = demo_data.get("metadata").get("expected_inventory_types").get("demo")
+def test_inventory_types_create_replace(instance, request_logging):
+    metadata_response = instance.metadata.get_inventory_types(
+        response_type=OBJ_RESPONSE
+    )
+    assert metadata_response.items, "No inventory types available"
+    label = metadata_response.items[0].label
+
     inv_type = instance.metadata.get_inventory_type(
-        data.get("label"), response_type=OBJ_RESPONSE
+        label, response_type=OBJ_RESPONSE
     )
     assert isinstance(inv_type, InventoryType)
-    assert inv_type.label == data.get("label")
+    assert inv_type.label == label
