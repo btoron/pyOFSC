@@ -886,7 +886,7 @@ class UserCreate(BaseModel):
     language: str
     timeZone: str
     resources: list[str]
-    password: Optional[str] = None
+    password: str
     mainResourceId: Optional[str] = None
     status: Optional[str] = None
     dateFormat: Optional[str] = None

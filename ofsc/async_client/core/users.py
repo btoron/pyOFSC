@@ -1,5 +1,6 @@
 """Async user methods mixin for OFSCore API."""
 
+from typing import Protocol
 from urllib.parse import quote_plus, urljoin
 
 import httpx
@@ -15,6 +16,18 @@ from ...models import (
 )
 
 
+class _CoreBaseProtocol(Protocol):
+    """Type stub declaring what AsyncOFSCoreUsersMixin expects from its base class."""
+
+    _client: httpx.AsyncClient
+    baseUrl: str
+    headers: dict
+
+    def _handle_http_error(
+        self, e: httpx.HTTPStatusError, context: str = ""
+    ) -> None: ...
+
+
 class AsyncOFSCoreUsersMixin:
     """Mixin providing async user-related methods for AsyncOFSCore.
 
@@ -23,7 +36,9 @@ class AsyncOFSCoreUsersMixin:
 
     # region Users
 
-    async def get_users(self, offset: int = 0, limit: int = 100) -> UserListResponse:
+    async def get_users(
+        self: _CoreBaseProtocol, offset: int = 0, limit: int = 100
+    ) -> UserListResponse:
         """Get a paginated list of users.
 
         Args:
@@ -53,7 +68,7 @@ class AsyncOFSCoreUsersMixin:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_user(self, login: str) -> User:
+    async def get_user(self: _CoreBaseProtocol, login: str) -> User:
         """Get a single user by login.
 
         Args:
@@ -83,7 +98,9 @@ class AsyncOFSCoreUsersMixin:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def create_user(self, login: str, data: "UserCreate | dict") -> User:
+    async def create_user(
+        self: _CoreBaseProtocol, login: str, data: "UserCreate | dict"
+    ) -> User:
         """Create a user (PUT — idempotent).
 
         Args:
@@ -118,7 +135,7 @@ class AsyncOFSCoreUsersMixin:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def update_user(self, login: str, data: dict) -> User:
+    async def update_user(self: _CoreBaseProtocol, login: str, data: dict) -> User:
         """Update a user (PATCH — partial update).
 
         Args:
@@ -149,7 +166,7 @@ class AsyncOFSCoreUsersMixin:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def delete_user(self, login: str) -> None:
+    async def delete_user(self: _CoreBaseProtocol, login: str) -> None:
         """Delete a user.
 
         Args:
@@ -176,7 +193,9 @@ class AsyncOFSCoreUsersMixin:
 
     # region File Properties
 
-    async def get_user_property(self, login: str, property_label: str) -> bytes:
+    async def get_user_property(
+        self: _CoreBaseProtocol, login: str, property_label: str
+    ) -> bytes:
         """Get a binary file property for a user.
 
         Args:
@@ -213,7 +232,7 @@ class AsyncOFSCoreUsersMixin:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def set_user_property(
-        self,
+        self: _CoreBaseProtocol,
         login: str,
         property_label: str,
         content: bytes,
@@ -260,7 +279,9 @@ class AsyncOFSCoreUsersMixin:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def delete_user_property(self, login: str, property_label: str) -> None:
+    async def delete_user_property(
+        self: _CoreBaseProtocol, login: str, property_label: str
+    ) -> None:
         """Delete a binary file property for a user.
 
         Args:
@@ -295,7 +316,9 @@ class AsyncOFSCoreUsersMixin:
 
     # region Collaboration Groups
 
-    async def get_user_collab_groups(self, login: str) -> CollaborationGroupsResponse:
+    async def get_user_collab_groups(
+        self: _CoreBaseProtocol, login: str
+    ) -> CollaborationGroupsResponse:
         """Get collaboration groups for a user.
 
         Args:
@@ -330,7 +353,7 @@ class AsyncOFSCoreUsersMixin:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def set_user_collab_groups(
-        self, login: str, groups: list[str]
+        self: _CoreBaseProtocol, login: str, groups: list[str]
     ) -> CollaborationGroupsResponse:
         """Set collaboration groups for a user (POST — replaces all groups).
 
@@ -367,7 +390,7 @@ class AsyncOFSCoreUsersMixin:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def delete_user_collab_groups(self, login: str) -> None:
+    async def delete_user_collab_groups(self: _CoreBaseProtocol, login: str) -> None:
         """Delete all collaboration groups for a user.
 
         Args:

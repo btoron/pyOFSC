@@ -143,6 +143,19 @@ class TestUserCreateModel:
                 }
             )
 
+    def test_user_create_requires_password(self):
+        """Test that UserCreate requires password."""
+        with pytest.raises(Exception):
+            UserCreate.model_validate(
+                {
+                    "name": "Test User",
+                    "userType": "technician",
+                    "language": "en",
+                    "timeZone": "US/Eastern",
+                    "resources": ["BUCKET"],
+                }
+            )
+
     def test_user_create_valid(self):
         """Test UserCreate with all required fields."""
         uc = UserCreate.model_validate(
@@ -152,6 +165,7 @@ class TestUserCreateModel:
                 "language": "en",
                 "timeZone": "US/Eastern",
                 "resources": ["BUCKET"],
+                "password": "ClaudeTest1!",
             }
         )
         assert uc.name == "Test User"
@@ -185,11 +199,12 @@ class TestUserCreateModel:
                 "language": "en",
                 "timeZone": "US/Eastern",
                 "resources": ["BUCKET"],
+                "password": "ClaudeTest1!",
             }
         )
         dumped = uc.model_dump(exclude_none=True)
         assert "name" in dumped
-        assert "password" not in dumped
+        assert "password" in dumped
         assert "mainResourceId" not in dumped
 
     def test_user_create_from_dict_in_create_user(self):
@@ -200,6 +215,7 @@ class TestUserCreateModel:
             "language": "en",
             "timeZone": "US/Eastern",
             "resources": ["BUCKET"],
+            "password": "ClaudeTest1!",
         }
         # Simulate what create_user does when given a dict
         uc = UserCreate.model_validate(data)
@@ -437,13 +453,11 @@ class TestAsyncGetUserLive:
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
     async def test_get_user_known(self, async_instance: AsyncOFSC):
-        """Test get_user with a known user (admin)."""
-        import os
-
-        from dotenv import load_dotenv
-
-        load_dotenv()
-        login = os.environ.get("OFSC_CLIENT_ID", "demoauth")
+        """Test get_user with a known user."""
+        users = await async_instance.core.get_users(limit=1)
+        if len(users.items) == 0:
+            pytest.skip("No users available")
+        login = users.items[0].login
         user = await async_instance.core.get_user(login)
 
         assert isinstance(user, User)
@@ -483,8 +497,9 @@ class TestAsyncCreateUpdateDeleteUser:
                 "name": "Claude Test User",
                 "userType": "technician",
                 "language": "en",
-                "timeZone": "US/Eastern",
+                "timeZone": "America/New_York",
                 "resources": [resource],
+                "password": "ClaudeTest1!",
             }
         )
         created = await async_instance.core.create_user(_TEST_USER_LOGIN, user_data)
@@ -528,8 +543,9 @@ class TestAsyncCreateUpdateDeleteUser:
                 "name": "Claude Dict Test User",
                 "userType": "technician",
                 "language": "en",
-                "timeZone": "US/Eastern",
+                "timeZone": "America/New_York",
                 "resources": [resource],
+                "password": "ClaudeTest1!",
             },
         )
         assert isinstance(created, User)
@@ -604,12 +620,10 @@ class TestAsyncUserCollabGroups:
     @pytest.mark.uses_real_data
     async def test_get_user_collab_groups_live(self, async_instance: AsyncOFSC):
         """Test get_user_collab_groups with actual API."""
-        import os
-
-        from dotenv import load_dotenv
-
-        load_dotenv()
-        login = os.environ.get("OFSC_CLIENT_ID", "demoauth")
+        users = await async_instance.core.get_users(limit=1)
+        if len(users.items) == 0:
+            pytest.skip("No users available")
+        login = users.items[0].login
         result = await async_instance.core.get_user_collab_groups(login)
 
         assert isinstance(result, CollaborationGroupsResponse)
