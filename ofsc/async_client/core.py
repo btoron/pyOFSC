@@ -730,6 +730,9 @@ class AsyncOFSCore:
             response.raise_for_status()
             data = response.json()
 
+            # API may return only HATEOAS links without the full LinkedActivity fields
+            if "fromActivityId" not in data:
+                return link
             return LinkedActivity.model_validate(data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(
@@ -842,6 +845,15 @@ class AsyncOFSCore:
             response.raise_for_status()
             result = response.json()
 
+            # API may return only HATEOAS links without the full LinkedActivity fields
+            if "fromActivityId" not in result:
+                return LinkedActivity.model_validate(
+                    {
+                        "fromActivityId": activity_id,
+                        "toActivityId": linked_activity_id,
+                        "linkType": link_type,
+                    }
+                )
             return LinkedActivity.model_validate(result)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(
