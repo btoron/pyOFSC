@@ -12,7 +12,6 @@ from ...models.inventories import (
     Inventory,
     InventoryCreate,
     InventoryCustomAction,
-    InventoryListResponse,
 )
 
 
@@ -44,37 +43,6 @@ class AsyncOFSCoreInventoriesMixin:
     """
 
     # region Inventories
-
-    async def get_inventories(
-        self: _CoreBaseProtocol, offset: int = 0, limit: int = 100
-    ) -> InventoryListResponse:
-        """Get a paginated list of inventories.
-
-        Args:
-            offset: Starting record number (default 0)
-            limit: Maximum number to return (default 100)
-
-        Returns:
-            InventoryListResponse: List with pagination info
-
-        Raises:
-            OFSCAuthenticationError: If authentication fails (401)
-            OFSCAuthorizationError: If authorization fails (403)
-            OFSCApiError: For other API errors
-            OFSCNetworkError: For network/transport errors
-        """
-        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/inventories")
-        params = {"offset": offset, "limit": limit}
-
-        try:
-            response = await self._client.get(url, headers=self.headers, params=params)
-            response.raise_for_status()
-            return InventoryListResponse.model_validate(response.json())
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get inventories")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def create_inventory(
         self: _CoreBaseProtocol, data: "InventoryCreate | dict"

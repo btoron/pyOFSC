@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 
 
 class RequiredInventory(BaseModel):
@@ -45,15 +45,24 @@ class InventoryListResponse(BaseModel):
 
 
 class InventoryCreate(BaseModel):
-    """Inventory creation model with required inventoryType."""
+    """Inventory creation model with required inventoryType and context."""
 
     inventoryType: str
     resourceId: Optional[str] = None
+    resourceInternalId: Optional[int] = None
     activityId: Optional[int] = None
     status: Optional[str] = None
     serialNumber: Optional[str] = None
     quantity: Optional[float] = None
     model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def require_context(self):
+        if not any([self.resourceId, self.resourceInternalId, self.activityId]):
+            raise ValueError(
+                "At least one of 'resourceId', 'resourceInternalId', or 'activityId' must be set"
+            )
+        return self
 
 
 class InventoryCustomAction(BaseModel):

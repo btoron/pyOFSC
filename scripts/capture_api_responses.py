@@ -26,15 +26,6 @@ from dotenv import load_dotenv
 ENDPOINTS = {
     "inventories": [
         {
-            "name": "get_inventories_200_success",
-            "description": "Get all inventories with pagination",
-            "method": "GET",
-            "path": "/rest/ofscCore/v1/inventories",
-            "params": {"offset": 0, "limit": 100},
-            "body": None,
-            "metadata": {},
-        },
-        {
             "name": "get_inventory_404_not_found",
             "description": "Get a non-existent inventory by ID",
             "method": "GET",

@@ -248,7 +248,6 @@ uv run pytest tests/async/test_async_workzones.py
     update_resource_location(self, resource_id, location_id, data)  [Async]
 
 ### Core / Inventories (Standalone)
-    get_inventories(self, offset=0, limit=100)  [Async]
     create_inventory(self, data)  [Async]
     get_inventory(self, inventory_id)  [Async]
     update_inventory(self, inventory_id, data)  [Async]

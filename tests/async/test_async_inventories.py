@@ -14,7 +14,6 @@ from ofsc.models import (
     Inventory,
     InventoryCreate,
     InventoryCustomAction,
-    InventoryListResponse,
 )
 
 import httpx
@@ -31,14 +30,36 @@ class TestInventoryCreateModel:
     def test_inventory_create_requires_inventory_type(self):
         """Test that InventoryCreate requires inventoryType."""
         with pytest.raises(Exception):
-            InventoryCreate.model_validate({})
+            InventoryCreate.model_validate({"resourceId": "RES1"})
 
-    def test_inventory_create_valid_minimal(self):
-        """Test InventoryCreate with only required field."""
-        inv = InventoryCreate.model_validate({"inventoryType": "PART_A"})
+    def test_inventory_create_requires_context(self):
+        """Test that InventoryCreate requires at least one context field."""
+        with pytest.raises(Exception):
+            InventoryCreate.model_validate({"inventoryType": "PART_A"})
+
+    def test_inventory_create_valid_with_resource_id(self):
+        """Test InventoryCreate with inventoryType and resourceId."""
+        inv = InventoryCreate.model_validate(
+            {"inventoryType": "PART_A", "resourceId": "RES1"}
+        )
         assert inv.inventoryType == "PART_A"
-        assert inv.resourceId is None
-        assert inv.activityId is None
+        assert inv.resourceId == "RES1"
+
+    def test_inventory_create_valid_with_activity_id(self):
+        """Test InventoryCreate with inventoryType and activityId."""
+        inv = InventoryCreate.model_validate(
+            {"inventoryType": "PART_A", "activityId": 12345}
+        )
+        assert inv.inventoryType == "PART_A"
+        assert inv.activityId == 12345
+
+    def test_inventory_create_valid_with_resource_internal_id(self):
+        """Test InventoryCreate with inventoryType and resourceInternalId."""
+        inv = InventoryCreate.model_validate(
+            {"inventoryType": "PART_A", "resourceInternalId": 99}
+        )
+        assert inv.inventoryType == "PART_A"
+        assert inv.resourceInternalId == 99
 
     def test_inventory_create_with_optional_fields(self):
         """Test InventoryCreate with all optional fields."""
@@ -60,10 +81,12 @@ class TestInventoryCreateModel:
 
     def test_inventory_create_model_dump_excludes_none(self):
         """Test that model_dump with exclude_none works correctly."""
-        inv = InventoryCreate.model_validate({"inventoryType": "PART_C"})
+        inv = InventoryCreate.model_validate(
+            {"inventoryType": "PART_C", "resourceId": "RES1"}
+        )
         dumped = inv.model_dump(exclude_none=True)
         assert "inventoryType" in dumped
-        assert "resourceId" not in dumped
+        assert "resourceId" in dumped
         assert "activityId" not in dumped
 
 
@@ -95,77 +118,6 @@ class TestInventoryCustomActionModel:
 # ---------------------------------------------------------------------------
 # Mocked CRUD tests
 # ---------------------------------------------------------------------------
-
-
-class TestAsyncGetInventories:
-    """Mocked tests for get_inventories."""
-
-    @pytest.mark.asyncio
-    async def test_get_inventories_returns_model(self, async_instance: AsyncOFSC):
-        """Test that get_inventories returns InventoryListResponse."""
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "hasMore": False,
-            "totalResults": 2,
-            "limit": 100,
-            "offset": 0,
-            "items": [
-                {"inventoryId": 1, "inventoryType": "PART_A", "status": "resource"},
-                {"inventoryId": 2, "inventoryType": "PART_B", "status": "installed"},
-            ],
-        }
-        mock_response.raise_for_status = Mock()
-        async_instance.core._client.get = AsyncMock(return_value=mock_response)
-
-        result = await async_instance.core.get_inventories()
-
-        assert isinstance(result, InventoryListResponse)
-        assert len(result.items) == 2
-        assert all(isinstance(item, Inventory) for item in result.items)
-        assert result.items[0].inventoryId == 1
-        assert result.items[1].inventoryType == "PART_B"
-
-    @pytest.mark.asyncio
-    async def test_get_inventories_pagination(self, async_instance: AsyncOFSC):
-        """Test get_inventories passes pagination params."""
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "hasMore": False,
-            "totalResults": 5,
-            "limit": 2,
-            "offset": 2,
-            "items": [{"inventoryId": 3, "inventoryType": "PART_C"}],
-        }
-        mock_response.raise_for_status = Mock()
-        async_instance.core._client.get = AsyncMock(return_value=mock_response)
-
-        result = await async_instance.core.get_inventories(offset=2, limit=2)
-
-        assert isinstance(result, InventoryListResponse)
-        call_kwargs = async_instance.core._client.get.call_args
-        assert call_kwargs.kwargs["params"] == {"offset": 2, "limit": 2}
-
-    @pytest.mark.asyncio
-    async def test_get_inventories_total_results(self, async_instance: AsyncOFSC):
-        """Test that totalResults is populated."""
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "hasMore": False,
-            "totalResults": 42,
-            "limit": 100,
-            "offset": 0,
-            "items": [],
-        }
-        mock_response.raise_for_status = Mock()
-        async_instance.core._client.get = AsyncMock(return_value=mock_response)
-
-        result = await async_instance.core.get_inventories()
-
-        assert result.totalResults == 42
-        assert isinstance(result.totalResults, int)
 
 
 class TestAsyncCreateInventory:
@@ -206,7 +158,9 @@ class TestAsyncCreateInventory:
         mock_response.raise_for_status = Mock()
         async_instance.core._client.post = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.core.create_inventory({"inventoryType": "PART_B"})
+        result = await async_instance.core.create_inventory(
+            {"inventoryType": "PART_B", "resourceId": "RES2"}
+        )
 
         assert isinstance(result, Inventory)
         assert result.inventoryId == 102
@@ -224,7 +178,7 @@ class TestAsyncCreateInventory:
         async_instance.core._client.post = AsyncMock(return_value=mock_response)
 
         await async_instance.core.create_inventory(
-            {"inventoryType": "PART_C", "quantity": 3.0}
+            {"inventoryType": "PART_C", "resourceId": "RES3", "quantity": 3.0}
         )
 
         call_kwargs = async_instance.core._client.post.call_args
@@ -622,7 +576,9 @@ class TestAsyncInventoryExceptions:
         )
 
         with pytest.raises(OFSCNetworkError):
-            await async_instance.core.create_inventory({"inventoryType": "PART_A"})
+            await async_instance.core.create_inventory(
+                {"inventoryType": "PART_A", "resourceId": "RES1"}
+            )
 
     @pytest.mark.asyncio
     async def test_delete_inventory_not_found(self, async_instance: AsyncOFSC):
@@ -667,25 +623,28 @@ class TestAsyncInventoriesLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_get_inventories(self, async_instance: AsyncOFSC):
-        """Test get_inventories with actual API - validates structure."""
-        result = await async_instance.core.get_inventories(offset=0, limit=10)
-
-        assert isinstance(result, InventoryListResponse)
-        assert result.totalResults is not None
-        assert isinstance(result.items, list)
-        if len(result.items) > 0:
-            assert isinstance(result.items[0], Inventory)
-
-    @pytest.mark.asyncio
-    @pytest.mark.uses_real_data
     async def test_inventory_crud_lifecycle(self, async_instance: AsyncOFSC):
         """Test full inventory CRUD lifecycle with cleanup."""
+        # Fetch a real resource to use as context
+        resources = await async_instance.core.get_resources(limit=1)
+        if not resources.items:
+            pytest.skip("No resources available")
+
+        sample = resources.items[0]
+        if not sample.resourceId:
+            pytest.skip("Sample resource has no resourceId")
+
+        # Fetch a valid inventory type from metadata
+        inv_types = await async_instance.metadata.get_inventory_types(limit=1)
+        if not inv_types.items:
+            pytest.skip("No inventory types available")
+        inv_type_label = inv_types.items[0].label
+
         created_id = None
         try:
-            # Create
+            # Create inventory linked to a real resource
             inv = await async_instance.core.create_inventory(
-                {"inventoryType": "CLAUDE_TEST_TYPE"}
+                {"inventoryType": inv_type_label, "resourceId": sample.resourceId}
             )
             assert isinstance(inv, Inventory)
             assert inv.inventoryId is not None
