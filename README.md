@@ -207,32 +207,45 @@ uv run pytest tests/async/test_async_workzones.py
     get_events(self, params, response_type=OBJ_RESPONSE)
 
 ### Core / Resources
-    get_resource(self, resource_id, inventories=False, workSkills=False, workZones=False, workSchedules=False, response_type=OBJ_RESPONSE)
-    get_resources(self, fields=None, offset=0, limit=100, canBeTeamHolder=None, canParticipateInTeam=None, inventories=False, workSkills=False, workZones=False, workSchedules=False, response_type=OBJ_RESPONSE)
-    create_resource(self, resourceId, data, response_type=OBJ_RESPONSE)
-    create_resource_from_obj(self, resourceId, data, response_type=OBJ_RESPONSE)
-    update_resource(self, resourceId, data: dict, identify_by_internal_id: bool = False, response_type=OBJ_RESPONSE)
-    get_position_history(self, resource_id, date, response_type=OBJ_RESPONSE)
-    get_resource_route(self, resource_id, date, activityFields=None, offset=0, limit=100, response_type=OBJ_RESPONSE)
-    get_resource_descendants(self, resource_id, resourceFields=None, offset=0, limit=100, inventories=False, workSkills=False, workZones=False, workSchedules=False, response_type=OBJ_RESPONSE)
-    get_resource_users(self, resource_id, response_type=OBJ_RESPONSE)
-    set_resource_users(self, resource_id, users: tuple[str], response_type=OBJ_RESPONSE)
-    delete_resource_users(self, resource_id, response_type=OBJ_RESPONSE)
-    get_resource_workschedules(self, resource_id, actualDate: date, response_type=OBJ_RESPONSE)
-    set_resource_workschedules(self, resource_id, data: ResourceWorkScheduleItem, response_type=OBJ_RESPONSE)
-    get_resource_calendar(self, resource_id: str, dateFrom: date, dateTo: date, response_type=OBJ_RESPONSE)
-    get_resource_inventories(self, resource_id, response_type=OBJ_RESPONSE)
+    get_resource(self, resource_id, inventories=False, workSkills=False, workZones=False, workSchedules=False, response_type=OBJ_RESPONSE)  [Sync & Async]
+    get_resources(self, fields=None, offset=0, limit=100, canBeTeamHolder=None, canParticipateInTeam=None, inventories=False, workSkills=False, workZones=False, workSchedules=False, response_type=OBJ_RESPONSE)  [Sync & Async]
+    create_resource(self, resourceId, data, response_type=OBJ_RESPONSE)  [Sync & Async]
+    create_resource_from_obj(self, resourceId, data, response_type=OBJ_RESPONSE)  [Sync & Async]
+    update_resource(self, resourceId, data: dict, identify_by_internal_id: bool = False, response_type=OBJ_RESPONSE)  [Sync & Async]
+    get_position_history(self, resource_id, date, response_type=OBJ_RESPONSE)  [Sync & Async]
+    get_resource_route(self, resource_id, date, activityFields=None, offset=0, limit=100, response_type=OBJ_RESPONSE)  [Sync & Async]
+    get_resource_descendants(self, resource_id, resourceFields=None, offset=0, limit=100, inventories=False, workSkills=False, workZones=False, workSchedules=False, response_type=OBJ_RESPONSE)  [Sync & Async]
+    get_resource_users(self, resource_id, response_type=OBJ_RESPONSE)  [Sync & Async]
+    set_resource_users(self, resource_id, users: tuple[str], response_type=OBJ_RESPONSE)  [Sync & Async]
+    delete_resource_users(self, resource_id, response_type=OBJ_RESPONSE)  [Sync & Async]
+    get_resource_workschedules(self, resource_id, actualDate: date, response_type=OBJ_RESPONSE)  [Sync & Async]
+    set_resource_workschedules(self, resource_id, data: ResourceWorkScheduleItem, response_type=OBJ_RESPONSE)  [Sync & Async]
+    get_resource_calendar(self, resource_id: str, dateFrom: date, dateTo: date, response_type=OBJ_RESPONSE)  [Sync & Async]
+    get_resource_inventories(self, resource_id, response_type=OBJ_RESPONSE)  [Sync & Async]
     get_resource_assigned_locations(self, resource_id, response_type=OBJ_RESPONSE)
-    get_resource_workzones(self, resource_id, response_type=OBJ_RESPONSE)
-    get_resource_workskills(self, resource_id, response_type=OBJ_RESPONSE)
-    bulk_update_resource_workzones(self, data, response_type=OBJ_RESPONSE)
-    bulk_update_resource_workskills(self, data, response_type=OBJ_RESPONSE)
-    bulk_update_resource_workschedules(self, data, response_type=OBJ_RESPONSE)
-    get_resource_locations(self, resource_id, response_type=OBJ_RESPONSE)
-    create_resource_location(self, resource_id, location: Location, response_type=OBJ_RESPONSE)
-    delete_resource_location(self, resource_id, location_id, response_type=OBJ_RESPONSE)
-    get_assigned_locations(self, resource_id, dateFrom: date = date.today(), dateTo: date = date.today(), response_type=OBJ_RESPONSE)
-    set_assigned_locations(self, resource_id: str, data: AssignedLocationsResponse, response_type=OBJ_RESPONSE)
+    get_resource_workzones(self, resource_id, response_type=OBJ_RESPONSE)  [Sync & Async]
+    get_resource_workskills(self, resource_id, response_type=OBJ_RESPONSE)  [Sync & Async]
+    bulk_update_resource_workzones(self, data, response_type=OBJ_RESPONSE)  [Sync & Async]
+    bulk_update_resource_workskills(self, data, response_type=OBJ_RESPONSE)  [Sync & Async]
+    bulk_update_resource_workschedules(self, data, response_type=OBJ_RESPONSE)  [Sync & Async]
+    get_resource_locations(self, resource_id, response_type=OBJ_RESPONSE)  [Sync & Async]
+    create_resource_location(self, resource_id, location: Location, response_type=OBJ_RESPONSE)  [Sync & Async]
+    delete_resource_location(self, resource_id, location_id, response_type=OBJ_RESPONSE)  [Sync & Async]
+    get_assigned_locations(self, resource_id, dateFrom: date = date.today(), dateTo: date = date.today(), response_type=OBJ_RESPONSE)  [Sync & Async]
+    set_assigned_locations(self, resource_id: str, data: AssignedLocationsResponse, response_type=OBJ_RESPONSE)  [Sync & Async]
+    get_resource_assistants(self, resource_id)  [Async]
+    get_resource_children(self, resource_id, offset=0, limit=100)  [Async]
+    get_resource_location(self, resource_id, location_id)  [Async]
+    get_resource_plans(self, resource_id)  [Async]
+    get_calendars()  [Async]
+    create_resource_inventory(self, resource_id, inventory_data)  [Async]
+    install_resource_inventory(self, resource_id, inventory_id)  [Async]
+    set_resource_workskills(self, resource_id, workskills)  [Async]
+    delete_resource_workskill(self, resource_id, workskill)  [Async]
+    set_resource_workzones(self, resource_id, workzones)  [Async]
+    delete_resource_workzone(self, resource_id, workzone_item_id)  [Async]
+    delete_resource_workschedule(self, resource_id, schedule_item_id)  [Async]
+    update_resource_location(self, resource_id, location_id, data)  [Async]
 
 ### Core / Users
     get_users(self, offset=0, limit=100, response_type=OBJ_RESPONSE)  [Sync & Async]

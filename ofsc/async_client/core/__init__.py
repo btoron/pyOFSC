@@ -5,10 +5,13 @@ External interface is unchanged: AsyncOFSCore exposes all methods directly.
 """
 
 from ._base import _AsyncOFSCoreBase
+from .resources import AsyncOFSCoreResourcesMixin
 from .users import AsyncOFSCoreUsersMixin
 
 
-class AsyncOFSCore(AsyncOFSCoreUsersMixin, _AsyncOFSCoreBase):
+class AsyncOFSCore(
+    AsyncOFSCoreResourcesMixin, AsyncOFSCoreUsersMixin, _AsyncOFSCoreBase
+):
     """Async version of OFSCore API module."""
 
     pass

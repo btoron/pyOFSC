@@ -185,35 +185,35 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |CO043G|`/rest/ofscCore/v1/resources/{resourceId}/descendants`                                                                   |core         |GET   |both  |
 |CO044G|`/rest/ofscCore/v1/resources/{resourceId}/assistants`                                                                    |core         |GET   |async |
 |CO045G|`/rest/ofscCore/v1/resources/{resourceId}`                                                                               |core         |GET   |both  |
-|CO045U|`/rest/ofscCore/v1/resources/{resourceId}`                                                                               |core         |PUT   |sync  |
-|CO045A|`/rest/ofscCore/v1/resources/{resourceId}`                                                                               |core         |PATCH |sync  |
+|CO045U|`/rest/ofscCore/v1/resources/{resourceId}`                                                                               |core         |PUT   |both  |
+|CO045A|`/rest/ofscCore/v1/resources/{resourceId}`                                                                               |core         |PATCH |both  |
 |CO046G|`/rest/ofscCore/v1/resources/{resourceId}/users`                                                                         |core         |GET   |both  |
-|CO046U|`/rest/ofscCore/v1/resources/{resourceId}/users`                                                                         |core         |PUT   |sync  |
-|CO046D|`/rest/ofscCore/v1/resources/{resourceId}/users`                                                                         |core         |DELETE|sync  |
-|CO047P|`/rest/ofscCore/v1/resources/{resourceId}/inventories`                                                                   |core         |POST  |-     |
+|CO046U|`/rest/ofscCore/v1/resources/{resourceId}/users`                                                                         |core         |PUT   |both  |
+|CO046D|`/rest/ofscCore/v1/resources/{resourceId}/users`                                                                         |core         |DELETE|both  |
+|CO047P|`/rest/ofscCore/v1/resources/{resourceId}/inventories`                                                                   |core         |POST  |async |
 |CO047G|`/rest/ofscCore/v1/resources/{resourceId}/inventories`                                                                   |core         |GET   |both  |
-|CO048P|`/rest/ofscCore/v1/resources/{resourceId}/inventories/{inventoryId}/custom-actions/install`                              |core         |POST  |-     |
-|CO049P|`/rest/ofscCore/v1/resources/{resourceId}/workSkills`                                                                    |core         |POST  |-     |
+|CO048P|`/rest/ofscCore/v1/resources/{resourceId}/inventories/{inventoryId}/custom-actions/install`                              |core         |POST  |async |
+|CO049P|`/rest/ofscCore/v1/resources/{resourceId}/workSkills`                                                                    |core         |POST  |async |
 |CO049G|`/rest/ofscCore/v1/resources/{resourceId}/workSkills`                                                                    |core         |GET   |both  |
-|CO050D|`/rest/ofscCore/v1/resources/{resourceId}/workSkills/{workSkill}`                                                        |core         |DELETE|-     |
-|CO051P|`/rest/ofscCore/v1/resources/{resourceId}/workZones`                                                                     |core         |POST  |-     |
+|CO050D|`/rest/ofscCore/v1/resources/{resourceId}/workSkills/{workSkill}`                                                        |core         |DELETE|async |
+|CO051P|`/rest/ofscCore/v1/resources/{resourceId}/workZones`                                                                     |core         |POST  |async |
 |CO051G|`/rest/ofscCore/v1/resources/{resourceId}/workZones`                                                                     |core         |GET   |both  |
-|CO052D|`/rest/ofscCore/v1/resources/{resourceId}/workZones/{workZoneItemId}`                                                    |core         |DELETE|-     |
+|CO052D|`/rest/ofscCore/v1/resources/{resourceId}/workZones/{workZoneItemId}`                                                    |core         |DELETE|async |
 |CO053G|`/rest/ofscCore/v1/resources/{resourceId}/workSchedules`                                                                 |core         |GET   |both  |
-|CO053P|`/rest/ofscCore/v1/resources/{resourceId}/workSchedules`                                                                 |core         |POST  |sync  |
-|CO054D|`/rest/ofscCore/v1/resources/{resourceId}/workSchedules/{scheduleItemId}`                                                |core         |DELETE|-     |
+|CO053P|`/rest/ofscCore/v1/resources/{resourceId}/workSchedules`                                                                 |core         |POST  |both  |
+|CO054D|`/rest/ofscCore/v1/resources/{resourceId}/workSchedules/{scheduleItemId}`                                                |core         |DELETE|async |
 |CO055G|`/rest/ofscCore/v1/resources/{resourceId}/workSchedules/calendarView`                                                    |core         |GET   |both  |
 |CO056G|`/rest/ofscCore/v1/calendars`                                                                                            |core         |GET   |async |
 |CO057U|`/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}`                                                               |core         |PUT   |-     |
 |CO057G|`/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}`                                                               |core         |GET   |-     |
 |CO057D|`/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}`                                                               |core         |DELETE|-     |
-|CO058P|`/rest/ofscCore/v1/resources/{resourceId}/locations`                                                                     |core         |POST  |sync  |
+|CO058P|`/rest/ofscCore/v1/resources/{resourceId}/locations`                                                                     |core         |POST  |both  |
 |CO058G|`/rest/ofscCore/v1/resources/{resourceId}/locations`                                                                     |core         |GET   |both  |
 |CO059G|`/rest/ofscCore/v1/resources/{resourceId}/locations/{locationId}`                                                        |core         |GET   |async |
-|CO059A|`/rest/ofscCore/v1/resources/{resourceId}/locations/{locationId}`                                                        |core         |PATCH |-     |
-|CO059D|`/rest/ofscCore/v1/resources/{resourceId}/locations/{locationId}`                                                        |core         |DELETE|sync  |
+|CO059A|`/rest/ofscCore/v1/resources/{resourceId}/locations/{locationId}`                                                        |core         |PATCH |async |
+|CO059D|`/rest/ofscCore/v1/resources/{resourceId}/locations/{locationId}`                                                        |core         |DELETE|both  |
 |CO060G|`/rest/ofscCore/v1/resources/{resourceId}/positionHistory`                                                               |core         |GET   |both  |
-|CO061U|`/rest/ofscCore/v1/resources/{resourceId}/assignedLocations`                                                             |core         |PUT   |sync  |
+|CO061U|`/rest/ofscCore/v1/resources/{resourceId}/assignedLocations`                                                             |core         |PUT   |both  |
 |CO061G|`/rest/ofscCore/v1/resources/{resourceId}/assignedLocations`                                                             |core         |GET   |both  |
 |CO061A|`/rest/ofscCore/v1/resources/{resourceId}/assignedLocations`                                                             |core         |PATCH |-     |
 |CO062D|`/rest/ofscCore/v1/resources/{resourceId}/assignedLocations/{date}`                                                      |core         |DELETE|-     |
@@ -224,9 +224,9 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |CO065P|`/rest/ofscCore/v1/resources/{resourceId}/routes/{date}/custom-actions/activate`                                         |core         |POST  |-     |
 |CO066P|`/rest/ofscCore/v1/resources/{resourceId}/routes/{date}/custom-actions/deactivate`                                       |core         |POST  |-     |
 |CO067G|`/rest/ofscCore/v1/resources/{resourceId}/findNearbyActivities`                                                          |core         |GET   |-     |
-|CO068P|`/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkSchedules`                                                     |core         |POST  |sync  |
-|CO069P|`/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkSkills`                                                        |core         |POST  |sync  |
-|CO070P|`/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkZones`                                                         |core         |POST  |sync  |
+|CO068P|`/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkSchedules`                                                     |core         |POST  |both  |
+|CO069P|`/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkSkills`                                                        |core         |POST  |both  |
+|CO070P|`/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkZones`                                                         |core         |POST  |both  |
 |CO071P|`/rest/ofscCore/v1/resources/custom-actions/bulkUpdateInventories`                                                       |core         |POST  |-     |
 |CO072P|`/rest/ofscCore/v1/resources/custom-actions/findMatchingResources`                                                       |core         |POST  |-     |
 |CO073P|`/rest/ofscCore/v1/resources/custom-actions/findResourcesForUrgentAssignment`                                            |core         |POST  |-     |
@@ -266,12 +266,12 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 
 ## Implementation Summary
 
-- **Sync only**: 17 endpoints
-- **Async only**: 44 endpoints
-- **Both**: 72 endpoints
-- **Not implemented**: 110 endpoints
+- **Sync only**: 6 endpoints
+- **Async only**: 52 endpoints
+- **Both**: 83 endpoints
+- **Not implemented**: 102 endpoints
 - **Total sync**: 89 endpoints
-- **Total async**: 116 endpoints
+- **Total async**: 135 endpoints
 
 ## Implementation Statistics by Module and Method
 
@@ -293,13 +293,13 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |   Module    |       GET        |Write (POST/PUT/PATCH)|     DELETE      |       Total       |
 |-------------|------------------|----------------------|-----------------|-------------------|
 |metadata     |41/51 (80.4%)     |10/30 (33.3%)         |2/5 (40.0%)      |53/86 (61.6%)      |
-|core         |40/51 (78.4%)     |13/56 (23.2%)         |10/20 (50.0%)    |63/127 (49.6%)     |
+|core         |40/51 (78.4%)     |27/56 (48.2%)         |15/20 (75.0%)    |82/127 (64.6%)     |
 |capacity     |0/7 (0.0%)        |0/5 (0.0%)            |0/0 (0%)         |0/12 (0.0%)        |
 |statistics   |0/3 (0.0%)        |0/3 (0.0%)            |0/0 (0%)         |0/6 (0.0%)         |
 |partscatalog |0/0 (0%)          |0/2 (0.0%)            |0/1 (0.0%)       |0/3 (0.0%)         |
 |collaboration|0/3 (0.0%)        |0/4 (0.0%)            |0/0 (0%)         |0/7 (0.0%)         |
 |auth         |0/0 (0%)          |0/2 (0.0%)            |0/0 (0%)         |0/2 (0.0%)         |
-|**Total**    |**81/115 (70.4%)**|**23/102 (22.5%)**    |**12/26 (46.2%)**|**116/243 (47.7%)**|
+|**Total**    |**81/115 (70.4%)**|**37/102 (36.3%)**    |**17/26 (65.4%)**|**135/243 (55.6%)**|
 
 ## Endpoint ID Reference
 
