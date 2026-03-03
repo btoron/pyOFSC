@@ -1,7 +1,7 @@
 # OFSC API Endpoints Reference
 
 **Version:** 2.22.0
-**Last Updated:** 2026-01-02
+**Last Updated:** 2026-03-03
 
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints and their implementation status in pyOFSC.
 
@@ -120,33 +120,33 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |CB004P|`/rest/ofscCollaboration/v1/chats/{chatId}/messages`                                                                     |collaboration|POST  |-     |
 |CB005G|`/rest/ofscCollaboration/v1/chats/{chatId}/participants`                                                                 |collaboration|GET   |-     |
 |CB006P|`/rest/ofscCollaboration/v1/chats/{chatId}/participants/invite`                                                          |collaboration|POST  |-     |
-|CO001P|`/rest/ofscCore/v1/activities`                                                                                           |core         |POST  |-     |
+|CO001P|`/rest/ofscCore/v1/activities`                                                                                           |core         |POST  |async |
 |CO001G|`/rest/ofscCore/v1/activities`                                                                                           |core         |GET   |both  |
-|CO002A|`/rest/ofscCore/v1/activities/{activityId}`                                                                              |core         |PATCH |sync  |
-|CO002D|`/rest/ofscCore/v1/activities/{activityId}`                                                                              |core         |DELETE|sync  |
+|CO002A|`/rest/ofscCore/v1/activities/{activityId}`                                                                              |core         |PATCH |both  |
+|CO002D|`/rest/ofscCore/v1/activities/{activityId}`                                                                              |core         |DELETE|both  |
 |CO002G|`/rest/ofscCore/v1/activities/{activityId}`                                                                              |core         |GET   |both  |
 |CO003G|`/rest/ofscCore/v1/activities/{activityId}/multidaySegments`                                                             |core         |GET   |-     |
-|CO004U|`/rest/ofscCore/v1/activities/{activityId}/{propertyLabel}`                                                              |core         |PUT   |-     |
+|CO004U|`/rest/ofscCore/v1/activities/{activityId}/{propertyLabel}`                                                              |core         |PUT   |async |
 |CO004G|`/rest/ofscCore/v1/activities/{activityId}/{propertyLabel}`                                                              |core         |GET   |both  |
-|CO004D|`/rest/ofscCore/v1/activities/{activityId}/{propertyLabel}`                                                              |core         |DELETE|-     |
+|CO004D|`/rest/ofscCore/v1/activities/{activityId}/{propertyLabel}`                                                              |core         |DELETE|async |
 |CO005G|`/rest/ofscCore/v1/activities/{activityId}/submittedForms`                                                               |core         |GET   |async |
-|CO006U|`/rest/ofscCore/v1/activities/{activityId}/resourcePreferences`                                                          |core         |PUT   |-     |
+|CO006U|`/rest/ofscCore/v1/activities/{activityId}/resourcePreferences`                                                          |core         |PUT   |async |
 |CO006G|`/rest/ofscCore/v1/activities/{activityId}/resourcePreferences`                                                          |core         |GET   |async |
-|CO006D|`/rest/ofscCore/v1/activities/{activityId}/resourcePreferences`                                                          |core         |DELETE|-     |
-|CO007U|`/rest/ofscCore/v1/activities/{activityId}/requiredInventories`                                                          |core         |PUT   |-     |
+|CO006D|`/rest/ofscCore/v1/activities/{activityId}/resourcePreferences`                                                          |core         |DELETE|async |
+|CO007U|`/rest/ofscCore/v1/activities/{activityId}/requiredInventories`                                                          |core         |PUT   |async |
 |CO007G|`/rest/ofscCore/v1/activities/{activityId}/requiredInventories`                                                          |core         |GET   |async |
-|CO007D|`/rest/ofscCore/v1/activities/{activityId}/requiredInventories`                                                          |core         |DELETE|-     |
-|CO008P|`/rest/ofscCore/v1/activities/{activityId}/customerInventories`                                                          |core         |POST  |-     |
+|CO007D|`/rest/ofscCore/v1/activities/{activityId}/requiredInventories`                                                          |core         |DELETE|async |
+|CO008P|`/rest/ofscCore/v1/activities/{activityId}/customerInventories`                                                          |core         |POST  |async |
 |CO008G|`/rest/ofscCore/v1/activities/{activityId}/customerInventories`                                                          |core         |GET   |async |
 |CO009G|`/rest/ofscCore/v1/activities/{activityId}/installedInventories`                                                         |core         |GET   |async |
 |CO010G|`/rest/ofscCore/v1/activities/{activityId}/deinstalledInventories`                                                       |core         |GET   |async |
 |CO011G|`/rest/ofscCore/v1/activities/{activityId}/linkedActivities`                                                             |core         |GET   |async |
-|CO011D|`/rest/ofscCore/v1/activities/{activityId}/linkedActivities`                                                             |core         |DELETE|-     |
-|CO011P|`/rest/ofscCore/v1/activities/{activityId}/linkedActivities`                                                             |core         |POST  |-     |
+|CO011D|`/rest/ofscCore/v1/activities/{activityId}/linkedActivities`                                                             |core         |DELETE|async |
+|CO011P|`/rest/ofscCore/v1/activities/{activityId}/linkedActivities`                                                             |core         |POST  |async |
 |CO012G|`/rest/ofscCore/v1/activities/{activityId}/capacityCategories`                                                           |core         |GET   |async |
-|CO013D|`/rest/ofscCore/v1/activities/{activityId}/linkedActivities/{linkedActivityId}/linkTypes/{linkType}`                     |core         |DELETE|-     |
+|CO013D|`/rest/ofscCore/v1/activities/{activityId}/linkedActivities/{linkedActivityId}/linkTypes/{linkType}`                     |core         |DELETE|async |
 |CO013G|`/rest/ofscCore/v1/activities/{activityId}/linkedActivities/{linkedActivityId}/linkTypes/{linkType}`                     |core         |GET   |async |
-|CO013U|`/rest/ofscCore/v1/activities/{activityId}/linkedActivities/{linkedActivityId}/linkTypes/{linkType}`                     |core         |PUT   |-     |
+|CO013U|`/rest/ofscCore/v1/activities/{activityId}/linkedActivities/{linkedActivityId}/linkTypes/{linkType}`                     |core         |PUT   |async |
 |CO014G|`/rest/ofscCore/v1/activities/custom-actions/search`                                                                     |core         |GET   |sync  |
 |CO015P|`/rest/ofscCore/v1/activities/custom-actions/bulkUpdate`                                                                 |core         |POST  |sync  |
 |CO016P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/startPrework`                                                  |core         |POST  |-     |
@@ -266,12 +266,12 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 
 ## Implementation Summary
 
-- **Sync only**: 24 endpoints
-- **Async only**: 26 endpoints
-- **Both**: 65 endpoints
-- **Not implemented**: 128 endpoints
+- **Sync only**: 22 endpoints
+- **Async only**: 38 endpoints
+- **Both**: 67 endpoints
+- **Not implemented**: 116 endpoints
 - **Total sync**: 89 endpoints
-- **Total async**: 91 endpoints
+- **Total async**: 105 endpoints
 
 ## Implementation Statistics by Module and Method
 
@@ -290,16 +290,16 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 
 ### Asynchronous Client
 
-|   Module    |       GET        |Write (POST/PUT/PATCH)|     DELETE     |      Total       |
-|-------------|------------------|----------------------|----------------|------------------|
-|metadata     |41/51 (80.4%)     |10/30 (33.3%)         |2/5 (40.0%)     |53/86 (61.6%)     |
-|core         |36/51 (70.6%)     |1/56 (1.8%)           |1/20 (5.0%)     |38/127 (29.9%)    |
-|capacity     |0/7 (0.0%)        |0/5 (0.0%)            |0/0 (0%)        |0/12 (0.0%)       |
-|statistics   |0/3 (0.0%)        |0/3 (0.0%)            |0/0 (0%)        |0/6 (0.0%)        |
-|partscatalog |0/0 (0%)          |0/2 (0.0%)            |0/1 (0.0%)      |0/3 (0.0%)        |
-|collaboration|0/3 (0.0%)        |0/4 (0.0%)            |0/0 (0%)        |0/7 (0.0%)        |
-|auth         |0/0 (0%)          |0/2 (0.0%)            |0/0 (0%)        |0/2 (0.0%)        |
-|**Total**    |**77/115 (67.0%)**|**11/102 (10.8%)**    |**3/26 (11.5%)**|**91/243 (37.4%)**|
+|   Module    |       GET        |Write (POST/PUT/PATCH)|     DELETE     |       Total       |
+|-------------|------------------|----------------------|----------------|-------------------|
+|metadata     |41/51 (80.4%)     |10/30 (33.3%)         |2/5 (40.0%)     |53/86 (61.6%)      |
+|core         |36/51 (70.6%)     |9/56 (16.1%)          |7/20 (35.0%)    |52/127 (40.9%)     |
+|capacity     |0/7 (0.0%)        |0/5 (0.0%)            |0/0 (0%)        |0/12 (0.0%)        |
+|statistics   |0/3 (0.0%)        |0/3 (0.0%)            |0/0 (0%)        |0/6 (0.0%)         |
+|partscatalog |0/0 (0%)          |0/2 (0.0%)            |0/1 (0.0%)      |0/3 (0.0%)         |
+|collaboration|0/3 (0.0%)        |0/4 (0.0%)            |0/0 (0%)        |0/7 (0.0%)         |
+|auth         |0/0 (0%)          |0/2 (0.0%)            |0/0 (0%)        |0/2 (0.0%)         |
+|**Total**    |**77/115 (67.0%)**|**19/102 (18.6%)**    |**9/26 (34.6%)**|**105/243 (43.2%)**|
 
 ## Endpoint ID Reference
 

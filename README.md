@@ -167,13 +167,35 @@ uv run pytest tests/async/test_async_workzones.py
 
 
 ### Core / Activities
-    get_activities(self, params, response_type=OBJ_RESPONSE)
-    get_activity(self, activity_id, response_type=OBJ_RESPONSE)
-    update_activity(self, activity_id, data, response_type=OBJ_RESPONSE)
+    get_activities(self, params, response_type=OBJ_RESPONSE)                              [Sync & Async]
+    get_activity(self, activity_id, response_type=OBJ_RESPONSE)                           [Sync & Async]
+    create_activity(self, activity: Activity)                                              [Async]
+    update_activity(self, activity_id, data, response_type=OBJ_RESPONSE)                  [Sync & Async]
+    delete_activity(self, activity_id)                                                     [Sync & Async]
     move_activity(self, activity_id, data, response_type=OBJ_RESPONSE)
     search_activities(self, params, response_type=OBJ_RESPONSE)
     bulk_update(self, data: BulkUpdateRequest, response_type=OBJ_RESPONSE)
-    get_file_property(self, activityId, label, mediaType="application/octet-stream", response_type=OBJ_RESPONSE)
+    get_file_property(self, activityId, label, mediaType="application/octet-stream", response_type=OBJ_RESPONSE)  [Sync & Async]
+    set_file_property(self, activity_id, label, content, media_type, filename=None)       [Async]
+    delete_file_property(self, activity_id, label)                                        [Async]
+    get_customer_inventories(self, activity_id, offset=0, limit=100)                      [Async]
+    create_customer_inventory(self, activity_id, inventory: Inventory)                    [Async]
+    get_installed_inventories(self, activity_id, offset=0, limit=100)                     [Async]
+    get_deinstalled_inventories(self, activity_id, offset=0, limit=100)                   [Async]
+    get_linked_activities(self, activity_id)                                               [Async]
+    link_activities(self, activity_id, link: LinkedActivity)                               [Async]
+    unlink_activities(self, activity_id)                                                   [Async]
+    get_activity_link(self, activity_id, linked_activity_id, link_type)                   [Async]
+    set_activity_link(self, activity_id, linked_activity_id, link_type, data)             [Async]
+    delete_activity_link(self, activity_id, linked_activity_id, link_type)                [Async]
+    get_required_inventories(self, activity_id)                                            [Async]
+    set_required_inventories(self, activity_id, inventories: list[RequiredInventory])     [Async]
+    delete_required_inventories(self, activity_id)                                        [Async]
+    get_resource_preferences(self, activity_id)                                            [Async]
+    set_resource_preferences(self, activity_id, preferences: list[ResourcePreference])   [Async]
+    delete_resource_preferences(self, activity_id)                                        [Async]
+    get_capacity_categories(self, activity_id)                                             [Async]
+    get_submitted_forms(self, activity_id, offset=0, limit=100)                           [Async]
     get_all_activities(self, root=None, date_from=date.today()-timedelta(days=7), date_to=date.today()+timedelta(days=7), activity_fields=["activityId", "activityType", "date", "resourceId", "status"], additional_fields=None, initial_offset=0, include_non_scheduled=False, limit=5000)
 
 
