@@ -1,7 +1,7 @@
 """Async resource methods mixin for OFSCore API."""
 
 from datetime import date
-from typing import Protocol
+from typing import Any, Protocol
 from urllib.parse import urljoin
 
 import httpx
@@ -35,12 +35,24 @@ class _CoreBaseProtocol(Protocol):
     """Type stub declaring what AsyncOFSCoreResourcesMixin expects from its base class."""
 
     _client: httpx.AsyncClient
-    baseUrl: str
-    headers: dict
+
+    @property
+    def baseUrl(self) -> str: ...
+
+    @property
+    def headers(self) -> dict: ...
 
     def _handle_http_error(
         self, e: httpx.HTTPStatusError, context: str = ""
     ) -> None: ...
+
+    def _build_expand_param(
+        self,
+        inventories: bool,
+        workskills: bool,
+        workzones: bool,
+        workschedules: bool,
+    ) -> str | None: ...
 
 
 class AsyncOFSCoreResourcesMixin:
@@ -271,7 +283,7 @@ class AsyncOFSCoreResourcesMixin:
             self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/descendants"
         )
 
-        params = {"offset": offset, "limit": limit}
+        params: dict[str, Any] = {"offset": offset, "limit": limit}
         if fields:
             params["resourceFields"] = ",".join(fields)
         expand = self._build_expand_param(
@@ -540,7 +552,7 @@ class AsyncOFSCoreResourcesMixin:
         """Get all resources with pagination."""
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/resources")
 
-        params = {"offset": offset, "limit": limit}
+        params: dict[str, Any] = {"offset": offset, "limit": limit}
         if fields:
             params["fields"] = ",".join(fields)
         expand = self._build_expand_param(
