@@ -32,6 +32,7 @@ class TestAsyncGetNonWorkingReasonsLive:
             assert isinstance(non_working_reasons.items[0], NonWorkingReason)
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetNonWorkingReasons:
     """Test async get_non_working_reasons method."""
 
@@ -104,11 +105,11 @@ class TestAsyncGetNonWorkingReason:
 
     @pytest.mark.asyncio
     async def test_get_non_working_reason_not_implemented(
-        self, async_instance: AsyncOFSC
+        self, mock_instance: AsyncOFSC
     ):
         """Test that get_non_working_reason raises NotImplementedError"""
         with pytest.raises(NotImplementedError) as exc_info:
-            await async_instance.metadata.get_non_working_reason("ILLNESS")
+            await mock_instance.metadata.get_non_working_reason("ILLNESS")
 
         # Verify the error message explains why
         assert "Oracle Field Service API does not support" in str(exc_info.value)

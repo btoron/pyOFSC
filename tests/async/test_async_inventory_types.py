@@ -31,6 +31,7 @@ class TestAsyncGetInventoryTypesLive:
             assert isinstance(inventory_types.items[0], InventoryType)
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetInventoryTypes:
     """Test async get_inventory_types method."""
 

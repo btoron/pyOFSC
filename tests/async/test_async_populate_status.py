@@ -15,7 +15,7 @@ class TestAsyncGetPopulateMapLayersStatus:
     """Model validation tests for get_populate_map_layers_status."""
 
     @pytest.mark.asyncio
-    async def test_returns_correct_model(self, async_instance: AsyncOFSC):
+    async def test_returns_correct_model(self, mock_instance: AsyncOFSC):
         """Test that get_populate_map_layers_status returns PopulateStatusResponse."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -26,8 +26,8 @@ class TestAsyncGetPopulateMapLayersStatus:
         }
         mock_response.raise_for_status = Mock()
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_populate_map_layers_status(12345)
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_populate_map_layers_status(12345)
 
         assert isinstance(result, PopulateStatusResponse)
         assert result.status == "completed"
@@ -35,7 +35,7 @@ class TestAsyncGetPopulateMapLayersStatus:
         assert result.downloadId == 12345
 
     @pytest.mark.asyncio
-    async def test_with_partial_fields(self, async_instance: AsyncOFSC):
+    async def test_with_partial_fields(self, mock_instance: AsyncOFSC):
         """Test get_populate_map_layers_status with partial response (pending status)."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -45,8 +45,8 @@ class TestAsyncGetPopulateMapLayersStatus:
         }
         mock_response.raise_for_status = Mock()
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_populate_map_layers_status(99999)
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_populate_map_layers_status(99999)
 
         assert isinstance(result, PopulateStatusResponse)
         assert result.status == "pending"
@@ -54,7 +54,7 @@ class TestAsyncGetPopulateMapLayersStatus:
         assert result.downloadId == 99999
 
     @pytest.mark.asyncio
-    async def test_links_removed(self, async_instance: AsyncOFSC):
+    async def test_links_removed(self, mock_instance: AsyncOFSC):
         """Test that links field is removed from response."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -65,8 +65,8 @@ class TestAsyncGetPopulateMapLayersStatus:
         }
         mock_response.raise_for_status = Mock()
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_populate_map_layers_status(1)
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_populate_map_layers_status(1)
 
         assert isinstance(result, PopulateStatusResponse)
         assert not hasattr(result, "links")
@@ -79,7 +79,7 @@ class TestAsyncGetPopulateWorkzoneShapesStatus:
     """Model validation tests for get_populate_workzone_shapes_status."""
 
     @pytest.mark.asyncio
-    async def test_returns_correct_model(self, async_instance: AsyncOFSC):
+    async def test_returns_correct_model(self, mock_instance: AsyncOFSC):
         """Test that get_populate_workzone_shapes_status returns PopulateStatusResponse."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -90,10 +90,8 @@ class TestAsyncGetPopulateWorkzoneShapesStatus:
         }
         mock_response.raise_for_status = Mock()
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_populate_workzone_shapes_status(
-            67890
-        )
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_populate_workzone_shapes_status(67890)
 
         assert isinstance(result, PopulateStatusResponse)
         assert result.status == "completed"
@@ -101,7 +99,7 @@ class TestAsyncGetPopulateWorkzoneShapesStatus:
         assert result.downloadId == 67890
 
     @pytest.mark.asyncio
-    async def test_with_partial_fields(self, async_instance: AsyncOFSC):
+    async def test_with_partial_fields(self, mock_instance: AsyncOFSC):
         """Test get_populate_workzone_shapes_status with partial response."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -111,10 +109,8 @@ class TestAsyncGetPopulateWorkzoneShapesStatus:
         }
         mock_response.raise_for_status = Mock()
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_populate_workzone_shapes_status(
-            55555
-        )
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_populate_workzone_shapes_status(55555)
 
         assert isinstance(result, PopulateStatusResponse)
         assert result.status == "in_progress"
@@ -122,15 +118,15 @@ class TestAsyncGetPopulateWorkzoneShapesStatus:
         assert result.downloadId == 55555
 
     @pytest.mark.asyncio
-    async def test_all_fields_optional(self, async_instance: AsyncOFSC):
+    async def test_all_fields_optional(self, mock_instance: AsyncOFSC):
         """Test that all fields are optional (empty response)."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {}
         mock_response.raise_for_status = Mock()
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_populate_workzone_shapes_status(1)
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_populate_workzone_shapes_status(1)
 
         assert isinstance(result, PopulateStatusResponse)
         assert result.status is None
@@ -138,7 +134,7 @@ class TestAsyncGetPopulateWorkzoneShapesStatus:
         assert result.downloadId is None
 
     @pytest.mark.asyncio
-    async def test_links_removed(self, async_instance: AsyncOFSC):
+    async def test_links_removed(self, mock_instance: AsyncOFSC):
         """Test that links field is removed from response."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -149,8 +145,8 @@ class TestAsyncGetPopulateWorkzoneShapesStatus:
         }
         mock_response.raise_for_status = Mock()
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_populate_workzone_shapes_status(1)
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_populate_workzone_shapes_status(1)
 
         assert isinstance(result, PopulateStatusResponse)
         assert not hasattr(result, "links")

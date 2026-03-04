@@ -39,6 +39,7 @@ class TestAsyncGetPropertiesLive:
             assert isinstance(properties.items[0], Property)
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetProperties:
     """Test async get_properties method."""
 
@@ -85,6 +86,7 @@ class TestAsyncGetProperties:
         assert properties.totalResults >= 0
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetProperty:
     """Test async get_property method."""
 
@@ -139,6 +141,7 @@ class TestAsyncGetProperty:
         assert exc_info.value.status_code == 404
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetEnumerationValues:
     """Test async get_enumeration_values method."""
 
@@ -359,6 +362,7 @@ class TestAsyncCreateOrUpdateEnumerationValue:
         )
 
     @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
     async def test_create_or_update_enumeration_value_not_found(
         self, async_instance: AsyncOFSC
     ):
@@ -546,6 +550,7 @@ class TestAsyncCreateOrUpdateEnumerationValue:
             )
 
     @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
     async def test_country_code_property_cannot_be_updated(
         self, async_instance: AsyncOFSC
     ):

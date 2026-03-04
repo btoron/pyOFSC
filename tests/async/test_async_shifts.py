@@ -101,7 +101,7 @@ class TestAsyncGetShiftsModel:
     """Model validation tests for get_shifts."""
 
     @pytest.mark.asyncio
-    async def test_get_shifts_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_shifts_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_shifts returns ShiftListResponse model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -130,8 +130,8 @@ class TestAsyncGetShiftsModel:
             "links": [],
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_shifts()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_shifts()
 
         assert isinstance(result, ShiftListResponse)
         assert len(result.items) == 2
@@ -139,7 +139,7 @@ class TestAsyncGetShiftsModel:
         assert result.items[1].label == "on-call"
 
     @pytest.mark.asyncio
-    async def test_get_shifts_field_types(self, async_instance: AsyncOFSC):
+    async def test_get_shifts_field_types(self, mock_instance: AsyncOFSC):
         """Test that fields have correct types."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -158,8 +158,8 @@ class TestAsyncGetShiftsModel:
             "totalResults": 1,
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_shifts()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_shifts()
 
         assert isinstance(result.items[0].label, str)
         assert isinstance(result.items[0].name, str)
@@ -200,7 +200,7 @@ class TestAsyncGetShiftModel:
     """Model validation tests for get_shift."""
 
     @pytest.mark.asyncio
-    async def test_get_shift_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_shift_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_shift returns Shift model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -214,8 +214,8 @@ class TestAsyncGetShiftModel:
             "points": 100,
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_shift("TEST_SHIFT")
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_shift("TEST_SHIFT")
 
         assert isinstance(result, Shift)
         assert result.label == "TEST_SHIFT"

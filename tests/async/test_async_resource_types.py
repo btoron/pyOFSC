@@ -30,6 +30,7 @@ class TestAsyncGetResourceTypesLive:
             assert isinstance(resource_types.items[0], ResourceType)
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetResourceTypes:
     """Test async get_resource_types method."""
 

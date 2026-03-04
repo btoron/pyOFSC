@@ -39,8 +39,6 @@ def test_inventory_types_create_replace(instance, request_logging):
     assert metadata_response.items, "No inventory types available"
     label = metadata_response.items[0].label
 
-    inv_type = instance.metadata.get_inventory_type(
-        label, response_type=OBJ_RESPONSE
-    )
+    inv_type = instance.metadata.get_inventory_type(label, response_type=OBJ_RESPONSE)
     assert isinstance(inv_type, InventoryType)
     assert inv_type.label == label

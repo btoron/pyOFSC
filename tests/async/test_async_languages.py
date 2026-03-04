@@ -30,6 +30,7 @@ class TestAsyncGetLanguagesLive:
             assert isinstance(languages.items[0], Language)
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetLanguages:
     """Test async get_languages method."""
 

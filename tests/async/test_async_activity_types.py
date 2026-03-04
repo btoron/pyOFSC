@@ -33,6 +33,7 @@ class TestAsyncGetActivityTypesLive:
             assert isinstance(activity_types.items[0], ActivityType)
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetActivityTypes:
     """Test async get_activity_types method."""
 

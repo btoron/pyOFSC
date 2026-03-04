@@ -98,7 +98,7 @@ class TestAsyncGetFormsModel:
     """Model validation tests for get_forms."""
 
     @pytest.mark.asyncio
-    async def test_get_forms_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_forms_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_forms returns FormListResponse model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -127,8 +127,8 @@ class TestAsyncGetFormsModel:
             "links": [],
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_forms()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_forms()
 
         assert isinstance(result, FormListResponse)
         assert len(result.items) == 2
@@ -136,7 +136,7 @@ class TestAsyncGetFormsModel:
         assert result.items[1].label == "another_form"
 
     @pytest.mark.asyncio
-    async def test_get_forms_field_types(self, async_instance: AsyncOFSC):
+    async def test_get_forms_field_types(self, mock_instance: AsyncOFSC):
         """Test that fields have correct types."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -153,8 +153,8 @@ class TestAsyncGetFormsModel:
             "totalResults": 1,
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_forms()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_forms()
 
         assert isinstance(result.items[0].label, str)
         assert isinstance(result.items[0].name, str)
@@ -195,7 +195,7 @@ class TestAsyncGetFormModel:
     """Model validation tests for get_form."""
 
     @pytest.mark.asyncio
-    async def test_get_form_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_form_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_form returns Form model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -208,8 +208,8 @@ class TestAsyncGetFormModel:
             "content": '{"formatVersion":"1.1","items":[]}',
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_form("TEST_FORM")
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_form("TEST_FORM")
 
         assert isinstance(result, Form)
         assert result.label == "TEST_FORM"

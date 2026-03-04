@@ -59,15 +59,13 @@ class TestAsyncImportPluginFileMock:
     """Mock tests for import_plugin_file."""
 
     @pytest.mark.asyncio
-    async def test_import_plugin_file_success(self, async_instance: AsyncOFSC):
+    async def test_import_plugin_file_success(self, mock_instance: AsyncOFSC):
         """Test import_plugin_file returns None on 204."""
         mock_response = Mock()
         mock_response.status_code = 204
 
-        async_instance.metadata._client.post = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.import_plugin_file(
-            Path("tests/test.xml")
-        )
+        mock_instance.metadata._client.post = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.import_plugin_file(Path("tests/test.xml"))
 
         assert result is None
 
@@ -76,12 +74,12 @@ class TestAsyncImportPluginMock:
     """Mock tests for import_plugin."""
 
     @pytest.mark.asyncio
-    async def test_import_plugin_success(self, async_instance: AsyncOFSC):
+    async def test_import_plugin_success(self, mock_instance: AsyncOFSC):
         """Test import_plugin returns None on 204."""
         mock_response = Mock()
         mock_response.status_code = 204
 
-        async_instance.metadata._client.post = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.import_plugin("<plugin></plugin>")
+        mock_instance.metadata._client.post = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.import_plugin("<plugin></plugin>")
 
         assert result is None

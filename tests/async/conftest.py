@@ -24,6 +24,17 @@ async def async_instance():
 
 
 @pytest.fixture
+async def mock_instance():
+    """Async OFSC instance with dummy credentials for mocked tests."""
+    async with AsyncOFSC(
+        clientID="test",
+        companyName="test",
+        secret="test",
+    ) as instance:
+        yield instance
+
+
+@pytest.fixture
 async def bucket_activity_type(async_instance):
     """Get a bucket-compatible activity type label for creating test activities."""
     activity_types = await async_instance.metadata.get_activity_types()

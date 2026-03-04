@@ -72,14 +72,14 @@ class TestAsyncGetActivities:
     """Model validation tests for get_activities."""
 
     @pytest.mark.asyncio
-    async def test_get_activities_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_activities_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_activities returns ActivityListResponse model."""
         # This test will use the actual API
         # Skip if no credentials available
         pytest.skip("Requires API credentials and specific date range")
 
     @pytest.mark.asyncio
-    async def test_get_activities_pagination(self, async_instance: AsyncOFSC):
+    async def test_get_activities_pagination(self, mock_instance: AsyncOFSC):
         """Test get_activities with pagination parameters."""
         pytest.skip("Requires API credentials and specific date range")
 

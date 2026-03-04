@@ -33,7 +33,7 @@ class TestAsyncGetActivityDurationStats:
     """Mocked tests for get_activity_duration_stats."""
 
     @pytest.mark.asyncio
-    async def test_returns_model(self, async_instance: AsyncOFSC):
+    async def test_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_activity_duration_stats returns ActivityDurationStatsList."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -54,9 +54,9 @@ class TestAsyncGetActivityDurationStats:
             "limit": 100,
         }
         mock_response.raise_for_status = Mock()
-        async_instance.statistics._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.statistics._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.statistics.get_activity_duration_stats()
+        result = await mock_instance.statistics.get_activity_duration_stats()
 
         assert isinstance(result, ActivityDurationStatsList)
         assert len(result.items) == 1
@@ -105,7 +105,7 @@ class TestAsyncGetActivityDurationStats:
         assert params["akey"] == "KEY1"
 
     @pytest.mark.asyncio
-    async def test_field_types(self, async_instance: AsyncOFSC):
+    async def test_field_types(self, mock_instance: AsyncOFSC):
         """Test that fields have correct types."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -122,9 +122,9 @@ class TestAsyncGetActivityDurationStats:
             "totalResults": 1,
         }
         mock_response.raise_for_status = Mock()
-        async_instance.statistics._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.statistics._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.statistics.get_activity_duration_stats()
+        result = await mock_instance.statistics.get_activity_duration_stats()
 
         item = result.items[0]
         assert isinstance(item.resourceId, str)
@@ -166,7 +166,7 @@ class TestAsyncGetActivityTravelStats:
     """Mocked tests for get_activity_travel_stats."""
 
     @pytest.mark.asyncio
-    async def test_returns_model(self, async_instance: AsyncOFSC):
+    async def test_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_activity_travel_stats returns ActivityTravelStatsList."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -187,9 +187,9 @@ class TestAsyncGetActivityTravelStats:
             "hasMore": False,
         }
         mock_response.raise_for_status = Mock()
-        async_instance.statistics._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.statistics._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.statistics.get_activity_travel_stats()
+        result = await mock_instance.statistics.get_activity_travel_stats()
 
         assert isinstance(result, ActivityTravelStatsList)
         assert len(result.items) == 1
@@ -232,7 +232,7 @@ class TestAsyncGetActivityTravelStats:
         assert params["keyId"] == 42
 
     @pytest.mark.asyncio
-    async def test_field_types(self, async_instance: AsyncOFSC):
+    async def test_field_types(self, mock_instance: AsyncOFSC):
         """Test that fields have correct types for travel stats."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -250,9 +250,9 @@ class TestAsyncGetActivityTravelStats:
             "totalResults": 1,
         }
         mock_response.raise_for_status = Mock()
-        async_instance.statistics._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.statistics._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.statistics.get_activity_travel_stats()
+        result = await mock_instance.statistics.get_activity_travel_stats()
 
         item = result.items[0]
         assert isinstance(item.tkey, str)
@@ -261,7 +261,7 @@ class TestAsyncGetActivityTravelStats:
         assert isinstance(item.org, list)
 
     @pytest.mark.asyncio
-    async def test_auth_error(self, async_instance: AsyncOFSC):
+    async def test_auth_error(self, mock_instance: AsyncOFSC):
         """Test that 401 raises OFSCAuthenticationError for travel stats."""
         import httpx
 
@@ -278,10 +278,10 @@ class TestAsyncGetActivityTravelStats:
         http_error = httpx.HTTPStatusError(
             "401", request=mock_request, response=mock_response
         )
-        async_instance.statistics._client.get = AsyncMock(side_effect=http_error)
+        mock_instance.statistics._client.get = AsyncMock(side_effect=http_error)
 
         with pytest.raises(OFSCAuthenticationError):
-            await async_instance.statistics.get_activity_travel_stats()
+            await mock_instance.statistics.get_activity_travel_stats()
 
 
 # ---------------------------------------------------------------------------
@@ -293,7 +293,7 @@ class TestAsyncGetAirlineDistanceBasedTravel:
     """Mocked tests for get_airline_distance_based_travel."""
 
     @pytest.mark.asyncio
-    async def test_returns_model(self, async_instance: AsyncOFSC):
+    async def test_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_airline_distance_based_travel returns AirlineDistanceBasedTravelList."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -314,9 +314,9 @@ class TestAsyncGetAirlineDistanceBasedTravel:
             "hasMore": False,
         }
         mock_response.raise_for_status = Mock()
-        async_instance.statistics._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.statistics._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.statistics.get_airline_distance_based_travel()
+        result = await mock_instance.statistics.get_airline_distance_based_travel()
 
         assert isinstance(result, AirlineDistanceBasedTravelList)
         assert len(result.items) == 1
@@ -362,7 +362,7 @@ class TestAsyncGetAirlineDistanceBasedTravel:
         assert params["keyId"] == 1
 
     @pytest.mark.asyncio
-    async def test_field_types(self, async_instance: AsyncOFSC):
+    async def test_field_types(self, mock_instance: AsyncOFSC):
         """Test that fields have correct types for airline distance travel."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -378,9 +378,9 @@ class TestAsyncGetAirlineDistanceBasedTravel:
             "totalResults": 1,
         }
         mock_response.raise_for_status = Mock()
-        async_instance.statistics._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.statistics._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.statistics.get_airline_distance_based_travel()
+        result = await mock_instance.statistics.get_airline_distance_based_travel()
 
         item = result.items[0]
         assert isinstance(item.level, str)
@@ -391,7 +391,7 @@ class TestAsyncGetAirlineDistanceBasedTravel:
         assert item.data[0].estimated == 12
 
     @pytest.mark.asyncio
-    async def test_auth_error(self, async_instance: AsyncOFSC):
+    async def test_auth_error(self, mock_instance: AsyncOFSC):
         """Test that 401 raises OFSCAuthenticationError for airline distance travel."""
         import httpx
 
@@ -408,10 +408,10 @@ class TestAsyncGetAirlineDistanceBasedTravel:
         http_error = httpx.HTTPStatusError(
             "401", request=mock_request, response=mock_response
         )
-        async_instance.statistics._client.get = AsyncMock(side_effect=http_error)
+        mock_instance.statistics._client.get = AsyncMock(side_effect=http_error)
 
         with pytest.raises(OFSCAuthenticationError):
-            await async_instance.statistics.get_airline_distance_based_travel()
+            await mock_instance.statistics.get_airline_distance_based_travel()
 
 
 # ---------------------------------------------------------------------------
@@ -592,15 +592,15 @@ class TestAsyncUpdateActivityDurationStats:
     """Mocked tests for update_activity_duration_stats."""
 
     @pytest.mark.asyncio
-    async def test_returns_model(self, async_instance: AsyncOFSC):
+    async def test_returns_model(self, mock_instance: AsyncOFSC):
         """Test that update_activity_duration_stats returns StatisticsPatchResponse."""
         mock_response = _make_mock_patch_response()
-        async_instance.statistics._client.patch = AsyncMock(return_value=mock_response)
+        mock_instance.statistics._client.patch = AsyncMock(return_value=mock_response)
 
         request_data = ActivityDurationStatRequestList(
             items=[{"resourceId": "RES001", "akey": "INSTALL", "override": 60}]
         )
-        result = await async_instance.statistics.update_activity_duration_stats(
+        result = await mock_instance.statistics.update_activity_duration_stats(
             request_data
         )
 
@@ -624,19 +624,19 @@ class TestAsyncUpdateActivityDurationStats:
         assert call_kwargs["json"]["items"][0]["akey"] == "REPAIR"
 
     @pytest.mark.asyncio
-    async def test_with_dict_input(self, async_instance: AsyncOFSC):
+    async def test_with_dict_input(self, mock_instance: AsyncOFSC):
         """Test that raw dict input is accepted."""
         mock_response = _make_mock_patch_response()
-        async_instance.statistics._client.patch = AsyncMock(return_value=mock_response)
+        mock_instance.statistics._client.patch = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.statistics.update_activity_duration_stats(
+        result = await mock_instance.statistics.update_activity_duration_stats(
             {"items": [{"resourceId": "R1", "akey": "VISIT", "override": 30}]}
         )
 
         assert isinstance(result, StatisticsPatchResponse)
 
     @pytest.mark.asyncio
-    async def test_auth_error(self, async_instance: AsyncOFSC):
+    async def test_auth_error(self, mock_instance: AsyncOFSC):
         """Test that 401 raises OFSCAuthenticationError."""
         import httpx
 
@@ -648,15 +648,15 @@ class TestAsyncUpdateActivityDurationStats:
         http_error = httpx.HTTPStatusError(
             "401", request=mock_request, response=mock_response
         )
-        async_instance.statistics._client.patch = AsyncMock(side_effect=http_error)
+        mock_instance.statistics._client.patch = AsyncMock(side_effect=http_error)
 
         with pytest.raises(OFSCAuthenticationError):
-            await async_instance.statistics.update_activity_duration_stats(
+            await mock_instance.statistics.update_activity_duration_stats(
                 {"items": [{"resourceId": "", "akey": "X", "override": 0}]}
             )
 
     @pytest.mark.asyncio
-    async def test_validation_error(self, async_instance: AsyncOFSC):
+    async def test_validation_error(self, mock_instance: AsyncOFSC):
         """Test that 400 raises OFSCValidationError."""
         import httpx
 
@@ -668,10 +668,10 @@ class TestAsyncUpdateActivityDurationStats:
         http_error = httpx.HTTPStatusError(
             "400", request=mock_request, response=mock_response
         )
-        async_instance.statistics._client.patch = AsyncMock(side_effect=http_error)
+        mock_instance.statistics._client.patch = AsyncMock(side_effect=http_error)
 
         with pytest.raises(OFSCValidationError):
-            await async_instance.statistics.update_activity_duration_stats(
+            await mock_instance.statistics.update_activity_duration_stats(
                 {"items": [{"resourceId": "", "akey": "X", "override": 0}]}
             )
 
@@ -685,15 +685,15 @@ class TestAsyncUpdateActivityTravelStats:
     """Mocked tests for update_activity_travel_stats."""
 
     @pytest.mark.asyncio
-    async def test_returns_model(self, async_instance: AsyncOFSC):
+    async def test_returns_model(self, mock_instance: AsyncOFSC):
         """Test that update_activity_travel_stats returns StatisticsPatchResponse."""
         mock_response = _make_mock_patch_response()
-        async_instance.statistics._client.patch = AsyncMock(return_value=mock_response)
+        mock_instance.statistics._client.patch = AsyncMock(return_value=mock_response)
 
         request_data = ActivityTravelStatRequestList(
             items=[{"fkey": "FK1", "tkey": "TK1", "override": 15}]
         )
-        result = await async_instance.statistics.update_activity_travel_stats(
+        result = await mock_instance.statistics.update_activity_travel_stats(
             request_data
         )
 
@@ -701,12 +701,12 @@ class TestAsyncUpdateActivityTravelStats:
         assert result.updatedRecords == 1
 
     @pytest.mark.asyncio
-    async def test_with_dict_input(self, async_instance: AsyncOFSC):
+    async def test_with_dict_input(self, mock_instance: AsyncOFSC):
         """Test that raw dict input is accepted."""
         mock_response = _make_mock_patch_response()
-        async_instance.statistics._client.patch = AsyncMock(return_value=mock_response)
+        mock_instance.statistics._client.patch = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.statistics.update_activity_travel_stats(
+        result = await mock_instance.statistics.update_activity_travel_stats(
             {"items": [{"fkey": "A", "tkey": "B", "override": 5}]}
         )
 
@@ -728,7 +728,7 @@ class TestAsyncUpdateActivityTravelStats:
         assert call_kwargs["json"]["items"][0]["keyId"] == 42
 
     @pytest.mark.asyncio
-    async def test_conflict_error(self, async_instance: AsyncOFSC):
+    async def test_conflict_error(self, mock_instance: AsyncOFSC):
         """Test that 409 raises OFSCConflictError."""
         import httpx
 
@@ -742,15 +742,15 @@ class TestAsyncUpdateActivityTravelStats:
         http_error = httpx.HTTPStatusError(
             "409", request=mock_request, response=mock_response
         )
-        async_instance.statistics._client.patch = AsyncMock(side_effect=http_error)
+        mock_instance.statistics._client.patch = AsyncMock(side_effect=http_error)
 
         with pytest.raises(OFSCConflictError):
-            await async_instance.statistics.update_activity_travel_stats(
+            await mock_instance.statistics.update_activity_travel_stats(
                 {"items": [{"fkey": "A", "tkey": "B", "override": 5}]}
             )
 
     @pytest.mark.asyncio
-    async def test_auth_error(self, async_instance: AsyncOFSC):
+    async def test_auth_error(self, mock_instance: AsyncOFSC):
         """Test that 401 raises OFSCAuthenticationError."""
         import httpx
 
@@ -762,10 +762,10 @@ class TestAsyncUpdateActivityTravelStats:
         http_error = httpx.HTTPStatusError(
             "401", request=mock_request, response=mock_response
         )
-        async_instance.statistics._client.patch = AsyncMock(side_effect=http_error)
+        mock_instance.statistics._client.patch = AsyncMock(side_effect=http_error)
 
         with pytest.raises(OFSCAuthenticationError):
-            await async_instance.statistics.update_activity_travel_stats(
+            await mock_instance.statistics.update_activity_travel_stats(
                 {"items": [{"fkey": "A", "tkey": "B", "override": 5}]}
             )
 
@@ -779,15 +779,15 @@ class TestAsyncUpdateAirlineDistanceBasedTravel:
     """Mocked tests for update_airline_distance_based_travel."""
 
     @pytest.mark.asyncio
-    async def test_returns_model(self, async_instance: AsyncOFSC):
+    async def test_returns_model(self, mock_instance: AsyncOFSC):
         """Test that update_airline_distance_based_travel returns StatisticsPatchResponse."""
         mock_response = _make_mock_patch_response()
-        async_instance.statistics._client.patch = AsyncMock(return_value=mock_response)
+        mock_instance.statistics._client.patch = AsyncMock(return_value=mock_response)
 
         request_data = AirlineDistanceBasedTravelRequestList(
             items=[{"data": [{"distance": 10, "override": 12}]}]
         )
-        result = await async_instance.statistics.update_airline_distance_based_travel(
+        result = await mock_instance.statistics.update_airline_distance_based_travel(
             request_data
         )
 
@@ -795,12 +795,12 @@ class TestAsyncUpdateAirlineDistanceBasedTravel:
         assert result.updatedRecords == 1
 
     @pytest.mark.asyncio
-    async def test_with_dict_input(self, async_instance: AsyncOFSC):
+    async def test_with_dict_input(self, mock_instance: AsyncOFSC):
         """Test that raw dict input is accepted."""
         mock_response = _make_mock_patch_response()
-        async_instance.statistics._client.patch = AsyncMock(return_value=mock_response)
+        mock_instance.statistics._client.patch = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.statistics.update_airline_distance_based_travel(
+        result = await mock_instance.statistics.update_airline_distance_based_travel(
             {"items": [{"data": [{"distance": 5, "override": 6}], "key": "WEST"}]}
         )
 
@@ -834,7 +834,7 @@ class TestAsyncUpdateAirlineDistanceBasedTravel:
         assert item["level"] == "travelkey"
 
     @pytest.mark.asyncio
-    async def test_conflict_error(self, async_instance: AsyncOFSC):
+    async def test_conflict_error(self, mock_instance: AsyncOFSC):
         """Test that 409 raises OFSCConflictError."""
         import httpx
 
@@ -846,15 +846,15 @@ class TestAsyncUpdateAirlineDistanceBasedTravel:
         http_error = httpx.HTTPStatusError(
             "409", request=mock_request, response=mock_response
         )
-        async_instance.statistics._client.patch = AsyncMock(side_effect=http_error)
+        mock_instance.statistics._client.patch = AsyncMock(side_effect=http_error)
 
         with pytest.raises(OFSCConflictError):
-            await async_instance.statistics.update_airline_distance_based_travel(
+            await mock_instance.statistics.update_airline_distance_based_travel(
                 {"items": [{"data": [{"distance": 5, "override": 6}]}]}
             )
 
     @pytest.mark.asyncio
-    async def test_auth_error(self, async_instance: AsyncOFSC):
+    async def test_auth_error(self, mock_instance: AsyncOFSC):
         """Test that 401 raises OFSCAuthenticationError."""
         import httpx
 
@@ -866,10 +866,10 @@ class TestAsyncUpdateAirlineDistanceBasedTravel:
         http_error = httpx.HTTPStatusError(
             "401", request=mock_request, response=mock_response
         )
-        async_instance.statistics._client.patch = AsyncMock(side_effect=http_error)
+        mock_instance.statistics._client.patch = AsyncMock(side_effect=http_error)
 
         with pytest.raises(OFSCAuthenticationError):
-            await async_instance.statistics.update_airline_distance_based_travel(
+            await mock_instance.statistics.update_airline_distance_based_travel(
                 {"items": [{"data": [{"distance": 5, "override": 6}]}]}
             )
 

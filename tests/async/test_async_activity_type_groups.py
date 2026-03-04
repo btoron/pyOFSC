@@ -33,6 +33,7 @@ class TestAsyncGetActivityTypeGroupsLive:
             assert isinstance(activity_type_groups.items[0], ActivityTypeGroup)
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetActivityTypeGroups:
     """Test async get_activity_type_groups method."""
 

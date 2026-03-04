@@ -323,6 +323,7 @@ def test_workskill_model_base():
     assert json.loads(obj.model_dump_json())["label"] == base["label"]
 
 
+@pytest.mark.uses_real_data
 def test_workskilllist_connected(instance):
     metadata_response = instance.metadata.get_workskills(response_type=OBJ_RESPONSE)
     assert isinstance(metadata_response, WorkskillListResponse)

@@ -37,7 +37,7 @@ def assertion() -> str:
     payload["iat"] = datetime.now()
     payload["exp"] = datetime.now() + timedelta(minutes=6000)
     payload["aud"] = (
-        f'ofsc:{os.environ.get("OFSC_COMPANY")}:{os.environ.get("OFSC_CLIENT_ID")}'
+        f"ofsc:{os.environ.get('OFSC_COMPANY')}:{os.environ.get('OFSC_CLIENT_ID')}"
     )
     payload["scope"] = "/REST"
     key = Path("tests/keys/ofsc.key").read_text()

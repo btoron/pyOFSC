@@ -38,6 +38,7 @@ class TestAsyncGetLinkTemplatesLive:
             assert isinstance(link_templates.items[0], LinkTemplate)
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetLinkTemplates:
     """Test async get_link_templates method."""
 

@@ -227,7 +227,7 @@ class TestAsyncGetUsers:
     """Model validation tests for get_users (mocked)."""
 
     @pytest.mark.asyncio
-    async def test_get_users_with_model(self, async_instance: AsyncOFSC):
+    async def test_get_users_with_model(self, mock_instance: AsyncOFSC):
         """Test that get_users returns UserListResponse model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -260,9 +260,9 @@ class TestAsyncGetUsers:
             ],
         }
         mock_response.raise_for_status = Mock()
-        async_instance.core._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.core._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.core.get_users()
+        result = await mock_instance.core.get_users()
 
         assert isinstance(result, UserListResponse)
         assert len(result.items) == 2
@@ -271,7 +271,7 @@ class TestAsyncGetUsers:
         assert result.items[1].login == "user2"
 
     @pytest.mark.asyncio
-    async def test_get_users_pagination(self, async_instance: AsyncOFSC):
+    async def test_get_users_pagination(self, mock_instance: AsyncOFSC):
         """Test get_users passes pagination params."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -289,18 +289,18 @@ class TestAsyncGetUsers:
             ],
         }
         mock_response.raise_for_status = Mock()
-        async_instance.core._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.core._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.core.get_users(offset=2, limit=2)
+        result = await mock_instance.core.get_users(offset=2, limit=2)
 
         assert isinstance(result, UserListResponse)
         assert len(result.items) == 1
         # Verify the mock was called with correct params
-        call_kwargs = async_instance.core._client.get.call_args
+        call_kwargs = mock_instance.core._client.get.call_args
         assert call_kwargs.kwargs["params"] == {"offset": 2, "limit": 2}
 
     @pytest.mark.asyncio
-    async def test_get_users_total_results(self, async_instance: AsyncOFSC):
+    async def test_get_users_total_results(self, mock_instance: AsyncOFSC):
         """Test that totalResults is populated."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -312,15 +312,15 @@ class TestAsyncGetUsers:
             "items": [],
         }
         mock_response.raise_for_status = Mock()
-        async_instance.core._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.core._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.core.get_users()
+        result = await mock_instance.core.get_users()
 
         assert result.totalResults == 42
         assert isinstance(result.totalResults, int)
 
     @pytest.mark.asyncio
-    async def test_get_users_field_types(self, async_instance: AsyncOFSC):
+    async def test_get_users_field_types(self, mock_instance: AsyncOFSC):
         """Test that fields have correct types."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -343,9 +343,9 @@ class TestAsyncGetUsers:
             ],
         }
         mock_response.raise_for_status = Mock()
-        async_instance.core._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.core._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.core.get_users()
+        result = await mock_instance.core.get_users()
         user = result.items[0]
 
         assert isinstance(user.login, str)
@@ -359,7 +359,7 @@ class TestAsyncGetUser:
     """Model validation tests for get_user (mocked)."""
 
     @pytest.mark.asyncio
-    async def test_get_user_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_user_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_user returns User model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -375,9 +375,9 @@ class TestAsyncGetUser:
             "resourceInternalIds": [1],
         }
         mock_response.raise_for_status = Mock()
-        async_instance.core._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.core._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.core.get_user("testuser")
+        result = await mock_instance.core.get_user("testuser")
 
         assert isinstance(result, User)
         assert result.login == "testuser"
@@ -385,7 +385,7 @@ class TestAsyncGetUser:
         assert result.userType == "technician"
 
     @pytest.mark.asyncio
-    async def test_get_user_all_optional_fields(self, async_instance: AsyncOFSC):
+    async def test_get_user_all_optional_fields(self, mock_instance: AsyncOFSC):
         """Test get_user handles all optional fields."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -410,9 +410,9 @@ class TestAsyncGetUser:
             "links": [],
         }
         mock_response.raise_for_status = Mock()
-        async_instance.core._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.core._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.core.get_user("fulluser")
+        result = await mock_instance.core.get_user("fulluser")
 
         assert isinstance(result, User)
         assert result.mainResourceId == "MAIN_RES"
@@ -558,7 +558,7 @@ class TestAsyncUserCollabGroups:
     """Mocked tests for collaboration group methods."""
 
     @pytest.mark.asyncio
-    async def test_get_user_collab_groups_model(self, async_instance: AsyncOFSC):
+    async def test_get_user_collab_groups_model(self, mock_instance: AsyncOFSC):
         """Test get_user_collab_groups returns CollaborationGroupsResponse."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -569,9 +569,9 @@ class TestAsyncUserCollabGroups:
             ]
         }
         mock_response.raise_for_status = Mock()
-        async_instance.core._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.core._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.core.get_user_collab_groups("testuser")
+        result = await mock_instance.core.get_user_collab_groups("testuser")
 
         assert isinstance(result, CollaborationGroupsResponse)
         assert len(result) == 2
@@ -579,7 +579,7 @@ class TestAsyncUserCollabGroups:
         assert result[0].name == "Group A"
 
     @pytest.mark.asyncio
-    async def test_set_user_collab_groups_model(self, async_instance: AsyncOFSC):
+    async def test_set_user_collab_groups_model(self, mock_instance: AsyncOFSC):
         """Test set_user_collab_groups sends correct body and returns model."""
         mock_response = Mock()
         mock_response.status_code = 201
@@ -589,17 +589,15 @@ class TestAsyncUserCollabGroups:
             ]
         }
         mock_response.raise_for_status = Mock()
-        async_instance.core._client.post = AsyncMock(return_value=mock_response)
+        mock_instance.core._client.post = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.core.set_user_collab_groups(
-            "testuser", ["GroupX"]
-        )
+        result = await mock_instance.core.set_user_collab_groups("testuser", ["GroupX"])
 
         assert isinstance(result, CollaborationGroupsResponse)
         assert result[0].name == "GroupX"
 
         # Verify body format
-        call_kwargs = async_instance.core._client.post.call_args
+        call_kwargs = mock_instance.core._client.post.call_args
         assert call_kwargs.kwargs["json"] == {"items": [{"name": "GroupX"}]}
 
     @pytest.mark.asyncio
@@ -634,32 +632,32 @@ class TestAsyncUserFileProperty:
     """Mocked tests for file property methods."""
 
     @pytest.mark.asyncio
-    async def test_get_user_property_returns_bytes(self, async_instance: AsyncOFSC):
+    async def test_get_user_property_returns_bytes(self, mock_instance: AsyncOFSC):
         """Test get_user_property returns bytes."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.content = b"fake_binary_data"
         mock_response.raise_for_status = Mock()
-        async_instance.core._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.core._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.core.get_user_property("testuser", "photo")
+        result = await mock_instance.core.get_user_property("testuser", "photo")
 
         assert isinstance(result, bytes)
         assert result == b"fake_binary_data"
 
         # Verify Accept header was set to octet-stream
-        call_kwargs = async_instance.core._client.get.call_args
+        call_kwargs = mock_instance.core._client.get.call_args
         assert call_kwargs.kwargs["headers"]["Accept"] == "application/octet-stream"
 
     @pytest.mark.asyncio
-    async def test_set_user_property_returns_none(self, async_instance: AsyncOFSC):
+    async def test_set_user_property_returns_none(self, mock_instance: AsyncOFSC):
         """Test set_user_property returns None on success (204)."""
         mock_response = Mock()
         mock_response.status_code = 204
         mock_response.raise_for_status = Mock()
-        async_instance.core._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.core._client.put = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.core.set_user_property(
+        result = await mock_instance.core.set_user_property(
             "testuser",
             "photo",
             b"image_data",
@@ -670,20 +668,20 @@ class TestAsyncUserFileProperty:
         assert result is None
 
         # Verify correct headers
-        call_kwargs = async_instance.core._client.put.call_args
+        call_kwargs = mock_instance.core._client.put.call_args
         headers = call_kwargs.kwargs["headers"]
         assert headers["Content-Type"] == "image/jpeg"
         assert 'filename="photo.jpg"' in headers["Content-Disposition"]
 
     @pytest.mark.asyncio
-    async def test_delete_user_property_returns_none(self, async_instance: AsyncOFSC):
+    async def test_delete_user_property_returns_none(self, mock_instance: AsyncOFSC):
         """Test delete_user_property returns None on success (204)."""
         mock_response = Mock()
         mock_response.status_code = 204
         mock_response.raise_for_status = Mock()
-        async_instance.core._client.delete = AsyncMock(return_value=mock_response)
+        mock_instance.core._client.delete = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.core.delete_user_property("testuser", "photo")
+        result = await mock_instance.core.delete_user_property("testuser", "photo")
 
         assert result is None
 
@@ -692,7 +690,7 @@ class TestAsyncUserExceptions:
     """Test exception handling for user methods."""
 
     @pytest.mark.asyncio
-    async def test_get_user_not_found_mock(self, async_instance: AsyncOFSC):
+    async def test_get_user_not_found_mock(self, mock_instance: AsyncOFSC):
         """Test get_user raises OFSCNotFoundError for 404 response."""
         import httpx
 
@@ -710,10 +708,10 @@ class TestAsyncUserExceptions:
             "404 Not Found", request=mock_request, response=mock_response
         )
         mock_response.raise_for_status = Mock(side_effect=http_error)
-        async_instance.core._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.core._client.get = AsyncMock(return_value=mock_response)
 
         with pytest.raises(OFSCNotFoundError):
-            await async_instance.core.get_user("nobody")
+            await mock_instance.core.get_user("nobody")
 
     @pytest.mark.asyncio
     async def test_create_user_invalid_data_raises_validation_error(self):

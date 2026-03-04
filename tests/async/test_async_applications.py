@@ -82,7 +82,7 @@ class TestAsyncGetApplicationsModel:
     """Model validation tests for get_applications."""
 
     @pytest.mark.asyncio
-    async def test_get_applications_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_applications_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_applications returns ApplicationListResponse model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -102,8 +102,8 @@ class TestAsyncGetApplicationsModel:
             "hasMore": False,
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_applications()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_applications()
 
         assert isinstance(result, ApplicationListResponse)
         assert len(result.items) == 1
@@ -140,7 +140,7 @@ class TestAsyncGetApplicationModel:
     """Model validation tests for get_application."""
 
     @pytest.mark.asyncio
-    async def test_get_application_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_application_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_application returns Application model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -154,8 +154,8 @@ class TestAsyncGetApplicationModel:
             "allowedCorsDomains": [],
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_application("testapp")
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_application("testapp")
 
         assert isinstance(result, Application)
         assert result.label == "testapp"

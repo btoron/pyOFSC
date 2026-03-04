@@ -24,15 +24,15 @@ class TestAsyncGetToken:
     """Mocked tests for get_token (AU002P)."""
 
     @pytest.mark.asyncio
-    async def test_returns_model(self, async_instance: AsyncOFSC):
+    async def test_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_token returns OAuthTokenResponse."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = TOKEN_RESPONSE
         mock_response.raise_for_status = Mock()
-        async_instance.oauth2._client.post = AsyncMock(return_value=mock_response)
+        mock_instance.oauth2._client.post = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.oauth2.get_token()
+        result = await mock_instance.oauth2.get_token()
 
         assert isinstance(result, OAuthTokenResponse)
         assert result.access_token == TOKEN_RESPONSE["access_token"]
@@ -107,7 +107,7 @@ class TestAsyncGetToken:
             await async_instance.oauth2.get_token()
 
     @pytest.mark.asyncio
-    async def test_bad_request_raises_validation_error(self, async_instance: AsyncOFSC):
+    async def test_bad_request_raises_validation_error(self, mock_instance: AsyncOFSC):
         """Test that a 400 response raises OFSCValidationError."""
         mock_response = Mock()
         mock_response.status_code = 400
@@ -120,10 +120,10 @@ class TestAsyncGetToken:
         error = httpx.HTTPStatusError(
             "400 Bad Request", request=Mock(), response=mock_response
         )
-        async_instance.oauth2._client.post = AsyncMock(side_effect=error)
+        mock_instance.oauth2._client.post = AsyncMock(side_effect=error)
 
         with pytest.raises(OFSCValidationError):
-            await async_instance.oauth2.get_token()
+            await mock_instance.oauth2.get_token()
 
 
 # endregion

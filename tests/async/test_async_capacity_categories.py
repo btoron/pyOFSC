@@ -129,7 +129,7 @@ class TestAsyncGetCapacityCategoriesModel:
         assert result.items[1].label == "CAT2"
 
     @pytest.mark.asyncio
-    async def test_get_capacity_categories_field_types(self, async_instance: AsyncOFSC):
+    async def test_get_capacity_categories_field_types(self, mock_instance: AsyncOFSC):
         """Test that fields have correct types."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -138,8 +138,8 @@ class TestAsyncGetCapacityCategoriesModel:
             "totalResults": 1,
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_capacity_categories()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_capacity_categories()
 
         assert isinstance(result.items[0].label, str)
         assert isinstance(result.items[0].active, bool)
@@ -180,7 +180,7 @@ class TestAsyncGetCapacityCategoryModel:
     """Model validation tests for get_capacity_category."""
 
     @pytest.mark.asyncio
-    async def test_get_capacity_category_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_capacity_category_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_capacity_category returns CapacityCategory model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -190,8 +190,8 @@ class TestAsyncGetCapacityCategoryModel:
             "active": True,
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_capacity_category("TEST_CAT")
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_capacity_category("TEST_CAT")
 
         assert isinstance(result, CapacityCategory)
         assert result.label == "TEST_CAT"

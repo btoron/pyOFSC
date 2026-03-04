@@ -110,7 +110,7 @@ class TestAsyncGetWorkskillsModel:
     """Model validation tests for get_workskills."""
 
     @pytest.mark.asyncio
-    async def test_get_workskills_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_workskills_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_workskills returns WorkskillListResponse model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -143,8 +143,8 @@ class TestAsyncGetWorkskillsModel:
             "links": [],
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_workskills()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_workskills()
 
         assert isinstance(result, WorkskillListResponse)
         assert len(result.items) == 2
@@ -152,7 +152,7 @@ class TestAsyncGetWorkskillsModel:
         assert result.items[1].label == "RES"
 
     @pytest.mark.asyncio
-    async def test_get_workskills_field_types(self, async_instance: AsyncOFSC):
+    async def test_get_workskills_field_types(self, mock_instance: AsyncOFSC):
         """Test that fields have correct types."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -168,8 +168,8 @@ class TestAsyncGetWorkskillsModel:
             "totalResults": 1,
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_workskills()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_workskills()
 
         assert isinstance(result.items[0].label, str)
         assert isinstance(result.items[0].name, str)
@@ -207,7 +207,7 @@ class TestAsyncGetWorkskillModel:
     """Model validation tests for get_workskill."""
 
     @pytest.mark.asyncio
-    async def test_get_workskill_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_workskill_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_workskill returns Workskill model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -218,8 +218,8 @@ class TestAsyncGetWorkskillModel:
             "sharing": "maximal",
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_workskill("TEST_SKILL")
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_workskill("TEST_SKILL")
 
         assert isinstance(result, Workskill)
         assert result.label == "TEST_SKILL"
@@ -296,7 +296,7 @@ class TestAsyncCreateOrUpdateWorkskill:
     """Tests for create_or_update_workskill."""
 
     @pytest.mark.asyncio
-    async def test_create_workskill(self, async_instance: AsyncOFSC):
+    async def test_create_workskill(self, mock_instance: AsyncOFSC):
         """Test creating a new work skill."""
         mock_response = Mock()
         mock_response.status_code = 201
@@ -307,14 +307,14 @@ class TestAsyncCreateOrUpdateWorkskill:
             "sharing": "maximal",
         }
 
-        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
         from ofsc.models import Workskill
 
         skill = Workskill(
             label="NEW_SKILL", name="New Skill", active=True, sharing="maximal"
         )
-        result = await async_instance.metadata.create_or_update_workskill(skill)
+        result = await mock_instance.metadata.create_or_update_workskill(skill)
 
         assert isinstance(result, Workskill)
         assert result.label == "NEW_SKILL"
@@ -322,7 +322,7 @@ class TestAsyncCreateOrUpdateWorkskill:
         assert result.active is True
 
     @pytest.mark.asyncio
-    async def test_update_workskill(self, async_instance: AsyncOFSC):
+    async def test_update_workskill(self, mock_instance: AsyncOFSC):
         """Test updating an existing work skill."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -333,14 +333,14 @@ class TestAsyncCreateOrUpdateWorkskill:
             "sharing": "summary",
         }
 
-        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
         from ofsc.models import Workskill
 
         skill = Workskill(
             label="EST", name="Updated Estimate", active=True, sharing="summary"
         )
-        result = await async_instance.metadata.create_or_update_workskill(skill)
+        result = await mock_instance.metadata.create_or_update_workskill(skill)
 
         assert isinstance(result, Workskill)
         assert result.label == "EST"
@@ -351,20 +351,20 @@ class TestAsyncDeleteWorkskill:
     """Tests for delete_workskill."""
 
     @pytest.mark.asyncio
-    async def test_delete_workskill(self, async_instance: AsyncOFSC):
+    async def test_delete_workskill(self, mock_instance: AsyncOFSC):
         """Test deleting a work skill."""
         mock_response = Mock()
         mock_response.status_code = 204
 
-        async_instance.metadata._client.delete = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.delete = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.metadata.delete_workskill("TEST_SKILL")
+        result = await mock_instance.metadata.delete_workskill("TEST_SKILL")
 
         assert result is None
-        async_instance.metadata._client.delete.assert_called_once()
+        mock_instance.metadata._client.delete.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_delete_workskill_not_found(self, async_instance: AsyncOFSC):
+    async def test_delete_workskill_not_found(self, mock_instance: AsyncOFSC):
         """Test deleting a non-existent work skill."""
         mock_response = Mock()
         mock_response.status_code = 404
@@ -377,7 +377,7 @@ class TestAsyncDeleteWorkskill:
 
         from httpx import HTTPStatusError, Request
 
-        async_instance.metadata._client.delete = AsyncMock(
+        mock_instance.metadata._client.delete = AsyncMock(
             side_effect=HTTPStatusError(
                 "404 Not Found",
                 request=Request("DELETE", "http://test"),
@@ -388,7 +388,7 @@ class TestAsyncDeleteWorkskill:
         from ofsc.exceptions import OFSCNotFoundError
 
         with pytest.raises(OFSCNotFoundError):
-            await async_instance.metadata.delete_workskill("NONEXISTENT")
+            await mock_instance.metadata.delete_workskill("NONEXISTENT")
 
 
 # === WORKSKILL CONDITIONS ===
@@ -495,7 +495,7 @@ class TestAsyncReplaceWorkskillConditions:
     """Tests for replace_workskill_conditions."""
 
     @pytest.mark.asyncio
-    async def test_replace_workskill_conditions(self, async_instance: AsyncOFSC):
+    async def test_replace_workskill_conditions(self, mock_instance: AsyncOFSC):
         """Test replacing all work skill conditions."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -513,7 +513,7 @@ class TestAsyncReplaceWorkskillConditions:
             ]
         }
 
-        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
         from ofsc.models import Condition, WorkskillCondition, WorkskillConditionList
 
@@ -531,7 +531,7 @@ class TestAsyncReplaceWorkskillConditions:
             ]
         )
 
-        result = await async_instance.metadata.replace_workskill_conditions(conditions)
+        result = await mock_instance.metadata.replace_workskill_conditions(conditions)
 
         assert isinstance(result, WorkskillConditionList)
         assert len(result.root) == 1
@@ -539,18 +539,18 @@ class TestAsyncReplaceWorkskillConditions:
         assert result.root[0].requiredLevel == 2
 
     @pytest.mark.asyncio
-    async def test_replace_workskill_conditions_empty(self, async_instance: AsyncOFSC):
+    async def test_replace_workskill_conditions_empty(self, mock_instance: AsyncOFSC):
         """Test replacing with empty list (removes all conditions)."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": []}
 
-        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
         from ofsc.models import WorkskillConditionList
 
         conditions = WorkskillConditionList([])
-        result = await async_instance.metadata.replace_workskill_conditions(conditions)
+        result = await mock_instance.metadata.replace_workskill_conditions(conditions)
 
         assert isinstance(result, WorkskillConditionList)
         assert len(result.root) == 0
@@ -632,7 +632,7 @@ class TestAsyncGetWorkskillGroupsModel:
     """Model validation tests for get_workskill_groups."""
 
     @pytest.mark.asyncio
-    async def test_get_workskill_groups_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_workskill_groups_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_workskill_groups returns WorkskillGroupListResponse model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -652,8 +652,8 @@ class TestAsyncGetWorkskillGroupsModel:
             "links": [],
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_workskill_groups()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_workskill_groups()
 
         assert isinstance(result, WorkskillGroupListResponse)
         assert len(result.items) == 1
@@ -690,7 +690,7 @@ class TestAsyncGetWorkskillGroupModel:
     """Model validation tests for get_workskill_group."""
 
     @pytest.mark.asyncio
-    async def test_get_workskill_group_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_workskill_group_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_workskill_group returns WorkskillGroup model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -704,8 +704,8 @@ class TestAsyncGetWorkskillGroupModel:
             "translations": [{"language": "en", "name": "Test Group"}],
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_workskill_group("TEST")
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_workskill_group("TEST")
 
         assert isinstance(result, WorkskillGroup)
         assert result.label == "TEST"
@@ -776,7 +776,7 @@ class TestAsyncCreateOrUpdateWorkskillGroup:
     """Tests for create_or_update_workskill_group."""
 
     @pytest.mark.asyncio
-    async def test_create_workskill_group(self, async_instance: AsyncOFSC):
+    async def test_create_workskill_group(self, mock_instance: AsyncOFSC):
         """Test creating a new work skill group."""
         mock_response = Mock()
         mock_response.status_code = 201
@@ -793,7 +793,7 @@ class TestAsyncCreateOrUpdateWorkskillGroup:
             "translations": [{"language": "en", "name": "New Group"}],
         }
 
-        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
         from ofsc.models import (
             TranslationList,
@@ -820,7 +820,7 @@ class TestAsyncCreateOrUpdateWorkskillGroup:
             ),
         )
 
-        result = await async_instance.metadata.create_or_update_workskill_group(group)
+        result = await mock_instance.metadata.create_or_update_workskill_group(group)
 
         assert isinstance(result, WorkskillGroup)
         assert result.label == "NEW_GROUP"
@@ -828,7 +828,7 @@ class TestAsyncCreateOrUpdateWorkskillGroup:
         assert result.active is True
 
     @pytest.mark.asyncio
-    async def test_update_workskill_group(self, async_instance: AsyncOFSC):
+    async def test_update_workskill_group(self, mock_instance: AsyncOFSC):
         """Test updating an existing work skill group."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -842,7 +842,7 @@ class TestAsyncCreateOrUpdateWorkskillGroup:
             "translations": [{"language": "en", "name": "Updated Test Group"}],
         }
 
-        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
         from ofsc.models import (
             TranslationList,
@@ -866,7 +866,7 @@ class TestAsyncCreateOrUpdateWorkskillGroup:
             ),
         )
 
-        result = await async_instance.metadata.create_or_update_workskill_group(group)
+        result = await mock_instance.metadata.create_or_update_workskill_group(group)
 
         assert isinstance(result, WorkskillGroup)
         assert result.label == "TEST"
@@ -878,20 +878,20 @@ class TestAsyncDeleteWorkskillGroup:
     """Tests for delete_workskill_group."""
 
     @pytest.mark.asyncio
-    async def test_delete_workskill_group(self, async_instance: AsyncOFSC):
+    async def test_delete_workskill_group(self, mock_instance: AsyncOFSC):
         """Test deleting a work skill group."""
         mock_response = Mock()
         mock_response.status_code = 204
 
-        async_instance.metadata._client.delete = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.delete = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.metadata.delete_workskill_group("TEST_GROUP")
+        result = await mock_instance.metadata.delete_workskill_group("TEST_GROUP")
 
         assert result is None
-        async_instance.metadata._client.delete.assert_called_once()
+        mock_instance.metadata._client.delete.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_delete_workskill_group_not_found(self, async_instance: AsyncOFSC):
+    async def test_delete_workskill_group_not_found(self, mock_instance: AsyncOFSC):
         """Test deleting a non-existent work skill group."""
         mock_response = Mock()
         mock_response.status_code = 404
@@ -904,7 +904,7 @@ class TestAsyncDeleteWorkskillGroup:
 
         from httpx import HTTPStatusError, Request
 
-        async_instance.metadata._client.delete = AsyncMock(
+        mock_instance.metadata._client.delete = AsyncMock(
             side_effect=HTTPStatusError(
                 "404 Not Found",
                 request=Request("DELETE", "http://test"),
@@ -915,7 +915,7 @@ class TestAsyncDeleteWorkskillGroup:
         from ofsc.exceptions import OFSCNotFoundError
 
         with pytest.raises(OFSCNotFoundError):
-            await async_instance.metadata.delete_workskill_group("NONEXISTENT")
+            await mock_instance.metadata.delete_workskill_group("NONEXISTENT")
 
 
 # === SAVED RESPONSE VALIDATION ===

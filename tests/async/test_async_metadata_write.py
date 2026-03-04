@@ -52,30 +52,30 @@ class TestCreateOrReplaceActivityTypeGroup:
     """Tests for create_or_replace_activity_type_group."""
 
     @pytest.mark.asyncio
-    async def test_create_or_replace_returns_model(self, async_instance: AsyncOFSC):
+    async def test_create_or_replace_returns_model(self, mock_instance: AsyncOFSC):
         """Test that create_or_replace_activity_type_group returns ActivityTypeGroup."""
         mock_response = _mock_response(200, _ATG_DATA)
-        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
         data = ActivityTypeGroup.model_validate(_ATG_DATA)
-        result = await async_instance.metadata.create_or_replace_activity_type_group(
+        result = await mock_instance.metadata.create_or_replace_activity_type_group(
             data
         )
 
         assert isinstance(result, ActivityTypeGroup)
         assert result.label == "RESIDENTIAL"
-        async_instance.metadata._client.put.assert_called_once()
-        call_url = async_instance.metadata._client.put.call_args[0][0]
+        mock_instance.metadata._client.put.assert_called_once()
+        call_url = mock_instance.metadata._client.put.call_args[0][0]
         assert "activityTypeGroups/RESIDENTIAL" in call_url
 
     @pytest.mark.asyncio
-    async def test_links_stripped_from_response(self, async_instance: AsyncOFSC):
+    async def test_links_stripped_from_response(self, mock_instance: AsyncOFSC):
         """Test that 'links' key is stripped from response."""
         mock_response = _mock_response(200, {**_ATG_DATA, "links": []})
-        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
         data = ActivityTypeGroup.model_validate(_ATG_DATA)
-        result = await async_instance.metadata.create_or_replace_activity_type_group(
+        result = await mock_instance.metadata.create_or_replace_activity_type_group(
             data
         )
         assert isinstance(result, ActivityTypeGroup)
@@ -115,29 +115,29 @@ class TestCreateOrReplaceActivityType:
     """Tests for create_or_replace_activity_type."""
 
     @pytest.mark.asyncio
-    async def test_create_or_replace_returns_model(self, async_instance: AsyncOFSC):
+    async def test_create_or_replace_returns_model(self, mock_instance: AsyncOFSC):
         """Test that create_or_replace_activity_type returns ActivityType."""
         mock_response = _mock_response(200, _AT_DATA)
-        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
         data = ActivityType.model_validate(_AT_DATA)
-        result = await async_instance.metadata.create_or_replace_activity_type(data)
+        result = await mock_instance.metadata.create_or_replace_activity_type(data)
 
         assert isinstance(result, ActivityType)
         assert result.label == "INSTALL"
-        call_url = async_instance.metadata._client.put.call_args[0][0]
+        call_url = mock_instance.metadata._client.put.call_args[0][0]
         assert "activityTypes/INSTALL" in call_url
 
     @pytest.mark.asyncio
-    async def test_label_is_url_encoded(self, async_instance: AsyncOFSC):
+    async def test_label_is_url_encoded(self, mock_instance: AsyncOFSC):
         """Test that label with special chars is URL encoded in path."""
         mock_response = _mock_response(200, _AT_SPACE_DATA)
-        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
         data = ActivityType.model_validate(_AT_SPACE_DATA)
-        await async_instance.metadata.create_or_replace_activity_type(data)
+        await mock_instance.metadata.create_or_replace_activity_type(data)
 
-        call_url = async_instance.metadata._client.put.call_args[0][0]
+        call_url = mock_instance.metadata._client.put.call_args[0][0]
         assert "TYPE+A" in call_url or "TYPE%20A" in call_url
 
 
@@ -158,17 +158,17 @@ class TestCreateOrReplaceApplication:
     """Tests for create_or_replace_application."""
 
     @pytest.mark.asyncio
-    async def test_create_or_replace_returns_model(self, async_instance: AsyncOFSC):
+    async def test_create_or_replace_returns_model(self, mock_instance: AsyncOFSC):
         """Test that create_or_replace_application returns Application."""
         mock_response = _mock_response(200, _APP_DATA)
-        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
         data = Application.model_validate(_APP_DATA)
-        result = await async_instance.metadata.create_or_replace_application(data)
+        result = await mock_instance.metadata.create_or_replace_application(data)
 
         assert isinstance(result, Application)
         assert result.label == "MY_APP"
-        call_url = async_instance.metadata._client.put.call_args[0][0]
+        call_url = mock_instance.metadata._client.put.call_args[0][0]
         assert "applications/MY_APP" in call_url
 
 
@@ -176,38 +176,38 @@ class TestUpdateApplicationApiAccess:
     """Tests for update_application_api_access."""
 
     @pytest.mark.asyncio
-    async def test_update_returns_api_access(self, async_instance: AsyncOFSC):
+    async def test_update_returns_api_access(self, mock_instance: AsyncOFSC):
         """Test that update_application_api_access returns an ApplicationApiAccess."""
         # Use a label not in API_TYPE_MAP → StructuredApiAccess (only needs label/name/status)
         mock_response = _mock_response(
             200,
             {"label": "outboundAPI", "name": "Outbound API", "status": "active"},
         )
-        async_instance.metadata._client.patch = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.patch = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.metadata.update_application_api_access(
+        result = await mock_instance.metadata.update_application_api_access(
             "MY_APP", "outboundAPI", {"status": "active"}
         )
 
         # parse_application_api_access returns a union type — just check it's not None
         assert result is not None
-        call_url = async_instance.metadata._client.patch.call_args[0][0]
+        call_url = mock_instance.metadata._client.patch.call_args[0][0]
         assert "applications/MY_APP/apiAccess/outboundAPI" in call_url
 
     @pytest.mark.asyncio
-    async def test_update_passes_body(self, async_instance: AsyncOFSC):
+    async def test_update_passes_body(self, mock_instance: AsyncOFSC):
         """Test that update sends correct body."""
         mock_response = _mock_response(
             200, {"label": "outboundAPI", "name": "Outbound API", "status": "inactive"}
         )
-        async_instance.metadata._client.patch = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.patch = AsyncMock(return_value=mock_response)
 
         patch_data = {"status": "inactive"}
-        await async_instance.metadata.update_application_api_access(
+        await mock_instance.metadata.update_application_api_access(
             "MY_APP", "outboundAPI", patch_data
         )
 
-        call_kwargs = async_instance.metadata._client.patch.call_args[1]
+        call_kwargs = mock_instance.metadata._client.patch.call_args[1]
         assert call_kwargs["json"] == patch_data
 
 
@@ -215,21 +215,21 @@ class TestGenerateApplicationClientSecret:
     """Tests for generate_application_client_secret."""
 
     @pytest.mark.asyncio
-    async def test_generate_returns_dict(self, async_instance: AsyncOFSC):
+    async def test_generate_returns_dict(self, mock_instance: AsyncOFSC):
         """Test that generate_application_client_secret returns a dict."""
         mock_response = _mock_response(
             200,
             {"clientSecret": "abc123xyz"},
         )
-        async_instance.metadata._client.post = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.post = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.metadata.generate_application_client_secret(
+        result = await mock_instance.metadata.generate_application_client_secret(
             "MY_APP"
         )
 
         assert isinstance(result, dict)
         assert result["clientSecret"] == "abc123xyz"
-        call_url = async_instance.metadata._client.post.call_args[0][0]
+        call_url = mock_instance.metadata._client.post.call_args[0][0]
         assert "applications/MY_APP/custom-actions/generateClientSecret" in call_url
 
 
@@ -242,20 +242,20 @@ class TestCreateOrReplaceCapacityCategory:
     """Tests for create_or_replace_capacity_category."""
 
     @pytest.mark.asyncio
-    async def test_create_or_replace_returns_model(self, async_instance: AsyncOFSC):
+    async def test_create_or_replace_returns_model(self, mock_instance: AsyncOFSC):
         """Test that create_or_replace_capacity_category returns CapacityCategory."""
         mock_response = _mock_response(
             200,
             {"label": "BASIC", "name": "Basic Category", "active": True},
         )
-        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
         data = CapacityCategory(label="BASIC", name="Basic Category", active=True)
-        result = await async_instance.metadata.create_or_replace_capacity_category(data)
+        result = await mock_instance.metadata.create_or_replace_capacity_category(data)
 
         assert isinstance(result, CapacityCategory)
         assert result.label == "BASIC"
-        call_url = async_instance.metadata._client.put.call_args[0][0]
+        call_url = mock_instance.metadata._client.put.call_args[0][0]
         assert "capacityCategories/BASIC" in call_url
 
 
@@ -263,19 +263,19 @@ class TestDeleteCapacityCategory:
     """Tests for delete_capacity_category."""
 
     @pytest.mark.asyncio
-    async def test_delete_returns_none(self, async_instance: AsyncOFSC):
+    async def test_delete_returns_none(self, mock_instance: AsyncOFSC):
         """Test that delete_capacity_category returns None on success."""
         mock_response = _mock_response(204)
-        async_instance.metadata._client.delete = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.delete = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.metadata.delete_capacity_category("BASIC")
+        result = await mock_instance.metadata.delete_capacity_category("BASIC")
 
         assert result is None
-        call_url = async_instance.metadata._client.delete.call_args[0][0]
+        call_url = mock_instance.metadata._client.delete.call_args[0][0]
         assert "capacityCategories/BASIC" in call_url
 
     @pytest.mark.asyncio
-    async def test_delete_not_found_raises(self, async_instance: AsyncOFSC):
+    async def test_delete_not_found_raises(self, mock_instance: AsyncOFSC):
         """Test that 404 raises OFSCNotFoundError."""
         import httpx
 
@@ -299,10 +299,10 @@ class TestDeleteCapacityCategory:
 
         mock_response = Mock()
         mock_response.raise_for_status = Mock(side_effect=http_error)
-        async_instance.metadata._client.delete = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.delete = AsyncMock(return_value=mock_response)
 
         with pytest.raises(OFSCNotFoundError):
-            await async_instance.metadata.delete_capacity_category("NONEXISTENT")
+            await mock_instance.metadata.delete_capacity_category("NONEXISTENT")
 
 
 # ============================================================
@@ -314,20 +314,20 @@ class TestCreateOrReplaceForm:
     """Tests for create_or_replace_form."""
 
     @pytest.mark.asyncio
-    async def test_create_or_replace_returns_model(self, async_instance: AsyncOFSC):
+    async def test_create_or_replace_returns_model(self, mock_instance: AsyncOFSC):
         """Test that create_or_replace_form returns Form."""
         mock_response = _mock_response(
             200,
             {"label": "INSPECTION", "name": "Inspection Form"},
         )
-        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
         data = Form(label="INSPECTION", name="Inspection Form")
-        result = await async_instance.metadata.create_or_replace_form(data)
+        result = await mock_instance.metadata.create_or_replace_form(data)
 
         assert isinstance(result, Form)
         assert result.label == "INSPECTION"
-        call_url = async_instance.metadata._client.put.call_args[0][0]
+        call_url = mock_instance.metadata._client.put.call_args[0][0]
         assert "forms/INSPECTION" in call_url
 
 
@@ -335,15 +335,15 @@ class TestDeleteForm:
     """Tests for delete_form."""
 
     @pytest.mark.asyncio
-    async def test_delete_returns_none(self, async_instance: AsyncOFSC):
+    async def test_delete_returns_none(self, mock_instance: AsyncOFSC):
         """Test that delete_form returns None on success."""
         mock_response = _mock_response(204)
-        async_instance.metadata._client.delete = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.delete = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.metadata.delete_form("INSPECTION")
+        result = await mock_instance.metadata.delete_form("INSPECTION")
 
         assert result is None
-        call_url = async_instance.metadata._client.delete.call_args[0][0]
+        call_url = mock_instance.metadata._client.delete.call_args[0][0]
         assert "forms/INSPECTION" in call_url
 
 
@@ -356,20 +356,20 @@ class TestCreateOrReplaceInventoryType:
     """Tests for create_or_replace_inventory_type."""
 
     @pytest.mark.asyncio
-    async def test_create_or_replace_returns_model(self, async_instance: AsyncOFSC):
+    async def test_create_or_replace_returns_model(self, mock_instance: AsyncOFSC):
         """Test that create_or_replace_inventory_type returns InventoryType."""
         mock_response = _mock_response(
             200,
             {"label": "CABLE", "active": True, "nonSerialized": False},
         )
-        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
         data = InventoryType(label="CABLE", active=True)
-        result = await async_instance.metadata.create_or_replace_inventory_type(data)
+        result = await mock_instance.metadata.create_or_replace_inventory_type(data)
 
         assert isinstance(result, InventoryType)
         assert result.label == "CABLE"
-        call_url = async_instance.metadata._client.put.call_args[0][0]
+        call_url = mock_instance.metadata._client.put.call_args[0][0]
         assert "inventoryTypes/CABLE" in call_url
 
 
@@ -391,17 +391,17 @@ class TestCreateLinkTemplate:
     """Tests for create_link_template."""
 
     @pytest.mark.asyncio
-    async def test_create_returns_model(self, async_instance: AsyncOFSC):
+    async def test_create_returns_model(self, mock_instance: AsyncOFSC):
         """Test that create_link_template returns LinkTemplate."""
         mock_response = _mock_response(201, _LINK_TEMPLATE_DATA)
-        async_instance.metadata._client.post = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.post = AsyncMock(return_value=mock_response)
 
         data = LinkTemplate.model_validate(_LINK_TEMPLATE_DATA)
-        result = await async_instance.metadata.create_link_template(data)
+        result = await mock_instance.metadata.create_link_template(data)
 
         assert isinstance(result, LinkTemplate)
         assert result.label == "FOLLOW_UP"
-        call_url = async_instance.metadata._client.post.call_args[0][0]
+        call_url = mock_instance.metadata._client.post.call_args[0][0]
         assert "linkTemplates" in call_url
         assert "FOLLOW_UP" not in call_url  # POST to collection URL, label is in body
 
@@ -410,18 +410,18 @@ class TestUpdateLinkTemplate:
     """Tests for update_link_template."""
 
     @pytest.mark.asyncio
-    async def test_update_returns_model(self, async_instance: AsyncOFSC):
+    async def test_update_returns_model(self, mock_instance: AsyncOFSC):
         """Test that update_link_template returns LinkTemplate."""
         updated = {**_LINK_TEMPLATE_DATA, "name": "Follow Up Updated"}
         mock_response = _mock_response(200, updated)
-        async_instance.metadata._client.patch = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.patch = AsyncMock(return_value=mock_response)
 
         data = LinkTemplate.model_validate(_LINK_TEMPLATE_DATA)
-        result = await async_instance.metadata.update_link_template(data)
+        result = await mock_instance.metadata.update_link_template(data)
 
         assert isinstance(result, LinkTemplate)
         assert result.label == "FOLLOW_UP"
-        call_url = async_instance.metadata._client.patch.call_args[0][0]
+        call_url = mock_instance.metadata._client.patch.call_args[0][0]
         assert "linkTemplates/FOLLOW_UP" in call_url
 
 
@@ -434,20 +434,20 @@ class TestCreateOrReplaceMapLayer:
     """Tests for create_or_replace_map_layer."""
 
     @pytest.mark.asyncio
-    async def test_create_or_replace_returns_model(self, async_instance: AsyncOFSC):
+    async def test_create_or_replace_returns_model(self, mock_instance: AsyncOFSC):
         """Test that create_or_replace_map_layer returns MapLayer."""
         mock_response = _mock_response(
             200,
             {"label": "COVERAGE", "name": "Coverage Layer", "status": "active"},
         )
-        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
         data = MapLayer(label="COVERAGE", name="Coverage Layer", status="active")
-        result = await async_instance.metadata.create_or_replace_map_layer(data)
+        result = await mock_instance.metadata.create_or_replace_map_layer(data)
 
         assert isinstance(result, MapLayer)
         assert result.label == "COVERAGE"
-        call_url = async_instance.metadata._client.put.call_args[0][0]
+        call_url = mock_instance.metadata._client.put.call_args[0][0]
         assert "mapLayers/COVERAGE" in call_url
 
 
@@ -455,20 +455,20 @@ class TestCreateMapLayer:
     """Tests for create_map_layer."""
 
     @pytest.mark.asyncio
-    async def test_create_returns_model(self, async_instance: AsyncOFSC):
+    async def test_create_returns_model(self, mock_instance: AsyncOFSC):
         """Test that create_map_layer returns MapLayer."""
         mock_response = _mock_response(
             201,
             {"label": "NEW_LAYER", "name": "New Layer", "status": "active"},
         )
-        async_instance.metadata._client.post = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.post = AsyncMock(return_value=mock_response)
 
         data = MapLayer(label="NEW_LAYER", name="New Layer", status="active")
-        result = await async_instance.metadata.create_map_layer(data)
+        result = await mock_instance.metadata.create_map_layer(data)
 
         assert isinstance(result, MapLayer)
         assert result.label == "NEW_LAYER"
-        call_url = async_instance.metadata._client.post.call_args[0][0]
+        call_url = mock_instance.metadata._client.post.call_args[0][0]
         assert "/mapLayers" in call_url
         assert "NEW_LAYER" not in call_url  # POST to collection, not /{label}
 
@@ -477,30 +477,30 @@ class TestPopulateMapLayers:
     """Tests for populate_map_layers."""
 
     @pytest.mark.asyncio
-    async def test_populate_from_bytes(self, async_instance: AsyncOFSC):
+    async def test_populate_from_bytes(self, mock_instance: AsyncOFSC):
         """Test populate_map_layers with bytes input."""
         mock_response = _mock_response(204)
-        async_instance.metadata._client.post = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.post = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.metadata.populate_map_layers(b"csv,data\nrow1")
+        result = await mock_instance.metadata.populate_map_layers(b"csv,data\nrow1")
 
         assert result is None
-        call_url = async_instance.metadata._client.post.call_args[0][0]
+        call_url = mock_instance.metadata._client.post.call_args[0][0]
         assert "populateLayers" in call_url
 
     @pytest.mark.asyncio
-    async def test_populate_from_path(self, async_instance: AsyncOFSC, tmp_path):
+    async def test_populate_from_path(self, mock_instance: AsyncOFSC, tmp_path):
         """Test populate_map_layers with Path input."""
         mock_response = _mock_response(204)
-        async_instance.metadata._client.post = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.post = AsyncMock(return_value=mock_response)
 
         csv_file = tmp_path / "layers.csv"
         csv_file.write_bytes(b"label,name\nLAYER1,Layer 1")
 
-        result = await async_instance.metadata.populate_map_layers(csv_file)
+        result = await mock_instance.metadata.populate_map_layers(csv_file)
 
         assert result is None
-        call_kwargs = async_instance.metadata._client.post.call_args[1]
+        call_kwargs = mock_instance.metadata._client.post.call_args[1]
         assert "files" in call_kwargs
 
 
@@ -513,28 +513,28 @@ class TestInstallPlugin:
     """Tests for install_plugin."""
 
     @pytest.mark.asyncio
-    async def test_install_returns_dict(self, async_instance: AsyncOFSC):
+    async def test_install_returns_dict(self, mock_instance: AsyncOFSC):
         """Test that install_plugin returns a dict."""
         mock_response = _mock_response(
             200,
             {"status": "installed"},
         )
-        async_instance.metadata._client.post = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.post = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.metadata.install_plugin("MY_PLUGIN")
+        result = await mock_instance.metadata.install_plugin("MY_PLUGIN")
 
         assert isinstance(result, dict)
-        call_url = async_instance.metadata._client.post.call_args[0][0]
+        call_url = mock_instance.metadata._client.post.call_args[0][0]
         assert "plugins/MY_PLUGIN/custom-actions/install" in call_url
 
     @pytest.mark.asyncio
-    async def test_install_204_returns_empty_dict(self, async_instance: AsyncOFSC):
+    async def test_install_204_returns_empty_dict(self, mock_instance: AsyncOFSC):
         """Test that 204 No Content returns empty dict."""
         mock_response = _mock_response(204)
         mock_response.content = b""
-        async_instance.metadata._client.post = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.post = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.metadata.install_plugin("MY_PLUGIN")
+        result = await mock_instance.metadata.install_plugin("MY_PLUGIN")
 
         assert result == {}
 
@@ -548,7 +548,7 @@ class TestUpdateProperty:
     """Tests for update_property."""
 
     @pytest.mark.asyncio
-    async def test_update_returns_model(self, async_instance: AsyncOFSC):
+    async def test_update_returns_model(self, mock_instance: AsyncOFSC):
         """Test that update_property returns Property."""
         mock_response = _mock_response(
             200,
@@ -559,7 +559,7 @@ class TestUpdateProperty:
                 "translations": [{"language": "en", "name": "Customer Name"}],
             },
         )
-        async_instance.metadata._client.patch = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.patch = AsyncMock(return_value=mock_response)
 
         data = Property.model_validate(
             {
@@ -569,15 +569,15 @@ class TestUpdateProperty:
                 "translations": [{"language": "en", "name": "Customer Name Updated"}],
             }
         )
-        result = await async_instance.metadata.update_property(data)
+        result = await mock_instance.metadata.update_property(data)
 
         assert isinstance(result, Property)
         assert result.label == "customer_name"
-        call_url = async_instance.metadata._client.patch.call_args[0][0]
+        call_url = mock_instance.metadata._client.patch.call_args[0][0]
         assert "properties/customer_name" in call_url
 
     @pytest.mark.asyncio
-    async def test_update_uses_patch_method(self, async_instance: AsyncOFSC):
+    async def test_update_uses_patch_method(self, mock_instance: AsyncOFSC):
         """Test that update_property uses PATCH not PUT."""
         mock_response = _mock_response(
             200,
@@ -588,7 +588,7 @@ class TestUpdateProperty:
                 "translations": [{"language": "en", "name": "Property 1"}],
             },
         )
-        async_instance.metadata._client.patch = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.patch = AsyncMock(return_value=mock_response)
 
         data = Property.model_validate(
             {
@@ -598,10 +598,10 @@ class TestUpdateProperty:
                 "translations": [{"language": "en", "name": "Property 1"}],
             }
         )
-        await async_instance.metadata.update_property(data)
+        await mock_instance.metadata.update_property(data)
 
         # patch was called, not put
-        assert async_instance.metadata._client.patch.called
+        assert mock_instance.metadata._client.patch.called
 
 
 # ============================================================
@@ -632,29 +632,29 @@ class TestCreateOrReplaceShift:
     """Tests for create_or_replace_shift."""
 
     @pytest.mark.asyncio
-    async def test_create_or_replace_returns_model(self, async_instance: AsyncOFSC):
+    async def test_create_or_replace_returns_model(self, mock_instance: AsyncOFSC):
         """Test that create_or_replace_shift returns Shift."""
         mock_response = _mock_response(200, _SHIFT_REGULAR_DATA)
-        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
         data = Shift.model_validate(_SHIFT_REGULAR_DATA)
-        result = await async_instance.metadata.create_or_replace_shift(data)
+        result = await mock_instance.metadata.create_or_replace_shift(data)
 
         assert isinstance(result, Shift)
         assert result.label == "8-17"
-        call_url = async_instance.metadata._client.put.call_args[0][0]
+        call_url = mock_instance.metadata._client.put.call_args[0][0]
         assert "shifts/8-17" in call_url
 
     @pytest.mark.asyncio
-    async def test_label_url_encoded(self, async_instance: AsyncOFSC):
+    async def test_label_url_encoded(self, mock_instance: AsyncOFSC):
         """Test that label with hyphens is URL encoded."""
         mock_response = _mock_response(200, _SHIFT_ONCALL_DATA)
-        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
         data = Shift.model_validate(_SHIFT_ONCALL_DATA)
-        await async_instance.metadata.create_or_replace_shift(data)
+        await mock_instance.metadata.create_or_replace_shift(data)
 
-        call_url = async_instance.metadata._client.put.call_args[0][0]
+        call_url = mock_instance.metadata._client.put.call_args[0][0]
         assert "on-call" in call_url or "on%2Dcall" in call_url
 
 
@@ -662,15 +662,15 @@ class TestDeleteShift:
     """Tests for delete_shift."""
 
     @pytest.mark.asyncio
-    async def test_delete_returns_none(self, async_instance: AsyncOFSC):
+    async def test_delete_returns_none(self, mock_instance: AsyncOFSC):
         """Test that delete_shift returns None on success."""
         mock_response = _mock_response(204)
-        async_instance.metadata._client.delete = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.delete = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.metadata.delete_shift("8-17")
+        result = await mock_instance.metadata.delete_shift("8-17")
 
         assert result is None
-        call_url = async_instance.metadata._client.delete.call_args[0][0]
+        call_url = mock_instance.metadata._client.delete.call_args[0][0]
         assert "shifts" in call_url
 
 
@@ -698,31 +698,31 @@ class TestReplaceWorkzones:
     """Tests for replace_workzones (bulk PUT)."""
 
     @pytest.mark.asyncio
-    async def test_replace_returns_list_response(self, async_instance: AsyncOFSC):
+    async def test_replace_returns_list_response(self, mock_instance: AsyncOFSC):
         """Test that replace_workzones returns WorkzoneListResponse."""
         mock_response = _mock_response(
             200,
             {"items": [_WZ_DATA, _WZ2_DATA], "totalResults": 2},
         )
-        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
         data = [Workzone.model_validate(_WZ_DATA), Workzone.model_validate(_WZ2_DATA)]
-        result = await async_instance.metadata.replace_workzones(data)
+        result = await mock_instance.metadata.replace_workzones(data)
 
         assert isinstance(result, WorkzoneListResponse)
         assert len(result.items) == 2
-        call_url = async_instance.metadata._client.put.call_args[0][0]
+        call_url = mock_instance.metadata._client.put.call_args[0][0]
         assert call_url.endswith("/workZones")
 
     @pytest.mark.asyncio
-    async def test_replace_sends_items_body(self, async_instance: AsyncOFSC):
+    async def test_replace_sends_items_body(self, mock_instance: AsyncOFSC):
         """Test that replace_workzones sends {"items": [...]} body."""
         mock_response = _mock_response(200, {"items": [], "totalResults": 0})
-        async_instance.metadata._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
-        await async_instance.metadata.replace_workzones([])
+        await mock_instance.metadata.replace_workzones([])
 
-        call_kwargs = async_instance.metadata._client.put.call_args[1]
+        call_kwargs = mock_instance.metadata._client.put.call_args[1]
         assert "json" in call_kwargs
         assert "items" in call_kwargs["json"]
 
@@ -731,60 +731,60 @@ class TestUpdateWorkzones:
     """Tests for update_workzones (bulk PATCH)."""
 
     @pytest.mark.asyncio
-    async def test_update_returns_list_response(self, async_instance: AsyncOFSC):
+    async def test_update_returns_list_response(self, mock_instance: AsyncOFSC):
         """Test that update_workzones returns WorkzoneListResponse."""
         wz_updated = {**_WZ_DATA, "workZoneName": "Zone 1 Updated"}
         mock_response = _mock_response(
             200,
             {"items": [wz_updated], "totalResults": 1},
         )
-        async_instance.metadata._client.patch = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.patch = AsyncMock(return_value=mock_response)
 
         data = [Workzone.model_validate(_WZ_DATA)]
-        result = await async_instance.metadata.update_workzones(data)
+        result = await mock_instance.metadata.update_workzones(data)
 
         assert isinstance(result, WorkzoneListResponse)
         assert len(result.items) == 1
-        call_url = async_instance.metadata._client.patch.call_args[0][0]
+        call_url = mock_instance.metadata._client.patch.call_args[0][0]
         assert call_url.endswith("/workZones")
 
     @pytest.mark.asyncio
-    async def test_update_uses_patch_method(self, async_instance: AsyncOFSC):
+    async def test_update_uses_patch_method(self, mock_instance: AsyncOFSC):
         """Test that update_workzones uses PATCH not PUT."""
         mock_response = _mock_response(200, {"items": [], "totalResults": 0})
-        async_instance.metadata._client.patch = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.patch = AsyncMock(return_value=mock_response)
 
-        await async_instance.metadata.update_workzones([])
+        await mock_instance.metadata.update_workzones([])
 
-        assert async_instance.metadata._client.patch.called
+        assert mock_instance.metadata._client.patch.called
 
 
 class TestPopulateWorkzoneShapes:
     """Tests for populate_workzone_shapes."""
 
     @pytest.mark.asyncio
-    async def test_populate_from_bytes(self, async_instance: AsyncOFSC):
+    async def test_populate_from_bytes(self, mock_instance: AsyncOFSC):
         """Test populate_workzone_shapes with bytes input."""
         mock_response = _mock_response(204)
-        async_instance.metadata._client.post = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.post = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.metadata.populate_workzone_shapes(b"shape,data")
+        result = await mock_instance.metadata.populate_workzone_shapes(b"shape,data")
 
         assert result is None
-        call_url = async_instance.metadata._client.post.call_args[0][0]
+        call_url = mock_instance.metadata._client.post.call_args[0][0]
         assert "populateShapes" in call_url
 
     @pytest.mark.asyncio
-    async def test_populate_from_path(self, async_instance: AsyncOFSC, tmp_path):
+    async def test_populate_from_path(self, mock_instance: AsyncOFSC, tmp_path):
         """Test populate_workzone_shapes with Path input."""
         mock_response = _mock_response(204)
-        async_instance.metadata._client.post = AsyncMock(return_value=mock_response)
+        mock_instance.metadata._client.post = AsyncMock(return_value=mock_response)
 
         shapes_file = tmp_path / "shapes.csv"
         shapes_file.write_bytes(b"zone,shape\nWZ1,polygon")
 
-        result = await async_instance.metadata.populate_workzone_shapes(shapes_file)
+        result = await mock_instance.metadata.populate_workzone_shapes(shapes_file)
 
         assert result is None
-        call_kwargs = async_instance.metadata._client.post.call_args[1]
+        call_kwargs = mock_instance.metadata._client.post.call_args[1]
         assert "files" in call_kwargs

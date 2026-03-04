@@ -41,7 +41,7 @@ class TestAsyncGetMapLayersModel:
     """Model validation tests for get_map_layers."""
 
     @pytest.mark.asyncio
-    async def test_get_map_layers_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_map_layers_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_map_layers returns MapLayerListResponse model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -64,8 +64,8 @@ class TestAsyncGetMapLayersModel:
             "links": [],
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_map_layers()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_map_layers()
 
         assert isinstance(result, MapLayerListResponse)
         assert len(result.items) == 2
@@ -73,7 +73,7 @@ class TestAsyncGetMapLayersModel:
         assert result.items[1].label == "LAYER2"
 
     @pytest.mark.asyncio
-    async def test_get_map_layers_field_types(self, async_instance: AsyncOFSC):
+    async def test_get_map_layers_field_types(self, mock_instance: AsyncOFSC):
         """Test that fields have correct types."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -88,8 +88,8 @@ class TestAsyncGetMapLayersModel:
             "totalResults": 1,
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_map_layers()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_map_layers()
 
         assert isinstance(result.items[0].label, str)
         assert result.items[0].status.value == "active"
@@ -113,7 +113,7 @@ class TestAsyncGetMapLayerModel:
     """Model validation tests for get_map_layer."""
 
     @pytest.mark.asyncio
-    async def test_get_map_layer_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_map_layer_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_map_layer returns MapLayer model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -133,8 +133,8 @@ class TestAsyncGetMapLayerModel:
             "shapeHintButton": {"actionType": "plugin", "label": "View"},
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_map_layer("TEST_LAYER")
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_map_layer("TEST_LAYER")
 
         assert isinstance(result, MapLayer)
         assert result.label == "TEST_LAYER"

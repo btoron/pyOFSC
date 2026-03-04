@@ -31,6 +31,7 @@ class TestAsyncGetOrganizationsLive:
             assert isinstance(organizations.items[0], Organization)
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetOrganizations:
     """Test async get_organizations method."""
 

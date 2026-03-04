@@ -15,6 +15,7 @@ from ofsc.models import (
 )
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetWorkzonesLive:
     """Live tests against actual API (similar to sync version)."""
 
@@ -33,6 +34,7 @@ class TestAsyncGetWorkzonesLive:
         assert workzones.items[1].workZoneName == "CASSELBERRY"
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetWorkzones:
     """Test async get_workzones method."""
 
@@ -78,6 +80,7 @@ class TestAsyncGetWorkzones:
         assert workzones.totalResults >= 0
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetWorkzone:
     """Test async get_workzone method."""
 
@@ -321,7 +324,7 @@ class TestAsyncGetWorkzoneKey:
     """Model validation tests for get_workzone_key."""
 
     @pytest.mark.asyncio
-    async def test_returns_correct_model(self, async_instance: AsyncOFSC):
+    async def test_returns_correct_model(self, mock_instance: AsyncOFSC):
         """Test that get_workzone_key returns WorkZoneKeyResponse."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -338,8 +341,8 @@ class TestAsyncGetWorkzoneKey:
         }
         mock_response.raise_for_status = Mock()
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_workzone_key()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_workzone_key()
 
         assert isinstance(result, WorkZoneKeyResponse)
         assert len(result.current) == 1
@@ -352,7 +355,7 @@ class TestAsyncGetWorkzoneKey:
         assert result.pending is None
 
     @pytest.mark.asyncio
-    async def test_with_pending_key(self, async_instance: AsyncOFSC):
+    async def test_with_pending_key(self, mock_instance: AsyncOFSC):
         """Test get_workzone_key when pending key elements are present."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -367,8 +370,8 @@ class TestAsyncGetWorkzoneKey:
         }
         mock_response.raise_for_status = Mock()
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_workzone_key()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_workzone_key()
 
         assert isinstance(result, WorkZoneKeyResponse)
         assert len(result.current) == 1
@@ -378,7 +381,7 @@ class TestAsyncGetWorkzoneKey:
         assert result.pending[0].label == "KEY2"
 
     @pytest.mark.asyncio
-    async def test_without_pending(self, async_instance: AsyncOFSC):
+    async def test_without_pending(self, mock_instance: AsyncOFSC):
         """Test get_workzone_key without pending key (most common case)."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -389,14 +392,14 @@ class TestAsyncGetWorkzoneKey:
         }
         mock_response.raise_for_status = Mock()
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_workzone_key()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_workzone_key()
 
         assert isinstance(result, WorkZoneKeyResponse)
         assert result.pending is None
 
     @pytest.mark.asyncio
-    async def test_optional_fields(self, async_instance: AsyncOFSC):
+    async def test_optional_fields(self, mock_instance: AsyncOFSC):
         """Test WorkZoneKeyElement with only required field."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -405,8 +408,8 @@ class TestAsyncGetWorkzoneKey:
         }
         mock_response.raise_for_status = Mock()
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_workzone_key()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_workzone_key()
 
         elem = result.current[0]
         assert elem.label == "MINIMAL_KEY"
