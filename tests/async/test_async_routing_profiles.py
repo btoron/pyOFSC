@@ -429,6 +429,7 @@ class TestAsyncStartRoutingPlanLive:
 # ===================================================================
 
 
+@pytest.mark.uses_local_data
 class TestAsyncRoutingProfileSavedResponses:
     """Test model validation against saved API responses."""
 

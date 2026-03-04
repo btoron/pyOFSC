@@ -728,6 +728,7 @@ class TestAsyncCreateOrReplaceProperty:
         assert result.type is not None
 
 
+@pytest.mark.uses_local_data
 class TestAsyncPropertySavedResponses:
     """Test model validation against saved API responses."""
 

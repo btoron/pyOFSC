@@ -124,6 +124,7 @@ class TestAsyncGetActivityType:
         assert exc_info.value.status_code == 404
 
 
+@pytest.mark.uses_local_data
 class TestAsyncActivityTypeSavedResponses:
     """Test model validation against saved API responses."""
 

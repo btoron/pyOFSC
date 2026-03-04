@@ -116,6 +116,7 @@ class TestAsyncGetNonWorkingReason:
         assert "get_non_working_reasons()" in str(exc_info.value)
 
 
+@pytest.mark.uses_local_data
 class TestAsyncNonWorkingReasonSavedResponses:
     """Test model validation against saved API responses."""
 

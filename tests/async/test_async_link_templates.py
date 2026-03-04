@@ -171,6 +171,7 @@ class TestAsyncGetLinkTemplate:
             )
 
 
+@pytest.mark.uses_local_data
 class TestAsyncLinkTemplateSavedResponses:
     """Test model validation against saved API responses."""
 

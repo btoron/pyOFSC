@@ -92,6 +92,7 @@ class TestAsyncGetLanguages:
                 assert isinstance(translation.name, str)
 
 
+@pytest.mark.uses_local_data
 class TestAsyncLanguageSavedResponses:
     """Test model validation against saved API responses."""
 

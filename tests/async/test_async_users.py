@@ -22,6 +22,7 @@ SAVED_RESPONSES_DIR = Path(__file__).parent.parent / "saved_responses" / "users"
 _TEST_USER_LOGIN = "claude_test_user_001"
 
 
+@pytest.mark.uses_local_data
 class TestAsyncUserSavedResponses:
     """Validate models against saved API response files."""
 

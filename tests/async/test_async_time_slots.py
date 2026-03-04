@@ -113,6 +113,7 @@ class TestAsyncGetTimeSlot:
         assert "get_time_slots()" in str(exc_info.value)
 
 
+@pytest.mark.uses_local_data
 class TestAsyncTimeSlotSavedResponses:
     """Test model validation against saved API responses."""
 

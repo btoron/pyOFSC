@@ -101,6 +101,7 @@ class TestAsyncGetDailyExtractFileLive:
 # ===================================================================
 
 
+@pytest.mark.uses_local_data
 class TestAsyncDailyExtractSavedResponses:
     """Test model validation against saved API responses."""
 

@@ -72,6 +72,7 @@ class TestAsyncGetResourceTypes:
             assert isinstance(resource_type.active, bool)
 
 
+@pytest.mark.uses_local_data
 class TestAsyncResourceTypeSavedResponses:
     """Test model validation against saved API responses."""
 

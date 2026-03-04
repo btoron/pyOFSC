@@ -50,6 +50,7 @@ markers = [
     "integration: marks tests as integration tests (may be slow)",
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "uses_real_data: marks tests that use real API data (requires credentials)",
+    "uses_local_data: marks tests that depend on local data files not available in CI (e.g. saved_responses/)",
     "serial: marks tests that must run sequentially (not in parallel)",
 ]
 

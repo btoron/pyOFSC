@@ -339,6 +339,7 @@ class TestAsyncResourceRoutesPlansLive:
 # ===================================================================
 
 
+@pytest.mark.uses_local_data
 class TestAsyncResourceSavedResponses:
     """Test model validation against saved API responses."""
 

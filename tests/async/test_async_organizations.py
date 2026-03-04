@@ -111,6 +111,7 @@ class TestAsyncGetOrganization:
             await async_instance.metadata.get_organization("NONEXISTENT_ORG_12345")
 
 
+@pytest.mark.uses_local_data
 class TestAsyncOrganizationSavedResponses:
     """Test model validation against saved API responses."""
 

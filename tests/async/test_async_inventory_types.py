@@ -112,6 +112,7 @@ class TestAsyncGetInventoryType:
             await async_instance.metadata.get_inventory_type("NONEXISTENT_TYPE_12345")
 
 
+@pytest.mark.uses_local_data
 class TestAsyncInventoryTypeSavedResponses:
     """Test model validation against saved API responses."""
 

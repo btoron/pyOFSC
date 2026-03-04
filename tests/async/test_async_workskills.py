@@ -921,6 +921,7 @@ class TestAsyncDeleteWorkskillGroup:
 # === SAVED RESPONSE VALIDATION ===
 
 
+@pytest.mark.uses_local_data
 class TestAsyncWorkskillsSavedResponses:
     """Test that saved API responses validate against Pydantic models."""
 

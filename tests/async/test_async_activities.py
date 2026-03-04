@@ -237,6 +237,7 @@ class TestAsyncGetCapacityCategoriesLive:
         assert hasattr(result, "totalResults")
 
 
+@pytest.mark.uses_local_data
 class TestAsyncActivitySavedResponses:
     """Saved response validation tests."""
 

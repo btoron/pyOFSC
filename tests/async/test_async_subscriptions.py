@@ -190,6 +190,7 @@ class TestAsyncGetEventsLive:
 # ===================================================================
 
 
+@pytest.mark.uses_local_data
 class TestAsyncSubscriptionSavedResponses:
     """Test model validation against saved API responses."""
 

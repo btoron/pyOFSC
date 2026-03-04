@@ -233,6 +233,7 @@ class TestAsyncGetCapacityArea:
 # === SAVED RESPONSE VALIDATION ===
 
 
+@pytest.mark.uses_local_data
 class TestAsyncCapacityAreasSavedResponses:
     """Test that saved API responses validate against Pydantic models."""
 

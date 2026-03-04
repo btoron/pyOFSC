@@ -145,6 +145,7 @@ class TestAsyncGetMapLayerModel:
 # === SAVED RESPONSE VALIDATION ===
 
 
+@pytest.mark.uses_local_data
 class TestAsyncMapLayersSavedResponses:
     """Test that saved API responses validate against Pydantic models."""
 

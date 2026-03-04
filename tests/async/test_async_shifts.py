@@ -227,6 +227,7 @@ class TestAsyncGetShiftModel:
 # === SAVED RESPONSE VALIDATION ===
 
 
+@pytest.mark.uses_local_data
 class TestAsyncShiftsSavedResponses:
     """Test that saved API responses validate against Pydantic models."""
 

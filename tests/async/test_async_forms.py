@@ -220,6 +220,7 @@ class TestAsyncGetFormModel:
 # === SAVED RESPONSE VALIDATION ===
 
 
+@pytest.mark.uses_local_data
 class TestAsyncFormsSavedResponses:
     """Test that saved API responses validate against Pydantic models."""
 
