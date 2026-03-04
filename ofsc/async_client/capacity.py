@@ -1,6 +1,6 @@
 """Async version of OFSCapacity API module."""
 
-from typing import Optional, Union
+from typing import Any, Optional, Union
 from urllib.parse import urljoin
 
 import httpx
@@ -309,6 +309,7 @@ class AsyncOFSCapacity:
         aggregateResults: Optional[bool] = None,
         returnAvailableSlots: Optional[bool] = None,
         returnStatuses: Optional[bool] = None,
+        **kwargs: Any,
     ) -> ActivityBookingOptionsResponse:
         """Get activity booking options for given dates and areas.
 
@@ -380,6 +381,7 @@ class AsyncOFSCapacity:
             params["returnAvailableSlots"] = str(returnAvailableSlots).lower()
         if returnStatuses is not None:
             params["returnStatuses"] = str(returnStatuses).lower()
+        params.update(kwargs)
 
         url = urljoin(self.baseUrl, "/rest/ofscCapacity/v1/activityBookingOptions")
         try:

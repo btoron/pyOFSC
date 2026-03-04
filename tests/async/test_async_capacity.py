@@ -293,11 +293,13 @@ class TestAsyncGetActivityBookingOptionsLive:
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
     async def test_get_activity_booking_options(
-        self, async_instance, workzone_activity_type
+        self, async_instance, workzone_activity_type, workzone_postal_code
     ):
         """Test get_activity_booking_options with actual API."""
         result = await async_instance.capacity.get_activity_booking_options(
-            dates="2026-03-03", activityType=workzone_activity_type
+            dates="2026-03-03",
+            activityType=workzone_activity_type,
+            postalCode=workzone_postal_code,
         )
         assert isinstance(result, ActivityBookingOptionsResponse)
         assert hasattr(result, "items")
