@@ -109,6 +109,12 @@ async def non_serialized_inventory_type(async_instance):
 
 
 @pytest.fixture
+def resource_file_property_label():
+    """File-type property label configured on resources."""
+    return "tech_photo"
+
+
+@pytest.fixture
 async def fresh_activity_pair(async_instance, bucket_activity_type):
     """Create two temporary activities for link testing, delete both after."""
     act1 = await async_instance.core.create_activity(

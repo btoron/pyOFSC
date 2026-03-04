@@ -204,9 +204,9 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |CO054D|`/rest/ofscCore/v1/resources/{resourceId}/workSchedules/{scheduleItemId}`                                                |core         |DELETE|async |
 |CO055G|`/rest/ofscCore/v1/resources/{resourceId}/workSchedules/calendarView`                                                    |core         |GET   |both  |
 |CO056G|`/rest/ofscCore/v1/calendars`                                                                                            |core         |GET   |async |
-|CO057U|`/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}`                                                               |core         |PUT   |-     |
-|CO057G|`/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}`                                                               |core         |GET   |-     |
-|CO057D|`/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}`                                                               |core         |DELETE|-     |
+|CO057U|`/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}`                                                               |core         |PUT   |async |
+|CO057G|`/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}`                                                               |core         |GET   |async |
+|CO057D|`/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}`                                                               |core         |DELETE|async |
 |CO058P|`/rest/ofscCore/v1/resources/{resourceId}/locations`                                                                     |core         |POST  |both  |
 |CO058G|`/rest/ofscCore/v1/resources/{resourceId}/locations`                                                                     |core         |GET   |both  |
 |CO059G|`/rest/ofscCore/v1/resources/{resourceId}/locations/{locationId}`                                                        |core         |GET   |async |
@@ -267,11 +267,11 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 ## Implementation Summary
 
 - **Sync only**: 4 endpoints
-- **Async only**: 95 endpoints
+- **Async only**: 98 endpoints
 - **Both**: 85 endpoints
-- **Not implemented**: 59 endpoints
+- **Not implemented**: 56 endpoints
 - **Total sync**: 89 endpoints
-- **Total async**: 180 endpoints
+- **Total async**: 183 endpoints
 
 ## Implementation Statistics by Module and Method
 
@@ -293,13 +293,13 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |   Module    |       GET        |Write (POST/PUT/PATCH)|     DELETE      |       Total       |
 |-------------|------------------|----------------------|-----------------|-------------------|
 |metadata     |41/51 (80.4%)     |29/30 (96.7%)         |5/5 (100.0%)     |75/86 (87.2%)      |
-|core         |42/51 (82.4%)     |30/56 (53.6%)         |17/20 (85.0%)    |89/127 (70.1%)     |
+|core         |43/51 (84.3%)     |31/56 (55.4%)         |18/20 (90.0%)    |92/127 (72.4%)     |
 |capacity     |6/7 (85.7%)       |4/5 (80.0%)           |0/0 (0%)         |10/12 (83.3%)      |
 |statistics   |3/3 (100.0%)      |3/3 (100.0%)          |0/0 (0%)         |6/6 (100.0%)       |
 |partscatalog |0/0 (0%)          |0/2 (0.0%)            |0/1 (0.0%)       |0/3 (0.0%)         |
 |collaboration|0/3 (0.0%)        |0/4 (0.0%)            |0/0 (0%)         |0/7 (0.0%)         |
 |auth         |0/0 (0%)          |0/2 (0.0%)            |0/0 (0%)         |0/2 (0.0%)         |
-|**Total**    |**92/115 (80.0%)**|**66/102 (64.7%)**    |**22/26 (84.6%)**|**180/243 (74.1%)**|
+|**Total**    |**93/115 (80.9%)**|**67/102 (65.7%)**    |**23/26 (88.5%)**|**183/243 (75.3%)**|
 
 ## Endpoint ID Reference
 
