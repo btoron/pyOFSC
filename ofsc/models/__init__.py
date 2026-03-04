@@ -189,11 +189,19 @@ from .inventories import (
 from .statistics import (
     ActivityDurationStat as ActivityDurationStat,
     ActivityDurationStatsList as ActivityDurationStatsList,
+    ActivityDurationStatRequest as ActivityDurationStatRequest,
+    ActivityDurationStatRequestList as ActivityDurationStatRequestList,
     ActivityTravelStat as ActivityTravelStat,
     ActivityTravelStatsList as ActivityTravelStatsList,
+    ActivityTravelStatRequest as ActivityTravelStatRequest,
+    ActivityTravelStatRequestList as ActivityTravelStatRequestList,
     AirlineDistanceData as AirlineDistanceData,
     AirlineDistanceBasedTravel as AirlineDistanceBasedTravel,
     AirlineDistanceBasedTravelList as AirlineDistanceBasedTravelList,
+    AirlineDistanceOverrideData as AirlineDistanceOverrideData,
+    AirlineDistanceBasedTravelRequest as AirlineDistanceBasedTravelRequest,
+    AirlineDistanceBasedTravelRequestList as AirlineDistanceBasedTravelRequestList,
+    StatisticsPatchResponse as StatisticsPatchResponse,
 )
 
 # region Core / Activities

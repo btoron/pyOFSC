@@ -105,11 +105,11 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |ME058P|`/rest/ofscMetadata/v1/workZones/custom-actions/populateShapes`                                                          |metadata     |POST  |async |
 |ME059G|`/rest/ofscMetadata/v1/workZoneKey`                                                                                      |metadata     |GET   |-     |
 |ST001G|`/rest/ofscStatistics/v1/activityDurationStats`                                                                          |statistics   |GET   |async |
-|ST001A|`/rest/ofscStatistics/v1/activityDurationStats`                                                                          |statistics   |PATCH |-     |
+|ST001A|`/rest/ofscStatistics/v1/activityDurationStats`                                                                          |statistics   |PATCH |async |
 |ST002G|`/rest/ofscStatistics/v1/activityTravelStats`                                                                            |statistics   |GET   |async |
-|ST002A|`/rest/ofscStatistics/v1/activityTravelStats`                                                                            |statistics   |PATCH |-     |
+|ST002A|`/rest/ofscStatistics/v1/activityTravelStats`                                                                            |statistics   |PATCH |async |
 |ST003G|`/rest/ofscStatistics/v1/airlineDistanceBasedTravel`                                                                     |statistics   |GET   |async |
-|ST003A|`/rest/ofscStatistics/v1/airlineDistanceBasedTravel`                                                                     |statistics   |PATCH |-     |
+|ST003A|`/rest/ofscStatistics/v1/airlineDistanceBasedTravel`                                                                     |statistics   |PATCH |async |
 |PC001U|`/rest/ofscPartsCatalog/v1/catalogs/{catalog}/{language}`                                                                |partscatalog |PUT   |-     |
 |PC002U|`/rest/ofscPartsCatalog/v1/catalogs/{catalog}/{language}/{itemLabel}`                                                    |partscatalog |PUT   |-     |
 |PC002D|`/rest/ofscPartsCatalog/v1/catalogs/{catalog}/{language}/{itemLabel}`                                                    |partscatalog |DELETE|-     |
@@ -267,11 +267,11 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 ## Implementation Summary
 
 - **Sync only**: 4 endpoints
-- **Async only**: 92 endpoints
+- **Async only**: 95 endpoints
 - **Both**: 85 endpoints
-- **Not implemented**: 62 endpoints
+- **Not implemented**: 59 endpoints
 - **Total sync**: 89 endpoints
-- **Total async**: 177 endpoints
+- **Total async**: 180 endpoints
 
 ## Implementation Statistics by Module and Method
 
@@ -295,11 +295,11 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |metadata     |41/51 (80.4%)     |29/30 (96.7%)         |5/5 (100.0%)     |75/86 (87.2%)      |
 |core         |42/51 (82.4%)     |30/56 (53.6%)         |17/20 (85.0%)    |89/127 (70.1%)     |
 |capacity     |6/7 (85.7%)       |4/5 (80.0%)           |0/0 (0%)         |10/12 (83.3%)      |
-|statistics   |3/3 (100.0%)      |0/3 (0.0%)            |0/0 (0%)         |3/6 (50.0%)        |
+|statistics   |3/3 (100.0%)      |3/3 (100.0%)          |0/0 (0%)         |6/6 (100.0%)       |
 |partscatalog |0/0 (0%)          |0/2 (0.0%)            |0/1 (0.0%)       |0/3 (0.0%)         |
 |collaboration|0/3 (0.0%)        |0/4 (0.0%)            |0/0 (0%)         |0/7 (0.0%)         |
 |auth         |0/0 (0%)          |0/2 (0.0%)            |0/0 (0%)         |0/2 (0.0%)         |
-|**Total**    |**92/115 (80.0%)**|**63/102 (61.8%)**    |**22/26 (84.6%)**|**177/243 (72.8%)**|
+|**Total**    |**92/115 (80.0%)**|**66/102 (64.7%)**    |**22/26 (84.6%)**|**180/243 (74.1%)**|
 
 ## Endpoint ID Reference
 

@@ -1,6 +1,6 @@
 """Async version of OFSC Statistics API module."""
 
-from typing import Optional
+from typing import Optional, Union
 from urllib.parse import urljoin
 
 import httpx
@@ -17,10 +17,14 @@ from ..exceptions import (
     OFSCValidationError,
 )
 from ..models import (
+    ActivityDurationStatRequestList,
     ActivityDurationStatsList,
+    ActivityTravelStatRequestList,
     ActivityTravelStatsList,
     AirlineDistanceBasedTravelList,
+    AirlineDistanceBasedTravelRequestList,
     OFSConfig,
+    StatisticsPatchResponse,
 )
 
 
@@ -274,6 +278,122 @@ class AsyncOFSStatistics:
             return AirlineDistanceBasedTravelList.model_validate(response.json())
         except httpx.HTTPStatusError as e:
             self._handle_http_error(e, "Failed to get airline distance based travel")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    # endregion
+
+    # region Write Operations
+
+    async def update_activity_duration_stats(
+        self,
+        data: Union[ActivityDurationStatRequestList, dict],
+    ) -> StatisticsPatchResponse:
+        """Update activity duration statistics overrides.
+
+        Args:
+            data: List of activity duration stat overrides to apply.
+
+        Returns:
+            StatisticsPatchResponse: Result with status and updatedRecords count.
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCValidationError: If request data is invalid (400/422)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        if isinstance(data, dict):
+            data = ActivityDurationStatRequestList.model_validate(data)
+        url = urljoin(self.baseUrl, "/rest/ofscStatistics/v1/activityDurationStats")
+        try:
+            response = await self._client.patch(
+                url,
+                headers=self.headers,
+                json=data.model_dump(mode="python", exclude_none=True),
+            )
+            response.raise_for_status()
+            return StatisticsPatchResponse.model_validate(response.json())
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to update activity duration stats")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def update_activity_travel_stats(
+        self,
+        data: Union[ActivityTravelStatRequestList, dict],
+    ) -> StatisticsPatchResponse:
+        """Update activity travel statistics overrides.
+
+        Args:
+            data: List of activity travel stat overrides to apply.
+
+        Returns:
+            StatisticsPatchResponse: Result with status and updatedRecords count.
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCConflictError: If "Detect activity travel keys automatically" is enabled (409)
+            OFSCValidationError: If request data is invalid (400/422)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        if isinstance(data, dict):
+            data = ActivityTravelStatRequestList.model_validate(data)
+        url = urljoin(self.baseUrl, "/rest/ofscStatistics/v1/activityTravelStats")
+        try:
+            response = await self._client.patch(
+                url,
+                headers=self.headers,
+                json=data.model_dump(mode="python", exclude_none=True),
+            )
+            response.raise_for_status()
+            return StatisticsPatchResponse.model_validate(response.json())
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to update activity travel stats")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def update_airline_distance_based_travel(
+        self,
+        data: Union[AirlineDistanceBasedTravelRequestList, dict],
+    ) -> StatisticsPatchResponse:
+        """Update airline distance based travel overrides.
+
+        Args:
+            data: List of airline distance travel overrides to apply.
+
+        Returns:
+            StatisticsPatchResponse: Result with status and updatedRecords count.
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCConflictError: If "Detect activity travel keys automatically" is enabled (409)
+            OFSCValidationError: If request data is invalid (400/422)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        if isinstance(data, dict):
+            data = AirlineDistanceBasedTravelRequestList.model_validate(data)
+        url = urljoin(
+            self.baseUrl, "/rest/ofscStatistics/v1/airlineDistanceBasedTravel"
+        )
+        try:
+            response = await self._client.patch(
+                url,
+                headers=self.headers,
+                json=data.model_dump(mode="python", exclude_none=True),
+            )
+            response.raise_for_status()
+            return StatisticsPatchResponse.model_validate(response.json())
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to update airline distance based travel")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
