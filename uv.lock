@@ -337,7 +337,7 @@ wheels = [
 
 [[package]]
 name = "ofsc"
-version = "2.23.0"
+version = "2.24.0"
 source = { editable = "." }
 dependencies = [
     { name = "cachetools" },
