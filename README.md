@@ -80,10 +80,18 @@ See [docs/ENDPOINTS.md](docs/ENDPOINTS.md) for the full implementation status ta
 
 ## Usage Examples
 
+**Sync:**
 ```python
 from ofsc import OFSC
 instance = OFSC(clientID="...", secret="...", companyName="...")
 workzones = instance.metadata.get_workzones()
+```
+
+**Async:**
+```python
+from ofsc.async_client import AsyncOFSC
+async with AsyncOFSC(clientID="...", secret="...", companyName="...") as client:
+    workzones = await client.metadata.get_workzones()
 ```
 
 See the [examples/](examples/) directory for comprehensive sync and async usage examples.
