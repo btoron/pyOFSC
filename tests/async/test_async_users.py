@@ -603,15 +603,15 @@ class TestAsyncUserCollabGroups:
 
     @pytest.mark.asyncio
     async def test_delete_user_collab_groups_returns_none(
-        self, async_instance: AsyncOFSC
+        self, mock_instance: AsyncOFSC
     ):
         """Test delete_user_collab_groups returns None."""
         mock_response = Mock()
         mock_response.status_code = 204
         mock_response.raise_for_status = Mock()
-        async_instance.core._client.delete = AsyncMock(return_value=mock_response)
+        mock_instance.core._client.delete = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.core.delete_user_collab_groups("testuser")
+        result = await mock_instance.core.delete_user_collab_groups("testuser")
 
         assert result is None
 

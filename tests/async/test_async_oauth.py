@@ -40,54 +40,54 @@ class TestAsyncGetToken:
         assert result.expires_in == 3600
 
     @pytest.mark.asyncio
-    async def test_uses_v2_url(self, async_instance: AsyncOFSC):
+    async def test_uses_v2_url(self, mock_instance: AsyncOFSC):
         """Test that get_token calls the v2 endpoint."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = TOKEN_RESPONSE
         mock_response.raise_for_status = Mock()
         mock_post = AsyncMock(return_value=mock_response)
-        async_instance.oauth2._client.post = mock_post
+        mock_instance.oauth2._client.post = mock_post
 
-        await async_instance.oauth2.get_token()
+        await mock_instance.oauth2.get_token()
 
         call_url = mock_post.call_args[0][0]
         assert "/rest/oauthTokenService/v2/token" in call_url
 
     @pytest.mark.asyncio
-    async def test_uses_form_encoded_content_type(self, async_instance: AsyncOFSC):
+    async def test_uses_form_encoded_content_type(self, mock_instance: AsyncOFSC):
         """Test that the request uses application/x-www-form-urlencoded."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = TOKEN_RESPONSE
         mock_response.raise_for_status = Mock()
         mock_post = AsyncMock(return_value=mock_response)
-        async_instance.oauth2._client.post = mock_post
+        mock_instance.oauth2._client.post = mock_post
 
-        await async_instance.oauth2.get_token()
+        await mock_instance.oauth2.get_token()
 
         call_headers = mock_post.call_args[1]["headers"]
         assert call_headers["Content-Type"] == "application/x-www-form-urlencoded"
 
     @pytest.mark.asyncio
-    async def test_custom_request(self, async_instance: AsyncOFSC):
+    async def test_custom_request(self, mock_instance: AsyncOFSC):
         """Test that a custom OFSOAuthRequest is passed as form data."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = TOKEN_RESPONSE
         mock_response.raise_for_status = Mock()
         mock_post = AsyncMock(return_value=mock_response)
-        async_instance.oauth2._client.post = mock_post
+        mock_instance.oauth2._client.post = mock_post
 
         request = OFSOAuthRequest(grant_type="client_credentials")
-        await async_instance.oauth2.get_token(request)
+        await mock_instance.oauth2.get_token(request)
 
         call_data = mock_post.call_args[1]["data"]
         assert call_data["grant_type"] == "client_credentials"
 
     @pytest.mark.asyncio
     async def test_invalid_credentials_raises_authentication_error(
-        self, async_instance: AsyncOFSC
+        self, mock_instance: AsyncOFSC
     ):
         """Test that a 401 response raises OFSCAuthenticationError."""
         mock_response = Mock()
@@ -101,10 +101,10 @@ class TestAsyncGetToken:
         error = httpx.HTTPStatusError(
             "401 Unauthorized", request=Mock(), response=mock_response
         )
-        async_instance.oauth2._client.post = AsyncMock(side_effect=error)
+        mock_instance.oauth2._client.post = AsyncMock(side_effect=error)
 
         with pytest.raises(OFSCAuthenticationError):
-            await async_instance.oauth2.get_token()
+            await mock_instance.oauth2.get_token()
 
     @pytest.mark.asyncio
     async def test_bad_request_raises_validation_error(self, mock_instance: AsyncOFSC):

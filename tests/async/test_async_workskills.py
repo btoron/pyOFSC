@@ -413,7 +413,7 @@ class TestAsyncGetWorkskillConditionsModel:
 
     @pytest.mark.asyncio
     async def test_get_workskill_conditions_returns_model(
-        self, async_instance: AsyncOFSC
+        self, mock_instance: AsyncOFSC
     ):
         """Test that get_workskill_conditions returns WorkskillConditionList model."""
         mock_response = Mock()
@@ -432,8 +432,8 @@ class TestAsyncGetWorkskillConditionsModel:
             ]
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_workskill_conditions()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_workskill_conditions()
 
         assert isinstance(result, WorkskillConditionList)
         assert len(result.root) == 1

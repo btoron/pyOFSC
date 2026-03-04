@@ -63,7 +63,7 @@ class TestAsyncGetActivityDurationStats:
         assert isinstance(result.items[0], ActivityDurationStat)
 
     @pytest.mark.asyncio
-    async def test_pagination(self, async_instance: AsyncOFSC):
+    async def test_pagination(self, mock_instance: AsyncOFSC):
         """Test that pagination params are forwarded correctly."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -76,9 +76,9 @@ class TestAsyncGetActivityDurationStats:
         }
         mock_response.raise_for_status = Mock()
         mock_get = AsyncMock(return_value=mock_response)
-        async_instance.statistics._client.get = mock_get
+        mock_instance.statistics._client.get = mock_get
 
-        await async_instance.statistics.get_activity_duration_stats(offset=50, limit=25)
+        await mock_instance.statistics.get_activity_duration_stats(offset=50, limit=25)
 
         call_kwargs = mock_get.call_args
         params = call_kwargs[1]["params"]
@@ -86,16 +86,16 @@ class TestAsyncGetActivityDurationStats:
         assert params["limit"] == 25
 
     @pytest.mark.asyncio
-    async def test_with_resource_id(self, async_instance: AsyncOFSC):
+    async def test_with_resource_id(self, mock_instance: AsyncOFSC):
         """Test that optional resource_id param is forwarded."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": [], "totalResults": 0}
         mock_response.raise_for_status = Mock()
         mock_get = AsyncMock(return_value=mock_response)
-        async_instance.statistics._client.get = mock_get
+        mock_instance.statistics._client.get = mock_get
 
-        await async_instance.statistics.get_activity_duration_stats(
+        await mock_instance.statistics.get_activity_duration_stats(
             resource_id="RES001", include_children=True, akey="KEY1"
         )
 
@@ -133,7 +133,7 @@ class TestAsyncGetActivityDurationStats:
         assert isinstance(item.count, int)
 
     @pytest.mark.asyncio
-    async def test_auth_error(self, async_instance: AsyncOFSC):
+    async def test_auth_error(self, mock_instance: AsyncOFSC):
         """Test that 401 raises OFSCAuthenticationError."""
         import httpx
 
@@ -151,10 +151,10 @@ class TestAsyncGetActivityDurationStats:
             "401", request=mock_request, response=mock_response
         )
         mock_get = AsyncMock(side_effect=http_error)
-        async_instance.statistics._client.get = mock_get
+        mock_instance.statistics._client.get = mock_get
 
         with pytest.raises(OFSCAuthenticationError):
-            await async_instance.statistics.get_activity_duration_stats()
+            await mock_instance.statistics.get_activity_duration_stats()
 
 
 # ---------------------------------------------------------------------------
@@ -196,32 +196,32 @@ class TestAsyncGetActivityTravelStats:
         assert isinstance(result.items[0], ActivityTravelStat)
 
     @pytest.mark.asyncio
-    async def test_pagination(self, async_instance: AsyncOFSC):
+    async def test_pagination(self, mock_instance: AsyncOFSC):
         """Test pagination params forwarded for travel stats."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": [], "totalResults": 0}
         mock_response.raise_for_status = Mock()
         mock_get = AsyncMock(return_value=mock_response)
-        async_instance.statistics._client.get = mock_get
+        mock_instance.statistics._client.get = mock_get
 
-        await async_instance.statistics.get_activity_travel_stats(offset=10, limit=50)
+        await mock_instance.statistics.get_activity_travel_stats(offset=10, limit=50)
 
         params = mock_get.call_args[1]["params"]
         assert params["offset"] == 10
         assert params["limit"] == 50
 
     @pytest.mark.asyncio
-    async def test_with_optional_params(self, async_instance: AsyncOFSC):
+    async def test_with_optional_params(self, mock_instance: AsyncOFSC):
         """Test that optional params are forwarded for travel stats."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": [], "totalResults": 0}
         mock_response.raise_for_status = Mock()
         mock_get = AsyncMock(return_value=mock_response)
-        async_instance.statistics._client.get = mock_get
+        mock_instance.statistics._client.get = mock_get
 
-        await async_instance.statistics.get_activity_travel_stats(
+        await mock_instance.statistics.get_activity_travel_stats(
             region="WEST", tkey="TK1", fkey="FK1", key_id=42
         )
 
@@ -324,16 +324,16 @@ class TestAsyncGetAirlineDistanceBasedTravel:
         assert len(result.items[0].data) == 2
 
     @pytest.mark.asyncio
-    async def test_pagination(self, async_instance: AsyncOFSC):
+    async def test_pagination(self, mock_instance: AsyncOFSC):
         """Test pagination params forwarded for airline distance travel."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": [], "totalResults": 0}
         mock_response.raise_for_status = Mock()
         mock_get = AsyncMock(return_value=mock_response)
-        async_instance.statistics._client.get = mock_get
+        mock_instance.statistics._client.get = mock_get
 
-        await async_instance.statistics.get_airline_distance_based_travel(
+        await mock_instance.statistics.get_airline_distance_based_travel(
             offset=20, limit=10
         )
 
@@ -342,16 +342,16 @@ class TestAsyncGetAirlineDistanceBasedTravel:
         assert params["limit"] == 10
 
     @pytest.mark.asyncio
-    async def test_with_optional_params(self, async_instance: AsyncOFSC):
+    async def test_with_optional_params(self, mock_instance: AsyncOFSC):
         """Test that optional params are forwarded for airline distance travel."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": [], "totalResults": 0}
         mock_response.raise_for_status = Mock()
         mock_get = AsyncMock(return_value=mock_response)
-        async_instance.statistics._client.get = mock_get
+        mock_instance.statistics._client.get = mock_get
 
-        await async_instance.statistics.get_airline_distance_based_travel(
+        await mock_instance.statistics.get_airline_distance_based_travel(
             level="region", key="WEST", distance=50, key_id=1
         )
 
@@ -608,16 +608,16 @@ class TestAsyncUpdateActivityDurationStats:
         assert result.updatedRecords == 1
 
     @pytest.mark.asyncio
-    async def test_with_model_input(self, async_instance: AsyncOFSC):
+    async def test_with_model_input(self, mock_instance: AsyncOFSC):
         """Test that model input is accepted and serialized correctly."""
         mock_response = _make_mock_patch_response()
         mock_patch = AsyncMock(return_value=mock_response)
-        async_instance.statistics._client.patch = mock_patch
+        mock_instance.statistics._client.patch = mock_patch
 
         request_data = ActivityDurationStatRequestList(
             items=[{"resourceId": "", "akey": "REPAIR", "override": 120}]
         )
-        await async_instance.statistics.update_activity_duration_stats(request_data)
+        await mock_instance.statistics.update_activity_duration_stats(request_data)
 
         call_kwargs = mock_patch.call_args[1]
         assert "json" in call_kwargs
@@ -713,16 +713,16 @@ class TestAsyncUpdateActivityTravelStats:
         assert isinstance(result, StatisticsPatchResponse)
 
     @pytest.mark.asyncio
-    async def test_with_optional_key_id(self, async_instance: AsyncOFSC):
+    async def test_with_optional_key_id(self, mock_instance: AsyncOFSC):
         """Test that optional keyId is serialized when provided."""
         mock_response = _make_mock_patch_response()
         mock_patch = AsyncMock(return_value=mock_response)
-        async_instance.statistics._client.patch = mock_patch
+        mock_instance.statistics._client.patch = mock_patch
 
         request_data = ActivityTravelStatRequestList(
             items=[{"fkey": "FK1", "tkey": "TK1", "override": 10, "keyId": 42}]
         )
-        await async_instance.statistics.update_activity_travel_stats(request_data)
+        await mock_instance.statistics.update_activity_travel_stats(request_data)
 
         call_kwargs = mock_patch.call_args[1]
         assert call_kwargs["json"]["items"][0]["keyId"] == 42
@@ -807,11 +807,11 @@ class TestAsyncUpdateAirlineDistanceBasedTravel:
         assert isinstance(result, StatisticsPatchResponse)
 
     @pytest.mark.asyncio
-    async def test_with_optional_fields(self, async_instance: AsyncOFSC):
+    async def test_with_optional_fields(self, mock_instance: AsyncOFSC):
         """Test that optional key/keyId/level fields are serialized."""
         mock_response = _make_mock_patch_response()
         mock_patch = AsyncMock(return_value=mock_response)
-        async_instance.statistics._client.patch = mock_patch
+        mock_instance.statistics._client.patch = mock_patch
 
         request_data = AirlineDistanceBasedTravelRequestList(
             items=[
@@ -823,7 +823,7 @@ class TestAsyncUpdateAirlineDistanceBasedTravel:
                 }
             ]
         )
-        await async_instance.statistics.update_airline_distance_based_travel(
+        await mock_instance.statistics.update_airline_distance_based_travel(
             request_data
         )
 

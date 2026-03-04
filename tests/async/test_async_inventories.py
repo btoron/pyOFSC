@@ -302,34 +302,34 @@ class TestAsyncInventoryProperties:
 
     @pytest.mark.asyncio
     async def test_get_inventory_property_returns_bytes(
-        self, async_instance: AsyncOFSC
+        self, mock_instance: AsyncOFSC
     ):
         """Test that get_inventory_property returns bytes."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.content = b"binary_data_here"
         mock_response.raise_for_status = Mock()
-        async_instance.core._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.core._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.core.get_inventory_property(10, "photo")
+        result = await mock_instance.core.get_inventory_property(10, "photo")
 
         assert isinstance(result, bytes)
         assert result == b"binary_data_here"
 
     @pytest.mark.asyncio
     async def test_get_inventory_property_sets_accept_header(
-        self, async_instance: AsyncOFSC
+        self, mock_instance: AsyncOFSC
     ):
         """Test that get_inventory_property sets Accept header."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.content = b"data"
         mock_response.raise_for_status = Mock()
-        async_instance.core._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.core._client.get = AsyncMock(return_value=mock_response)
 
-        await async_instance.core.get_inventory_property(10, "photo")
+        await mock_instance.core.get_inventory_property(10, "photo")
 
-        call_kwargs = async_instance.core._client.get.call_args
+        call_kwargs = mock_instance.core._client.get.call_args
         assert call_kwargs.kwargs["headers"]["Accept"] == "application/octet-stream"
 
     @pytest.mark.asyncio
@@ -348,34 +348,34 @@ class TestAsyncInventoryProperties:
 
     @pytest.mark.asyncio
     async def test_set_inventory_property_content_disposition(
-        self, async_instance: AsyncOFSC
+        self, mock_instance: AsyncOFSC
     ):
         """Test that set_inventory_property sets Content-Disposition header."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.raise_for_status = Mock()
-        async_instance.core._client.put = AsyncMock(return_value=mock_response)
+        mock_instance.core._client.put = AsyncMock(return_value=mock_response)
 
-        await async_instance.core.set_inventory_property(
+        await mock_instance.core.set_inventory_property(
             10, "photo", b"data", "my_photo.png", "image/png"
         )
 
-        call_kwargs = async_instance.core._client.put.call_args
+        call_kwargs = mock_instance.core._client.put.call_args
         assert "Content-Disposition" in call_kwargs.kwargs["headers"]
         assert "my_photo.png" in call_kwargs.kwargs["headers"]["Content-Disposition"]
         assert call_kwargs.kwargs["headers"]["Content-Type"] == "image/png"
 
     @pytest.mark.asyncio
     async def test_delete_inventory_property_returns_none(
-        self, async_instance: AsyncOFSC
+        self, mock_instance: AsyncOFSC
     ):
         """Test that delete_inventory_property returns None on success."""
         mock_response = Mock()
         mock_response.status_code = 204
         mock_response.raise_for_status = Mock()
-        async_instance.core._client.delete = AsyncMock(return_value=mock_response)
+        mock_instance.core._client.delete = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.core.delete_inventory_property(10, "photo")
+        result = await mock_instance.core.delete_inventory_property(10, "photo")
 
         assert result is None
 

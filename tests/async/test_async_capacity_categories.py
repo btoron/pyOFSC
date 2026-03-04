@@ -106,7 +106,7 @@ class TestAsyncGetCapacityCategoriesModel:
 
     @pytest.mark.asyncio
     async def test_get_capacity_categories_returns_model(
-        self, async_instance: AsyncOFSC
+        self, mock_instance: AsyncOFSC
     ):
         """Test that get_capacity_categories returns CapacityCategoryListResponse model."""
         mock_response = Mock()
@@ -120,8 +120,8 @@ class TestAsyncGetCapacityCategoriesModel:
             "links": [],
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_capacity_categories()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_capacity_categories()
 
         assert isinstance(result, CapacityCategoryListResponse)
         assert len(result.items) == 2

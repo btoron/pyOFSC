@@ -242,7 +242,7 @@ class TestAsyncGetApplicationApiAccessesModel:
 
     @pytest.mark.asyncio
     async def test_get_application_api_accesses_returns_model(
-        self, async_instance: AsyncOFSC
+        self, mock_instance: AsyncOFSC
     ):
         """Test that get_application_api_accesses returns model."""
         mock_response = Mock()
@@ -257,8 +257,8 @@ class TestAsyncGetApplicationApiAccessesModel:
             ]
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_application_api_accesses("testapp")
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_application_api_accesses("testapp")
 
         assert isinstance(result, ApplicationApiAccessListResponse)
         assert len(result.items) == 1
@@ -359,7 +359,7 @@ class TestAsyncGetApplicationApiAccessModel:
 
     @pytest.mark.asyncio
     async def test_get_application_api_access_returns_model(
-        self, async_instance: AsyncOFSC
+        self, mock_instance: AsyncOFSC
     ):
         """Test that get_application_api_access returns model."""
         mock_response = Mock()
@@ -374,8 +374,8 @@ class TestAsyncGetApplicationApiAccessModel:
             ],
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_application_api_access(
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_application_api_access(
             "testapp", "capacityAPI"
         )
 
