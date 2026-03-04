@@ -196,6 +196,7 @@ uv run pytest tests/async/test_async_workzones.py
     delete_resource_preferences(self, activity_id)                                        [Async]
     get_capacity_categories(self, activity_id)                                             [Async]
     get_submitted_forms(self, activity_id, offset=0, limit=100)                           [Async]
+    get_multiday_segments(self, activity_id)                                               [Async]
     get_all_activities(self, root=None, date_from=date.today()-timedelta(days=7), date_to=date.today()+timedelta(days=7), activity_fields=["activityId", "activityType", "date", "resourceId", "status"], additional_fields=None, initial_offset=0, include_non_scheduled=False, limit=5000)
 
 

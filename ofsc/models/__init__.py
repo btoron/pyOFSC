@@ -334,6 +334,12 @@ class ActivityListResponse(OFSResponseList[Activity]):
     pass
 
 
+class MultidaySegmentListResponse(OFSResponseBoundedList[Activity]):
+    """List response for multiday activity segments (no totalResults)."""
+
+    pass
+
+
 # Core / Activities - Submitted Forms
 
 

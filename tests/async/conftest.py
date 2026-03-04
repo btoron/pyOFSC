@@ -115,6 +115,40 @@ def resource_file_property_label():
 
 
 @pytest.fixture
+async def segmentable_activity_type(async_instance):
+    """Get an activity type label that supports segmenting."""
+    activity_types = await async_instance.metadata.get_activity_types()
+    label = next(
+        (
+            at.label
+            for at in activity_types
+            if at.features and at.features.isSegmentingEnabled
+        ),
+        None,
+    )
+    if label is None:
+        pytest.skip("No segmentable activity types available")
+    return label
+
+
+@pytest.fixture
+async def segmentable_activity(async_instance, segmentable_activity_type):
+    """Create a segmentable activity with duration >20h, delete after test."""
+    created = await async_instance.core.create_activity(
+        Activity.model_validate(
+            {
+                "resourceId": "CAUSA",
+                "date": (date.today() + timedelta(days=90)).isoformat(),
+                "activityType": segmentable_activity_type,
+                "duration": 1260,  # 21 hours in minutes
+            }
+        )
+    )
+    yield created
+    await async_instance.core.delete_activity(created.activityId)
+
+
+@pytest.fixture
 async def fresh_activity_pair(async_instance, bucket_activity_type):
     """Create two temporary activities for link testing, delete both after."""
     act1 = await async_instance.core.create_activity(
