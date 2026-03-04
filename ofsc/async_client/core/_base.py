@@ -57,6 +57,8 @@ class _AsyncOFSCoreBase:
 
     @property
     def baseUrl(self) -> str:
+        if self._config.baseURL is None:
+            raise ValueError("Base URL is not configured")
         return self._config.baseURL
 
     @property
