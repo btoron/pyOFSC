@@ -893,3 +893,38 @@ class TestAsyncGetCapacityAreaChildren:
 
         labels = [child.label for child in result]
         assert labels == ["CHILD1", "CHILD2"]
+
+
+# === CROSS-API: CAPACITY AREA WORKZONES vs RESOURCE WORKZONES ===
+
+
+class TestAsyncCapacityAreaVsResourceWorkzones:
+    """Cross-API validation: compare workzones from metadata and core APIs."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_capacity_area_workzones_match_resource_workzones(
+        self, async_instance: AsyncOFSC
+    ):
+        """Validate that get_capacity_area_workzones and get_resource_workzones
+        return the same workzone labels when queried with the same label.
+        """
+        # Get a valid capacity area label
+        areas = await async_instance.metadata.get_capacity_areas()
+        assert len(areas.items) > 0
+        label = areas.items[0].label
+
+        # Get workzones from metadata API (ME013G v2)
+        ca_workzones = await async_instance.metadata.get_capacity_area_workzones(label)
+        ca_labels = {wz.workZoneLabel for wz in ca_workzones}
+
+        # Get workzones from core API (same label as resource_id)
+        res_workzones = await async_instance.core.get_resource_workzones(label)
+        res_labels = {wz.workZoneLabel for wz in res_workzones if wz.workZoneLabel}
+
+        # The workzone labels from both APIs should match
+        assert ca_labels == res_labels, (
+            f"Workzone mismatch for '{label}': "
+            f"metadata={ca_labels - res_labels}, "
+            f"core={res_labels - ca_labels}"
+        )
