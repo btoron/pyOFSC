@@ -11,11 +11,14 @@ from ofsc.exceptions import OFSCNotFoundError
 from ofsc.models import (
     AssignedLocationsResponse,
     CalendarView,
+    CalendarsListResponse,
     InventoryListResponse,
     LocationListResponse,
     PositionHistoryResponse,
     Resource,
+    ResourceAssistantsResponse,
     ResourceListResponse,
+    ResourcePlansResponse,
     ResourceRouteResponse,
     ResourceUsersListResponse,
     ResourceWorkScheduleResponse,
@@ -269,6 +272,67 @@ class TestAsyncResourceRoutesPlansLive:
         assert isinstance(result, ResourceRouteResponse)
         assert hasattr(result, "items")
 
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_get_resource_plans(self, async_instance: AsyncOFSC):
+        """Test get_resource_plans with date range (uses bucket resource with plans feature)."""
+        from calendar import monthrange
+
+        today = date.today()
+        # Use next month to avoid past-date errors
+        if today.month == 12:
+            next_month = date(today.year + 1, 1, 1)
+        else:
+            next_month = date(today.year, today.month + 1, 1)
+        last_day = monthrange(next_month.year, next_month.month)[1]
+        date_to = date(next_month.year, next_month.month, last_day)
+
+        result = await async_instance.core.get_resource_plans(
+            "FLUSA", next_month, date_to
+        )
+
+        assert isinstance(result, ResourcePlansResponse)
+        assert hasattr(result, "items")
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_get_resource_assistants(self, async_instance: AsyncOFSC):
+        """Test get_resource_assistants with date range (max 14 days, future dates)."""
+        today = date.today()
+        # Use next month start + 6 days to avoid past-date errors and stay within 14-day limit
+        if today.month == 12:
+            date_from = date(today.year + 1, 1, 1)
+        else:
+            date_from = date(today.year, today.month + 1, 1)
+        date_to = date(date_from.year, date_from.month, 7)
+
+        result = await async_instance.core.get_resource_assistants(
+            "33001", date_from, date_to
+        )
+
+        assert isinstance(result, ResourceAssistantsResponse)
+        assert hasattr(result, "items")
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_get_calendars(self, async_instance: AsyncOFSC):
+        """Test get_calendars with resources list and date range (future dates)."""
+        from calendar import monthrange
+
+        today = date.today()
+        # Use next month to avoid past-date errors
+        if today.month == 12:
+            date_from = date(today.year + 1, 1, 1)
+        else:
+            date_from = date(today.year, today.month + 1, 1)
+        last_day = monthrange(date_from.year, date_from.month)[1]
+        date_to = date(date_from.year, date_from.month, last_day)
+
+        result = await async_instance.core.get_calendars(["33001"], date_from, date_to)
+
+        assert isinstance(result, CalendarsListResponse)
+        assert hasattr(result, "items")
+
 
 # ===================================================================
 # SAVED RESPONSE VALIDATION
@@ -367,3 +431,56 @@ class TestAsyncResourceSavedResponses:
         assert isinstance(response, ResourceRouteResponse)
         assert hasattr(response, "items")
         assert hasattr(response, "routeStartTime")
+
+    def test_resource_assistants_validation(self):
+        """Test ResourceAssistantsResponse validates against saved response."""
+        saved_response_path = (
+            Path(__file__).parent.parent
+            / "saved_responses"
+            / "resources"
+            / "get_resource_assistants_200_success.json"
+        )
+
+        with open(saved_response_path) as f:
+            saved_data = json.load(f)
+
+        response = ResourceAssistantsResponse.model_validate(
+            saved_data["response_data"]
+        )
+
+        assert isinstance(response, ResourceAssistantsResponse)
+        assert hasattr(response, "items")
+
+    def test_resource_plans_validation(self):
+        """Test ResourcePlansResponse validates against saved response."""
+        saved_response_path = (
+            Path(__file__).parent.parent
+            / "saved_responses"
+            / "resources"
+            / "get_resource_plans_200_success.json"
+        )
+
+        with open(saved_response_path) as f:
+            saved_data = json.load(f)
+
+        response = ResourcePlansResponse.model_validate(saved_data["response_data"])
+
+        assert isinstance(response, ResourcePlansResponse)
+        assert hasattr(response, "items")
+
+    def test_calendars_validation(self):
+        """Test CalendarsListResponse validates against saved response."""
+        saved_response_path = (
+            Path(__file__).parent.parent
+            / "saved_responses"
+            / "resources"
+            / "get_calendars_200_success.json"
+        )
+
+        with open(saved_response_path) as f:
+            saved_data = json.load(f)
+
+        response = CalendarsListResponse.model_validate(saved_data["response_data"])
+
+        assert isinstance(response, CalendarsListResponse)
+        assert hasattr(response, "items")

@@ -110,12 +110,37 @@ class AsyncOFSCoreResourcesMixin:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_calendars(self: _CoreBaseProtocol) -> CalendarsListResponse:
-        """Get all calendars."""
+    async def get_calendars(
+        self: _CoreBaseProtocol,
+        resources: list[str],
+        date_from: date,
+        date_to: date,
+    ) -> CalendarsListResponse:
+        """Get calendars for the specified resources and date range.
+
+        Args:
+            resources: List of resource IDs to get calendars for.
+            date_from: Start date of the range.
+            date_to: End date of the range.
+
+        Returns:
+            CalendarsListResponse: List of calendars.
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/calendars")
+        params = {
+            "resources": ",".join(resources),
+            "dateFrom": date_from.isoformat(),
+            "dateTo": date_to.isoformat(),
+        }
 
         try:
-            response = await self._client.get(url, headers=self.headers)
+            response = await self._client.get(url, headers=self.headers, params=params)
             response.raise_for_status()
             data = response.json()
 
@@ -190,15 +215,31 @@ class AsyncOFSCoreResourcesMixin:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def get_resource_assistants(
-        self: _CoreBaseProtocol, resource_id: str
+        self: _CoreBaseProtocol, resource_id: str, date_from: date, date_to: date
     ) -> ResourceAssistantsResponse:
-        """Get assistant resources."""
+        """Get assistant resources for a date range.
+
+        Args:
+            resource_id: The resource ID.
+            date_from: Start date of the range.
+            date_to: End date of the range.
+
+        Returns:
+            ResourceAssistantsResponse: List of assistant resources.
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
         url = urljoin(
             self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/assistants"
         )
+        params = {"dateFrom": date_from.isoformat(), "dateTo": date_to.isoformat()}
 
         try:
-            response = await self._client.get(url, headers=self.headers)
+            response = await self._client.get(url, headers=self.headers, params=params)
             response.raise_for_status()
             data = response.json()
 
@@ -386,13 +427,29 @@ class AsyncOFSCoreResourcesMixin:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def get_resource_plans(
-        self: _CoreBaseProtocol, resource_id: str
+        self: _CoreBaseProtocol, resource_id: str, date_from: date, date_to: date
     ) -> ResourcePlansResponse:
-        """Get routing plans for a resource."""
+        """Get routing plans for a resource for a date range.
+
+        Args:
+            resource_id: The resource ID.
+            date_from: Start date for retrieving plans.
+            date_to: End date for retrieving plans.
+
+        Returns:
+            ResourcePlansResponse: List of resource routing plans.
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
         url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/plans")
+        params = {"dateFrom": date_from.isoformat(), "dateTo": date_to.isoformat()}
 
         try:
-            response = await self._client.get(url, headers=self.headers)
+            response = await self._client.get(url, headers=self.headers, params=params)
             response.raise_for_status()
             data = response.json()
 
