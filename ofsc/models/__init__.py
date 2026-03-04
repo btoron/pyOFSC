@@ -5,7 +5,6 @@ from pydantic import (
     AnyHttpUrl,
     BaseModel,
     ConfigDict,
-    field_validator,
     model_validator,
 )
 
@@ -15,6 +14,7 @@ from ._base import (
     OFSApi as OFSApi,
     OFSAPIError as OFSAPIError,
     OFSConfig as OFSConfig,
+    OAuthTokenResponse as OAuthTokenResponse,
     OFSOAuthRequest as OFSOAuthRequest,
     OFSResponseBoundedList as OFSResponseBoundedList,
     OFSResponseList as OFSResponseList,
@@ -93,10 +93,23 @@ from .metadata import (
     BaseApiAccess as BaseApiAccess,
     CapacityApiAccess as CapacityApiAccess,
     CapacityArea as CapacityArea,
+    CapacityAreaCapacityCategory as CapacityAreaCapacityCategory,
+    CapacityAreaCapacityCategoriesResponse as CapacityAreaCapacityCategoriesResponse,
+    CapacityAreaChildrenResponse as CapacityAreaChildrenResponse,
     CapacityAreaConfiguration as CapacityAreaConfiguration,
     CapacityAreaList as CapacityAreaList,
     CapacityAreaListResponse as CapacityAreaListResponse,
+    CapacityAreaOrganization as CapacityAreaOrganization,
+    CapacityAreaOrganizationsResponse as CapacityAreaOrganizationsResponse,
     CapacityAreaParent as CapacityAreaParent,
+    CapacityAreaTimeInterval as CapacityAreaTimeInterval,
+    CapacityAreaTimeIntervalsResponse as CapacityAreaTimeIntervalsResponse,
+    CapacityAreaTimeSlot as CapacityAreaTimeSlot,
+    CapacityAreaTimeSlotsResponse as CapacityAreaTimeSlotsResponse,
+    CapacityAreaWorkZone as CapacityAreaWorkZone,
+    CapacityAreaWorkZonesResponse as CapacityAreaWorkZonesResponse,
+    CapacityAreaWorkZoneV1 as CapacityAreaWorkZoneV1,
+    CapacityAreaWorkZonesV1Response as CapacityAreaWorkZonesV1Response,
     CapacityCategory as CapacityCategory,
     CapacityCategoryListResponse as CapacityCategoryListResponse,
     Condition as Condition,
@@ -127,6 +140,7 @@ from .metadata import (
     MapLayer as MapLayer,
     MapLayerList as MapLayerList,
     MapLayerListResponse as MapLayerListResponse,
+    PopulateStatusResponse as PopulateStatusResponse,
     NonWorkingReason as NonWorkingReason,
     NonWorkingReasonList as NonWorkingReasonList,
     NonWorkingReasonListResponse as NonWorkingReasonListResponse,
@@ -157,6 +171,7 @@ from .metadata import (
     ShiftDecoration as ShiftDecoration,
     ShiftList as ShiftList,
     ShiftListResponse as ShiftListResponse,
+    ShiftUpdate as ShiftUpdate,
     ShiftType as ShiftType,
     SimpleApiAccess as SimpleApiAccess,
     StructuredApiAccess as StructuredApiAccess,
@@ -175,6 +190,8 @@ from .metadata import (
     Workzone as Workzone,
     WorkzoneList as WorkzoneList,
     WorkzoneListResponse as WorkzoneListResponse,
+    WorkZoneKeyElement as WorkZoneKeyElement,
+    WorkZoneKeyResponse as WorkZoneKeyResponse,
 )
 
 from .inventories import (
@@ -184,6 +201,24 @@ from .inventories import (
     InventoryListResponse as InventoryListResponse,
     RequiredInventoriesResponse as RequiredInventoriesResponse,
     RequiredInventory as RequiredInventory,
+)
+
+from .statistics import (
+    ActivityDurationStat as ActivityDurationStat,
+    ActivityDurationStatsList as ActivityDurationStatsList,
+    ActivityDurationStatRequest as ActivityDurationStatRequest,
+    ActivityDurationStatRequestList as ActivityDurationStatRequestList,
+    ActivityTravelStat as ActivityTravelStat,
+    ActivityTravelStatsList as ActivityTravelStatsList,
+    ActivityTravelStatRequest as ActivityTravelStatRequest,
+    ActivityTravelStatRequestList as ActivityTravelStatRequestList,
+    AirlineDistanceData as AirlineDistanceData,
+    AirlineDistanceBasedTravel as AirlineDistanceBasedTravel,
+    AirlineDistanceBasedTravelList as AirlineDistanceBasedTravelList,
+    AirlineDistanceOverrideData as AirlineDistanceOverrideData,
+    AirlineDistanceBasedTravelRequest as AirlineDistanceBasedTravelRequest,
+    AirlineDistanceBasedTravelRequestList as AirlineDistanceBasedTravelRequestList,
+    StatisticsPatchResponse as StatisticsPatchResponse,
 )
 
 # region Core / Activities
@@ -217,9 +252,7 @@ class GetActivitiesParams(BaseModel):
     def validate_date_requirements(self):
         # dateFrom and dateTo must both be specified or both be None
         if (self.dateFrom is None) != (self.dateTo is None):
-            raise ValueError(
-                "dateFrom and dateTo must both be specified or both omitted"
-            )
+            raise ValueError("dateFrom and dateTo must both be specified or both omitted")
 
         # Check date range is valid
         if self.dateFrom and self.dateTo and self.dateFrom > self.dateTo:
@@ -228,9 +261,7 @@ class GetActivitiesParams(BaseModel):
         # If no dates and no svcWorkOrderId, must have includeNonScheduled=True
         if self.dateFrom is None and self.svcWorkOrderId is None:
             if not self.includeNonScheduled:
-                raise ValueError(
-                    "Either dateFrom/dateTo, svcWorkOrderId, or includeNonScheduled=True is required"
-                )
+                raise ValueError("Either dateFrom/dateTo, svcWorkOrderId, or includeNonScheduled=True is required")
 
         return self
 
@@ -312,6 +343,12 @@ class BulkUpdateResponse(BaseModel):
 
 class ActivityListResponse(OFSResponseList[Activity]):
     """List response for activities with pagination."""
+
+    pass
+
+
+class MultidaySegmentListResponse(OFSResponseBoundedList[Activity]):
+    """List response for multiday activity segments (no totalResults)."""
 
     pass
 

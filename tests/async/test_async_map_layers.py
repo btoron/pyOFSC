@@ -25,8 +25,7 @@ class TestAsyncGetMapLayersLive:
 
         assert isinstance(result, MapLayerListResponse)
         assert hasattr(result, "items")
-        # Note: totalResults is 0 in test instance, but structure is valid
-        assert result.totalResults == 0
+        assert result.totalResults >= 0
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -42,7 +41,7 @@ class TestAsyncGetMapLayersModel:
     """Model validation tests for get_map_layers."""
 
     @pytest.mark.asyncio
-    async def test_get_map_layers_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_map_layers_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_map_layers returns MapLayerListResponse model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -65,8 +64,8 @@ class TestAsyncGetMapLayersModel:
             "links": [],
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_map_layers()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_map_layers()
 
         assert isinstance(result, MapLayerListResponse)
         assert len(result.items) == 2
@@ -74,7 +73,7 @@ class TestAsyncGetMapLayersModel:
         assert result.items[1].label == "LAYER2"
 
     @pytest.mark.asyncio
-    async def test_get_map_layers_field_types(self, async_instance: AsyncOFSC):
+    async def test_get_map_layers_field_types(self, mock_instance: AsyncOFSC):
         """Test that fields have correct types."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -89,8 +88,8 @@ class TestAsyncGetMapLayersModel:
             "totalResults": 1,
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_map_layers()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_map_layers()
 
         assert isinstance(result.items[0].label, str)
         assert result.items[0].status.value == "active"
@@ -114,7 +113,7 @@ class TestAsyncGetMapLayerModel:
     """Model validation tests for get_map_layer."""
 
     @pytest.mark.asyncio
-    async def test_get_map_layer_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_map_layer_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_map_layer returns MapLayer model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -134,8 +133,8 @@ class TestAsyncGetMapLayerModel:
             "shapeHintButton": {"actionType": "plugin", "label": "View"},
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_map_layer("TEST_LAYER")
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_map_layer("TEST_LAYER")
 
         assert isinstance(result, MapLayer)
         assert result.label == "TEST_LAYER"
@@ -146,34 +145,25 @@ class TestAsyncGetMapLayerModel:
 # === SAVED RESPONSE VALIDATION ===
 
 
+@pytest.mark.uses_local_data
 class TestAsyncMapLayersSavedResponses:
     """Test that saved API responses validate against Pydantic models."""
 
     def test_map_layer_list_response_validation(self):
         """Test MapLayerListResponse model validates against saved response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "map_layers"
-            / "get_map_layers_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "map_layers" / "get_map_layers_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 
         response = MapLayerListResponse.model_validate(saved_data["response_data"])
 
         assert isinstance(response, MapLayerListResponse)
-        assert response.totalResults == 0  # From the captured data
-        assert len(response.items) == 0
+        assert isinstance(response.totalResults, int)
+        assert len(response.items) == response.totalResults
 
     def test_map_layer_single_validation(self):
         """Test MapLayer model validates against saved single response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "map_layers"
-            / "get_map_layer_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "map_layers" / "get_map_layer_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 

@@ -1,8 +1,11 @@
+import pytest
+
 from ofsc import OFSC
 from ofsc.common import FULL_RESPONSE
 from ofsc.models import Application, ApplicationListResponse
 
 
+@pytest.mark.uses_real_data
 def test_get_applications_basic(instance: OFSC):
     raw_response = instance.metadata.get_applications(response_type=FULL_RESPONSE)
     assert raw_response is not None
@@ -16,6 +19,7 @@ def test_get_applications_basic(instance: OFSC):
     assert instance._config.clientID in applications.keys()
 
 
+@pytest.mark.uses_real_data
 def test_get_applications_obj(instance: OFSC):
     response = instance.metadata.get_applications()
     assert response is not None
@@ -25,6 +29,7 @@ def test_get_applications_obj(instance: OFSC):
     assert instance._config.clientID in applications.keys()
 
 
+@pytest.mark.uses_real_data
 def test_get_application_basic(instance: OFSC):
     raw_response = instance.metadata.get_application(
         instance._config.clientID, response_type=FULL_RESPONSE
@@ -37,12 +42,14 @@ def test_get_application_basic(instance: OFSC):
     assert application_obj is not None
 
 
+@pytest.mark.uses_real_data
 def test_get_application_obj(instance: OFSC):
     response = instance.metadata.get_application(instance._config.clientID)
     assert isinstance(response, Application)
     assert response.label == instance._config.clientID
 
 
+@pytest.mark.uses_real_data
 def test_get_application_api_accesses_basic(instance: OFSC):
     raw_response = instance.metadata.get_application_api_accesses(
         instance._config.clientID, response_type=FULL_RESPONSE
@@ -56,6 +63,7 @@ def test_get_application_api_accesses_basic(instance: OFSC):
     assert accesses is not None
 
 
+@pytest.mark.uses_real_data
 def test_get_application_api_access_basic(instance: OFSC):
     raw_response = instance.metadata.get_application_api_access(
         instance._config.clientID, "metadataAPI", response_type=FULL_RESPONSE

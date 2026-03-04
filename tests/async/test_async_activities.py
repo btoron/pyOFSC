@@ -16,6 +16,7 @@ from ofsc.models import (
     InventoryListResponse,
     LinkedActivitiesResponse,
     LinkedActivity,
+    MultidaySegmentListResponse,
     RequiredInventoriesResponse,
     ResourcePreferencesResponse,
     SubmittedFormsResponse,
@@ -61,9 +62,7 @@ class TestAsyncGetActivitiesLive:
         assert hasattr(result, "items")
         assert hasattr(result, "offset")
         assert hasattr(result, "limit")
-        assert (
-            len(result.items) >= 0
-        )  # Just verify structure; count varies by environment
+        assert len(result.items) >= 0  # Just verify structure; count varies by environment
         assert len(result.items) <= 100
 
 
@@ -71,14 +70,14 @@ class TestAsyncGetActivities:
     """Model validation tests for get_activities."""
 
     @pytest.mark.asyncio
-    async def test_get_activities_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_activities_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_activities returns ActivityListResponse model."""
         # This test will use the actual API
         # Skip if no credentials available
         pytest.skip("Requires API credentials and specific date range")
 
     @pytest.mark.asyncio
-    async def test_get_activities_pagination(self, async_instance: AsyncOFSC):
+    async def test_get_activities_pagination(self, mock_instance: AsyncOFSC):
         """Test get_activities with pagination parameters."""
         pytest.skip("Requires API credentials and specific date range")
 
@@ -236,6 +235,7 @@ class TestAsyncGetCapacityCategoriesLive:
         assert hasattr(result, "totalResults")
 
 
+@pytest.mark.uses_local_data
 class TestAsyncActivitySavedResponses:
     """Saved response validation tests."""
 
@@ -315,9 +315,7 @@ class TestAsyncActivitySavedResponses:
 
     def test_deinstalled_inventories_response_validation(self):
         """Test InventoryListResponse model validates against deinstalled inventories response."""
-        saved_data = _load_saved_response(
-            "get_deinstalled_inventories_200_success.json"
-        )
+        saved_data = _load_saved_response("get_deinstalled_inventories_200_success.json")
         response = InventoryListResponse.model_validate(saved_data)
 
         assert isinstance(response, InventoryListResponse)
@@ -357,9 +355,7 @@ class TestAsyncCreateActivityLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_create_and_delete_activity(
-        self, async_instance: AsyncOFSC, bucket_activity_type: str
-    ):
+    async def test_create_and_delete_activity(self, async_instance: AsyncOFSC, bucket_activity_type: str):
         """Test create_activity creates an activity and delete_activity removes it."""
         activity = Activity.model_validate(
             {
@@ -381,9 +377,7 @@ class TestAsyncCreateActivityLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_create_activity_returns_activity_model(
-        self, async_instance: AsyncOFSC, bucket_activity_type: str
-    ):
+    async def test_create_activity_returns_activity_model(self, async_instance: AsyncOFSC, bucket_activity_type: str):
         """Test that create_activity returns an Activity model."""
         activity = Activity.model_validate(
             {
@@ -407,9 +401,7 @@ class TestAsyncUpdateActivityLive:
     @pytest.mark.uses_real_data
     async def test_update_activity(self, async_instance: AsyncOFSC, fresh_activity):
         """Test update_activity with actual API using a fresh future-dated activity."""
-        result = await async_instance.core.update_activity(
-            fresh_activity.activityId, {"customerName": "Test Customer"}
-        )
+        result = await async_instance.core.update_activity(fresh_activity.activityId, {"customerName": "Test Customer"})
         assert isinstance(result, Activity)
         assert result.activityId == fresh_activity.activityId
 
@@ -461,15 +453,11 @@ class TestAsyncSetResourcePreferencesLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_set_resource_preferences_returns_none(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_set_resource_preferences_returns_none(self, async_instance: AsyncOFSC):
         """Test that set_resource_preferences returns None."""
         activity_id = KNOWN_ACTIVITY_ID
         original = await async_instance.core.get_resource_preferences(activity_id)
-        result = await async_instance.core.set_resource_preferences(
-            activity_id, original.items
-        )
+        result = await async_instance.core.set_resource_preferences(activity_id, original.items)
         assert result is None
 
 
@@ -478,9 +466,7 @@ class TestAsyncDeleteResourcePreferencesLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_delete_resource_preferences_save_restore(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_delete_resource_preferences_save_restore(self, async_instance: AsyncOFSC):
         """Test save/delete/restore cycle for resource preferences."""
         activity_id = KNOWN_ACTIVITY_ID
 
@@ -496,15 +482,11 @@ class TestAsyncDeleteResourcePreferencesLive:
 
         # Restore
         if original.items:
-            await async_instance.core.set_resource_preferences(
-                activity_id, original.items
-            )
+            await async_instance.core.set_resource_preferences(activity_id, original.items)
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_delete_resource_preferences_returns_none(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_delete_resource_preferences_returns_none(self, async_instance: AsyncOFSC):
         """Test that delete_resource_preferences returns None."""
         activity_id = KNOWN_ACTIVITY_ID
         result = await async_instance.core.delete_resource_preferences(activity_id)
@@ -533,15 +515,11 @@ class TestAsyncSetRequiredInventoriesLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_set_required_inventories_returns_none(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_set_required_inventories_returns_none(self, async_instance: AsyncOFSC):
         """Test that set_required_inventories returns None."""
         activity_id = KNOWN_ACTIVITY_ID
         original = await async_instance.core.get_required_inventories(activity_id)
-        result = await async_instance.core.set_required_inventories(
-            activity_id, original.items
-        )
+        result = await async_instance.core.set_required_inventories(activity_id, original.items)
         assert result is None
 
 
@@ -550,9 +528,7 @@ class TestAsyncDeleteRequiredInventoriesLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_delete_required_inventories_save_restore(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_delete_required_inventories_save_restore(self, async_instance: AsyncOFSC):
         """Test save/delete/restore cycle for required inventories."""
         activity_id = KNOWN_ACTIVITY_ID
 
@@ -568,15 +544,11 @@ class TestAsyncDeleteRequiredInventoriesLive:
 
         # Restore
         if original.items:
-            await async_instance.core.set_required_inventories(
-                activity_id, original.items
-            )
+            await async_instance.core.set_required_inventories(activity_id, original.items)
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_delete_required_inventories_returns_none(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_delete_required_inventories_returns_none(self, async_instance: AsyncOFSC):
         """Test that delete_required_inventories returns None."""
         activity_id = KNOWN_ACTIVITY_ID
         result = await async_instance.core.delete_required_inventories(activity_id)
@@ -598,9 +570,7 @@ class TestAsyncCreateCustomerInventoryLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_create_customer_inventory(
-        self, async_instance: AsyncOFSC, fresh_activity
-    ):
+    async def test_create_customer_inventory(self, async_instance: AsyncOFSC, fresh_activity):
         """Test create_customer_inventory creates an inventory item."""
         # Get inventory types from a read-only reference activity
         existing = await async_instance.core.get_customer_inventories(KNOWN_ACTIVITY_ID)
@@ -611,9 +581,7 @@ class TestAsyncCreateCustomerInventoryLive:
         inv_type = existing.items[0].inventoryType
 
         inventory = Inventory.model_validate({"inventoryType": inv_type, "quantity": 1})
-        created = await async_instance.core.create_customer_inventory(
-            fresh_activity.activityId, inventory
-        )
+        created = await async_instance.core.create_customer_inventory(fresh_activity.activityId, inventory)
         assert isinstance(created, Inventory)
         assert created.inventoryType == inv_type
 
@@ -623,9 +591,7 @@ class TestAsyncLinkActivitiesLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_link_and_unlink_activities(
-        self, async_instance: AsyncOFSC, fresh_activity_pair
-    ):
+    async def test_link_and_unlink_activities(self, async_instance: AsyncOFSC, fresh_activity_pair):
         """Test link then unlink two temporary activities."""
         act1, act2 = fresh_activity_pair
 
@@ -656,9 +622,7 @@ class TestAsyncSetActivityLinkLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_set_and_delete_activity_link(
-        self, async_instance: AsyncOFSC, fresh_activity_pair
-    ):
+    async def test_set_and_delete_activity_link(self, async_instance: AsyncOFSC, fresh_activity_pair):
         """Test set_activity_link creates a link and delete_activity_link removes it."""
         act1, act2 = fresh_activity_pair
 
@@ -667,16 +631,12 @@ class TestAsyncSetActivityLinkLive:
             "toActivityId": act2.activityId,
             "linkType": "starts_after",
         }
-        result = await async_instance.core.set_activity_link(
-            act1.activityId, act2.activityId, "starts_after", link_data
-        )
+        result = await async_instance.core.set_activity_link(act1.activityId, act2.activityId, "starts_after", link_data)
 
         assert isinstance(result, LinkedActivity)
 
         # Delete the specific link
-        await async_instance.core.delete_activity_link(
-            act1.activityId, act2.activityId, "starts_after"
-        )
+        await async_instance.core.delete_activity_link(act1.activityId, act2.activityId, "starts_after")
 
         # Verify removed
         links = await async_instance.core.get_linked_activities(act1.activityId)
@@ -694,35 +654,27 @@ class TestAsyncSetFilePropertyLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_set_and_delete_file_property(
-        self, async_instance: AsyncOFSC, fresh_activity
-    ):
+    async def test_set_and_delete_file_property(self, async_instance: AsyncOFSC, fresh_activity):
         """Test set_file_property uploads content and delete_file_property removes it."""
         label = "csign"
         content = b"test file content"
         media_type = "application/octet-stream"
 
-        result = await async_instance.core.set_file_property(
-            fresh_activity.activityId, label, content, media_type
-        )
+        result = await async_instance.core.set_file_property(fresh_activity.activityId, label, content, media_type)
         assert result is None
 
         await async_instance.core.delete_file_property(fresh_activity.activityId, label)
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_set_file_property_with_filename(
-        self, async_instance: AsyncOFSC, fresh_activity
-    ):
+    async def test_set_file_property_with_filename(self, async_instance: AsyncOFSC, fresh_activity):
         """Test set_file_property with optional filename parameter."""
         label = "csign"
         content = b"file with name"
         media_type = "application/octet-stream"
         filename = "test.bin"
 
-        result = await async_instance.core.set_file_property(
-            fresh_activity.activityId, label, content, media_type, filename=filename
-        )
+        result = await async_instance.core.set_file_property(fresh_activity.activityId, label, content, media_type, filename=filename)
         assert result is None
 
         await async_instance.core.delete_file_property(fresh_activity.activityId, label)
@@ -733,23 +685,46 @@ class TestAsyncDeleteFilePropertyLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_delete_file_property_returns_none(
-        self, async_instance: AsyncOFSC, fresh_activity
-    ):
+    async def test_delete_file_property_returns_none(self, async_instance: AsyncOFSC, fresh_activity):
         """Test that delete_file_property returns None after upload."""
         label = "csign"
         content = b"to be deleted"
 
         # First upload
-        await async_instance.core.set_file_property(
-            fresh_activity.activityId, label, content, "application/octet-stream"
-        )
+        await async_instance.core.set_file_property(fresh_activity.activityId, label, content, "application/octet-stream")
 
         # Then delete
-        result = await async_instance.core.delete_file_property(
-            fresh_activity.activityId, label
-        )
+        result = await async_instance.core.delete_file_property(fresh_activity.activityId, label)
         assert result is None
+
+
+# endregion
+
+
+# region Phase 5: Multiday Segments
+
+
+class TestAsyncGetMultidaySegmentsLive:
+    """Live tests for get_multiday_segments against actual API."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_get_multiday_segments(self, async_instance: AsyncOFSC, segmentable_activity):
+        """Test get_multiday_segments returns MultidaySegmentListResponse with segments."""
+        result = await async_instance.core.get_multiday_segments(segmentable_activity.activityId)
+        assert isinstance(result, MultidaySegmentListResponse)
+        assert result.items is not None
+        assert len(result.items) > 0
+        for segment in result.items:
+            assert isinstance(segment, Activity)
+        assert not hasattr(result, "totalResults")
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_get_multiday_segments_not_found(self, async_instance: AsyncOFSC):
+        """Test get_multiday_segments raises OFSCNotFoundError for unknown activity."""
+        with pytest.raises(OFSCNotFoundError):
+            await async_instance.core.get_multiday_segments(999999999)
 
 
 # endregion

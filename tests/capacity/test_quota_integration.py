@@ -8,10 +8,12 @@ import pytest
 from datetime import date, timedelta
 
 from ofsc import OFSC
+from ofsc.exceptions import OFSAPIException
 from ofsc.models import GetQuotaRequest, GetQuotaResponse, QuotaAreaItem, CsvList
 
 
 @pytest.mark.integration
+@pytest.mark.uses_real_data
 class TestQuotaAPIIntegration:
     """Integration tests against real OFSC server"""
 
@@ -173,9 +175,10 @@ class TestQuotaAPIIntegration:
             )
             # If no exception, check if response is empty or handles gracefully
             assert isinstance(response, GetQuotaResponse)
-        except Exception as e:
-            # If exception is raised, it should be a meaningful error
-            assert "area" in str(e).lower() or "not found" in str(e).lower()
+        except OFSAPIException as e:
+            # If exception is raised, it should contain meaningful error details
+            assert str(e) != ""
+            assert e.detail is not None or e.title is not None
 
     def test_quota_request_model_creation(
         self, test_dates, real_areas, real_categories
@@ -253,6 +256,7 @@ class TestQuotaAPIIntegration:
 
 @pytest.mark.integration
 @pytest.mark.slow
+@pytest.mark.uses_real_data
 class TestQuotaAPIPerformance:
     """Performance tests for quota API"""
 

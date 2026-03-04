@@ -1,5 +1,6 @@
 from collections import ChainMap
 
+import pytest
 import requests
 
 from ofsc.common import FULL_RESPONSE, OBJ_RESPONSE, TEXT_RESPONSE
@@ -7,6 +8,7 @@ from ofsc.exceptions import OFSAPIException
 from ofsc.models import ActivityTypeGroup, ActivityTypeGroupListResponse
 
 
+@pytest.mark.uses_real_data
 def test_wrapper_generic(instance):
     raw_response = instance.core.get_subscriptions(response_type=FULL_RESPONSE)
     assert isinstance(raw_response, requests.Response)
@@ -22,6 +24,7 @@ def test_wrapper_generic(instance):
     assert isinstance(default_response, dict)
 
 
+@pytest.mark.uses_real_data
 def test_wrapper_with_error(instance, pp):
     instance.core.config.auto_raise = False
     raw_response = instance.core.get_activity("123456", response_type=FULL_RESPONSE)
@@ -44,11 +47,10 @@ def test_wrapper_with_error(instance, pp):
         assert e.status_code == 404
 
 
+@pytest.mark.uses_real_data
 def test_wrapper_with_model_list(instance, demo_data):
     instance.core.config.auto_model = True
-    raw_response = instance.metadata.get_activity_type_groups(
-        response_type=FULL_RESPONSE
-    )
+    raw_response = instance.metadata.get_activity_type_groups(response_type=FULL_RESPONSE)
     assert isinstance(raw_response, requests.Response)
     assert raw_response.status_code == 200
 
@@ -56,12 +58,14 @@ def test_wrapper_with_model_list(instance, demo_data):
     assert isinstance(json_response, ActivityTypeGroupListResponse)
 
 
+@pytest.mark.uses_real_data
 def test_wrapper_with_model_single(instance):
     instance.core.config.auto_model = True
     raw_response = instance.metadata.get_activity_type_group("customer")
     assert isinstance(raw_response, ActivityTypeGroup)
 
 
+@pytest.mark.uses_real_data
 def test_wrapper_without_model(instance):
     instance.auto_model = False
     raw_response = instance.metadata.get_activity_type_group("customer")
@@ -79,10 +83,9 @@ def test_demo_data(demo_data):
     assert demo_data["get_file_property"]["activity_id"] == 3954799
 
 
+@pytest.mark.uses_real_data
 def test_generic_call_get(instance):
-    raw_response = instance.core.call(
-        method="GET", partialUrl="/rest/ofscCore/v1/events/subscriptions"
-    )
+    raw_response = instance.core.call(method="GET", partialUrl="/rest/ofscCore/v1/events/subscriptions")
     assert isinstance(raw_response, requests.Response)
     assert raw_response.status_code == 200
     response = raw_response.json()

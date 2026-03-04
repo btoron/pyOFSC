@@ -21,6 +21,7 @@ from ...models import (
     Activity,
     ActivityCapacityCategoriesResponse,
     ActivityListResponse,
+    MultidaySegmentListResponse,
     BulkUpdateRequest,
     CreateSubscriptionRequest,
     DailyExtractFiles,
@@ -63,11 +64,11 @@ class _AsyncOFSCoreBase:
         """Build authorization headers."""
         headers = {"Content-Type": "application/json;charset=UTF-8"}
         if not self._config.useToken:
-            headers["Authorization"] = "Basic " + self._config.basicAuthString.decode(
-                "utf-8"
-            )
+            headers["Authorization"] = "Basic " + self._config.basicAuthString.decode("utf-8")
         else:
-            raise NotImplementedError("Token-based auth not yet implemented for async")
+            if self._config.access_token is None:
+                raise ValueError("access_token required when useToken=True")
+            headers["Authorization"] = f"Bearer {self._config.access_token}"
         return headers
 
     def _parse_error_response(self, response: httpx.Response) -> dict:
@@ -120,9 +121,7 @@ class _AsyncOFSCoreBase:
         error_info = self._parse_error_response(e.response)
 
         # Build message with detail
-        message = (
-            f"{context}: {error_info['detail']}" if context else error_info["detail"]
-        )
+        message = f"{context}: {error_info['detail']}" if context else error_info["detail"]
 
         error_map = {
             401: OFSCAuthenticationError,
@@ -171,9 +170,7 @@ class _AsyncOFSCoreBase:
 
     # region Activities
 
-    async def get_activities(
-        self, params: GetActivitiesParams | dict, offset: int = 0, limit: int = 100
-    ) -> ActivityListResponse:
+    async def get_activities(self, params: GetActivitiesParams | dict, offset: int = 0, limit: int = 100) -> ActivityListResponse:
         """Get activities list with filters and pagination.
 
         :param params: Query parameters (accepts GetActivitiesParams or dict)
@@ -204,9 +201,7 @@ class _AsyncOFSCoreBase:
         url = urljoin(self.baseUrl, "/rest/ofscCore/v1/activities")
 
         try:
-            response = await self._client.get(
-                url, headers=self.headers, params=api_params
-            )
+            response = await self._client.get(url, headers=self.headers, params=api_params)
             response.raise_for_status()
             data = response.json()
 
@@ -339,9 +334,7 @@ class _AsyncOFSCoreBase:
     async def bulk_update(self, data: BulkUpdateRequest):
         raise NotImplementedError("Async method not yet implemented")
 
-    async def get_capacity_categories(
-        self, activity_id: int
-    ) -> ActivityCapacityCategoriesResponse:
+    async def get_capacity_categories(self, activity_id: int) -> ActivityCapacityCategoriesResponse:
         """Get capacity categories for an activity.
 
         :param activity_id: The unique identifier of the activity
@@ -366,16 +359,12 @@ class _AsyncOFSCoreBase:
 
             return ActivityCapacityCategoriesResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get capacity categories for activity {activity_id}"
-            )
+            self._handle_http_error(e, f"Failed to get capacity categories for activity {activity_id}")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_customer_inventories(
-        self, activity_id: int, offset: int = 0, limit: int = 100
-    ) -> InventoryListResponse:
+    async def get_customer_inventories(self, activity_id: int, offset: int = 0, limit: int = 100) -> InventoryListResponse:
         """Get customer inventories for an activity.
 
         :param activity_id: The unique identifier of the activity
@@ -405,16 +394,12 @@ class _AsyncOFSCoreBase:
 
             return InventoryListResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get customer inventories for activity {activity_id}"
-            )
+            self._handle_http_error(e, f"Failed to get customer inventories for activity {activity_id}")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def create_customer_inventory(
-        self, activity_id: int, inventory: Inventory
-    ) -> Inventory:
+    async def create_customer_inventory(self, activity_id: int, inventory: Inventory) -> Inventory:
         """Create a customer inventory item for an activity.
 
         :param activity_id: The unique identifier of the activity
@@ -454,9 +439,7 @@ class _AsyncOFSCoreBase:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_deinstalled_inventories(
-        self, activity_id: int, offset: int = 0, limit: int = 100
-    ) -> InventoryListResponse:
+    async def get_deinstalled_inventories(self, activity_id: int, offset: int = 0, limit: int = 100) -> InventoryListResponse:
         """Get deinstalled inventories for an activity.
 
         :param activity_id: The unique identifier of the activity
@@ -486,9 +469,7 @@ class _AsyncOFSCoreBase:
 
             return InventoryListResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get deinstalled inventories for activity {activity_id}"
-            )
+            self._handle_http_error(e, f"Failed to get deinstalled inventories for activity {activity_id}")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -515,9 +496,7 @@ class _AsyncOFSCoreBase:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/activities/{activity_id}/{label}"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/activities/{activity_id}/{label}")
         headers = {**self.headers, "Accept": media_type}
 
         try:
@@ -526,9 +505,7 @@ class _AsyncOFSCoreBase:
 
             return response.content
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get file property {label} for activity {activity_id}"
-            )
+            self._handle_http_error(e, f"Failed to get file property {label} for activity {activity_id}")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -561,9 +538,7 @@ class _AsyncOFSCoreBase:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/activities/{activity_id}/{label}"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/activities/{activity_id}/{label}")
         # Binary upload: override Content-Type with the file's media type
         headers = {**self.headers, "Content-Type": media_type}
         if filename:
@@ -574,9 +549,7 @@ class _AsyncOFSCoreBase:
             response.raise_for_status()
             # 204 No Content - nothing to return
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to set file property {label} for activity {activity_id}"
-            )
+            self._handle_http_error(e, f"Failed to set file property {label} for activity {activity_id}")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -595,9 +568,7 @@ class _AsyncOFSCoreBase:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/activities/{activity_id}/{label}"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/activities/{activity_id}/{label}")
 
         try:
             response = await self._client.delete(url, headers=self.headers)
@@ -612,9 +583,7 @@ class _AsyncOFSCoreBase:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_installed_inventories(
-        self, activity_id: int, offset: int = 0, limit: int = 100
-    ) -> InventoryListResponse:
+    async def get_installed_inventories(self, activity_id: int, offset: int = 0, limit: int = 100) -> InventoryListResponse:
         """Get installed inventories for an activity.
 
         :param activity_id: The unique identifier of the activity
@@ -644,9 +613,7 @@ class _AsyncOFSCoreBase:
 
             return InventoryListResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get installed inventories for activity {activity_id}"
-            )
+            self._handle_http_error(e, f"Failed to get installed inventories for activity {activity_id}")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -664,9 +631,7 @@ class _AsyncOFSCoreBase:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/activities/{activity_id}/linkedActivities"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/activities/{activity_id}/linkedActivities")
 
         try:
             response = await self._client.get(url, headers=self.headers)
@@ -675,16 +640,12 @@ class _AsyncOFSCoreBase:
 
             return LinkedActivitiesResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get linked activities for activity {activity_id}"
-            )
+            self._handle_http_error(e, f"Failed to get linked activities for activity {activity_id}")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def link_activities(
-        self, activity_id: int, link: LinkedActivity
-    ) -> LinkedActivity:
+    async def link_activities(self, activity_id: int, link: LinkedActivity) -> LinkedActivity:
         """Create a link between two activities.
 
         :param activity_id: The unique identifier of the source activity
@@ -701,9 +662,7 @@ class _AsyncOFSCoreBase:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/activities/{activity_id}/linkedActivities"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/activities/{activity_id}/linkedActivities")
 
         try:
             response = await self._client.post(
@@ -719,9 +678,7 @@ class _AsyncOFSCoreBase:
                 return link
             return LinkedActivity.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to link activities for activity {activity_id}"
-            )
+            self._handle_http_error(e, f"Failed to link activities for activity {activity_id}")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -738,25 +695,19 @@ class _AsyncOFSCoreBase:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/activities/{activity_id}/linkedActivities"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/activities/{activity_id}/linkedActivities")
 
         try:
             response = await self._client.delete(url, headers=self.headers)
             response.raise_for_status()
             # 204 No Content - nothing to return
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to unlink activities for activity {activity_id}"
-            )
+            self._handle_http_error(e, f"Failed to unlink activities for activity {activity_id}")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_activity_link(
-        self, activity_id: int, linked_activity_id: int, link_type: str
-    ) -> LinkedActivity:
+    async def get_activity_link(self, activity_id: int, linked_activity_id: int, link_type: str) -> LinkedActivity:
         """Get specific activity link details.
 
         :param activity_id: The unique identifier of the activity
@@ -848,9 +799,7 @@ class _AsyncOFSCoreBase:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def delete_activity_link(
-        self, activity_id: int, linked_activity_id: int, link_type: str
-    ) -> None:
+    async def delete_activity_link(self, activity_id: int, linked_activity_id: int, link_type: str) -> None:
         """Delete a specific link between two activities.
 
         :param activity_id: The unique identifier of the source activity
@@ -884,9 +833,7 @@ class _AsyncOFSCoreBase:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_required_inventories(
-        self, activity_id: int
-    ) -> RequiredInventoriesResponse:
+    async def get_required_inventories(self, activity_id: int) -> RequiredInventoriesResponse:
         """Get required inventories for an activity.
 
         :param activity_id: The unique identifier of the activity
@@ -911,16 +858,12 @@ class _AsyncOFSCoreBase:
 
             return RequiredInventoriesResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get required inventories for activity {activity_id}"
-            )
+            self._handle_http_error(e, f"Failed to get required inventories for activity {activity_id}")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def set_required_inventories(
-        self, activity_id: int, inventories: list[RequiredInventory]
-    ) -> None:
+    async def set_required_inventories(self, activity_id: int, inventories: list[RequiredInventory]) -> None:
         """Set required inventories for an activity (replaces existing list).
 
         :param activity_id: The unique identifier of the activity
@@ -946,9 +889,7 @@ class _AsyncOFSCoreBase:
             response.raise_for_status()
             # 204 No Content - nothing to return
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to set required inventories for activity {activity_id}"
-            )
+            self._handle_http_error(e, f"Failed to set required inventories for activity {activity_id}")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -983,9 +924,7 @@ class _AsyncOFSCoreBase:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_resource_preferences(
-        self, activity_id: int
-    ) -> ResourcePreferencesResponse:
+    async def get_resource_preferences(self, activity_id: int) -> ResourcePreferencesResponse:
         """Get resource preferences for an activity.
 
         :param activity_id: The unique identifier of the activity
@@ -1010,16 +949,12 @@ class _AsyncOFSCoreBase:
 
             return ResourcePreferencesResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get resource preferences for activity {activity_id}"
-            )
+            self._handle_http_error(e, f"Failed to get resource preferences for activity {activity_id}")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def set_resource_preferences(
-        self, activity_id: int, preferences: list[ResourcePreference]
-    ) -> None:
+    async def set_resource_preferences(self, activity_id: int, preferences: list[ResourcePreference]) -> None:
         """Set resource preferences for an activity (replaces existing list).
 
         :param activity_id: The unique identifier of the activity
@@ -1038,18 +973,14 @@ class _AsyncOFSCoreBase:
             self.baseUrl,
             f"/rest/ofscCore/v1/activities/{activity_id}/resourcePreferences",
         )
-        payload = {
-            "items": [pref.model_dump(exclude_none=True) for pref in preferences]
-        }
+        payload = {"items": [pref.model_dump(exclude_none=True) for pref in preferences]}
 
         try:
             response = await self._client.put(url, headers=self.headers, json=payload)
             response.raise_for_status()
             # 204 No Content - nothing to return
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to set resource preferences for activity {activity_id}"
-            )
+            self._handle_http_error(e, f"Failed to set resource preferences for activity {activity_id}")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -1084,9 +1015,7 @@ class _AsyncOFSCoreBase:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_submitted_forms(
-        self, activity_id: int, offset: int = 0, limit: int = 100
-    ) -> SubmittedFormsResponse:
+    async def get_submitted_forms(self, activity_id: int, offset: int = 0, limit: int = 100) -> SubmittedFormsResponse:
         """Get submitted forms for an activity.
 
         :param activity_id: The unique identifier of the activity
@@ -1103,9 +1032,7 @@ class _AsyncOFSCoreBase:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/activities/{activity_id}/submittedForms"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/activities/{activity_id}/submittedForms")
         params = {"offset": offset, "limit": limit}
 
         try:
@@ -1115,9 +1042,40 @@ class _AsyncOFSCoreBase:
 
             return SubmittedFormsResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get submitted forms for activity {activity_id}"
-            )
+            self._handle_http_error(e, f"Failed to get submitted forms for activity {activity_id}")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_multiday_segments(self, activity_id: int) -> MultidaySegmentListResponse:
+        """Get multiday segments for an activity.
+
+        Args:
+            activity_id: The activity ID to get segments for
+
+        Returns:
+            MultidaySegmentListResponse: List of segment activities (no totalResults)
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCNotFoundError: If activity not found (404)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/activities/{activity_id}/multidaySegments",
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+
+            return MultidaySegmentListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, f"Failed to get multiday segments for activity {activity_id}")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -1213,9 +1171,7 @@ class _AsyncOFSCoreBase:
 
             return DailyExtractFiles.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get daily extract files for date '{date}'"
-            )
+            self._handle_http_error(e, f"Failed to get daily extract files for date '{date}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -1251,9 +1207,7 @@ class _AsyncOFSCoreBase:
 
             return response.content
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get daily extract file '{filename}' for date '{date}'"
-            )
+            self._handle_http_error(e, f"Failed to get daily extract file '{filename}' for date '{date}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -1262,9 +1216,7 @@ class _AsyncOFSCoreBase:
 
     # region Subscriptions
 
-    async def create_subscription(
-        self, subscription: CreateSubscriptionRequest
-    ) -> Subscription:
+    async def create_subscription(self, subscription: CreateSubscriptionRequest) -> Subscription:
         """Create a new event subscription.
 
         Args:
@@ -1314,18 +1266,14 @@ class _AsyncOFSCoreBase:
             OFSCApiError: For other API errors
             OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/events/subscriptions/{subscription_id}"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/events/subscriptions/{subscription_id}")
 
         try:
             response = await self._client.delete(url, headers=self.headers)
             response.raise_for_status()
             # 204 No Content - nothing to return
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to delete subscription '{subscription_id}'"
-            )
+            self._handle_http_error(e, f"Failed to delete subscription '{subscription_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -1358,9 +1306,7 @@ class _AsyncOFSCoreBase:
 
             return Subscription.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get subscription '{subscription_id}'"
-            )
+            self._handle_http_error(e, f"Failed to get subscription '{subscription_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e

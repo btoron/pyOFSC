@@ -59,9 +59,7 @@ class InventoryCreate(BaseModel):
     @model_validator(mode="after")
     def require_context(self):
         if not any([self.resourceId, self.resourceInternalId, self.activityId]):
-            raise ValueError(
-                "At least one of 'resourceId', 'resourceInternalId', or 'activityId' must be set"
-            )
+            raise ValueError("At least one of 'resourceId', 'resourceInternalId', or 'activityId' must be set")
         return self
 
 

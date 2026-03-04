@@ -16,10 +16,12 @@ from ofsc.models import (
     DailyExtractItem,
     DailyExtractItemList,
     ItemList,
+    Link,
     Translation,
     TranslationList,
     Workskill,
     WorkskillList,
+    WorkskillListResponse,
 )
 
 
@@ -32,8 +34,8 @@ def test_translation_model_base():
 
 def test_translation_model_base_invalid():
     base = {"language": "xx", "Noname": "NoEstimate", "languageISO": "en-US"}
-    with pytest.raises(ValidationError) as validation:
-        obj = Translation.model_validate(base)
+    with pytest.raises(ValidationError):
+        Translation.model_validate(base)
 
 
 def test_translationlist_model_base():
@@ -190,21 +192,13 @@ def test_capacity_area_model_base():
         "name": "Capacity Area",
         "type": "area",
         "status": "active",
-        "workZones": {
-            "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/workZones"
-        },
-        "organizations": {
-            "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/organizations"
-        },
+        "workZones": {"href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/workZones"},
+        "organizations": {"href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/organizations"},
         "capacityCategories": {
             "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/capacityCategories"
         },
-        "timeIntervals": {
-            "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/timeIntervals"
-        },
-        "timeSlots": {
-            "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/timeSlots"
-        },
+        "timeIntervals": {"href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/timeIntervals"},
+        "timeSlots": {"href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/timeSlots"},
         "parentLabel": "66000",
         "configuration": {
             "definitionLevel": ["day"],
@@ -287,7 +281,7 @@ def test_capacity_area_list_model_base():
         ]
     }
 
-    obj = CapacityAreaListResponse.model_validate(base)
+    CapacityAreaListResponse.model_validate(base)
 
 
 # endregion
@@ -298,9 +292,7 @@ def test_workskill_model_base():
         "name": "Estimate",
         "active": True,
         "sharing": "maximal",
-        "translations": [
-            {"language": "en", "name": "Estimate", "languageISO": "en-US"}
-        ],
+        "translations": [{"language": "en", "name": "Estimate", "languageISO": "en-US"}],
         "links": [
             {
                 "rel": "canonical",
@@ -321,10 +313,12 @@ def test_workskill_model_base():
     assert json.loads(obj.model_dump_json())["label"] == base["label"]
 
 
+@pytest.mark.uses_real_data
 def test_workskilllist_connected(instance):
     metadata_response = instance.metadata.get_workskills(response_type=OBJ_RESPONSE)
-    logging.debug(json.dumps(metadata_response, indent=4))
-    objList = WorkskillList.model_validate(metadata_response["items"])
+    assert isinstance(metadata_response, WorkskillListResponse)
+    logging.debug(metadata_response.model_dump_json(indent=4))
+    WorkskillList.model_validate(metadata_response.items)
 
 
 # endregion
@@ -406,17 +400,12 @@ def test_capacity_category_model_list():
         assert item.label == capacityCategoryList["items"][idx]["label"]
         assert item.name == capacityCategoryList["items"][idx]["name"]
         assert item.active == capacityCategoryList["items"][idx]["active"]
-        assert item.timeSlots == ItemList.model_validate(
-            capacityCategoryList["items"][idx]["timeSlots"]
-        )
-        assert item.translations == TranslationList.model_validate(
-            capacityCategoryList["items"][idx]["translations"]
-        )
-        assert item.links == capacityCategoryList["items"][idx]["links"]
+        assert item.timeSlots == ItemList.model_validate(capacityCategoryList["items"][idx]["timeSlots"])
+        assert item.translations == TranslationList.model_validate(capacityCategoryList["items"][idx]["translations"])
+        expected_links = [Link.model_validate(link) for link in capacityCategoryList["items"][idx]["links"]]
+        assert item.links == expected_links
         # assert item.workSkills == capacityCategoryList["items"][idx]["workSkills"]
-        assert item.workSkillGroups == ItemList.model_validate(
-            capacityCategoryList["items"][idx]["workSkillGroups"]
-        )
+        assert item.workSkillGroups == ItemList.model_validate(capacityCategoryList["items"][idx]["workSkillGroups"])
 
 
 # endregion

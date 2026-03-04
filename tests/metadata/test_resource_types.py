@@ -1,6 +1,9 @@
+import pytest
+
 from ofsc.common import FULL_RESPONSE
 
 
+@pytest.mark.uses_real_data
 def test_get_resource_types(instance, demo_data):
     metadata_response = instance.metadata.get_resource_types(
         response_type=FULL_RESPONSE

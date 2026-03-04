@@ -1,7 +1,10 @@
+import pytest
+
 from ofsc.common import FULL_RESPONSE
 from ofsc.models import Organization, OrganizationListResponse
 
 
+@pytest.mark.uses_real_data
 def test_get_organizations_basic(instance):
     response = instance.metadata.get_organizations(response_type=FULL_RESPONSE)
     assert response.status_code == 200
@@ -17,6 +20,7 @@ def test_get_organizations_basic(instance):
         assert "type" in item
 
 
+@pytest.mark.uses_real_data
 def test_get_organization_basic(instance):
     response = instance.metadata.get_organization(
         "default", response_type=FULL_RESPONSE
@@ -26,6 +30,7 @@ def test_get_organization_basic(instance):
     assert response["label"] == "default"
 
 
+@pytest.mark.uses_real_data
 def test_get_organization_obj(instance):
     response = instance.metadata.get_organization("default")
     assert isinstance(response, Organization)
@@ -34,6 +39,7 @@ def test_get_organization_obj(instance):
     assert response.type is not None
 
 
+@pytest.mark.uses_real_data
 def test_get_organization_list_obj(instance):
     response = instance.metadata.get_organizations()
     assert isinstance(response, OrganizationListResponse)

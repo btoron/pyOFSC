@@ -23,9 +23,7 @@ class _CoreBaseProtocol(Protocol):
     baseUrl: str
     headers: dict
 
-    def _handle_http_error(
-        self, e: httpx.HTTPStatusError, context: str = ""
-    ) -> None: ...
+    def _handle_http_error(self, e: httpx.HTTPStatusError, context: str = "") -> None: ...
 
 
 class AsyncOFSCoreUsersMixin:
@@ -36,9 +34,7 @@ class AsyncOFSCoreUsersMixin:
 
     # region Users
 
-    async def get_users(
-        self: _CoreBaseProtocol, offset: int = 0, limit: int = 100
-    ) -> UserListResponse:
+    async def get_users(self: _CoreBaseProtocol, offset: int = 0, limit: int = 100) -> UserListResponse:
         """Get a paginated list of users.
 
         Args:
@@ -98,9 +94,7 @@ class AsyncOFSCoreUsersMixin:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def create_user(
-        self: _CoreBaseProtocol, login: str, data: "UserCreate | dict"
-    ) -> User:
+    async def create_user(self: _CoreBaseProtocol, login: str, data: "UserCreate | dict") -> User:
         """Create a user (PUT — idempotent).
 
         Args:
@@ -193,9 +187,7 @@ class AsyncOFSCoreUsersMixin:
 
     # region File Properties
 
-    async def get_user_property(
-        self: _CoreBaseProtocol, login: str, property_label: str
-    ) -> bytes:
+    async def get_user_property(self: _CoreBaseProtocol, login: str, property_label: str) -> bytes:
         """Get a binary file property for a user.
 
         Args:
@@ -214,9 +206,7 @@ class AsyncOFSCoreUsersMixin:
         """
         encoded_login = quote_plus(login)
         encoded_label = quote_plus(property_label)
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/users/{encoded_login}/{encoded_label}"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/users/{encoded_login}/{encoded_label}")
         headers = {**self.headers, "Accept": "application/octet-stream"}
 
         try:
@@ -224,9 +214,7 @@ class AsyncOFSCoreUsersMixin:
             response.raise_for_status()
             return response.content
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get property '{property_label}' for user '{login}'"
-            )
+            self._handle_http_error(e, f"Failed to get property '{property_label}' for user '{login}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -257,9 +245,7 @@ class AsyncOFSCoreUsersMixin:
         """
         encoded_login = quote_plus(login)
         encoded_label = quote_plus(property_label)
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/users/{encoded_login}/{encoded_label}"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/users/{encoded_login}/{encoded_label}")
         # Override Content-Type for binary upload
         base_headers = {k: v for k, v in self.headers.items() if k != "Content-Type"}
         headers = {
@@ -272,16 +258,12 @@ class AsyncOFSCoreUsersMixin:
             response = await self._client.put(url, headers=headers, content=content)
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to set property '{property_label}' for user '{login}'"
-            )
+            self._handle_http_error(e, f"Failed to set property '{property_label}' for user '{login}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def delete_user_property(
-        self: _CoreBaseProtocol, login: str, property_label: str
-    ) -> None:
+    async def delete_user_property(self: _CoreBaseProtocol, login: str, property_label: str) -> None:
         """Delete a binary file property for a user.
 
         Args:
@@ -297,17 +279,13 @@ class AsyncOFSCoreUsersMixin:
         """
         encoded_login = quote_plus(login)
         encoded_label = quote_plus(property_label)
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/users/{encoded_login}/{encoded_label}"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/users/{encoded_login}/{encoded_label}")
 
         try:
             response = await self._client.delete(url, headers=self.headers)
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to delete property '{property_label}' for user '{login}'"
-            )
+            self._handle_http_error(e, f"Failed to delete property '{property_label}' for user '{login}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -316,9 +294,7 @@ class AsyncOFSCoreUsersMixin:
 
     # region Collaboration Groups
 
-    async def get_user_collab_groups(
-        self: _CoreBaseProtocol, login: str
-    ) -> CollaborationGroupsResponse:
+    async def get_user_collab_groups(self: _CoreBaseProtocol, login: str) -> CollaborationGroupsResponse:
         """Get collaboration groups for a user.
 
         Args:
@@ -345,16 +321,12 @@ class AsyncOFSCoreUsersMixin:
             response.raise_for_status()
             return CollaborationGroupsResponse.model_validate(response.json())
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get collaboration groups for user '{login}'"
-            )
+            self._handle_http_error(e, f"Failed to get collaboration groups for user '{login}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def set_user_collab_groups(
-        self: _CoreBaseProtocol, login: str, groups: list[str]
-    ) -> CollaborationGroupsResponse:
+    async def set_user_collab_groups(self: _CoreBaseProtocol, login: str, groups: list[str]) -> CollaborationGroupsResponse:
         """Set collaboration groups for a user (POST — replaces all groups).
 
         Args:
@@ -383,9 +355,7 @@ class AsyncOFSCoreUsersMixin:
             response.raise_for_status()
             return CollaborationGroupsResponse.model_validate(response.json())
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to set collaboration groups for user '{login}'"
-            )
+            self._handle_http_error(e, f"Failed to set collaboration groups for user '{login}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -413,9 +383,7 @@ class AsyncOFSCoreUsersMixin:
             response = await self._client.delete(url, headers=self.headers)
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to delete collaboration groups for user '{login}'"
-            )
+            self._handle_http_error(e, f"Failed to delete collaboration groups for user '{login}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e

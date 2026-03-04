@@ -30,6 +30,7 @@ class TestAsyncGetResourceTypesLive:
             assert isinstance(resource_types.items[0], ResourceType)
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetResourceTypes:
     """Test async get_resource_types method."""
 
@@ -71,18 +72,14 @@ class TestAsyncGetResourceTypes:
             assert isinstance(resource_type.active, bool)
 
 
+@pytest.mark.uses_local_data
 class TestAsyncResourceTypeSavedResponses:
     """Test model validation against saved API responses."""
 
     def test_resource_type_list_response_validation(self):
         """Test ResourceTypeListResponse model validates against saved response"""
         # Load saved response
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "resource_types"
-            / "get_resource_types_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "resource_types" / "get_resource_types_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)

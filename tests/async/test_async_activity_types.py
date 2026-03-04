@@ -17,9 +17,7 @@ class TestAsyncGetActivityTypesLive:
     @pytest.mark.uses_real_data
     async def test_get_activity_types(self, async_instance: AsyncOFSC):
         """Test get_activity_types with actual API - validates structure"""
-        activity_types = await async_instance.metadata.get_activity_types(
-            offset=0, limit=100
-        )
+        activity_types = await async_instance.metadata.get_activity_types(offset=0, limit=100)
 
         # Verify type validation
         assert isinstance(activity_types, ActivityTypeListResponse)
@@ -33,15 +31,14 @@ class TestAsyncGetActivityTypesLive:
             assert isinstance(activity_types.items[0], ActivityType)
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetActivityTypes:
     """Test async get_activity_types method."""
 
     @pytest.mark.asyncio
     async def test_get_activity_types_with_model(self, async_instance: AsyncOFSC):
         """Test that get_activity_types returns ActivityTypeListResponse model"""
-        activity_types = await async_instance.metadata.get_activity_types(
-            offset=0, limit=100
-        )
+        activity_types = await async_instance.metadata.get_activity_types(offset=0, limit=100)
 
         # Verify type validation
         assert isinstance(activity_types, ActivityTypeListResponse)
@@ -75,9 +72,7 @@ class TestAsyncGetActivityTypes:
     @pytest.mark.asyncio
     async def test_get_activity_types_total_results(self, async_instance: AsyncOFSC):
         """Test that totalResults is populated"""
-        activity_types = await async_instance.metadata.get_activity_types(
-            offset=0, limit=100
-        )
+        activity_types = await async_instance.metadata.get_activity_types(offset=0, limit=100)
         assert activity_types.totalResults is not None
         assert isinstance(activity_types.totalResults, int)
         assert activity_types.totalResults >= 0
@@ -85,9 +80,7 @@ class TestAsyncGetActivityTypes:
     @pytest.mark.asyncio
     async def test_get_activity_types_field_types(self, async_instance: AsyncOFSC):
         """Test that activity type fields have correct types"""
-        activity_types = await async_instance.metadata.get_activity_types(
-            offset=0, limit=100
-        )
+        activity_types = await async_instance.metadata.get_activity_types(offset=0, limit=100)
 
         if len(activity_types.items) > 0:
             activity_type = activity_types.items[0]
@@ -123,18 +116,14 @@ class TestAsyncGetActivityType:
         assert exc_info.value.status_code == 404
 
 
+@pytest.mark.uses_local_data
 class TestAsyncActivityTypeSavedResponses:
     """Test model validation against saved API responses."""
 
     def test_activity_type_list_response_validation(self):
         """Test ActivityTypeListResponse model validates against saved response"""
         # Load saved response
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "activity_types"
-            / "get_activity_types_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "activity_types" / "get_activity_types_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)
@@ -159,12 +148,7 @@ class TestAsyncActivityTypeSavedResponses:
     def test_activity_type_single_response_validation(self):
         """Test ActivityType model validates against saved single response"""
         # Load saved response
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "activity_types"
-            / "get_activity_type_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "activity_types" / "get_activity_type_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)

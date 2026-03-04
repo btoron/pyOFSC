@@ -24,15 +24,22 @@ async def async_instance():
 
 
 @pytest.fixture
+async def mock_instance():
+    """Async OFSC instance with dummy credentials for mocked tests."""
+    async with AsyncOFSC(
+        clientID="test",
+        companyName="test",
+        secret="test",
+    ) as instance:
+        yield instance
+
+
+@pytest.fixture
 async def bucket_activity_type(async_instance):
     """Get a bucket-compatible activity type label for creating test activities."""
     activity_types = await async_instance.metadata.get_activity_types()
     activity_type = next(
-        (
-            at.label
-            for at in activity_types
-            if at.features and at.features.allowCreationInBuckets
-        ),
+        (at.label for at in activity_types if at.features and at.features.allowCreationInBuckets),
         None,
     )
     assert activity_type is not None, "No bucket-compatible activity types available"
@@ -44,11 +51,7 @@ async def workzone_activity_type(async_instance):
     """Get an activity type label that has work zone support enabled."""
     activity_types = await async_instance.metadata.get_activity_types()
     label = next(
-        (
-            at.label
-            for at in activity_types
-            if at.features and at.features.supportOfWorkZones
-        ),
+        (at.label for at in activity_types if at.features and at.features.supportOfWorkZones),
         None,
     )
     if label is None:
@@ -106,6 +109,42 @@ async def non_serialized_inventory_type(async_instance):
     if label is None:
         pytest.skip("No non-serialized inventory types available")
     return label
+
+
+@pytest.fixture
+def resource_file_property_label():
+    """File-type property label configured on resources."""
+    return "tech_photo"
+
+
+@pytest.fixture
+async def segmentable_activity_type(async_instance):
+    """Get an activity type label that supports segmenting."""
+    activity_types = await async_instance.metadata.get_activity_types()
+    label = next(
+        (at.label for at in activity_types if at.features and at.features.isSegmentingEnabled),
+        None,
+    )
+    if label is None:
+        pytest.skip("No segmentable activity types available")
+    return label
+
+
+@pytest.fixture
+async def segmentable_activity(async_instance, segmentable_activity_type):
+    """Create a segmentable activity with duration >20h, delete after test."""
+    created = await async_instance.core.create_activity(
+        Activity.model_validate(
+            {
+                "resourceId": "CAUSA",
+                "date": (date.today() + timedelta(days=90)).isoformat(),
+                "activityType": segmentable_activity_type,
+                "duration": 1260,  # 21 hours in minutes
+            }
+        )
+    )
+    yield created
+    await async_instance.core.delete_activity(created.activityId)
 
 
 @pytest.fixture

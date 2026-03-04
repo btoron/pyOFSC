@@ -30,6 +30,7 @@ class TestAsyncGetLanguagesLive:
             assert isinstance(languages.items[0], Language)
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetLanguages:
     """Test async get_languages method."""
 
@@ -91,18 +92,14 @@ class TestAsyncGetLanguages:
                 assert isinstance(translation.name, str)
 
 
+@pytest.mark.uses_local_data
 class TestAsyncLanguageSavedResponses:
     """Test model validation against saved API responses."""
 
     def test_language_list_response_validation(self):
         """Test LanguageListResponse model validates against saved response"""
         # Load saved response
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "languages"
-            / "get_languages_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "languages" / "get_languages_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)

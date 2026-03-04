@@ -92,6 +92,24 @@ ENDPOINTS = {
             "body": None,
             "metadata": {"workzone_label": "ALL_WORKZONES"},
         },
+        {
+            "name": "get_populate_workzone_shapes_status_200_success",
+            "description": "Get populate workzone shapes status (ME057G) — requires valid downloadId",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/workZones/custom-actions/populateShapes/1",
+            "params": None,
+            "body": None,
+            "metadata": {"download_id": 1},
+        },
+        {
+            "name": "get_workzone_key_200_success",
+            "description": "Get the workzone key configuration (ME059G)",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/workZoneKey",
+            "params": None,
+            "body": None,
+            "metadata": {},
+        },
     ],
     "properties": [
         {
@@ -150,23 +168,17 @@ ENDPOINTS = {
                     {
                         "label": "1",
                         "active": True,
-                        "translations": [
-                            {"language": "en", "name": "E1 - Complete, No Issues"}
-                        ],
+                        "translations": [{"language": "en", "name": "E1 - Complete, No Issues"}],
                     },
                     {
                         "label": "2",
                         "active": True,
-                        "translations": [
-                            {"language": "en", "name": "E2 - Complete, Plant Issue"}
-                        ],
+                        "translations": [{"language": "en", "name": "E2 - Complete, Plant Issue"}],
                     },
                     {
                         "label": "3",
                         "active": True,
-                        "translations": [
-                            {"language": "en", "name": "E3 - Complete, Drop Replace"}
-                        ],
+                        "translations": [{"language": "en", "name": "E3 - Complete, Drop Replace"}],
                     },
                 ]
             },
@@ -201,8 +213,8 @@ ENDPOINTS = {
             "metadata": {},
         },
         {
-            "name": "get_time_slot_200_success",
-            "description": "Get a single time slot by label",
+            "name": "get_time_slot_404_not_supported",
+            "description": "Get a single time slot by label - API does not support single-item GET",
             "method": "GET",
             "path": "/rest/ofscMetadata/v1/timeSlots/08-10",
             "params": None,
@@ -373,6 +385,69 @@ ENDPOINTS = {
             "body": None,
             "metadata": {"capacity_area_label": "NONEXISTENT_AREA_12345"},
         },
+        {
+            "name": "get_capacity_area_capacity_categories_200_success",
+            "description": "Get capacity categories for a capacity area (ME012G)",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/capacityAreas/FLUSA/capacityCategories",
+            "params": None,
+            "body": None,
+            "metadata": {"capacity_area_label": "FLUSA"},
+        },
+        {
+            "name": "get_capacity_area_workzones_v2_200_success",
+            "description": "Get workzones for a capacity area using v2 API (ME013G)",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v2/capacityAreas/FLUSA/workZones",
+            "params": None,
+            "body": None,
+            "metadata": {"capacity_area_label": "FLUSA"},
+        },
+        {
+            "name": "get_capacity_area_workzones_v1_200_success",
+            "description": "Get workzones for a capacity area using v1 API (ME014G, deprecated)",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/capacityAreas/FLUSA/workZones",
+            "params": None,
+            "body": None,
+            "metadata": {"capacity_area_label": "FLUSA"},
+        },
+        {
+            "name": "get_capacity_area_time_slots_200_success",
+            "description": "Get time slots for a capacity area (ME015G)",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/capacityAreas/FLUSA/timeSlots",
+            "params": None,
+            "body": None,
+            "metadata": {"capacity_area_label": "FLUSA"},
+        },
+        {
+            "name": "get_capacity_area_time_intervals_200_success",
+            "description": "Get time intervals for a capacity area (ME016G)",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/capacityAreas/FLUSA/timeIntervals",
+            "params": None,
+            "body": None,
+            "metadata": {"capacity_area_label": "FLUSA"},
+        },
+        {
+            "name": "get_capacity_area_organizations_200_success",
+            "description": "Get organizations for a capacity area (ME017G)",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/capacityAreas/FLUSA/organizations",
+            "params": None,
+            "body": None,
+            "metadata": {"capacity_area_label": "FLUSA"},
+        },
+        {
+            "name": "get_capacity_area_children_200_success",
+            "description": "Get child capacity areas (ME018G)",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/capacityAreas/FLUSA/children",
+            "params": None,
+            "body": None,
+            "metadata": {"capacity_area_label": "FLUSA"},
+        },
     ],
     "capacity_categories": [
         {
@@ -443,8 +518,8 @@ ENDPOINTS = {
             "metadata": {},
         },
         {
-            "name": "get_non_working_reason_200_success",
-            "description": "Get a single non-working reason by label",
+            "name": "get_non_working_reason_404_not_supported",
+            "description": "Get a single non-working reason by label - API does not support single-item GET",
             "method": "GET",
             "path": "/rest/ofscMetadata/v1/nonWorkingReasons/ILLNESS",
             "params": None,
@@ -549,6 +624,15 @@ ENDPOINTS = {
             "body": None,
             "metadata": {"map_layer_label": "NONEXISTENT_LAYER_12345"},
         },
+        {
+            "name": "get_populate_map_layers_status_200_success",
+            "description": "Get populate map layers status (ME030G) — requires valid downloadId",
+            "method": "GET",
+            "path": "/rest/ofscMetadata/v1/mapLayers/custom-actions/populateLayers/1",
+            "params": None,
+            "body": None,
+            "metadata": {"download_id": 1},
+        },
     ],
     "languages": [
         {
@@ -561,8 +645,8 @@ ENDPOINTS = {
             "metadata": {},
         },
         {
-            "name": "get_language_200_success",
-            "description": "Get a single language by label",
+            "name": "get_language_404_not_supported",
+            "description": "Get a single language by label - API does not support single-item GET",
             "method": "GET",
             "path": "/rest/ofscMetadata/v1/languages/en-US",
             "params": None,
@@ -870,13 +954,13 @@ ENDPOINTS = {
             "name": "get_activity_link_200_success",
             "description": "Get specific activity link details",
             "method": "GET",
-            "path": "/rest/ofscCore/v1/activities/3954799/linkedActivities/4224073/linkTypes/start_before",
+            "path": "/rest/ofscCore/v1/activities/3954799/linkedActivities/4224073/linkTypes/starts_after",
             "params": None,
             "body": None,
             "metadata": {
                 "activity_id": "3954799",
                 "linked_activity_id": "4224073",
-                "link_type": "start_before",
+                "link_type": "starts_after",
             },
         },
         # 13. get_capacity_categories - items + totalResults
@@ -1052,19 +1136,19 @@ ENDPOINTS = {
         },
         {
             "name": "get_resource_plans_200_success",
-            "description": "Get routing plans for a resource",
+            "description": "Get routing plans for a resource (uses bucket resource that supports plans)",
             "method": "GET",
-            "path": "/rest/ofscCore/v1/resources/33001/plans",
-            "params": None,
+            "path": "/rest/ofscCore/v1/resources/FLUSA/plans",
+            "params": {"dateFrom": "2026-04-01", "dateTo": "2026-04-30"},
             "body": None,
-            "metadata": {"resource_id": "33001"},
+            "metadata": {"resource_id": "FLUSA"},
         },
         {
             "name": "get_resource_assistants_200_success",
-            "description": "Get assistant resources",
+            "description": "Get assistant resources (date range must be <= 14 days)",
             "method": "GET",
             "path": "/rest/ofscCore/v1/resources/33001/assistants",
-            "params": None,
+            "params": {"dateFrom": "2026-04-01", "dateTo": "2026-04-07"},
             "body": None,
             "metadata": {"resource_id": "33001"},
         },
@@ -1074,7 +1158,11 @@ ENDPOINTS = {
             "description": "Get all calendars",
             "method": "GET",
             "path": "/rest/ofscCore/v1/calendars",
-            "params": None,
+            "params": {
+                "resources": "33001",
+                "dateFrom": "2026-04-01",
+                "dateTo": "2026-04-30",
+            },
             "body": None,
             "metadata": {},
         },
@@ -1129,7 +1217,11 @@ ENDPOINTS = {
             "description": "Get available capacity for a date range",
             "method": "GET",
             "path": "/rest/ofscCapacity/v1/capacity",
-            "params": {"dates": "2026-03-03", "availableTimeIntervals": "all", "calendarTimeIntervals": "all"},
+            "params": {
+                "dates": "2026-03-03",
+                "availableTimeIntervals": "all",
+                "calendarTimeIntervals": "all",
+            },
             "body": None,
             "metadata": {},
         },
@@ -1192,9 +1284,7 @@ def load_config() -> Dict[str, Any]:
     root = os.environ.get("OFSC_ROOT")
 
     if not all([client_id, company_name, secret]):
-        raise ValueError(
-            "Missing required environment variables: OFSC_CLIENT_ID, OFSC_COMPANY, OFSC_CLIENT_SECRET"
-        )
+        raise ValueError("Missing required environment variables: OFSC_CLIENT_ID, OFSC_COMPANY, OFSC_CLIENT_SECRET")
 
     return {
         "clientID": client_id,
@@ -1251,12 +1341,8 @@ async def capture_response(
             "description": endpoint["description"],
             "status_code": response.status_code,
             "headers": {
-                "Content-Type": response.headers.get(
-                    "Content-Type", "application/json"
-                ),
-                "Cache-Control": response.headers.get(
-                    "Cache-Control", "no-store, no-cache"
-                ),
+                "Content-Type": response.headers.get("Content-Type", "application/json"),
+                "Cache-Control": response.headers.get("Cache-Control", "no-store, no-cache"),
             },
             "request": {
                 "url": url,
@@ -1281,11 +1367,7 @@ async def capture_response(
         if 200 <= response.status_code < 300:
             saved_response["response_data"] = response_data
         else:
-            saved_response["body"] = (
-                json.dumps(response_data)
-                if isinstance(response_data, dict)
-                else response_data
-            )
+            saved_response["body"] = json.dumps(response_data) if isinstance(response_data, dict) else response_data
 
         print(f"    ✓ Status: {response.status_code}")
         return saved_response
@@ -1316,17 +1398,13 @@ async def save_all_responses():
             print(f"Processing category: {category}")
 
             # Create output directory
-            output_dir = (
-                Path(__file__).parent.parent / "tests" / "saved_responses" / category
-            )
+            output_dir = Path(__file__).parent.parent / "tests" / "saved_responses" / category
             output_dir.mkdir(parents=True, exist_ok=True)
 
             # Capture each endpoint
             for endpoint in endpoints:
                 try:
-                    saved_response = await capture_response(
-                        client, endpoint, base_url, auth_header
-                    )
+                    saved_response = await capture_response(client, endpoint, base_url, auth_header)
 
                     # Save to file
                     output_file = output_dir / f"{endpoint['name']}.json"

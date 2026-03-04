@@ -53,9 +53,7 @@ class OFSCore(OFSApi):
     # 202107 Added ssearch
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def search_activities(self, params):
-        url = urljoin(
-            self.baseUrl, "/rest/ofscCore/v1/activities/custom-actions/search"
-        )
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/activities/custom-actions/search")
         response = requests.get(url, headers=self.headers, params=params)
         return response
 
@@ -131,9 +129,7 @@ class OFSCore(OFSApi):
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
-    def update_resource(
-        self, resourceId, data: dict, identify_by_internal_id: bool = False
-    ):
+    def update_resource(self, resourceId, data: dict, identify_by_internal_id: bool = False):
         url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resourceId}")
         if identify_by_internal_id:
             # add a query parameter to identify the resource by internal id
@@ -154,9 +150,7 @@ class OFSCore(OFSApi):
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
-    def get_resource_route(
-        self, resource_id, date, activityFields=None, offset=0, limit=100
-    ):
+    def get_resource_route(self, resource_id, date, activityFields=None, offset=0, limit=100):
         url = urljoin(
             self.baseUrl,
             f"/rest/ofscCore/v1/resources/{resource_id}/routes/{date}",
@@ -285,9 +279,7 @@ class OFSCore(OFSApi):
         response = requests.get(url, params=params, headers=self.headers)
         return response
 
-    @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=ResourceUsersListResponse
-    )
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=ResourceUsersListResponse)
     def get_resource_users(self, resource_id):
         url = urljoin(
             self.baseUrl,
@@ -317,9 +309,7 @@ class OFSCore(OFSApi):
         response = requests.delete(url, headers=self.headers)
         return response
 
-    @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=ResourceWorkScheduleResponse
-    )
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=ResourceWorkScheduleResponse)
     def get_resource_workschedules(self, resource_id, actualDate: date):
         url = urljoin(
             self.baseUrl,
@@ -328,9 +318,7 @@ class OFSCore(OFSApi):
         response = requests.get(url, headers=self.headers)
         return response
 
-    @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=ResourceWorkScheduleResponse
-    )
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=ResourceWorkScheduleResponse)
     def set_resource_workschedules(self, resource_id, data: ResourceWorkScheduleItem):
         url = urljoin(
             self.baseUrl,
@@ -433,19 +421,11 @@ class OFSCore(OFSApi):
             self.baseUrl,
             f"/rest/ofscCore/v1/resources/{str(resource_id)}/locations",
         )
-        print(
-            location.model_dump(
-                exclude="locationId", exclude_unset=True, exclude_none=True
-            )
-        )
+        print(location.model_dump(exclude="locationId", exclude_unset=True, exclude_none=True))
         response = requests.post(
             url,
             headers=self.headers,
-            data=json.dumps(
-                location.model_dump(
-                    exclude="locationId", exclude_unset=True, exclude_none=True
-                )
-            ),
+            data=json.dumps(location.model_dump(exclude="locationId", exclude_unset=True, exclude_none=True)),
         )
         return response
 
@@ -458,12 +438,8 @@ class OFSCore(OFSApi):
         response = requests.delete(url, headers=self.headers)
         return response
 
-    @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=AssignedLocationsResponse
-    )
-    def get_assigned_locations(
-        self, resource_id, *, dateFrom: date = date.today(), dateTo: date = date.today()
-    ):
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=AssignedLocationsResponse)
+    def get_assigned_locations(self, resource_id, *, dateFrom: date = date.today(), dateTo: date = date.today()):
         params = {
             "dateFrom": dateFrom.strftime("%Y-%m-%d"),
             "dateTo": dateTo.strftime("%Y-%m-%d"),
@@ -475,12 +451,8 @@ class OFSCore(OFSApi):
         response = requests.get(url, headers=self.headers, params=params)
         return response
 
-    @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=AssignedLocationsResponse
-    )
-    def set_assigned_locations(
-        self, resource_id: str, data: AssignedLocationsResponse
-    ) -> requests.Response:
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=AssignedLocationsResponse)
+    def set_assigned_locations(self, resource_id: str, data: AssignedLocationsResponse) -> requests.Response:
         url = urljoin(
             self.baseUrl,
             f"/rest/ofscCore/v1/resources/{str(resource_id)}/assignedLocations",
@@ -597,9 +569,7 @@ class OFSCore(OFSApi):
                 "limit": limit,
             }
             logging.info(request_params)
-            response = self.get_activities(
-                response_type=FULL_RESPONSE, params=request_params
-            )
+            response = self.get_activities(response_type=FULL_RESPONSE, params=request_params)
             print(response.json())
             response_body = response.json()
             if "items" in response_body.keys():
@@ -609,14 +579,10 @@ class OFSCore(OFSApi):
                 response_count = 0
             if "hasMore" in response_body.keys():
                 hasMore = response_body["hasMore"]
-                logging.info(
-                    "{},{},{}".format(offset, response_count, response.elapsed)
-                )
+                logging.info("{},{},{}".format(offset, response_count, response.elapsed))
             else:
                 hasMore = False
-                logging.info(
-                    "{},{},{}".format(offset, response_count, response.elapsed)
-                )
+                logging.info("{},{},{}".format(offset, response_count, response.elapsed))
             offset = offset + response_count
         return OFSResponseList(items=items)
 
@@ -625,9 +591,7 @@ class OFSCore(OFSApi):
         hasMore = True
         offset = initial_offset
         while hasMore:
-            response = self.get_properties(
-                offset=offset, limit=limit, response_type=FULL_RESPONSE
-            )
+            response = self.get_properties(offset=offset, limit=limit, response_type=FULL_RESPONSE)
             response_body = response.json()
             if "items" in response_body.keys():
                 response_count = len(response_body["items"])
@@ -636,14 +600,10 @@ class OFSCore(OFSApi):
                 response_count = 0
             if "hasMore" in response_body.keys():
                 hasMore = response_body["hasMore"]
-                logging.info(
-                    "{},{},{}".format(offset, response_count, response.elapsed)
-                )
+                logging.info("{},{},{}".format(offset, response_count, response.elapsed))
             else:
                 hasMore = False
-                logging.info(
-                    "{},{},{}".format(offset, response_count, response.elapsed)
-                )
+                logging.info("{},{},{}".format(offset, response_count, response.elapsed))
             offset = offset + response_count
         return items
 
@@ -666,9 +626,7 @@ class OFSCore(OFSApi):
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
     def delete_subscription(self, subscription_id):
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/events/subscriptions/{subscription_id}"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/events/subscriptions/{subscription_id}")
         response = requests.delete(url, headers=self.headers)
         return response
 

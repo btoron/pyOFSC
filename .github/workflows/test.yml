@@ -25,7 +25,7 @@ jobs:
         run: uv sync --all-extras --dev
 
       - name: Run tests (mocked only)
-        run: uv run pytest -m "not uses_real_data" -n auto
+        run: uv run pytest -m "not uses_real_data and not uses_local_data" -n auto
 
       - name: Check code quality
         run: |

@@ -36,18 +36,14 @@ class TestAsyncGetCapacityCategoriesLive:
     @pytest.mark.uses_real_data
     async def test_get_capacity_categories_pagination(self, async_instance: AsyncOFSC):
         """Test get_capacity_categories with pagination."""
-        result = await async_instance.metadata.get_capacity_categories(
-            offset=0, limit=2
-        )
+        result = await async_instance.metadata.get_capacity_categories(offset=0, limit=2)
 
         assert isinstance(result, CapacityCategoryListResponse)
         assert len(result.items) <= 2
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_get_all_capacity_categories_individually(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_get_all_capacity_categories_individually(self, async_instance: AsyncOFSC):
         """Test getting all capacity categories individually to validate all configurations.
 
         This test:
@@ -71,9 +67,7 @@ class TestAsyncGetCapacityCategoriesLive:
         # Iterate through each category and get it individually
         for category in all_categories.items:
             try:
-                individual_category = (
-                    await async_instance.metadata.get_capacity_category(category.label)
-                )
+                individual_category = await async_instance.metadata.get_capacity_category(category.label)
 
                 # Validate the returned category
                 assert isinstance(individual_category, CapacityCategory)
@@ -95,9 +89,7 @@ class TestAsyncGetCapacityCategoriesLive:
                 print(f"  - {failure['label']}: {failure['error']}")
 
         # All categories should be retrieved successfully
-        assert len(failed) == 0, (
-            f"Failed to retrieve {len(failed)} categories: {failed}"
-        )
+        assert len(failed) == 0, f"Failed to retrieve {len(failed)} categories: {failed}"
         assert successful == len(all_categories.items)
 
 
@@ -105,9 +97,7 @@ class TestAsyncGetCapacityCategoriesModel:
     """Model validation tests for get_capacity_categories."""
 
     @pytest.mark.asyncio
-    async def test_get_capacity_categories_returns_model(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_get_capacity_categories_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_capacity_categories returns CapacityCategoryListResponse model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -120,8 +110,8 @@ class TestAsyncGetCapacityCategoriesModel:
             "links": [],
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_capacity_categories()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_capacity_categories()
 
         assert isinstance(result, CapacityCategoryListResponse)
         assert len(result.items) == 2
@@ -129,7 +119,7 @@ class TestAsyncGetCapacityCategoriesModel:
         assert result.items[1].label == "CAT2"
 
     @pytest.mark.asyncio
-    async def test_get_capacity_categories_field_types(self, async_instance: AsyncOFSC):
+    async def test_get_capacity_categories_field_types(self, mock_instance: AsyncOFSC):
         """Test that fields have correct types."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -138,8 +128,8 @@ class TestAsyncGetCapacityCategoriesModel:
             "totalResults": 1,
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_capacity_categories()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_capacity_categories()
 
         assert isinstance(result.items[0].label, str)
         assert isinstance(result.items[0].active, bool)
@@ -171,16 +161,14 @@ class TestAsyncGetCapacityCategoryLive:
     async def test_get_capacity_category_not_found(self, async_instance: AsyncOFSC):
         """Test get_capacity_category with non-existent label."""
         with pytest.raises(OFSCNotFoundError):
-            await async_instance.metadata.get_capacity_category(
-                "NONEXISTENT_CATEGORY_12345"
-            )
+            await async_instance.metadata.get_capacity_category("NONEXISTENT_CATEGORY_12345")
 
 
 class TestAsyncGetCapacityCategoryModel:
     """Model validation tests for get_capacity_category."""
 
     @pytest.mark.asyncio
-    async def test_get_capacity_category_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_capacity_category_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_capacity_category returns CapacityCategory model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -190,8 +178,8 @@ class TestAsyncGetCapacityCategoryModel:
             "active": True,
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_capacity_category("TEST_CAT")
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_capacity_category("TEST_CAT")
 
         assert isinstance(result, CapacityCategory)
         assert result.label == "TEST_CAT"
@@ -201,23 +189,17 @@ class TestAsyncGetCapacityCategoryModel:
 # === SAVED RESPONSE VALIDATION ===
 
 
+@pytest.mark.uses_local_data
 class TestAsyncCapacityCategoriesSavedResponses:
     """Test that saved API responses validate against Pydantic models."""
 
     def test_capacity_category_list_response_validation(self):
         """Test CapacityCategoryListResponse model validates against saved response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "capacity_categories"
-            / "get_capacity_categories_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "capacity_categories" / "get_capacity_categories_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 
-        response = CapacityCategoryListResponse.model_validate(
-            saved_data["response_data"]
-        )
+        response = CapacityCategoryListResponse.model_validate(saved_data["response_data"])
 
         assert isinstance(response, CapacityCategoryListResponse)
         assert response.totalResults == 3  # From the captured data
@@ -226,12 +208,7 @@ class TestAsyncCapacityCategoriesSavedResponses:
 
     def test_capacity_category_single_validation(self):
         """Test CapacityCategory model validates against saved single response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "capacity_categories"
-            / "get_capacity_category_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "capacity_categories" / "get_capacity_category_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 

@@ -143,6 +143,7 @@ class OFSConfig(BaseModel):
     secret: str
     companyName: str
     useToken: bool = False
+    access_token: Optional[str] = None
     root: Optional[str] = None
     baseURL: Optional[str] = None
     auto_raise: bool = True
@@ -150,15 +151,18 @@ class OFSConfig(BaseModel):
 
     @property
     def basicAuthString(self):
-        return base64.b64encode(
-            bytes(self.clientID + "@" + self.companyName + ":" + self.secret, "utf-8")
-        )
+        return base64.b64encode(bytes(self.clientID + "@" + self.companyName + ":" + self.secret, "utf-8"))
 
     model_config = ConfigDict(validate_assignment=True)
 
     @field_validator("baseURL")
     def set_base_URL(cls, url, info: ValidationInfo):
-        return url or f"https://{info.data['companyName']}.fs.ocs.oraclecloud.com"
+        if url:
+            return url
+        company_name = info.data.get("companyName")
+        if company_name is None:
+            return url
+        return f"https://{company_name}.fs.ocs.oraclecloud.com"
 
 
 class OFSOAuthRequest(BaseModel):
@@ -166,6 +170,14 @@ class OFSOAuthRequest(BaseModel):
     assertion: Optional[str] = None
     grant_type: str = "client_credentials"
     # ofs_dynamic_scope: Optional[str] = None
+
+
+class OAuthTokenResponse(BaseModel):
+    """Response from OFSC OAuth token endpoints (AU001P / AU002P)."""
+
+    access_token: str
+    token_type: str
+    expires_in: int
 
 
 class OFSAPIError(BaseModel):
@@ -188,35 +200,22 @@ class OFSApi:
         """Return the base URL. The validator ensures this is never None."""
         return self._config.baseURL  # type: ignore[return-value]
 
-    @cached(
-        cache=TTLCache(maxsize=1, ttl=3000)
-    )  # Cache of token results for 50 minutes
+    @cached(cache=TTLCache(maxsize=1, ttl=3000))  # Cache of token results for 50 minutes
     @wrap_return(response_type=FULL_RESPONSE, expected=[200])
     def token(self, auth: OFSOAuthRequest = OFSOAuthRequest()) -> requests.Response:
         headers = {}
         logging.info(f"Getting token with {auth.grant_type}")
-        if (
-            auth.grant_type == "client_credentials"
-            or auth.grant_type == "urn:ietf:params:oauth:grant-type:jwt-bearer"
-        ):
-            headers["Authorization"] = "Basic " + self._config.basicAuthString.decode(
-                "utf-8"
-            )
+        if auth.grant_type == "client_credentials" or auth.grant_type == "urn:ietf:params:oauth:grant-type:jwt-bearer":
+            headers["Authorization"] = "Basic " + self._config.basicAuthString.decode("utf-8")
         else:
-            raise NotImplementedError(
-                f"grant_type {auth.grant_type} not implemented yet"
-            )
+            raise NotImplementedError(f"grant_type {auth.grant_type} not implemented yet")
         headers["Content-Type"] = "application/x-www-form-urlencoded"
         url = urljoin(self.baseUrl, "/rest/oauthTokenService/v2/token")
-        response = requests.post(
-            url, data=auth.model_dump(exclude_none=True), headers=headers
-        )
+        response = requests.post(url, data=auth.model_dump(exclude_none=True), headers=headers)
         return response
 
     # Wrapper for requests not included in the standard methods
-    def call(
-        self, *, method: str, partialUrl: str, additionalHeaders: dict = {}, **kwargs
-    ) -> requests.Response:
+    def call(self, *, method: str, partialUrl: str, additionalHeaders: dict = {}, **kwargs) -> requests.Response:
         headers = self.headers | additionalHeaders
         url = urljoin(self.baseUrl, partialUrl)
         headers = self.headers
@@ -229,9 +228,7 @@ class OFSApi:
         self._headers["Content-Type"] = "application/json;charset=UTF-8"
 
         if not self._config.useToken:
-            self._headers["Authorization"] = (
-                "Basic " + self._config.basicAuthString.decode("utf-8")
-            )
+            self._headers["Authorization"] = "Basic " + self._config.basicAuthString.decode("utf-8")
         else:
             self._token = self.token().json()["access_token"]
             self._headers["Authorization"] = f"Bearer {self._token}"

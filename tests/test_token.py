@@ -36,12 +36,8 @@ def test_cache_token(instance_with_token):
 @pytest.mark.uses_real_data
 def test_token_assertion(instance, assertion, request_logging):
     logging.info("...403: Get token with assertion")
-    request = OFSOAuthRequest(
-        assertion=assertion, grant_type="urn:ietf:params:oauth:grant-type:jwt-bearer"
-    )
-    raw_response = instance.oauth2.get_token(
-        params=request, response_type=FULL_RESPONSE
-    )
+    request = OFSOAuthRequest(assertion=assertion, grant_type="urn:ietf:params:oauth:grant-type:jwt-bearer")
+    raw_response = instance.oauth2.get_token(params=request, response_type=FULL_RESPONSE)
     assert raw_response.status_code == 200, raw_response.json()
     response = raw_response.json()
     assert "access_token" in response.keys()

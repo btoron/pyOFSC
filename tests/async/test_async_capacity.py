@@ -1,5 +1,6 @@
 """Async tests for capacity operations."""
 
+from datetime import date, timedelta
 from unittest.mock import AsyncMock, Mock
 
 import httpx
@@ -32,9 +33,7 @@ class TestAsyncGetAvailableCapacityLive:
     @pytest.mark.uses_real_data
     async def test_get_available_capacity(self, async_instance):
         """Test get_available_capacity with actual API."""
-        result = await async_instance.capacity.get_available_capacity(
-            dates="2026-03-03"
-        )
+        result = await async_instance.capacity.get_available_capacity(dates="2026-03-03")
         assert isinstance(result, GetCapacityResponse)
         assert hasattr(result, "items")
         assert isinstance(result.items, list)
@@ -55,7 +54,7 @@ class TestAsyncGetAvailableCapacity:
     """Mocked tests for get_available_capacity."""
 
     @pytest.mark.asyncio
-    async def test_get_available_capacity_returns_model(self, async_instance):
+    async def test_get_available_capacity_returns_model(self, mock_instance):
         """Test that get_available_capacity returns GetCapacityResponse model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -76,11 +75,9 @@ class TestAsyncGetAvailableCapacity:
             ]
         }
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.capacity.get_available_capacity(
-            dates="2026-03-03"
-        )
+        result = await mock_instance.capacity.get_available_capacity(dates="2026-03-03")
 
         assert isinstance(result, GetCapacityResponse)
         assert len(result.items) == 1
@@ -88,27 +85,23 @@ class TestAsyncGetAvailableCapacity:
         assert result.items[0].areas[0].label == "FLUSA"
 
     @pytest.mark.asyncio
-    async def test_get_available_capacity_with_list_dates(self, async_instance):
+    async def test_get_available_capacity_with_list_dates(self, mock_instance):
         """Test get_available_capacity with list of dates."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": []}
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.capacity.get_available_capacity(
-            dates=["2026-03-03", "2026-03-04"]
-        )
+        result = await mock_instance.capacity.get_available_capacity(dates=["2026-03-03", "2026-03-04"])
 
         assert isinstance(result, GetCapacityResponse)
-        call_kwargs = async_instance.capacity._client.get.call_args
-        params = call_kwargs.kwargs.get(
-            "params", call_kwargs.args[1] if len(call_kwargs.args) > 1 else {}
-        )
+        call_kwargs = mock_instance.capacity._client.get.call_args
+        params = call_kwargs.kwargs.get("params", call_kwargs.args[1] if len(call_kwargs.args) > 1 else {})
         assert "dates" in params
 
     @pytest.mark.asyncio
-    async def test_get_available_capacity_auth_error(self, async_instance):
+    async def test_get_available_capacity_auth_error(self, mock_instance):
         """Test that 401 raises OFSCAuthenticationError."""
         mock_response = Mock()
         mock_response.status_code = 401
@@ -118,25 +111,23 @@ class TestAsyncGetAvailableCapacity:
             "detail": "Authentication required",
         }
         mock_response.text = "Unauthorized"
-        http_error = httpx.HTTPStatusError(
-            "401", request=Mock(), response=mock_response
-        )
+        http_error = httpx.HTTPStatusError("401", request=Mock(), response=mock_response)
         mock_response.raise_for_status = Mock(side_effect=http_error)
-        async_instance.capacity._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
         with pytest.raises(OFSCAuthenticationError):
-            await async_instance.capacity.get_available_capacity(dates="2026-03-03")
+            await mock_instance.capacity.get_available_capacity(dates="2026-03-03")
 
     @pytest.mark.asyncio
-    async def test_getAvailableCapacity_alias(self, async_instance):
+    async def test_getAvailableCapacity_alias(self, mock_instance):
         """Test deprecated camelCase alias works."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": []}
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.capacity.getAvailableCapacity(dates="2026-03-03")
+        result = await mock_instance.capacity.getAvailableCapacity(dates="2026-03-03")
         assert isinstance(result, GetCapacityResponse)
 
 
@@ -173,7 +164,7 @@ class TestAsyncGetQuota:
     """Mocked tests for get_quota."""
 
     @pytest.mark.asyncio
-    async def test_get_quota_returns_model(self, async_instance):
+    async def test_get_quota_returns_model(self, mock_instance):
         """Test that get_quota returns GetQuotaResponse model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -195,24 +186,24 @@ class TestAsyncGetQuota:
             ]
         }
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.capacity.get_quota(dates="2026-03-03")
+        result = await mock_instance.capacity.get_quota(dates="2026-03-03")
 
         assert isinstance(result, GetQuotaResponse)
         assert len(result.items) == 1
         assert result.items[0].date == "2026-03-03"
 
     @pytest.mark.asyncio
-    async def test_getQuota_alias(self, async_instance):
+    async def test_getQuota_alias(self, mock_instance):
         """Test deprecated camelCase alias works."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": []}
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.capacity.getQuota(dates="2026-03-03")
+        result = await mock_instance.capacity.getQuota(dates="2026-03-03")
         assert isinstance(result, GetQuotaResponse)
 
 
@@ -225,13 +216,13 @@ class TestAsyncUpdateQuota:
     """Mocked tests for update_quota (PATCH - no live tests)."""
 
     @pytest.mark.asyncio
-    async def test_update_quota_with_model(self, async_instance):
+    async def test_update_quota_with_model(self, mock_instance):
         """Test update_quota with QuotaUpdateRequest model."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": []}
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.patch = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.patch = AsyncMock(return_value=mock_response)
 
         request = QuotaUpdateRequest.model_validate(
             {
@@ -243,19 +234,19 @@ class TestAsyncUpdateQuota:
                 ]
             }
         )
-        result = await async_instance.capacity.update_quota(request)
+        result = await mock_instance.capacity.update_quota(request)
         assert isinstance(result, QuotaUpdateResponse)
 
     @pytest.mark.asyncio
-    async def test_update_quota_with_dict(self, async_instance):
+    async def test_update_quota_with_dict(self, mock_instance):
         """Test update_quota with dict input."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": []}
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.patch = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.patch = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.capacity.update_quota(
+        result = await mock_instance.capacity.update_quota(
             {
                 "items": [
                     {
@@ -268,18 +259,16 @@ class TestAsyncUpdateQuota:
         assert isinstance(result, QuotaUpdateResponse)
 
     @pytest.mark.asyncio
-    async def test_update_quota_calls_patch(self, async_instance):
+    async def test_update_quota_calls_patch(self, mock_instance):
         """Test that update_quota uses PATCH method."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": []}
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.patch = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.patch = AsyncMock(return_value=mock_response)
 
-        await async_instance.capacity.update_quota(
-            {"items": [{"date": "2026-03-03", "areas": []}]}
-        )
-        assert async_instance.capacity._client.patch.called
+        await mock_instance.capacity.update_quota({"items": [{"date": "2026-03-03", "areas": []}]})
+        assert mock_instance.capacity._client.patch.called
 
 
 # endregion
@@ -292,9 +281,7 @@ class TestAsyncGetActivityBookingOptionsLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_get_activity_booking_options(
-        self, async_instance, workzone_activity_type, workzone_postal_code
-    ):
+    async def test_get_activity_booking_options(self, async_instance, workzone_activity_type, workzone_postal_code):
         """Test get_activity_booking_options with actual API."""
         result = await async_instance.capacity.get_activity_booking_options(
             dates="2026-03-03",
@@ -309,7 +296,7 @@ class TestAsyncGetActivityBookingOptions:
     """Mocked tests for get_activity_booking_options."""
 
     @pytest.mark.asyncio
-    async def test_get_activity_booking_options_returns_model(self, async_instance):
+    async def test_get_activity_booking_options_returns_model(self, mock_instance):
         """Test that get_activity_booking_options returns correct model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -328,25 +315,23 @@ class TestAsyncGetActivityBookingOptions:
             ]
         }
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.capacity.get_activity_booking_options(
-            dates="2026-03-03"
-        )
+        result = await mock_instance.capacity.get_activity_booking_options(dates="2026-03-03")
 
         assert isinstance(result, ActivityBookingOptionsResponse)
         assert len(result.items) == 1
 
     @pytest.mark.asyncio
-    async def test_get_activity_booking_options_with_all_params(self, async_instance):
+    async def test_get_activity_booking_options_with_all_params(self, mock_instance):
         """Test get_activity_booking_options with all optional parameters."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": []}
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.capacity.get_activity_booking_options(
+        result = await mock_instance.capacity.get_activity_booking_options(
             dates=["2026-03-03", "2026-03-04"],
             areas=["FLUSA"],
             activityType="LU",
@@ -355,7 +340,7 @@ class TestAsyncGetActivityBookingOptions:
         )
 
         assert isinstance(result, ActivityBookingOptionsResponse)
-        call_kwargs = async_instance.capacity._client.get.call_args
+        call_kwargs = mock_instance.capacity._client.get.call_args
         params = call_kwargs.kwargs.get("params", {})
         assert params.get("activityType") == "LU"
         assert params.get("duration") == 60
@@ -374,9 +359,7 @@ class TestAsyncGetBookingClosingScheduleLive:
     @pytest.mark.uses_real_data
     async def test_get_booking_closing_schedule(self, async_instance):
         """Test get_booking_closing_schedule with actual API."""
-        result = await async_instance.capacity.get_booking_closing_schedule(
-            areas=["CAUSA"]
-        )
+        result = await async_instance.capacity.get_booking_closing_schedule(areas=["CAUSA"])
         assert isinstance(result, BookingClosingScheduleResponse)
         assert hasattr(result, "items")
 
@@ -385,7 +368,7 @@ class TestAsyncGetBookingClosingSchedule:
     """Mocked tests for get_booking_closing_schedule."""
 
     @pytest.mark.asyncio
-    async def test_get_booking_closing_schedule_returns_model(self, async_instance):
+    async def test_get_booking_closing_schedule_returns_model(self, mock_instance):
         """Test that get_booking_closing_schedule returns correct model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -399,30 +382,26 @@ class TestAsyncGetBookingClosingSchedule:
             ]
         }
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.capacity.get_booking_closing_schedule(
-            areas="FLUSA"
-        )
+        result = await mock_instance.capacity.get_booking_closing_schedule(areas="FLUSA")
 
         assert isinstance(result, BookingClosingScheduleResponse)
         assert len(result.items) == 1
         assert result.items[0].areaLabel == "FLUSA"
 
     @pytest.mark.asyncio
-    async def test_get_booking_closing_schedule_with_areas(self, async_instance):
+    async def test_get_booking_closing_schedule_with_areas(self, mock_instance):
         """Test get_booking_closing_schedule with areas parameter."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": []}
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
-        await async_instance.capacity.get_booking_closing_schedule(
-            areas=["FLUSA", "CAUSA"]
-        )
+        await mock_instance.capacity.get_booking_closing_schedule(areas=["FLUSA", "CAUSA"])
 
-        call_kwargs = async_instance.capacity._client.get.call_args
+        call_kwargs = mock_instance.capacity._client.get.call_args
         params = call_kwargs.kwargs.get("params", {})
         assert "FLUSA" in params.get("areas", "")
         assert "CAUSA" in params.get("areas", "")
@@ -437,13 +416,13 @@ class TestAsyncUpdateBookingClosingSchedule:
     """Mocked tests for update_booking_closing_schedule (PATCH - no live tests)."""
 
     @pytest.mark.asyncio
-    async def test_update_booking_closing_schedule_with_model(self, async_instance):
+    async def test_update_booking_closing_schedule_with_model(self, mock_instance):
         """Test update_booking_closing_schedule with model input."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": []}
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.patch = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.patch = AsyncMock(return_value=mock_response)
 
         request = BookingClosingScheduleUpdateRequest.model_validate(
             {
@@ -456,23 +435,21 @@ class TestAsyncUpdateBookingClosingSchedule:
                 ]
             }
         )
-        result = await async_instance.capacity.update_booking_closing_schedule(request)
+        result = await mock_instance.capacity.update_booking_closing_schedule(request)
         assert isinstance(result, BookingClosingScheduleResponse)
 
     @pytest.mark.asyncio
-    async def test_update_booking_closing_schedule_with_dict(self, async_instance):
+    async def test_update_booking_closing_schedule_with_dict(self, mock_instance):
         """Test update_booking_closing_schedule with dict input."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": []}
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.patch = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.patch = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.capacity.update_booking_closing_schedule(
-            {"items": [{"areaLabel": "FLUSA", "date": "2026-03-03"}]}
-        )
+        result = await mock_instance.capacity.update_booking_closing_schedule({"items": [{"areaLabel": "FLUSA", "date": "2026-03-03"}]})
         assert isinstance(result, BookingClosingScheduleResponse)
-        assert async_instance.capacity._client.patch.called
+        assert mock_instance.capacity._client.patch.called
 
 
 # endregion
@@ -487,7 +464,8 @@ class TestAsyncGetBookingStatusesLive:
     @pytest.mark.uses_real_data
     async def test_get_booking_statuses(self, async_instance):
         """Test get_booking_statuses with actual API."""
-        result = await async_instance.capacity.get_booking_statuses(dates="2026-03-03")
+        tomorrow = (date.today() + timedelta(days=1)).isoformat()
+        result = await async_instance.capacity.get_booking_statuses(dates=tomorrow)
         assert isinstance(result, BookingStatusesResponse)
         assert hasattr(result, "items")
 
@@ -496,7 +474,7 @@ class TestAsyncGetBookingStatuses:
     """Mocked tests for get_booking_statuses."""
 
     @pytest.mark.asyncio
-    async def test_get_booking_statuses_returns_model(self, async_instance):
+    async def test_get_booking_statuses_returns_model(self, mock_instance):
         """Test that get_booking_statuses returns correct model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -511,9 +489,9 @@ class TestAsyncGetBookingStatuses:
             ]
         }
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.capacity.get_booking_statuses(dates="2026-03-03")
+        result = await mock_instance.capacity.get_booking_statuses(dates="2026-03-03")
 
         assert isinstance(result, BookingStatusesResponse)
         assert len(result.items) == 1
@@ -529,13 +507,13 @@ class TestAsyncUpdateBookingStatuses:
     """Mocked tests for update_booking_statuses (PATCH - no live tests)."""
 
     @pytest.mark.asyncio
-    async def test_update_booking_statuses_with_model(self, async_instance):
+    async def test_update_booking_statuses_with_model(self, mock_instance):
         """Test update_booking_statuses with model input."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": []}
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.patch = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.patch = AsyncMock(return_value=mock_response)
 
         request = BookingStatusesUpdateRequest.model_validate(
             {
@@ -548,23 +526,21 @@ class TestAsyncUpdateBookingStatuses:
                 ]
             }
         )
-        result = await async_instance.capacity.update_booking_statuses(request)
+        result = await mock_instance.capacity.update_booking_statuses(request)
         assert isinstance(result, BookingStatusesResponse)
 
     @pytest.mark.asyncio
-    async def test_update_booking_statuses_with_dict(self, async_instance):
+    async def test_update_booking_statuses_with_dict(self, mock_instance):
         """Test update_booking_statuses with dict input."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": []}
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.patch = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.patch = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.capacity.update_booking_statuses(
-            {"items": [{"areaLabel": "FLUSA", "date": "2026-03-03"}]}
-        )
+        result = await mock_instance.capacity.update_booking_statuses({"items": [{"areaLabel": "FLUSA", "date": "2026-03-03"}]})
         assert isinstance(result, BookingStatusesResponse)
-        assert async_instance.capacity._client.patch.called
+        assert mock_instance.capacity._client.patch.called
 
 
 # endregion
@@ -576,7 +552,7 @@ class TestAsyncShowBookingGrid:
     """Mocked tests for show_booking_grid (POST - no live tests by default)."""
 
     @pytest.mark.asyncio
-    async def test_show_booking_grid_with_model(self, async_instance):
+    async def test_show_booking_grid_with_model(self, mock_instance):
         """Test show_booking_grid with ShowBookingGridRequest model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -602,43 +578,39 @@ class TestAsyncShowBookingGrid:
             ]
         }
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.post = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.post = AsyncMock(return_value=mock_response)
 
-        request = ShowBookingGridRequest.model_validate(
-            {"dates": ["2026-03-03"], "areas": ["FLUSA"]}
-        )
-        result = await async_instance.capacity.show_booking_grid(request)
+        request = ShowBookingGridRequest.model_validate({"dates": ["2026-03-03"], "areas": ["FLUSA"]})
+        result = await mock_instance.capacity.show_booking_grid(request)
 
         assert isinstance(result, ShowBookingGridResponse)
         assert len(result.items) == 1
         assert result.items[0].label == "FLUSA"
 
     @pytest.mark.asyncio
-    async def test_show_booking_grid_with_dict(self, async_instance):
+    async def test_show_booking_grid_with_dict(self, mock_instance):
         """Test show_booking_grid with dict input."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": []}
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.post = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.post = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.capacity.show_booking_grid(
-            {"dates": ["2026-03-03"]}
-        )
+        result = await mock_instance.capacity.show_booking_grid({"dates": ["2026-03-03"]})
         assert isinstance(result, ShowBookingGridResponse)
-        assert async_instance.capacity._client.post.called
+        assert mock_instance.capacity._client.post.called
 
     @pytest.mark.asyncio
-    async def test_show_booking_grid_calls_post(self, async_instance):
+    async def test_show_booking_grid_calls_post(self, mock_instance):
         """Test that show_booking_grid uses POST method."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": []}
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.post = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.post = AsyncMock(return_value=mock_response)
 
-        await async_instance.capacity.show_booking_grid({"dates": "2026-03-03"})
-        assert async_instance.capacity._client.post.called
+        await mock_instance.capacity.show_booking_grid({"dates": "2026-03-03"})
+        assert mock_instance.capacity._client.post.called
 
 
 # endregion
@@ -662,7 +634,7 @@ class TestAsyncGetBookingFieldsDependencies:
     """Mocked tests for get_booking_fields_dependencies."""
 
     @pytest.mark.asyncio
-    async def test_get_booking_fields_dependencies_returns_model(self, async_instance):
+    async def test_get_booking_fields_dependencies_returns_model(self, mock_instance):
         """Test that get_booking_fields_dependencies returns correct model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -675,41 +647,39 @@ class TestAsyncGetBookingFieldsDependencies:
             ]
         }
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.capacity.get_booking_fields_dependencies()
+        result = await mock_instance.capacity.get_booking_fields_dependencies()
 
         assert isinstance(result, BookingFieldsDependenciesResponse)
         assert len(result.items) == 1
         assert result.items[0].fieldName == "areaLabel"
 
     @pytest.mark.asyncio
-    async def test_get_booking_fields_dependencies_with_areas(self, async_instance):
+    async def test_get_booking_fields_dependencies_with_areas(self, mock_instance):
         """Test get_booking_fields_dependencies with areas filter."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": []}
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.capacity.get_booking_fields_dependencies(
-            areas=["FLUSA"]
-        )
+        result = await mock_instance.capacity.get_booking_fields_dependencies(areas=["FLUSA"])
         assert isinstance(result, BookingFieldsDependenciesResponse)
-        call_kwargs = async_instance.capacity._client.get.call_args
+        call_kwargs = mock_instance.capacity._client.get.call_args
         params = call_kwargs.kwargs.get("params", {})
         assert "FLUSA" in params.get("areas", "")
 
     @pytest.mark.asyncio
-    async def test_get_booking_fields_dependencies_empty_response(self, async_instance):
+    async def test_get_booking_fields_dependencies_empty_response(self, mock_instance):
         """Test get_booking_fields_dependencies with empty items response."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"items": []}
         mock_response.raise_for_status = Mock()
-        async_instance.capacity._client.get = AsyncMock(return_value=mock_response)
+        mock_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
-        result = await async_instance.capacity.get_booking_fields_dependencies()
+        result = await mock_instance.capacity.get_booking_fields_dependencies()
         assert isinstance(result, BookingFieldsDependenciesResponse)
         assert result.items == []
 
@@ -790,9 +760,7 @@ class TestAsyncCapacityModelValidation:
 
     def test_booking_statuses_update_request_validation(self):
         """Test BookingStatusesUpdateRequest model validation."""
-        request = BookingStatusesUpdateRequest.model_validate(
-            {"items": [{"areaLabel": "FLUSA", "date": "2026-03-03", "status": "open"}]}
-        )
+        request = BookingStatusesUpdateRequest.model_validate({"items": [{"areaLabel": "FLUSA", "date": "2026-03-03", "status": "open"}]})
         assert len(request.items) == 1
         assert request.items[0].status == "open"
 

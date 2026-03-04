@@ -34,11 +34,7 @@ async def test_not_found_error():
             "detail": "The requested workzone could not be found",
         }
 
-        client.metadata._client.get = AsyncMock(
-            side_effect=httpx.HTTPStatusError(
-                "404", request=Mock(), response=mock_response
-            )
-        )
+        client.metadata._client.get = AsyncMock(side_effect=httpx.HTTPStatusError("404", request=Mock(), response=mock_response))
 
         with pytest.raises(OFSCNotFoundError) as exc_info:
             await client.metadata.get_workzone("nonexistent")
@@ -65,11 +61,7 @@ async def test_authentication_error():
             "detail": "Authentication credentials are missing or invalid",
         }
 
-        client.metadata._client.get = AsyncMock(
-            side_effect=httpx.HTTPStatusError(
-                "401", request=Mock(), response=mock_response
-            )
-        )
+        client.metadata._client.get = AsyncMock(side_effect=httpx.HTTPStatusError("401", request=Mock(), response=mock_response))
 
         with pytest.raises(OFSCAuthenticationError) as exc_info:
             await client.metadata.get_workzones()
@@ -94,11 +86,7 @@ async def test_authorization_error():
             "detail": "You do not have permission to access this resource",
         }
 
-        client.metadata._client.get = AsyncMock(
-            side_effect=httpx.HTTPStatusError(
-                "403", request=Mock(), response=mock_response
-            )
-        )
+        client.metadata._client.get = AsyncMock(side_effect=httpx.HTTPStatusError("403", request=Mock(), response=mock_response))
 
         with pytest.raises(OFSCAuthorizationError) as exc_info:
             await client.metadata.get_workzone("test")
@@ -125,11 +113,7 @@ async def test_conflict_error():
             "detail": "Workzone already exists",
         }
 
-        client.metadata._client.post = AsyncMock(
-            side_effect=httpx.HTTPStatusError(
-                "409", request=Mock(), response=mock_response
-            )
-        )
+        client.metadata._client.post = AsyncMock(side_effect=httpx.HTTPStatusError("409", request=Mock(), response=mock_response))
 
         workzone = Workzone(
             workZoneLabel="test",
@@ -163,11 +147,7 @@ async def test_validation_error():
             "detail": "Invalid workzone label format",
         }
 
-        client.metadata._client.post = AsyncMock(
-            side_effect=httpx.HTTPStatusError(
-                "400", request=Mock(), response=mock_response
-            )
-        )
+        client.metadata._client.post = AsyncMock(side_effect=httpx.HTTPStatusError("400", request=Mock(), response=mock_response))
 
         workzone = Workzone(
             workZoneLabel="invalid label",
@@ -199,11 +179,7 @@ async def test_rate_limit_error():
             "detail": "Rate limit exceeded. Please try again later.",
         }
 
-        client.metadata._client.get = AsyncMock(
-            side_effect=httpx.HTTPStatusError(
-                "429", request=Mock(), response=mock_response
-            )
-        )
+        client.metadata._client.get = AsyncMock(side_effect=httpx.HTTPStatusError("429", request=Mock(), response=mock_response))
 
         with pytest.raises(OFSCRateLimitError) as exc_info:
             await client.metadata.get_workzones()
@@ -228,11 +204,7 @@ async def test_server_error():
             "detail": "An unexpected error occurred on the server",
         }
 
-        client.metadata._client.get = AsyncMock(
-            side_effect=httpx.HTTPStatusError(
-                "500", request=Mock(), response=mock_response
-            )
-        )
+        client.metadata._client.get = AsyncMock(side_effect=httpx.HTTPStatusError("500", request=Mock(), response=mock_response))
 
         with pytest.raises(OFSCServerError) as exc_info:
             await client.metadata.get_workzone("test")
@@ -249,9 +221,7 @@ async def test_network_error():
         companyName="test",
         secret="test",
     ) as client:
-        client.metadata._client.get = AsyncMock(
-            side_effect=httpx.ConnectError("Connection refused")
-        )
+        client.metadata._client.get = AsyncMock(side_effect=httpx.ConnectError("Connection refused"))
 
         with pytest.raises(OFSCNetworkError) as exc_info:
             await client.metadata.get_workzones()
@@ -275,11 +245,7 @@ async def test_exception_chain_preserved():
             "detail": "Resource not found",
         }
 
-        client.metadata._client.get = AsyncMock(
-            side_effect=httpx.HTTPStatusError(
-                "404", request=Mock(), response=mock_response
-            )
-        )
+        client.metadata._client.get = AsyncMock(side_effect=httpx.HTTPStatusError("404", request=Mock(), response=mock_response))
 
         with pytest.raises(OFSCNotFoundError) as exc_info:
             await client.metadata.get_workzone("test")
@@ -301,11 +267,7 @@ async def test_error_response_parsing_non_json():
         mock_response.text = "Internal Server Error"
         mock_response.json.side_effect = Exception("Not JSON")
 
-        client.metadata._client.get = AsyncMock(
-            side_effect=httpx.HTTPStatusError(
-                "500", request=Mock(), response=mock_response
-            )
-        )
+        client.metadata._client.get = AsyncMock(side_effect=httpx.HTTPStatusError("500", request=Mock(), response=mock_response))
 
         with pytest.raises(OFSCServerError) as exc_info:
             await client.metadata.get_workzone("test")

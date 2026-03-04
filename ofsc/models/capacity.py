@@ -44,9 +44,7 @@ class CapacityRequest(BaseModel):
             # Handle dict from JSON deserialization
             return CsvList(value=v["value"])
         else:
-            raise ValueError(
-                f"Expected list[str], CsvList, str, dict with 'value' key, or None, got {type(v)}"
-            )
+            raise ValueError(f"Expected list[str], CsvList, str, dict with 'value' key, or None, got {type(v)}")
 
     def get_areas_list(self) -> list[str]:
         """Get areas as a list of strings"""
@@ -204,9 +202,7 @@ class GetQuotaRequest(BaseModel):
             # Handle dict from JSON deserialization
             return CsvList(value=v["value"])
         else:
-            raise ValueError(
-                f"Expected list[str], CsvList, str, dict with 'value' key, or None, got {type(v)}"
-            )
+            raise ValueError(f"Expected list[str], CsvList, str, dict with 'value' key, or None, got {type(v)}")
 
     def get_areas_list(self) -> list[str]:
         """Get areas as a list of strings"""

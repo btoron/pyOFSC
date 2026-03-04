@@ -58,9 +58,7 @@ class TestAsyncGetApplicationsLive:
 
         for app in all_apps.items:
             try:
-                individual_app = await async_instance.metadata.get_application(
-                    app.label
-                )
+                individual_app = await async_instance.metadata.get_application(app.label)
                 assert isinstance(individual_app, Application)
                 assert individual_app.label == app.label
                 successful += 1
@@ -82,7 +80,7 @@ class TestAsyncGetApplicationsModel:
     """Model validation tests for get_applications."""
 
     @pytest.mark.asyncio
-    async def test_get_applications_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_applications_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_applications returns ApplicationListResponse model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -102,8 +100,8 @@ class TestAsyncGetApplicationsModel:
             "hasMore": False,
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_applications()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_applications()
 
         assert isinstance(result, ApplicationListResponse)
         assert len(result.items) == 1
@@ -140,7 +138,7 @@ class TestAsyncGetApplicationModel:
     """Model validation tests for get_application."""
 
     @pytest.mark.asyncio
-    async def test_get_application_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_application_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_application returns Application model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -154,8 +152,8 @@ class TestAsyncGetApplicationModel:
             "allowedCorsDomains": [],
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_application("testapp")
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_application("testapp")
 
         assert isinstance(result, Application)
         assert result.label == "testapp"
@@ -177,9 +175,7 @@ class TestAsyncGetApplicationApiAccessesLive:
 
         if len(apps.items) > 0:
             test_label = apps.items[0].label
-            result = await async_instance.metadata.get_application_api_accesses(
-                test_label
-            )
+            result = await async_instance.metadata.get_application_api_accesses(test_label)
 
             assert isinstance(result, ApplicationApiAccessListResponse)
             assert hasattr(result, "items")
@@ -203,9 +199,7 @@ class TestAsyncGetApplicationApiAccessesLive:
             pytest.skip("No applications available for testing")
 
         test_label = apps.items[0].label
-        all_accesses = await async_instance.metadata.get_application_api_accesses(
-            test_label
-        )
+        all_accesses = await async_instance.metadata.get_application_api_accesses(test_label)
 
         assert len(all_accesses.items) > 0, "No API accesses found"
 
@@ -215,11 +209,7 @@ class TestAsyncGetApplicationApiAccessesLive:
 
         for access in all_accesses.items:
             try:
-                individual_access = (
-                    await async_instance.metadata.get_application_api_access(
-                        test_label, access.label
-                    )
-                )
+                individual_access = await async_instance.metadata.get_application_api_access(test_label, access.label)
                 assert isinstance(individual_access, ApplicationApiAccess)
                 assert individual_access.label == access.label
                 successful += 1
@@ -241,9 +231,7 @@ class TestAsyncGetApplicationApiAccessesModel:
     """Model validation tests for get_application_api_accesses."""
 
     @pytest.mark.asyncio
-    async def test_get_application_api_accesses_returns_model(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_get_application_api_accesses_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_application_api_accesses returns model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -257,8 +245,8 @@ class TestAsyncGetApplicationApiAccessesModel:
             ]
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_application_api_accesses("testapp")
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_application_api_accesses("testapp")
 
         assert isinstance(result, ApplicationApiAccessListResponse)
         assert len(result.items) == 1
@@ -279,16 +267,12 @@ class TestAsyncGetApplicationApiAccessLive:
             pytest.skip("No applications available for testing")
 
         test_label = apps.items[0].label
-        api_accesses = await async_instance.metadata.get_application_api_accesses(
-            test_label
-        )
+        api_accesses = await async_instance.metadata.get_application_api_accesses(test_label)
 
         if len(api_accesses.items) > 0:
             # Get the first API access
             test_access_id = api_accesses.items[0].label
-            result = await async_instance.metadata.get_application_api_access(
-                test_label, test_access_id
-            )
+            result = await async_instance.metadata.get_application_api_access(test_label, test_access_id)
 
             # Verify it's one of the union types
             assert isinstance(
@@ -304,9 +288,7 @@ class TestAsyncGetApplicationApiAccessLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_get_application_api_access_type_specific(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_get_application_api_access_type_specific(self, async_instance: AsyncOFSC):
         """Test that different API types return correct subclasses."""
         apps = await async_instance.metadata.get_applications()
 
@@ -317,9 +299,7 @@ class TestAsyncGetApplicationApiAccessLive:
 
         # Test capacityAPI returns CapacityApiAccess
         try:
-            capacity = await async_instance.metadata.get_application_api_access(
-                test_label, "capacityAPI"
-            )
+            capacity = await async_instance.metadata.get_application_api_access(test_label, "capacityAPI")
             assert isinstance(capacity, CapacityApiAccess)
             assert capacity.apiMethods is not None
             assert len(capacity.apiMethods) > 0
@@ -328,9 +308,7 @@ class TestAsyncGetApplicationApiAccessLive:
 
         # Test coreAPI returns SimpleApiAccess
         try:
-            core = await async_instance.metadata.get_application_api_access(
-                test_label, "coreAPI"
-            )
+            core = await async_instance.metadata.get_application_api_access(test_label, "coreAPI")
             assert isinstance(core, SimpleApiAccess)
             assert core.apiEntities is not None
             assert len(core.apiEntities) > 0
@@ -339,9 +317,7 @@ class TestAsyncGetApplicationApiAccessLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_get_application_api_access_not_found(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_get_application_api_access_not_found(self, async_instance: AsyncOFSC):
         """Test get_application_api_access with non-existent access ID."""
         # First get all applications to find a valid label
         apps = await async_instance.metadata.get_applications()
@@ -349,18 +325,14 @@ class TestAsyncGetApplicationApiAccessLive:
         if len(apps.items) > 0:
             test_label = apps.items[0].label
             with pytest.raises(OFSCNotFoundError):
-                await async_instance.metadata.get_application_api_access(
-                    test_label, "NONEXISTENT_API_12345"
-                )
+                await async_instance.metadata.get_application_api_access(test_label, "NONEXISTENT_API_12345")
 
 
 class TestAsyncGetApplicationApiAccessModel:
     """Model validation tests for get_application_api_access."""
 
     @pytest.mark.asyncio
-    async def test_get_application_api_access_returns_model(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_get_application_api_access_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_application_api_access returns model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -374,10 +346,8 @@ class TestAsyncGetApplicationApiAccessModel:
             ],
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_application_api_access(
-            "testapp", "capacityAPI"
-        )
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_application_api_access("testapp", "capacityAPI")
 
         assert isinstance(result, ApplicationApiAccess)
         assert result.label == "capacityAPI"
@@ -389,17 +359,13 @@ class TestAsyncGetApplicationApiAccessModel:
 # === SAVED RESPONSE VALIDATION ===
 
 
+@pytest.mark.uses_local_data
 class TestAsyncApplicationsSavedResponses:
     """Test that saved API responses validate against Pydantic models."""
 
     def test_application_list_response_validation(self):
         """Test ApplicationListResponse model validates against saved response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "applications"
-            / "get_applications_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "applications" / "get_applications_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 
@@ -412,12 +378,7 @@ class TestAsyncApplicationsSavedResponses:
 
     def test_application_single_validation(self):
         """Test Application model validates against saved single response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "applications"
-            / "get_application_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "applications" / "get_application_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 
@@ -430,35 +391,21 @@ class TestAsyncApplicationsSavedResponses:
 
     def test_application_api_access_list_response_validation(self):
         """Test ApplicationApiAccessListResponse validates against saved response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "applications"
-            / "get_application_api_accesses_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "applications" / "get_application_api_accesses_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 
-        response = ApplicationApiAccessListResponse.model_validate(
-            saved_data["response_data"]
-        )
+        response = ApplicationApiAccessListResponse.model_validate(saved_data["response_data"])
 
         assert isinstance(response, ApplicationApiAccessListResponse)
         assert len(response.items) == 8
-        assert all(
-            isinstance(access, ApplicationApiAccess) for access in response.items
-        )
+        assert all(isinstance(access, ApplicationApiAccess) for access in response.items)
 
     def test_application_api_access_single_validation(self):
         """Test ApplicationApiAccess model validates against saved response."""
         from ofsc.models import parse_application_api_access
 
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "applications"
-            / "get_application_api_access_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "applications" / "get_application_api_access_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 

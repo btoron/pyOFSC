@@ -50,9 +50,7 @@ class TestAsyncCreateDeleteSubscriptionLive:
     async def test_create_delete_subscription(self, async_instance: AsyncOFSC):
         """Test creating and deleting a subscription."""
         # Create subscription
-        subscription_request = CreateSubscriptionRequest(
-            events=["activityMoved"], title="Test Async Subscription"
-        )
+        subscription_request = CreateSubscriptionRequest(events=["activityMoved"], title="Test Async Subscription")
 
         created = await async_instance.core.create_subscription(subscription_request)
 
@@ -114,9 +112,7 @@ class TestAsyncGetEventsLive:
             pytest.skip("No event demo data available")
 
         # Step 1: Create subscription
-        subscription_request = CreateSubscriptionRequest(
-            events=["activityMoved"], title="Test Event Subscription"
-        )
+        subscription_request = CreateSubscriptionRequest(events=["activityMoved"], title="Test Event Subscription")
 
         created = await async_instance.core.create_subscription(subscription_request)
         subscription_id = created.subscriptionId
@@ -142,9 +138,7 @@ class TestAsyncGetEventsLive:
 
             try:
                 move_request = {"setResource": {"resourceId": move_data["move_to"]}}
-                sync_instance.core.move_activity(
-                    move_data["move_id"], json.dumps(move_request)
-                )
+                sync_instance.core.move_activity(move_data["move_id"], json.dumps(move_request))
 
                 # Step 4: Wait for event to be processed
                 await asyncio.sleep(3)
@@ -157,12 +151,8 @@ class TestAsyncGetEventsLive:
                 assert hasattr(events, "items")
 
                 # Move activity back to original position
-                move_back_request = {
-                    "setResource": {"resourceId": move_data["move_from"]}
-                }
-                sync_instance.core.move_activity(
-                    move_data["move_id"], json.dumps(move_back_request)
-                )
+                move_back_request = {"setResource": {"resourceId": move_data["move_from"]}}
+                sync_instance.core.move_activity(move_data["move_id"], json.dumps(move_back_request))
 
             except OFSAPIException as e:
                 # Check if the error is about past date
@@ -190,17 +180,13 @@ class TestAsyncGetEventsLive:
 # ===================================================================
 
 
+@pytest.mark.uses_local_data
 class TestAsyncSubscriptionSavedResponses:
     """Test model validation against saved API responses."""
 
     def test_subscriptions_list_response_validation(self):
         """Test SubscriptionListResponse validates against saved response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "subscriptions"
-            / "get_subscriptions_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "subscriptions" / "get_subscriptions_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)

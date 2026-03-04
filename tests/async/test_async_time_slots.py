@@ -31,6 +31,7 @@ class TestAsyncGetTimeSlotsLive:
             assert isinstance(time_slots.items[0], TimeSlot)
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetTimeSlots:
     """Test async get_time_slots method."""
 
@@ -102,28 +103,24 @@ class TestAsyncGetTimeSlot:
     """Test async get_time_slot method."""
 
     @pytest.mark.asyncio
-    async def test_get_time_slot_not_implemented(self, async_instance: AsyncOFSC):
+    async def test_get_time_slot_not_implemented(self, mock_instance: AsyncOFSC):
         """Test that get_time_slot raises NotImplementedError"""
         with pytest.raises(NotImplementedError) as exc_info:
-            await async_instance.metadata.get_time_slot("08-10")
+            await mock_instance.metadata.get_time_slot("08-10")
 
         # Verify the error message explains why
         assert "Oracle Field Service API does not support" in str(exc_info.value)
         assert "get_time_slots()" in str(exc_info.value)
 
 
+@pytest.mark.uses_local_data
 class TestAsyncTimeSlotSavedResponses:
     """Test model validation against saved API responses."""
 
     def test_time_slot_list_response_validation(self):
         """Test TimeSlotListResponse model validates against saved response"""
         # Load saved response
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "time_slots"
-            / "get_time_slots_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "time_slots" / "get_time_slots_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)

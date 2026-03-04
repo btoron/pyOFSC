@@ -1,7 +1,7 @@
 # OFSC API Endpoints Reference
 
-**Version:** 2.23.0
-**Last Updated:** 2026-03-03
+**Version:** 2.24.0
+**Last Updated:** 2026-03-04
 
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints and their implementation status in pyOFSC.
 
@@ -20,57 +20,57 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |------|-------------------------------------------------------------------------------------------------------------------------|-------------|------|------|
 |ME001G|`/rest/ofscMetadata/v1/activityTypeGroups`                                                                               |metadata     |GET   |both  |
 |ME002G|`/rest/ofscMetadata/v1/activityTypeGroups/{label}`                                                                       |metadata     |GET   |both  |
-|ME002U|`/rest/ofscMetadata/v1/activityTypeGroups/{label}`                                                                       |metadata     |PUT   |-     |
+|ME002U|`/rest/ofscMetadata/v1/activityTypeGroups/{label}`                                                                       |metadata     |PUT   |async |
 |ME003G|`/rest/ofscMetadata/v1/activityTypes`                                                                                    |metadata     |GET   |both  |
 |ME004G|`/rest/ofscMetadata/v1/activityTypes/{label}`                                                                            |metadata     |GET   |both  |
-|ME004U|`/rest/ofscMetadata/v1/activityTypes/{label}`                                                                            |metadata     |PUT   |-     |
+|ME004U|`/rest/ofscMetadata/v1/activityTypes/{label}`                                                                            |metadata     |PUT   |async |
 |ME005G|`/rest/ofscMetadata/v1/applications`                                                                                     |metadata     |GET   |both  |
 |ME006G|`/rest/ofscMetadata/v1/applications/{label}`                                                                             |metadata     |GET   |both  |
-|ME006U|`/rest/ofscMetadata/v1/applications/{label}`                                                                             |metadata     |PUT   |-     |
+|ME006U|`/rest/ofscMetadata/v1/applications/{label}`                                                                             |metadata     |PUT   |async |
 |ME007G|`/rest/ofscMetadata/v1/applications/{label}/apiAccess`                                                                   |metadata     |GET   |both  |
 |ME008G|`/rest/ofscMetadata/v1/applications/{label}/apiAccess/{apiLabel}`                                                        |metadata     |GET   |both  |
-|ME008A|`/rest/ofscMetadata/v1/applications/{label}/apiAccess/{apiLabel}`                                                        |metadata     |PATCH |-     |
-|ME009P|`/rest/ofscMetadata/v1/applications/{label}/custom-actions/generateClientSecret`                                         |metadata     |POST  |-     |
+|ME008A|`/rest/ofscMetadata/v1/applications/{label}/apiAccess/{apiLabel}`                                                        |metadata     |PATCH |async |
+|ME009P|`/rest/ofscMetadata/v1/applications/{label}/custom-actions/generateClientSecret`                                         |metadata     |POST  |async |
 |ME010G|`/rest/ofscMetadata/v1/capacityAreas`                                                                                    |metadata     |GET   |both  |
 |ME011G|`/rest/ofscMetadata/v1/capacityAreas/{label}`                                                                            |metadata     |GET   |both  |
-|ME012G|`/rest/ofscMetadata/v1/capacityAreas/{label}/capacityCategories`                                                         |metadata     |GET   |-     |
-|ME013G|`/rest/ofscMetadata/v2/capacityAreas/{label}/workZones`                                                                  |metadata     |GET   |-     |
-|ME014G|`/rest/ofscMetadata/v1/capacityAreas/{label}/workZones`                                                                  |metadata     |GET   |-     |
-|ME015G|`/rest/ofscMetadata/v1/capacityAreas/{label}/timeSlots`                                                                  |metadata     |GET   |-     |
-|ME016G|`/rest/ofscMetadata/v1/capacityAreas/{label}/timeIntervals`                                                              |metadata     |GET   |-     |
-|ME017G|`/rest/ofscMetadata/v1/capacityAreas/{label}/organizations`                                                              |metadata     |GET   |-     |
-|ME018G|`/rest/ofscMetadata/v1/capacityAreas/{label}/children`                                                                   |metadata     |GET   |-     |
+|ME012G|`/rest/ofscMetadata/v1/capacityAreas/{label}/capacityCategories`                                                         |metadata     |GET   |async |
+|ME013G|`/rest/ofscMetadata/v2/capacityAreas/{label}/workZones`                                                                  |metadata     |GET   |async |
+|ME014G|`/rest/ofscMetadata/v1/capacityAreas/{label}/workZones`                                                                  |metadata     |GET   |async |
+|ME015G|`/rest/ofscMetadata/v1/capacityAreas/{label}/timeSlots`                                                                  |metadata     |GET   |async |
+|ME016G|`/rest/ofscMetadata/v1/capacityAreas/{label}/timeIntervals`                                                              |metadata     |GET   |async |
+|ME017G|`/rest/ofscMetadata/v1/capacityAreas/{label}/organizations`                                                              |metadata     |GET   |async |
+|ME018G|`/rest/ofscMetadata/v1/capacityAreas/{label}/children`                                                                   |metadata     |GET   |async |
 |ME019G|`/rest/ofscMetadata/v1/capacityCategories`                                                                               |metadata     |GET   |both  |
 |ME020G|`/rest/ofscMetadata/v1/capacityCategories/{label}`                                                                       |metadata     |GET   |both  |
-|ME020U|`/rest/ofscMetadata/v1/capacityCategories/{label}`                                                                       |metadata     |PUT   |-     |
-|ME020D|`/rest/ofscMetadata/v1/capacityCategories/{label}`                                                                       |metadata     |DELETE|-     |
+|ME020U|`/rest/ofscMetadata/v1/capacityCategories/{label}`                                                                       |metadata     |PUT   |async |
+|ME020D|`/rest/ofscMetadata/v1/capacityCategories/{label}`                                                                       |metadata     |DELETE|async |
 |ME021G|`/rest/ofscMetadata/v1/forms`                                                                                            |metadata     |GET   |async |
 |ME022G|`/rest/ofscMetadata/v1/forms/{label}`                                                                                    |metadata     |GET   |async |
-|ME022U|`/rest/ofscMetadata/v1/forms/{label}`                                                                                    |metadata     |PUT   |-     |
-|ME022D|`/rest/ofscMetadata/v1/forms/{label}`                                                                                    |metadata     |DELETE|-     |
+|ME022U|`/rest/ofscMetadata/v1/forms/{label}`                                                                                    |metadata     |PUT   |async |
+|ME022D|`/rest/ofscMetadata/v1/forms/{label}`                                                                                    |metadata     |DELETE|async |
 |ME023G|`/rest/ofscMetadata/v1/inventoryTypes`                                                                                   |metadata     |GET   |both  |
 |ME024G|`/rest/ofscMetadata/v1/inventoryTypes/{label}`                                                                           |metadata     |GET   |both  |
-|ME024U|`/rest/ofscMetadata/v1/inventoryTypes/{label}`                                                                           |metadata     |PUT   |-     |
+|ME024U|`/rest/ofscMetadata/v1/inventoryTypes/{label}`                                                                           |metadata     |PUT   |async |
 |ME025G|`/rest/ofscMetadata/v1/languages`                                                                                        |metadata     |GET   |async |
 |ME026G|`/rest/ofscMetadata/v1/linkTemplates`                                                                                    |metadata     |GET   |async |
 |ME027G|`/rest/ofscMetadata/v1/linkTemplates/{label}`                                                                            |metadata     |GET   |async |
-|ME027P|`/rest/ofscMetadata/v1/linkTemplates/{label}`                                                                            |metadata     |POST  |-     |
-|ME027A|`/rest/ofscMetadata/v1/linkTemplates/{label}`                                                                            |metadata     |PATCH |-     |
+|ME027P|`/rest/ofscMetadata/v1/linkTemplates/{label}`                                                                            |metadata     |POST  |async |
+|ME027A|`/rest/ofscMetadata/v1/linkTemplates/{label}`                                                                            |metadata     |PATCH |async |
 |ME028G|`/rest/ofscMetadata/v1/mapLayers`                                                                                        |metadata     |GET   |async |
-|ME028P|`/rest/ofscMetadata/v1/mapLayers`                                                                                        |metadata     |POST  |-     |
+|ME028P|`/rest/ofscMetadata/v1/mapLayers`                                                                                        |metadata     |POST  |async |
 |ME029G|`/rest/ofscMetadata/v1/mapLayers/{label}`                                                                                |metadata     |GET   |async |
-|ME029U|`/rest/ofscMetadata/v1/mapLayers/{label}`                                                                                |metadata     |PUT   |-     |
-|ME030G|`/rest/ofscMetadata/v1/mapLayers/custom-actions/populateLayers/{downloadId}`                                             |metadata     |GET   |-     |
-|ME031P|`/rest/ofscMetadata/v1/mapLayers/custom-actions/populateLayers`                                                          |metadata     |POST  |-     |
+|ME029U|`/rest/ofscMetadata/v1/mapLayers/{label}`                                                                                |metadata     |PUT   |async |
+|ME030G|`/rest/ofscMetadata/v1/mapLayers/custom-actions/populateLayers/{downloadId}`                                             |metadata     |GET   |async |
+|ME031P|`/rest/ofscMetadata/v1/mapLayers/custom-actions/populateLayers`                                                          |metadata     |POST  |async |
 |ME032G|`/rest/ofscMetadata/v1/nonWorkingReasons`                                                                                |metadata     |GET   |async |
 |ME033G|`/rest/ofscMetadata/v1/organizations`                                                                                    |metadata     |GET   |both  |
 |ME034G|`/rest/ofscMetadata/v1/organizations/{label}`                                                                            |metadata     |GET   |both  |
 |ME035P|`/rest/ofscMetadata/v1/plugins/custom-actions/import`                                                                    |metadata     |POST  |both  |
-|ME036P|`/rest/ofscMetadata/v1/plugins/{pluginLabel}/custom-actions/install`                                                     |metadata     |POST  |-     |
+|ME036P|`/rest/ofscMetadata/v1/plugins/{pluginLabel}/custom-actions/install`                                                     |metadata     |POST  |async |
 |ME037G|`/rest/ofscMetadata/v1/properties`                                                                                       |metadata     |GET   |both  |
 |ME038G|`/rest/ofscMetadata/v1/properties/{label}`                                                                               |metadata     |GET   |both  |
 |ME038U|`/rest/ofscMetadata/v1/properties/{label}`                                                                               |metadata     |PUT   |both  |
-|ME038A|`/rest/ofscMetadata/v1/properties/{label}`                                                                               |metadata     |PATCH |-     |
+|ME038A|`/rest/ofscMetadata/v1/properties/{label}`                                                                               |metadata     |PATCH |async |
 |ME039G|`/rest/ofscMetadata/v1/properties/{label}/enumerationList`                                                               |metadata     |GET   |both  |
 |ME039U|`/rest/ofscMetadata/v1/properties/{label}/enumerationList`                                                               |metadata     |PUT   |both  |
 |ME040G|`/rest/ofscMetadata/v1/resourceTypes`                                                                                    |metadata     |GET   |both  |
@@ -82,8 +82,8 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |ME046P|`/rest/ofscMetadata/v1/routingProfiles/{profileLabel}/plans/{planLabel}/{resourceExternalId}/{date}/custom-actions/start`|metadata     |POST  |both  |
 |ME047G|`/rest/ofscMetadata/v1/shifts`                                                                                           |metadata     |GET   |async |
 |ME048G|`/rest/ofscMetadata/v1/shifts/{label}`                                                                                   |metadata     |GET   |async |
-|ME048D|`/rest/ofscMetadata/v1/shifts/{label}`                                                                                   |metadata     |DELETE|-     |
-|ME048U|`/rest/ofscMetadata/v1/shifts/{label}`                                                                                   |metadata     |PUT   |-     |
+|ME048D|`/rest/ofscMetadata/v1/shifts/{label}`                                                                                   |metadata     |DELETE|async |
+|ME048U|`/rest/ofscMetadata/v1/shifts/{label}`                                                                                   |metadata     |PUT   |async |
 |ME049G|`/rest/ofscMetadata/v1/timeSlots`                                                                                        |metadata     |GET   |async |
 |ME050G|`/rest/ofscMetadata/v1/workSkillConditions`                                                                              |metadata     |GET   |both  |
 |ME050U|`/rest/ofscMetadata/v1/workSkillConditions`                                                                              |metadata     |PUT   |sync  |
@@ -97,19 +97,19 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |ME054D|`/rest/ofscMetadata/v1/workSkills/{label}`                                                                               |metadata     |DELETE|both  |
 |ME055G|`/rest/ofscMetadata/v1/workZones`                                                                                        |metadata     |GET   |both  |
 |ME055P|`/rest/ofscMetadata/v1/workZones`                                                                                        |metadata     |POST  |async |
-|ME055U|`/rest/ofscMetadata/v1/workZones`                                                                                        |metadata     |PUT   |-     |
-|ME055A|`/rest/ofscMetadata/v1/workZones`                                                                                        |metadata     |PATCH |-     |
+|ME055U|`/rest/ofscMetadata/v1/workZones`                                                                                        |metadata     |PUT   |async |
+|ME055A|`/rest/ofscMetadata/v1/workZones`                                                                                        |metadata     |PATCH |async |
 |ME056G|`/rest/ofscMetadata/v1/workZones/{label}`                                                                                |metadata     |GET   |both  |
 |ME056U|`/rest/ofscMetadata/v1/workZones/{label}`                                                                                |metadata     |PUT   |both  |
-|ME057G|`/rest/ofscMetadata/v1/workZones/custom-actions/populateShapes/{downloadId}`                                             |metadata     |GET   |-     |
-|ME058P|`/rest/ofscMetadata/v1/workZones/custom-actions/populateShapes`                                                          |metadata     |POST  |-     |
-|ME059G|`/rest/ofscMetadata/v1/workZoneKey`                                                                                      |metadata     |GET   |-     |
-|ST001G|`/rest/ofscStatistics/v1/activityDurationStats`                                                                          |statistics   |GET   |-     |
-|ST001A|`/rest/ofscStatistics/v1/activityDurationStats`                                                                          |statistics   |PATCH |-     |
-|ST002G|`/rest/ofscStatistics/v1/activityTravelStats`                                                                            |statistics   |GET   |-     |
-|ST002A|`/rest/ofscStatistics/v1/activityTravelStats`                                                                            |statistics   |PATCH |-     |
-|ST003G|`/rest/ofscStatistics/v1/airlineDistanceBasedTravel`                                                                     |statistics   |GET   |-     |
-|ST003A|`/rest/ofscStatistics/v1/airlineDistanceBasedTravel`                                                                     |statistics   |PATCH |-     |
+|ME057G|`/rest/ofscMetadata/v1/workZones/custom-actions/populateShapes/{downloadId}`                                             |metadata     |GET   |async |
+|ME058P|`/rest/ofscMetadata/v1/workZones/custom-actions/populateShapes`                                                          |metadata     |POST  |async |
+|ME059G|`/rest/ofscMetadata/v1/workZoneKey`                                                                                      |metadata     |GET   |async |
+|ST001G|`/rest/ofscStatistics/v1/activityDurationStats`                                                                          |statistics   |GET   |async |
+|ST001A|`/rest/ofscStatistics/v1/activityDurationStats`                                                                          |statistics   |PATCH |async |
+|ST002G|`/rest/ofscStatistics/v1/activityTravelStats`                                                                            |statistics   |GET   |async |
+|ST002A|`/rest/ofscStatistics/v1/activityTravelStats`                                                                            |statistics   |PATCH |async |
+|ST003G|`/rest/ofscStatistics/v1/airlineDistanceBasedTravel`                                                                     |statistics   |GET   |async |
+|ST003A|`/rest/ofscStatistics/v1/airlineDistanceBasedTravel`                                                                     |statistics   |PATCH |async |
 |PC001U|`/rest/ofscPartsCatalog/v1/catalogs/{catalog}/{language}`                                                                |partscatalog |PUT   |-     |
 |PC002U|`/rest/ofscPartsCatalog/v1/catalogs/{catalog}/{language}/{itemLabel}`                                                    |partscatalog |PUT   |-     |
 |PC002D|`/rest/ofscPartsCatalog/v1/catalogs/{catalog}/{language}/{itemLabel}`                                                    |partscatalog |DELETE|-     |
@@ -125,7 +125,7 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |CO002A|`/rest/ofscCore/v1/activities/{activityId}`                                                                              |core         |PATCH |both  |
 |CO002D|`/rest/ofscCore/v1/activities/{activityId}`                                                                              |core         |DELETE|both  |
 |CO002G|`/rest/ofscCore/v1/activities/{activityId}`                                                                              |core         |GET   |both  |
-|CO003G|`/rest/ofscCore/v1/activities/{activityId}/multidaySegments`                                                             |core         |GET   |-     |
+|CO003G|`/rest/ofscCore/v1/activities/{activityId}/multidaySegments`                                                             |core         |GET   |async |
 |CO004U|`/rest/ofscCore/v1/activities/{activityId}/{propertyLabel}`                                                              |core         |PUT   |async |
 |CO004G|`/rest/ofscCore/v1/activities/{activityId}/{propertyLabel}`                                                              |core         |GET   |both  |
 |CO004D|`/rest/ofscCore/v1/activities/{activityId}/{propertyLabel}`                                                              |core         |DELETE|async |
@@ -204,9 +204,9 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |CO054D|`/rest/ofscCore/v1/resources/{resourceId}/workSchedules/{scheduleItemId}`                                                |core         |DELETE|async |
 |CO055G|`/rest/ofscCore/v1/resources/{resourceId}/workSchedules/calendarView`                                                    |core         |GET   |both  |
 |CO056G|`/rest/ofscCore/v1/calendars`                                                                                            |core         |GET   |async |
-|CO057U|`/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}`                                                               |core         |PUT   |-     |
-|CO057G|`/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}`                                                               |core         |GET   |-     |
-|CO057D|`/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}`                                                               |core         |DELETE|-     |
+|CO057U|`/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}`                                                               |core         |PUT   |async |
+|CO057G|`/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}`                                                               |core         |GET   |async |
+|CO057D|`/rest/ofscCore/v1/resources/{resourceId}/{propertyLabel}`                                                               |core         |DELETE|async |
 |CO058P|`/rest/ofscCore/v1/resources/{resourceId}/locations`                                                                     |core         |POST  |both  |
 |CO058G|`/rest/ofscCore/v1/resources/{resourceId}/locations`                                                                     |core         |GET   |both  |
 |CO059G|`/rest/ofscCore/v1/resources/{resourceId}/locations/{locationId}`                                                        |core         |GET   |async |
@@ -248,7 +248,7 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |CO083P|`/rest/ofscCore/v1/users/{login}/collaborationGroups`                                                                    |core         |POST  |async |
 |CO083D|`/rest/ofscCore/v1/users/{login}/collaborationGroups`                                                                    |core         |DELETE|async |
 |AU001P|`/rest/oauthTokenService/v1/token`                                                                                       |auth         |POST  |-     |
-|AU002P|`/rest/oauthTokenService/v2/token`                                                                                       |auth         |POST  |-     |
+|AU002P|`/rest/oauthTokenService/v2/token`                                                                                       |auth         |POST  |async |
 |CA001G|`/rest/ofscCapacity/v1/activityBookingOptions`                                                                           |capacity     |GET   |async |
 |CA002G|`/rest/ofscCapacity/v1/bookingClosingSchedule`                                                                           |capacity     |GET   |async |
 |CA002A|`/rest/ofscCapacity/v1/bookingClosingSchedule`                                                                           |capacity     |PATCH |async |
@@ -267,11 +267,11 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 ## Implementation Summary
 
 - **Sync only**: 4 endpoints
-- **Async only**: 67 endpoints
+- **Async only**: 110 endpoints
 - **Both**: 85 endpoints
-- **Not implemented**: 87 endpoints
+- **Not implemented**: 44 endpoints
 - **Total sync**: 89 endpoints
-- **Total async**: 152 endpoints
+- **Total async**: 195 endpoints
 
 ## Implementation Statistics by Module and Method
 
@@ -290,16 +290,16 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 
 ### Asynchronous Client
 
-|   Module    |       GET        |Write (POST/PUT/PATCH)|     DELETE      |       Total       |
-|-------------|------------------|----------------------|-----------------|-------------------|
-|metadata     |41/51 (80.4%)     |10/30 (33.3%)         |2/5 (40.0%)      |53/86 (61.6%)      |
-|core         |42/51 (82.4%)     |30/56 (53.6%)         |17/20 (85.0%)    |89/127 (70.1%)     |
-|capacity     |6/7 (85.7%)       |4/5 (80.0%)           |0/0 (0%)         |10/12 (83.3%)      |
-|statistics   |0/3 (0.0%)        |0/3 (0.0%)            |0/0 (0%)         |0/6 (0.0%)         |
-|partscatalog |0/0 (0%)          |0/2 (0.0%)            |0/1 (0.0%)       |0/3 (0.0%)         |
-|collaboration|0/3 (0.0%)        |0/4 (0.0%)            |0/0 (0%)         |0/7 (0.0%)         |
-|auth         |0/0 (0%)          |0/2 (0.0%)            |0/0 (0%)         |0/2 (0.0%)         |
-|**Total**    |**89/115 (77.4%)**|**44/102 (43.1%)**    |**19/26 (73.1%)**|**152/243 (62.6%)**|
+|   Module    |        GET        |Write (POST/PUT/PATCH)|     DELETE      |       Total       |
+|-------------|-------------------|----------------------|-----------------|-------------------|
+|metadata     |51/51 (100.0%)     |29/30 (96.7%)         |5/5 (100.0%)     |85/86 (98.8%)      |
+|core         |44/51 (86.3%)      |31/56 (55.4%)         |18/20 (90.0%)    |93/127 (73.2%)     |
+|capacity     |6/7 (85.7%)        |4/5 (80.0%)           |0/0 (0%)         |10/12 (83.3%)      |
+|statistics   |3/3 (100.0%)       |3/3 (100.0%)          |0/0 (0%)         |6/6 (100.0%)       |
+|partscatalog |0/0 (0%)           |0/2 (0.0%)            |0/1 (0.0%)       |0/3 (0.0%)         |
+|collaboration|0/3 (0.0%)         |0/4 (0.0%)            |0/0 (0%)         |0/7 (0.0%)         |
+|auth         |0/0 (0%)           |1/2 (50.0%)           |0/0 (0%)         |1/2 (50.0%)        |
+|**Total**    |**104/115 (90.4%)**|**68/102 (66.7%)**    |**23/26 (88.5%)**|**195/243 (80.2%)**|
 
 ## Endpoint ID Reference
 

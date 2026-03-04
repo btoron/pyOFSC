@@ -31,14 +31,10 @@ def instance() -> OFSC:
 def assertion() -> str:
     payload = {}
     payload["sub"] = "admin"
-    payload["iss"] = (
-        "/C=US/ST=Florida/L=Miami/O=MyOrg/CN=JohnSmith/emailAddress=test@example.com"
-    )
+    payload["iss"] = "/C=US/ST=Florida/L=Miami/O=MyOrg/CN=JohnSmith/emailAddress=test@example.com"
     payload["iat"] = datetime.now()
     payload["exp"] = datetime.now() + timedelta(minutes=6000)
-    payload["aud"] = (
-        f'ofsc:{os.environ.get("OFSC_COMPANY")}:{os.environ.get("OFSC_CLIENT_ID")}'
-    )
+    payload["aud"] = f"ofsc:{os.environ.get('OFSC_COMPANY')}:{os.environ.get('OFSC_CLIENT_ID')}"
     payload["scope"] = "/REST"
     key = Path("tests/keys/ofsc.key").read_text()
     return jwt.encode(payload, key, algorithm="RS256")

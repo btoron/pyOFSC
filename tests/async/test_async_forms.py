@@ -98,7 +98,7 @@ class TestAsyncGetFormsModel:
     """Model validation tests for get_forms."""
 
     @pytest.mark.asyncio
-    async def test_get_forms_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_forms_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_forms returns FormListResponse model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -107,9 +107,7 @@ class TestAsyncGetFormsModel:
                 {
                     "label": "test_form",
                     "name": "Test Form",
-                    "translations": [
-                        {"language": "en", "name": "Test Form", "languageISO": "en-US"}
-                    ],
+                    "translations": [{"language": "en", "name": "Test Form", "languageISO": "en-US"}],
                 },
                 {
                     "label": "another_form",
@@ -127,8 +125,8 @@ class TestAsyncGetFormsModel:
             "links": [],
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_forms()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_forms()
 
         assert isinstance(result, FormListResponse)
         assert len(result.items) == 2
@@ -136,7 +134,7 @@ class TestAsyncGetFormsModel:
         assert result.items[1].label == "another_form"
 
     @pytest.mark.asyncio
-    async def test_get_forms_field_types(self, async_instance: AsyncOFSC):
+    async def test_get_forms_field_types(self, mock_instance: AsyncOFSC):
         """Test that fields have correct types."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -145,16 +143,14 @@ class TestAsyncGetFormsModel:
                 {
                     "label": "TEST_FORM",
                     "name": "Test Form",
-                    "translations": [
-                        {"language": "en", "name": "Test Form", "languageISO": "en-US"}
-                    ],
+                    "translations": [{"language": "en", "name": "Test Form", "languageISO": "en-US"}],
                 }
             ],
             "totalResults": 1,
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_forms()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_forms()
 
         assert isinstance(result.items[0].label, str)
         assert isinstance(result.items[0].name, str)
@@ -195,21 +191,19 @@ class TestAsyncGetFormModel:
     """Model validation tests for get_form."""
 
     @pytest.mark.asyncio
-    async def test_get_form_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_form_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_form returns Form model."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
             "label": "TEST_FORM",
             "name": "Test Form",
-            "translations": [
-                {"language": "en", "name": "Test Form", "languageISO": "en-US"}
-            ],
+            "translations": [{"language": "en", "name": "Test Form", "languageISO": "en-US"}],
             "content": '{"formatVersion":"1.1","items":[]}',
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_form("TEST_FORM")
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_form("TEST_FORM")
 
         assert isinstance(result, Form)
         assert result.label == "TEST_FORM"
@@ -220,17 +214,13 @@ class TestAsyncGetFormModel:
 # === SAVED RESPONSE VALIDATION ===
 
 
+@pytest.mark.uses_local_data
 class TestAsyncFormsSavedResponses:
     """Test that saved API responses validate against Pydantic models."""
 
     def test_form_list_response_validation(self):
         """Test FormListResponse model validates against saved response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "forms"
-            / "get_forms_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "forms" / "get_forms_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 
@@ -243,12 +233,7 @@ class TestAsyncFormsSavedResponses:
 
     def test_form_single_validation(self):
         """Test Form model validates against saved single response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "forms"
-            / "get_form_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "forms" / "get_form_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 

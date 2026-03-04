@@ -18,6 +18,20 @@ class OFSAPIException(Exception):
                 case _:
                     setattr(self, key, value)
 
+    def __str__(self) -> str:
+        if self.args:
+            return super().__str__()
+        parts = []
+        if self.status_code is not None:
+            parts.append(f"[{self.status_code}]")
+        title = getattr(self, "title", None)
+        if title:
+            parts.append(title)
+        detail = getattr(self, "detail", None)
+        if detail:
+            parts.append(detail)
+        return " ".join(parts) if parts else "OFSAPIException"
+
 
 class OFSCApiError(OFSAPIException):
     """API-level errors (HTTP errors) with OFSC error details"""

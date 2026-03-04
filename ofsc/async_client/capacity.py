@@ -59,11 +59,11 @@ class AsyncOFSCapacity:
         """Build authorization headers."""
         headers = {"Content-Type": "application/json;charset=UTF-8"}
         if not self._config.useToken:
-            headers["Authorization"] = "Basic " + self._config.basicAuthString.decode(
-                "utf-8"
-            )
+            headers["Authorization"] = "Basic " + self._config.basicAuthString.decode("utf-8")
         else:
-            raise NotImplementedError("Token-based auth not yet implemented for async")
+            if self._config.access_token is None:
+                raise ValueError("access_token required when useToken=True")
+            headers["Authorization"] = f"Bearer {self._config.access_token}"
         return headers
 
     def _parse_error_response(self, response: httpx.Response) -> dict:
@@ -87,9 +87,7 @@ class AsyncOFSCapacity:
         status = e.response.status_code
         error_info = self._parse_error_response(e.response)
 
-        message = (
-            f"{context}: {error_info['detail']}" if context else error_info["detail"]
-        )
+        message = f"{context}: {error_info['detail']}" if context else error_info["detail"]
 
         error_map = {
             401: OFSCAuthenticationError,
@@ -273,9 +271,7 @@ class AsyncOFSCapacity:
             data = QuotaUpdateRequest.model_validate(data)
         url = urljoin(self.baseUrl, "/rest/ofscCapacity/v2/quota")
         try:
-            response = await self._client.patch(
-                url, headers=self.headers, json=data.model_dump(exclude_none=True)
-            )
+            response = await self._client.patch(url, headers=self.headers, json=data.model_dump(exclude_none=True))
             response.raise_for_status()
             return QuotaUpdateResponse.model_validate(response.json())
         except httpx.HTTPStatusError as e:
@@ -352,17 +348,11 @@ class AsyncOFSCapacity:
         if duration is not None:
             params["duration"] = duration
         if workSkills is not None:
-            params["workSkills"] = (
-                ",".join(workSkills) if isinstance(workSkills, list) else workSkills
-            )
+            params["workSkills"] = ",".join(workSkills) if isinstance(workSkills, list) else workSkills
         if timeSlots is not None:
-            params["timeSlots"] = (
-                ",".join(timeSlots) if isinstance(timeSlots, list) else timeSlots
-            )
+            params["timeSlots"] = ",".join(timeSlots) if isinstance(timeSlots, list) else timeSlots
         if categories is not None:
-            params["categories"] = (
-                ",".join(categories) if isinstance(categories, list) else categories
-            )
+            params["categories"] = ",".join(categories) if isinstance(categories, list) else categories
         if languageCode is not None:
             params["languageCode"] = languageCode
         if timeZone is not None:
@@ -453,9 +443,7 @@ class AsyncOFSCapacity:
             data = BookingClosingScheduleUpdateRequest.model_validate(data)
         url = urljoin(self.baseUrl, "/rest/ofscCapacity/v1/bookingClosingSchedule")
         try:
-            response = await self._client.patch(
-                url, headers=self.headers, json=data.model_dump(exclude_none=True)
-            )
+            response = await self._client.patch(url, headers=self.headers, json=data.model_dump(exclude_none=True))
             response.raise_for_status()
             return BookingClosingScheduleResponse.model_validate(response.json())
         except httpx.HTTPStatusError as e:
@@ -527,9 +515,7 @@ class AsyncOFSCapacity:
             data = BookingStatusesUpdateRequest.model_validate(data)
         url = urljoin(self.baseUrl, "/rest/ofscCapacity/v1/bookingStatuses")
         try:
-            response = await self._client.patch(
-                url, headers=self.headers, json=data.model_dump(exclude_none=True)
-            )
+            response = await self._client.patch(url, headers=self.headers, json=data.model_dump(exclude_none=True))
             response.raise_for_status()
             return BookingStatusesResponse.model_validate(response.json())
         except httpx.HTTPStatusError as e:
@@ -565,9 +551,7 @@ class AsyncOFSCapacity:
             data = ShowBookingGridRequest.model_validate(data)
         url = urljoin(self.baseUrl, "/rest/ofscCapacity/v1/showBookingGrid")
         try:
-            response = await self._client.post(
-                url, headers=self.headers, json=data.model_dump(exclude_none=True)
-            )
+            response = await self._client.post(url, headers=self.headers, json=data.model_dump(exclude_none=True))
             response.raise_for_status()
             return ShowBookingGridResponse.model_validate(response.json())
         except httpx.HTTPStatusError as e:

@@ -4,6 +4,8 @@ Tests for routing profiles metadata API
 Tests follow TDD methodology for GET operations first, then PUT/POST operations.
 """
 
+import pytest
+
 from ofsc.common import FULL_RESPONSE, OBJ_RESPONSE
 from ofsc.models import (
     RoutingProfile,
@@ -17,6 +19,7 @@ from ofsc.models import (
 # Phase 1: GET Operations Tests
 
 
+@pytest.mark.uses_real_data
 def test_get_routing_profiles_basic(instance):
     """Test basic GET routing profiles with full response"""
     response = instance.metadata.get_routing_profiles(response_type=FULL_RESPONSE)
@@ -26,6 +29,7 @@ def test_get_routing_profiles_basic(instance):
     assert isinstance(data["items"], list)
 
 
+@pytest.mark.uses_real_data
 def test_get_routing_profiles_obj(instance):
     """Test GET routing profiles returning model object"""
     response = instance.metadata.get_routing_profiles()
@@ -34,6 +38,7 @@ def test_get_routing_profiles_obj(instance):
     assert hasattr(response, "totalResults")
 
 
+@pytest.mark.uses_real_data
 def test_get_routing_profiles_validation(instance):
     """Test routing profiles response structure and validation"""
     response = instance.metadata.get_routing_profiles(response_type=FULL_RESPONSE)
@@ -51,6 +56,7 @@ def test_get_routing_profiles_validation(instance):
         assert "profileLabel" in first_item
 
 
+@pytest.mark.uses_real_data
 def test_get_routing_profile_plans_basic(instance):
     """Test basic GET routing profile plans with full response"""
     # First get a profile to test with
@@ -75,6 +81,7 @@ def test_get_routing_profile_plans_basic(instance):
     assert isinstance(data["items"], list)
 
 
+@pytest.mark.uses_real_data
 def test_get_routing_profile_plans_obj(instance):
     """Test GET routing profile plans returning model object"""
     # First get a profile to test with
@@ -93,6 +100,7 @@ def test_get_routing_profile_plans_obj(instance):
     assert hasattr(response, "totalResults")
 
 
+@pytest.mark.uses_real_data
 def test_get_routing_profile_plans_validation(instance):
     """Test routing plans response structure and validation"""
     # First get a profile to test with
@@ -125,6 +133,7 @@ def test_get_routing_profile_plans_validation(instance):
         assert "planLabel" in first_item
 
 
+@pytest.mark.uses_real_data
 def test_export_routing_plan_basic(instance):
     """Test basic routing plan export returns parsed Pydantic model"""
     # First get a profile and plan to test with
@@ -163,6 +172,7 @@ def test_export_routing_plan_basic(instance):
     assert "version" in data
 
 
+@pytest.mark.uses_real_data
 def test_export_routing_plan_obj(instance):
     """Test routing plan export returning RoutingPlanData model"""
     # First get a profile and plan to test with
@@ -199,6 +209,7 @@ def test_export_routing_plan_obj(instance):
     assert response.routing_plan.rpoptimization in ["fastest", "balanced", "best"]
 
 
+@pytest.mark.uses_real_data
 def test_export_routing_plan_validation(instance):
     """Test routing plan Pydantic model validation and nested structure"""
     # First get a profile and plan to test with

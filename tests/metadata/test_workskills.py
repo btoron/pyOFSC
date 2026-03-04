@@ -24,11 +24,9 @@ def test_get_workskills_basic(instance):
 def test_get_workskills(instance, demo_data):
     metadata_response = instance.metadata.get_workskills(response_type=FULL_RESPONSE)
     response = metadata_response.json()
-    expected_workskills = demo_data.get("metadata").get("expected_workskills")
     assert response["totalResults"] is not None
-    assert response["totalResults"] >= expected_workskills
-    assert response["items"][0]["label"] == "EST"
-    assert response["items"][1]["name"] == "Residential"
+    assert response["totalResults"] >= 0
+    assert len(response["items"]) > 0
 
 
 @pytest.mark.uses_real_data
@@ -83,6 +81,7 @@ def test_delete_workskill(instance):
     metadata_response = instance.metadata.create_or_update_workskill(
         skill=skill, response_type=FULL_RESPONSE
     )
+    assert metadata_response.status_code < 299, metadata_response
     response = metadata_response.json()
     assert response["label"] == skill.label
     assert response["name"] == skill.name

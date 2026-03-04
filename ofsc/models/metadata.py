@@ -25,11 +25,7 @@ class ActivityTypeGroup(BaseModel):
 
     @property
     def activityTypes(self):
-        return (
-            [_activityType["label"] for _activityType in self._activityTypes]
-            if self._activityTypes is not None
-            else []
-        )
+        return [_activityType["label"] for _activityType in self._activityTypes] if self._activityTypes is not None else []
 
 
 class ActivityTypeGroupList(RootModel[list[ActivityTypeGroup]]):
@@ -52,6 +48,7 @@ class ActivityTypeGroupListResponse(OFSResponseList[ActivityTypeGroup]):
 class ActivityTypeColors(BaseModel):
     cancelled: Annotated[Optional[str], Field(alias="cancelled")]
     completed: Annotated[Optional[str], Field(alias="completed")]
+    enroute: Annotated[Optional[str], Field(alias="enroute")] = None
     notdone: Annotated[Optional[str], Field(alias="notdone")]
     notOrdered: Annotated[Optional[str], Field(alias="notOrdered")]
     pending: Annotated[Optional[str], Field(alias="pending")]
@@ -61,7 +58,7 @@ class ActivityTypeColors(BaseModel):
 
 
 class ActivityTypeFeatures(BaseModel):
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="ignore")
     allowCreationInBuckets: Optional[bool] = False
     allowMassActivities: Optional[bool] = False
     allowMoveBetweenResources: Optional[bool] = False
@@ -97,9 +94,9 @@ class ActivityTypeTimeSlots(BaseModel):
 
 class ActivityType(BaseModel):
     active: bool
-    colors: Optional[ActivityTypeColors]
+    colors: Optional[ActivityTypeColors] = None
     defaultDuration: int
-    features: Optional[ActivityTypeFeatures]
+    features: Optional[ActivityTypeFeatures] = None
     groupLabel: Optional[str]
     label: str
     name: str
@@ -150,7 +147,7 @@ class Link(BaseModel):
 
     rel: str
     href: str
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="ignore")
 
 
 class ApiMethod(BaseModel):
@@ -158,7 +155,7 @@ class ApiMethod(BaseModel):
 
     label: str
     status: str  # "on" or "off"
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="ignore")
 
 
 class ApiEntity(BaseModel):
@@ -166,7 +163,7 @@ class ApiEntity(BaseModel):
 
     label: str
     access: str  # "ReadWrite", "ReadOnly", etc.
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="ignore")
 
 
 class BaseApiAccess(BaseModel):
@@ -248,9 +245,7 @@ def parse_application_api_access(
 
 
 # Type alias for the discriminated union
-ApplicationApiAccess = Union[
-    SimpleApiAccess, CapacityApiAccess, InboundApiAccess, StructuredApiAccess
-]
+ApplicationApiAccess = Union[SimpleApiAccess, CapacityApiAccess, InboundApiAccess, StructuredApiAccess]
 
 
 class ApplicationApiAccessList(RootModel[list[ApplicationApiAccess]]):
@@ -268,7 +263,7 @@ class ApplicationApiAccessListResponse(BaseModel):
 
     items: list[ApplicationApiAccess]
     links: Optional[list[Link]] = None
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="ignore")
 
     @field_validator("items", mode="before")
     @classmethod
@@ -284,11 +279,7 @@ class ApplicationApiAccessListResponse(BaseModel):
                 if isinstance(item, dict):
                     # List responses only have basic fields, use StructuredApiAccess
                     # unless the item has detailed permission fields
-                    if (
-                        "apiEntities" in item
-                        or "apiMethods" in item
-                        or "activityFields" in item
-                    ):
+                    if "apiEntities" in item or "apiMethods" in item or "activityFields" in item:
                         parsed_items.append(parse_application_api_access(item))
                     else:
                         # Basic fields only - use StructuredApiAccess
@@ -326,9 +317,7 @@ class CapacityArea(BaseModel):
     configuration: Optional[CapacityAreaConfiguration] = None
     parentLabel: Optional[str] = None
     parent: Annotated[Optional[CapacityAreaParent], Field(alias="parent")] = None
-    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
-        None
-    )
+    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = None
     # Note: as of 24A the additional fields returned are just HREFs so we won't include them here
 
 
@@ -342,6 +331,130 @@ class CapacityAreaList(RootModel[list[CapacityArea]]):
 
 class CapacityAreaListResponse(OFSResponseList[CapacityArea]):
     pass
+
+
+class CapacityAreaCapacityCategory(BaseModel):
+    label: str
+    name: Optional[str] = None
+    status: Optional[str] = None
+
+
+class CapacityAreaCapacityCategoriesResponse(BaseModel):
+    items: list[CapacityAreaCapacityCategory] = []
+
+    def __iter__(self):  # type: ignore
+        return iter(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+    def __len__(self):
+        return len(self.items)
+
+
+class CapacityAreaWorkZone(BaseModel):
+    workZoneLabel: str
+    workZoneName: Optional[str] = None
+
+
+class CapacityAreaWorkZonesResponse(BaseModel):
+    items: list[CapacityAreaWorkZone] = []
+
+    def __iter__(self):  # type: ignore
+        return iter(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+    def __len__(self):
+        return len(self.items)
+
+
+class CapacityAreaWorkZoneV1(BaseModel):
+    label: str
+
+
+class CapacityAreaWorkZonesV1Response(BaseModel):
+    items: list[CapacityAreaWorkZoneV1] = []
+
+    def __iter__(self):  # type: ignore
+        return iter(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+    def __len__(self):
+        return len(self.items)
+
+
+class CapacityAreaTimeSlot(BaseModel):
+    label: str
+    name: Optional[str] = None
+    timeFrom: Optional[str] = None
+    timeTo: Optional[str] = None
+
+
+class CapacityAreaTimeSlotsResponse(BaseModel):
+    items: list[CapacityAreaTimeSlot] = []
+
+    def __iter__(self):  # type: ignore
+        return iter(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+    def __len__(self):
+        return len(self.items)
+
+
+class CapacityAreaTimeInterval(BaseModel):
+    timeFrom: Optional[str] = None
+    timeTo: Optional[str] = None
+
+
+class CapacityAreaTimeIntervalsResponse(BaseModel):
+    items: list[CapacityAreaTimeInterval] = []
+
+    def __iter__(self):  # type: ignore
+        return iter(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+    def __len__(self):
+        return len(self.items)
+
+
+class CapacityAreaOrganization(BaseModel):
+    label: str
+    name: Optional[str] = None
+    type: Optional[str] = None
+
+
+class CapacityAreaOrganizationsResponse(BaseModel):
+    items: list[CapacityAreaOrganization] = []
+
+    def __iter__(self):  # type: ignore
+        return iter(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+    def __len__(self):
+        return len(self.items)
+
+
+class CapacityAreaChildrenResponse(BaseModel):
+    items: list[CapacityArea] = []
+
+    def __iter__(self):  # type: ignore
+        return iter(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+    def __len__(self):
+        return len(self.items)
 
 
 # endregion Metadata / Capacity Areas
@@ -366,13 +479,12 @@ class CapacityCategory(BaseModel):
     label: str
     name: str
     timeSlots: Optional[ItemList] = None
-    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
-        None
-    )
+    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = None
     workSkillGroups: Optional[ItemList] = None
     workSkills: Optional[ItemList] = None
     active: bool
-    model_config = ConfigDict(extra="allow")
+    links: Optional[list[Link]] = None
+    model_config = ConfigDict(extra="ignore")
 
 
 class CapacityCategoryListResponse(OFSResponseList[CapacityCategory]):
@@ -396,11 +508,10 @@ class Form(BaseModel):
 
     label: str
     name: str
-    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
-        None
-    )
+    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = None
     content: Optional[str] = None
-    model_config = ConfigDict(extra="allow")
+    links: Optional[list[Link]] = None
+    model_config = ConfigDict(extra="ignore")
 
 
 class FormList(RootModel[list[Form]]):
@@ -424,14 +535,15 @@ class FormListResponse(OFSResponseList[Form]):
 
 class InventoryType(BaseModel):
     label: str
-    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
-        None
-    )
+    name: Optional[str] = None
+    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = None
     active: bool = True
     model_property: Optional[str] = Field(default=None, alias="modelProperty")
     non_serialized: bool = Field(default=False, alias="nonSerialized")
     quantityPrecision: Optional[int] = 0
-    model_config = ConfigDict(extra="allow", populate_by_name=True)
+    unitOfMeasurement: Optional[str] = None
+    links: Optional[list[Link]] = None
+    model_config = ConfigDict(extra="ignore", populate_by_name=True)
 
 
 class InventoryTypeList(RootModel[list[InventoryType]]):
@@ -590,14 +702,13 @@ class MapLayer(BaseModel):
     label: str
     status: Optional[Status] = None
     text: Optional[str] = None  # Read-only name in user's language
-    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
-        None
-    )
+    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = None
     shapeTitleColumn: Optional[str] = None
     tableColumns: Optional[list[str]] = None
     shapeHintColumns: Optional[list[ShapeHintColumn]] = None
     shapeHintButton: Optional[ShapeHintButton] = None
-    model_config = ConfigDict(extra="allow")
+    links: Optional[list[Link]] = None
+    model_config = ConfigDict(extra="ignore")
 
 
 class MapLayerList(RootModel[list[MapLayer]]):
@@ -612,6 +723,14 @@ class MapLayerListResponse(OFSResponseList[MapLayer]):
     """Response from GET /rest/ofscMetadata/v1/mapLayers (CustomMapLayers)."""
 
     pass
+
+
+class PopulateStatusResponse(BaseModel):
+    """Response from GET populate status endpoints (map layers, workzone shapes)."""
+
+    status: Optional[str] = None
+    time: Optional[str] = None
+    downloadId: Optional[int] = None
 
 
 # endregion Metadata / Map Layers
@@ -681,14 +800,12 @@ class Property(BaseModel):
     type: str
     entity: Optional[EntityEnum] = None
     gui: Optional[str] = None
-    translations: Annotated[Optional[TranslationList], Field(validate_default=True)] = (
-        None
-    )
+    translations: Annotated[Optional[TranslationList], Field(validate_default=True)] = None
 
     @field_validator("translations")
     def set_default(cls, field_value, values):
         if field_value is None:
-            return TranslationList([Translation(name=values.name)])
+            return TranslationList([Translation(name=values.data.get("name"))])
         return field_value
 
     @field_validator("gui")
@@ -753,7 +870,9 @@ class ResourceType(BaseModel):
     name: str
     active: bool
     role: str  # TODO: change to enum
-    model_config = ConfigDict(extra="allow")
+    translations: Optional[TranslationList] = None
+    links: Optional[list[Link]] = None
+    model_config = ConfigDict(extra="ignore")
 
 
 class ResourceTypeList(RootModel[list[ResourceType]]):
@@ -780,10 +899,8 @@ class RoutingProfile(BaseModel):
     to multiple buckets without duplicating plans.
     """
 
-    profileLabel: str = Field(
-        ..., description="Unique identifier for the routing profile"
-    )
-    model_config = ConfigDict(extra="allow")
+    profileLabel: str = Field(..., description="Unique identifier for the routing profile")
+    model_config = ConfigDict(extra="ignore")
 
 
 class RoutingProfileList(OFSResponseList[RoutingProfile]):
@@ -800,7 +917,7 @@ class RoutingPlan(BaseModel):
     """
 
     planLabel: str = Field(..., description="Unique identifier for the routing plan")
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="ignore")
 
 
 class RoutingPlanList(OFSResponseList[RoutingPlan]):
@@ -834,29 +951,19 @@ class RoutingProviderGroup(BaseModel):
 class RoutingActivityGroup(BaseModel):
     """Model for activity group within a routing plan"""
 
-    activity_location: str = Field(
-        description="Location type (e.g., 'resource_routing_date', 'bucket_routing_date')"
-    )
-    unacceptable_overdue: int = Field(
-        default=0, description="Unacceptable overdue time"
-    )
+    activity_location: str = Field(description="Location type (e.g., 'resource_routing_date', 'bucket_routing_date')")
+    unacceptable_overdue: int = Field(default=0, description="Unacceptable overdue time")
     overdue_cost: int = Field(default=50, description="Cost for overdue activities")
-    non_assignment_cost: int = Field(
-        default=0, description="Cost for non-assigned activities"
-    )
+    non_assignment_cost: int = Field(default=0, description="Cost for non-assigned activities")
     sla_cost_coeff: int = Field(default=3, description="SLA cost coefficient")
     sla_overdue_cost: int = Field(default=-1, description="SLA overdue cost")
-    sla_violation_fact_cost: int = Field(
-        default=-1, description="SLA violation fact cost"
-    )
+    sla_violation_fact_cost: int = Field(default=-1, description="SLA violation fact cost")
     is_multiday: int = Field(default=0, description="Is multiday activity")
     autoordering_type: int = Field(default=0, description="Auto-ordering type")
     sla_policy: int = Field(default=0, description="SLA policy")
     bundling_policy: int = Field(default=0, description="Bundling policy")
     filterLabel: str = Field(description="Filter label for this activity group")
-    providerGroups: list[RoutingProviderGroup] = Field(
-        default_factory=list, description="List of provider groups"
-    )
+    providerGroups: list[RoutingProviderGroup] = Field(default_factory=list, description="List of provider groups")
     model_config = ConfigDict(extra="allow")
 
 
@@ -879,91 +986,53 @@ class RoutingPlanConfig(BaseModel):
     rpfrom_time: Optional[str] = Field(default=None, description="Start time")
     rpto_time: Optional[str] = Field(default=None, description="End time")
     rpinterval: Optional[str] = Field(default=None, description="Time interval")
-    rpweekdays: Optional[str | int] = Field(
-        default=None, description="Weekdays (string or int)"
-    )
+    rpweekdays: Optional[str | int] = Field(default=None, description="Weekdays (string or int)")
     rptime_limit: int = Field(default=30, description="Time limit in minutes")
-    rptime_slr_limit_percent: int = Field(
-        default=50, description="SLR time limit percentage"
-    )
+    rptime_slr_limit_percent: int = Field(default=50, description="SLR time limit percentage")
 
     # Optimization settings
     rpoptimization: str = Field(default="fastest", description="Optimization type")
-    rpgoal_based_optimization: str = Field(
-        default="maximize_jobs", description="Goal-based optimization strategy"
-    )
+    rpgoal_based_optimization: str = Field(default="maximize_jobs", description="Goal-based optimization strategy")
     rpauto_ordering: int = Field(default=0, description="Auto ordering enabled")
 
     # Fitness coefficients
-    rpfitness_coeff_uniformity: float = Field(
-        default=0.0, description="Fitness coefficient for uniformity"
-    )
-    rpfitness_coeff_window_reservation: float = Field(
-        default=0.2, description="Fitness coefficient for window reservation"
-    )
+    rpfitness_coeff_uniformity: float = Field(default=0.0, description="Fitness coefficient for uniformity")
+    rpfitness_coeff_window_reservation: float = Field(default=0.2, description="Fitness coefficient for window reservation")
 
     # Dynamic settings
     rpdynamic_cut_time: int = Field(default=0, description="Dynamic cut time")
-    rpdynamic_cut_nappt: int = Field(
-        default=0, description="Dynamic cut number of appointments"
-    )
+    rpdynamic_cut_nappt: int = Field(default=0, description="Dynamic cut number of appointments")
     rpinvert_cut: int = Field(default=0, description="Invert cut setting")
 
     # Zone and distance settings
-    rphome_zone_radius_overstep_weight: int = Field(
-        default=4, description="Home zone radius overstep weight"
-    )
-    rpunacceptable_travel_time: int = Field(
-        default=0, description="Unacceptable travel time"
-    )
-    rpunacceptable_travel_distance: int = Field(
-        default=0, description="Unacceptable travel distance"
-    )
+    rphome_zone_radius_overstep_weight: int = Field(default=4, description="Home zone radius overstep weight")
+    rpunacceptable_travel_time: int = Field(default=0, description="Unacceptable travel time")
+    rpunacceptable_travel_distance: int = Field(default=0, description="Unacceptable travel distance")
 
     # Machine operation settings
-    rpmachine_operation_deadline_shift: int = Field(
-        default=20, description="Machine operation deadline shift"
-    )
+    rpmachine_operation_deadline_shift: int = Field(default=20, description="Machine operation deadline shift")
 
     # SLR and points settings
     rpuse_slr: int = Field(default=0, description="Use SLR")
-    rpload_technicians_by_points: int = Field(
-        default=0, description="Load technicians by points"
-    )
-    rpdefault_appt_points: int = Field(
-        default=0, description="Default appointment points"
-    )
-    rpget_technician_points_from_calendar: int = Field(
-        default=0, description="Get technician points from calendar"
-    )
+    rpload_technicians_by_points: int = Field(default=0, description="Load technicians by points")
+    rpdefault_appt_points: int = Field(default=0, description="Default appointment points")
+    rpget_technician_points_from_calendar: int = Field(default=0, description="Get technician points from calendar")
     rpdefault_tech_points: int = Field(default=0, description="Default tech points")
     rpcalendar_point_size: int = Field(default=0, description="Calendar point size")
     rpcalendar_reserved: int = Field(default=0, description="Calendar reserved")
 
     # Assurance and skill settings
-    rpassurance_still_limit: Optional[int] = Field(
-        default=20, description="Assurance still limit"
-    )
-    rpinsufficient_skill_factor: float = Field(
-        default=1.0, description="Insufficient skill factor"
-    )
+    rpassurance_still_limit: Optional[int] = Field(default=20, description="Assurance still limit")
+    rpinsufficient_skill_factor: float = Field(default=1.0, description="Insufficient skill factor")
 
     # Center point settings
-    rpdefault_center_point_radius: int = Field(
-        default=0, description="Default center point radius"
-    )
+    rpdefault_center_point_radius: int = Field(default=0, description="Default center point radius")
     rpcenter_point_enable: int = Field(default=0, description="Center point enabled")
 
     # Inventory and reoptimization
-    rpuse_required_inventory: int = Field(
-        default=0, description="Use required inventory"
-    )
-    rpreoptimization_enable: int = Field(
-        default=1, description="Reoptimization enabled"
-    )
-    rpreoptimization_reduce_overdue_threshold: Optional[int] = Field(
-        default=None, description="Reoptimization reduce overdue threshold"
-    )
+    rpuse_required_inventory: int = Field(default=0, description="Use required inventory")
+    rpreoptimization_enable: int = Field(default=1, description="Reoptimization enabled")
+    rpreoptimization_reduce_overdue_threshold: Optional[int] = Field(default=None, description="Reoptimization reduce overdue threshold")
 
     # Algorithm and bundling
     rpimmediate_algorithm: str = Field(default="", description="Immediate algorithm")
@@ -973,75 +1042,43 @@ class RoutingPlanConfig(BaseModel):
     # Assignment settings
     rpassignment_from: int = Field(default=0, description="Assignment from")
     rpassignment_to: int = Field(default=1, description="Assignment to")
-    rpassign_bucket_resource: int = Field(
-        default=1, description="Assign bucket resource"
-    )
+    rpassign_bucket_resource: int = Field(default=1, description="Assign bucket resource")
 
     # Subtype and broadcast
     rpsubtype: str = Field(default="normal", description="Plan subtype")
     rpbroadcast_timeout: int = Field(default=0, description="Broadcast timeout")
 
     # Advanced settings
-    rpadvanced_reoptimization_cost_override: int = Field(
-        default=0, description="Advanced reoptimization cost override"
-    )
-    rpadvanced_reoptimization_cost: int = Field(
-        default=0, description="Advanced reoptimization cost"
-    )
-    rpadvanced_reserved_part_of_service_window_override: int = Field(
-        default=0, description="Advanced reserved part of service window override"
-    )
-    rpadvanced_reserved_part_of_service_window: int = Field(
-        default=0, description="Advanced reserved part of service window"
-    )
+    rpadvanced_reoptimization_cost_override: int = Field(default=0, description="Advanced reoptimization cost override")
+    rpadvanced_reoptimization_cost: int = Field(default=0, description="Advanced reoptimization cost")
+    rpadvanced_reserved_part_of_service_window_override: int = Field(default=0, description="Advanced reserved part of service window override")
+    rpadvanced_reserved_part_of_service_window: int = Field(default=0, description="Advanced reserved part of service window")
 
     # Routing and workzone
     rprouting_to_contractor: int = Field(default=0, description="Routing to contractor")
-    rpignore_workzone_mismatch: int = Field(
-        default=0, description="Ignore workzone mismatch"
-    )
+    rpignore_workzone_mismatch: int = Field(default=0, description="Ignore workzone mismatch")
 
     # Inventory waiting
-    rpinventory_waiting_days: int = Field(
-        default=0, description="Inventory waiting days"
-    )
+    rpinventory_waiting_days: int = Field(default=0, description="Inventory waiting days")
 
     # Daily distance
-    daily_distance_limit_is_used: int = Field(
-        default=0, description="Daily distance limit is used"
-    )
-    unacceptable_daily_distance: Optional[int] = Field(
-        default=None, description="Unacceptable daily distance"
-    )
+    daily_distance_limit_is_used: int = Field(default=0, description="Daily distance limit is used")
+    unacceptable_daily_distance: Optional[int] = Field(default=None, description="Unacceptable daily distance")
 
     # Flags and recommendations
     flags: int = Field(default=0, description="Plan flags")
-    rprecomended_min_time_limit: int = Field(
-        default=-1, description="Recommended min time limit"
-    )
-    rprecomended_max_time_limit: int = Field(
-        default=-1, description="Recommended max time limit"
-    )
-    rprecomended_balanced_time_limit: int = Field(
-        default=-1, description="Recommended balanced time limit"
-    )
+    rprecomended_min_time_limit: int = Field(default=-1, description="Recommended min time limit")
+    rprecomended_max_time_limit: int = Field(default=-1, description="Recommended max time limit")
+    rprecomended_balanced_time_limit: int = Field(default=-1, description="Recommended balanced time limit")
 
     # Related labels
-    messageFlowLabel: str = Field(
-        default="MessageFlowIsNotSet", description="Message flow label"
-    )
-    warehouseVisitWorkTypeLabel: str = Field(
-        default="ActivityTypeIsNotSet", description="Warehouse visit work type label"
-    )
-    predecessorLabel: str = Field(
-        default="RoutingPlanLabelIsNotSet", description="Predecessor label"
-    )
+    messageFlowLabel: str = Field(default="MessageFlowIsNotSet", description="Message flow label")
+    warehouseVisitWorkTypeLabel: str = Field(default="ActivityTypeIsNotSet", description="Warehouse visit work type label")
+    predecessorLabel: str = Field(default="RoutingPlanLabelIsNotSet", description="Predecessor label")
     triggerFilterLabel: str = Field(default="Other", description="Trigger filter label")
 
     # Activity groups
-    activityGroups: list[RoutingActivityGroup] = Field(
-        default_factory=list, description="List of activity groups"
-    )
+    activityGroups: list[RoutingActivityGroup] = Field(default_factory=list, description="List of activity groups")
 
     # Audit fields
     last_updated_by: str = Field(default="", description="Last updated by")
@@ -1061,18 +1098,10 @@ class RoutingPlanData(BaseModel):
     different formats (metadata only vs full plan data).
     """
 
-    routing_plan: Optional[RoutingPlanConfig] = Field(
-        default=None, description="Complete routing plan configuration"
-    )
-    sign: Optional[str] = Field(
-        default=None, description="Signature for the routing plan"
-    )
-    version: Optional[str] = Field(
-        default=None, description="Version of the routing plan format"
-    )
-    mediaType: Optional[str] = Field(
-        default=None, description="Media type of the export response"
-    )
+    routing_plan: Optional[RoutingPlanConfig] = Field(default=None, description="Complete routing plan configuration")
+    sign: Optional[str] = Field(default=None, description="Signature for the routing plan")
+    version: Optional[str] = Field(default=None, description="Version of the routing plan format")
+    mediaType: Optional[str] = Field(default=None, description="Media type of the export response")
     model_config = ConfigDict(extra="allow")
 
 
@@ -1116,12 +1145,26 @@ class Shift(BaseModel):
     label: str
     name: str
     active: bool
-    type: ShiftType
+    type: Optional[ShiftType] = None
     workTimeStart: time
     workTimeEnd: time
     points: Optional[int] = None
     decoration: Optional[ShiftDecoration] = None
-    model_config = ConfigDict(extra="allow")
+    links: Optional[list[Link]] = None
+    model_config = ConfigDict(extra="ignore")
+
+
+class ShiftUpdate(BaseModel):
+    """Shift update payload — excludes immutable 'type' field."""
+
+    label: str
+    name: str
+    active: bool
+    workTimeStart: time
+    workTimeEnd: time
+    points: Optional[int] = None
+    decoration: Optional[ShiftDecoration] = None
+    model_config = ConfigDict(extra="forbid")
 
 
 class ShiftList(RootModel[list[Shift]]):
@@ -1176,15 +1219,11 @@ class Workskill(BaseModel):
     active: bool = True
     name: str = ""
     sharing: SharingEnum
-    translations: Annotated[Optional[TranslationList], Field(validate_default=True)] = (
-        None
-    )
+    translations: Annotated[Optional[TranslationList], Field(validate_default=True)] = None
 
     @field_validator("translations")
     def set_default(cls, field_value, values):
-        return field_value or TranslationList(
-            [Translation(name=values.data.get("name"))]
-        )
+        return field_value or TranslationList([Translation(name=values.data.get("name"))])
 
 
 class WorkskillList(RootModel[list[Workskill]]):
@@ -1309,6 +1348,19 @@ class WorkzoneListResponse(OFSResponseList[Workzone]):
     """Response model for list of workzones"""
 
     pass
+
+
+class WorkZoneKeyElement(BaseModel):
+    label: str
+    length: Optional[int] = None
+    function: Optional[str] = None
+    order: Optional[int] = None
+    apiParameterName: Optional[str] = None
+
+
+class WorkZoneKeyResponse(BaseModel):
+    current: list[WorkZoneKeyElement]
+    pending: Optional[list[WorkZoneKeyElement]] = None
 
 
 # endregion Metadata / Work Zones

@@ -101,7 +101,7 @@ class TestAsyncGetShiftsModel:
     """Model validation tests for get_shifts."""
 
     @pytest.mark.asyncio
-    async def test_get_shifts_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_shifts_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_shifts returns ShiftListResponse model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -130,8 +130,8 @@ class TestAsyncGetShiftsModel:
             "links": [],
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_shifts()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_shifts()
 
         assert isinstance(result, ShiftListResponse)
         assert len(result.items) == 2
@@ -139,7 +139,7 @@ class TestAsyncGetShiftsModel:
         assert result.items[1].label == "on-call"
 
     @pytest.mark.asyncio
-    async def test_get_shifts_field_types(self, async_instance: AsyncOFSC):
+    async def test_get_shifts_field_types(self, mock_instance: AsyncOFSC):
         """Test that fields have correct types."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -158,8 +158,8 @@ class TestAsyncGetShiftsModel:
             "totalResults": 1,
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_shifts()
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_shifts()
 
         assert isinstance(result.items[0].label, str)
         assert isinstance(result.items[0].name, str)
@@ -200,7 +200,7 @@ class TestAsyncGetShiftModel:
     """Model validation tests for get_shift."""
 
     @pytest.mark.asyncio
-    async def test_get_shift_returns_model(self, async_instance: AsyncOFSC):
+    async def test_get_shift_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_shift returns Shift model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -214,8 +214,8 @@ class TestAsyncGetShiftModel:
             "points": 100,
         }
 
-        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await async_instance.metadata.get_shift("TEST_SHIFT")
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_shift("TEST_SHIFT")
 
         assert isinstance(result, Shift)
         assert result.label == "TEST_SHIFT"
@@ -227,17 +227,13 @@ class TestAsyncGetShiftModel:
 # === SAVED RESPONSE VALIDATION ===
 
 
+@pytest.mark.uses_local_data
 class TestAsyncShiftsSavedResponses:
     """Test that saved API responses validate against Pydantic models."""
 
     def test_shift_list_response_validation(self):
         """Test ShiftListResponse model validates against saved response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "shifts"
-            / "get_shifts_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "shifts" / "get_shifts_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 
@@ -250,12 +246,7 @@ class TestAsyncShiftsSavedResponses:
 
     def test_shift_single_validation(self):
         """Test Shift model validates against saved single response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "shifts"
-            / "get_shift_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "shifts" / "get_shift_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 

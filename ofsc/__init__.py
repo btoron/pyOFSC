@@ -70,22 +70,11 @@ class OFSC:
 
         # For compatibility we build dynamically the method list of the submodules
         self._capacity_methods = [
-            attribute
-            for attribute in dir(OFSCapacity)
-            if callable(getattr(OFSCapacity, attribute))
-            and attribute.startswith("_") is False
+            attribute for attribute in dir(OFSCapacity) if callable(getattr(OFSCapacity, attribute)) and attribute.startswith("_") is False
         ]
-        self._core_methods = [
-            attribute
-            for attribute in dir(OFSCore)
-            if callable(getattr(OFSCore, attribute))
-            and attribute.startswith("_") is False
-        ]
+        self._core_methods = [attribute for attribute in dir(OFSCore) if callable(getattr(OFSCore, attribute)) and attribute.startswith("_") is False]
         self._metadata_methods = [
-            attribute
-            for attribute in dir(OFSMetadata)
-            if callable(getattr(OFSMetadata, attribute))
-            and attribute.startswith("_") is False
+            attribute for attribute in dir(OFSMetadata) if callable(getattr(OFSMetadata, attribute)) and attribute.startswith("_") is False
         ]
 
     @property
@@ -137,19 +126,13 @@ class OFSC:
 
         def wrapper(*args, **kwargs):
             if method_name in self._capacity_methods:
-                raise NotImplementedError(
-                    f"{method_name} was called without the API name (Capacity). This was deprecated in OFSC 2.0"
-                )
+                raise NotImplementedError(f"{method_name} was called without the API name (Capacity). This was deprecated in OFSC 2.0")
 
             if method_name in self._core_methods:
-                raise NotImplementedError(
-                    f"{method_name} was called without the API name (Core). This was deprecated in OFSC 2.0"
-                )
+                raise NotImplementedError(f"{method_name} was called without the API name (Core). This was deprecated in OFSC 2.0")
 
             if method_name in self._metadata_methods:
-                raise NotImplementedError(
-                    f"{method_name} was called without the API name (Metadata). This was deprecated in OFSC 2.0"
-                )
+                raise NotImplementedError(f"{method_name} was called without the API name (Metadata). This was deprecated in OFSC 2.0")
             raise Exception("method not found")
 
         return wrapper

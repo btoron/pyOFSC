@@ -1,13 +1,21 @@
 """Async tests for workzone operations."""
 
 import time
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
+from ofsc.async_client import AsyncOFSC
 from ofsc.exceptions import OFSCConflictError, OFSCNotFoundError
-from ofsc.models import Workzone, WorkzoneListResponse
+from ofsc.models import (
+    Workzone,
+    WorkzoneListResponse,
+    WorkZoneKeyElement,
+    WorkZoneKeyResponse,
+)
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetWorkzonesLive:
     """Live tests against actual API (similar to sync version)."""
 
@@ -19,13 +27,12 @@ class TestAsyncGetWorkzonesLive:
         # Verify type validation
         assert isinstance(workzones, WorkzoneListResponse)
         assert workzones.totalResults is not None
-        assert (
-            workzones.totalResults >= 18
-        )  # 22.B - at least 18, may have test workzones
+        assert workzones.totalResults >= 18  # 22.B - at least 18, may have test workzones
         assert workzones.items[0].workZoneLabel == "ALTAMONTE_SPRINGS"
         assert workzones.items[1].workZoneName == "CASSELBERRY"
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetWorkzones:
     """Test async get_workzones method."""
 
@@ -71,6 +78,7 @@ class TestAsyncGetWorkzones:
         assert workzones.totalResults >= 0
 
 
+@pytest.mark.uses_real_data
 class TestAsyncGetWorkzone:
     """Test async get_workzone method."""
 
@@ -154,9 +162,7 @@ class TestAsyncReplaceWorkzone:
     @pytest.mark.serial
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_replace_workzone_with_auto_resolve_conflicts(
-        self, async_instance, faker
-    ):
+    async def test_replace_workzone_with_auto_resolve_conflicts(self, async_instance, faker):
         """Test replacing a workzone with auto_resolve_conflicts parameter"""
         # Get an existing workzone
         workzones = await async_instance.metadata.get_workzones(offset=0, limit=1)
@@ -172,9 +178,7 @@ class TestAsyncReplaceWorkzone:
         modified_workzone.workZoneName = f"TEST_AUTO_{faker.city()}"
 
         # Replace with auto_resolve_conflicts
-        result = await async_instance.metadata.replace_workzone(
-            modified_workzone, auto_resolve_conflicts=True
-        )
+        result = await async_instance.metadata.replace_workzone(modified_workzone, auto_resolve_conflicts=True)
 
         # Result can be Workzone (200) or None (204)
         if result is not None:
@@ -266,9 +270,7 @@ class TestAsyncCreateWorkzone:
         except Exception as e:
             if isinstance(e, OFSCConflictError):
                 # Workzone already exists from previous test run - that's ok, it means create worked
-                pytest.skip(
-                    f"Workzone {unique_label} already exists (from previous test run)"
-                )
+                pytest.skip(f"Workzone {unique_label} already exists (from previous test run)")
             else:
                 raise
 
@@ -291,3 +293,119 @@ class TestAsyncCreateWorkzone:
 
         # Verify it's a 409 conflict error
         assert exc_info.value.status_code == 409
+
+
+# === GET WORKZONE KEY (ME059G) ===
+
+
+class TestAsyncGetWorkzoneKeyLive:
+    """Live tests for get_workzone_key against actual API."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_get_workzone_key(self, async_instance: AsyncOFSC):
+        """Test get_workzone_key with actual API - returns WorkZoneKeyResponse."""
+        result = await async_instance.metadata.get_workzone_key()
+
+        assert isinstance(result, WorkZoneKeyResponse)
+        assert hasattr(result, "current")
+        assert isinstance(result.current, list)
+
+
+class TestAsyncGetWorkzoneKey:
+    """Model validation tests for get_workzone_key."""
+
+    @pytest.mark.asyncio
+    async def test_returns_correct_model(self, mock_instance: AsyncOFSC):
+        """Test that get_workzone_key returns WorkZoneKeyResponse."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "current": [
+                {
+                    "label": "KEY1",
+                    "length": 10,
+                    "function": "DISTRICT",
+                    "order": 1,
+                    "apiParameterName": "district",
+                }
+            ]
+        }
+        mock_response.raise_for_status = Mock()
+
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_workzone_key()
+
+        assert isinstance(result, WorkZoneKeyResponse)
+        assert len(result.current) == 1
+        assert isinstance(result.current[0], WorkZoneKeyElement)
+        assert result.current[0].label == "KEY1"
+        assert result.current[0].length == 10
+        assert result.current[0].function == "DISTRICT"
+        assert result.current[0].order == 1
+        assert result.current[0].apiParameterName == "district"
+        assert result.pending is None
+
+    @pytest.mark.asyncio
+    async def test_with_pending_key(self, mock_instance: AsyncOFSC):
+        """Test get_workzone_key when pending key elements are present."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "current": [
+                {"label": "KEY1", "order": 1},
+            ],
+            "pending": [
+                {"label": "KEY2", "order": 1},
+                {"label": "KEY3", "order": 2},
+            ],
+        }
+        mock_response.raise_for_status = Mock()
+
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_workzone_key()
+
+        assert isinstance(result, WorkZoneKeyResponse)
+        assert len(result.current) == 1
+        assert result.pending is not None
+        assert len(result.pending) == 2
+        assert isinstance(result.pending[0], WorkZoneKeyElement)
+        assert result.pending[0].label == "KEY2"
+
+    @pytest.mark.asyncio
+    async def test_without_pending(self, mock_instance: AsyncOFSC):
+        """Test get_workzone_key without pending key (most common case)."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "current": [
+                {"label": "KEY1"},
+            ],
+        }
+        mock_response.raise_for_status = Mock()
+
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_workzone_key()
+
+        assert isinstance(result, WorkZoneKeyResponse)
+        assert result.pending is None
+
+    @pytest.mark.asyncio
+    async def test_optional_fields(self, mock_instance: AsyncOFSC):
+        """Test WorkZoneKeyElement with only required field."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "current": [{"label": "MINIMAL_KEY"}],
+        }
+        mock_response.raise_for_status = Mock()
+
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await mock_instance.metadata.get_workzone_key()
+
+        elem = result.current[0]
+        assert elem.label == "MINIMAL_KEY"
+        assert elem.length is None
+        assert elem.function is None
+        assert elem.order is None
+        assert elem.apiParameterName is None

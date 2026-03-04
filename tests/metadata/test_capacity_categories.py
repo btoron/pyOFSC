@@ -1,6 +1,9 @@
+import pytest
+
 from ofsc.models import CapacityCategory, CapacityCategoryListResponse
 
 
+@pytest.mark.uses_real_data
 def test_get_capacity_categories_model_no_parameters(instance, pp, demo_data):
     capacity_categories = demo_data.get("metadata").get("expected_capacity_categories")
     metadata_response = instance.metadata.get_capacity_categories()
@@ -17,6 +20,7 @@ def test_get_capacity_categories_model_no_parameters(instance, pp, demo_data):
         assert category.label in capacity_categories.keys()
 
 
+@pytest.mark.uses_real_data
 def test_get_capacity_category(instance, pp, demo_data):
     capacity_categories = demo_data.get("metadata").get("expected_capacity_categories")
     for category in capacity_categories.keys():

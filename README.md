@@ -196,6 +196,7 @@ uv run pytest tests/async/test_async_workzones.py
     delete_resource_preferences(self, activity_id)                                        [Async]
     get_capacity_categories(self, activity_id)                                             [Async]
     get_submitted_forms(self, activity_id, offset=0, limit=100)                           [Async]
+    get_multiday_segments(self, activity_id)                                               [Async]
     get_all_activities(self, root=None, date_from=date.today()-timedelta(days=7), date_to=date.today()+timedelta(days=7), activity_fields=["activityId", "activityType", "date", "resourceId", "status"], additional_fields=None, initial_offset=0, include_non_scheduled=False, limit=5000)
 
 
@@ -246,6 +247,9 @@ uv run pytest tests/async/test_async_workzones.py
     delete_resource_workzone(self, resource_id, workzone_item_id)  [Async]
     delete_resource_workschedule(self, resource_id, schedule_item_id)  [Async]
     update_resource_location(self, resource_id, location_id, data)  [Async]
+    get_resource_file_property(self, resource_id, property_label, media_type)  [Async]
+    set_resource_file_property(self, resource_id, property_label, content, filename, content_type)  [Async]
+    delete_resource_file_property(self, resource_id, property_label)  [Async]
 
 ### Core / Inventories (Standalone)
     create_inventory(self, data)  [Async]
@@ -283,28 +287,93 @@ uv run pytest tests/async/test_async_workzones.py
 
 ### Metadata / Activity Type Groups
     get_activity_type_groups (self, expand="parent", offset=0, limit=100, response_type=OBJ_RESPONSE)
-    get_activity_type_group (self,label, response_type=OBJ_RESPONSE)   
+    get_activity_type_group (self,label, response_type=OBJ_RESPONSE)
+    create_or_replace_activity_type_group(self, data: ActivityTypeGroup)  [Async]
 
 ### Metadata / Activity Types
     get_activity_types(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
     get_activity_type (self, label, response_type=OBJ_RESPONSE)
+    create_or_replace_activity_type(self, data: ActivityType)  [Async]
+
+### Metadata / Applications
+    get_applications(self, response_type=OBJ_RESPONSE)
+    get_application(self, label: str, response_type=OBJ_RESPONSE)
+    get_application_api_accesses(self, label: str, response_type=OBJ_RESPONSE)
+    get_application_api_access(self, label: str, accessId: str, response_type=OBJ_RESPONSE)
+    create_or_replace_application(self, data: Application)  [Async]
+    update_application_api_access(self, label: str, api_label: str, data: dict)  [Async]
+    generate_application_client_secret(self, label: str)  [Async]
 
 ### Metadata / Capacity
     get_capacity_areas(self, expandParent: bool = False, fields: list[str] = ["label"], activeOnly: bool = False, areasOnly: bool = False, response_type=OBJ_RESPONSE)
     get_capacity_area(self, label: str, response_type=OBJ_RESPONSE)
+    get_capacity_area_capacity_categories(self, label: str)  [Async]
+    get_capacity_area_workzones(self, label: str)  [Async]
+    get_capacity_area_workzones_v1(self, label: str)  [Async]
+    get_capacity_area_time_slots(self, label: str)  [Async]
+    get_capacity_area_time_intervals(self, label: str)  [Async]
+    get_capacity_area_organizations(self, label: str)  [Async]
+    get_capacity_area_children(self, label: str, status=None, fields=None, expand=None, type=None)  [Async]
     get_capacity_categories(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
     get_capacity_category(self, label: str, response_type=OBJ_RESPONSE)
+    create_or_replace_capacity_category(self, data: CapacityCategory)  [Async]
+    delete_capacity_category(self, label: str)  [Async]
+
+### Metadata / Forms
+    get_forms(self, offset=0, limit=100)  [Async]
+    get_form(self, label: str)  [Async]
+    create_or_replace_form(self, data: Form)  [Async]
+    delete_form(self, label: str)  [Async]
 
 ### Metadata / Inventory
     get_inventory_types(self, response_type=OBJ_RESPONSE)
     get_inventory_type(self, label: str, response_type=OBJ_RESPONSE)
+    create_or_replace_inventory_type(self, data: InventoryType)  [Async]
+
+### Metadata / Link Templates
+    get_link_templates(self, offset=0, limit=100)  [Async]
+    get_link_template(self, label: str)  [Async]
+    create_link_template(self, data: LinkTemplate)  [Async]
+    update_link_template(self, data: LinkTemplate)  [Async]
+
+### Metadata / Map Layers
+    get_map_layers(self, offset=0, limit=100)  [Async]
+    get_map_layer(self, label: str)  [Async]
+    create_or_replace_map_layer(self, data: MapLayer)  [Async]
+    create_map_layer(self, data: MapLayer)  [Async]
+    populate_map_layers(self, data: bytes | Path)  [Async]
+    get_populate_map_layers_status(self, download_id: int)  [Async]
+
+### Metadata / Plugins
+    import_plugin(self, plugin: str)
+    import_plugin_file(self, plugin: Path)
+    install_plugin(self, plugin_label: str)  [Async]
 
 ### Metadata / Properties
     get_properties(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
     get_property(self, label: str, response_type=OBJ_RESPONSE)
     create_or_replace_property(self, property: Property, response_type=OBJ_RESPONSE)
+    update_property(self, property: Property)  [Async]
     get_enumeration_values(self, label: str, offset=0, limit=100, response_type=OBJ_RESPONSE)
     create_or_update_enumeration_value(self, label: str, value: Tuple[EnumerationValue, ...], response_type=OBJ_RESPONSE)
+
+### Metadata / Resource Types
+    get_resource_types(self, response_type=OBJ_RESPONSE)
+
+### Metadata / Routing Profiles
+    get_routing_profiles(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
+    get_routing_profile_plans(self, profile_label: str, offset=0, limit=100, response_type=OBJ_RESPONSE)
+    export_routing_plan(self, profile_label: str, plan_label: str, response_type=OBJ_RESPONSE)
+    export_plan_file(self, profile_label: str, plan_label: str) -> bytes
+    import_routing_plan(self, profile_label: str, plan_data: bytes, response_type=OBJ_RESPONSE)
+    force_import_routing_plan(self, profile_label: str, plan_data: bytes, response_type=OBJ_RESPONSE)
+    start_routing_plan(self, profile_label: str, plan_label: str, resource_external_id: str, date: str, response_type=OBJ_RESPONSE)
+
+### Metadata / Shifts
+    get_shifts(self, offset=0, limit=100)  [Async]
+    get_shift(self, label: str)  [Async]
+    create_or_replace_shift(self, data: Shift)  [Async]
+    delete_shift(self, label: str)  [Async]
 
 ### Metadata / Workskills
     get_workskills (self, offset=0, limit=100, response_type=OBJ_RESPONSE)
@@ -318,33 +387,16 @@ uv run pytest tests/async/test_async_workzones.py
     create_or_update_workskill_group(self, group: WorkSkillGroup, response_type=OBJ_RESPONSE)
     delete_workskill_group(self, label: str, response_type=OBJ_RESPONSE)
 
-### Metadata / Plugins
-    import_plugin(self, plugin: str)
-    import_plugin_file(self, plugin: Path)
-
-### Metadata / Resource Types
-    get_resource_types(self, response_type=OBJ_RESPONSE)
-
 ### Metadata / Workzones [Sync & Async]
     get_workzones(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
     get_workzone(self, label: str, response_type=OBJ_RESPONSE)
     create_workzone(self, workzone: Workzone, response_type=OBJ_RESPONSE)  # Async only
     replace_workzone(self, workzone: Workzone, auto_resolve_conflicts: bool = False, response_type=OBJ_RESPONSE)
-
-### Metadata / Routing Profiles
-    get_routing_profiles(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
-    get_routing_profile_plans(self, profile_label: str, offset=0, limit=100, response_type=OBJ_RESPONSE)
-    export_routing_plan(self, profile_label: str, plan_label: str, response_type=OBJ_RESPONSE)
-    export_plan_file(self, profile_label: str, plan_label: str) -> bytes
-    import_routing_plan(self, profile_label: str, plan_data: bytes, response_type=OBJ_RESPONSE)
-    force_import_routing_plan(self, profile_label: str, plan_data: bytes, response_type=OBJ_RESPONSE)
-    start_routing_plan(self, profile_label: str, plan_label: str, resource_external_id: str, date: str, response_type=OBJ_RESPONSE)
-
-### Metadata / Applications
-    get_applications(self, response_type=OBJ_RESPONSE)
-    get_application(self, label: str, response_type=OBJ_RESPONSE)
-    get_application_api_accesses(self, label: str, response_type=OBJ_RESPONSE)
-    get_application_api_access(self, label: str, accessId: str, response_type=OBJ_RESPONSE)
+    replace_workzones(self, data: list[Workzone])  [Async]
+    update_workzones(self, data: list[Workzone])  [Async]
+    populate_workzone_shapes(self, data: bytes | Path)  [Async]
+    get_populate_workzone_shapes_status(self, download_id: int)  [Async]
+    get_workzone_key(self)  [Async]
 
 ### Metadata / Organizations
     get_organizations(self, response_type=OBJ_RESPONSE)
@@ -363,6 +415,21 @@ uv run pytest tests/async/test_async_workzones.py
     update_booking_statuses(self, data)   [Async]
     show_booking_grid(self, data)   [Async]
     get_booking_fields_dependencies(self, areas=None)   [Async]
+
+### Statistics / Activity Duration Stats
+    get_activity_duration_stats(self, resource_id=None, include_children=None, akey=None, offset=0, limit=100)   [Async]
+    update_activity_duration_stats(self, data)   [Async]
+
+### Statistics / Activity Travel Stats
+    get_activity_travel_stats(self, region=None, tkey=None, fkey=None, key_id=None, offset=0, limit=100)   [Async]
+    update_activity_travel_stats(self, data)   [Async]
+
+### Statistics / Airline Distance Based Travel
+    get_airline_distance_based_travel(self, level=None, key=None, distance=None, key_id=None, offset=0, limit=100)   [Async]
+    update_airline_distance_based_travel(self, data)   [Async]
+
+### Auth / OAuth2
+    get_token(self, request: OFSOAuthRequest = OFSOAuthRequest())   [Async]
 
 ## Usage Examples
 
