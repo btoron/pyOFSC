@@ -1,5 +1,6 @@
 """Async tests for capacity operations."""
 
+from datetime import date, timedelta
 from unittest.mock import AsyncMock, Mock
 
 import httpx
@@ -487,7 +488,8 @@ class TestAsyncGetBookingStatusesLive:
     @pytest.mark.uses_real_data
     async def test_get_booking_statuses(self, async_instance):
         """Test get_booking_statuses with actual API."""
-        result = await async_instance.capacity.get_booking_statuses(dates="2026-03-03")
+        tomorrow = (date.today() + timedelta(days=1)).isoformat()
+        result = await async_instance.capacity.get_booking_statuses(dates=tomorrow)
         assert isinstance(result, BookingStatusesResponse)
         assert hasattr(result, "items")
 
