@@ -32,6 +32,7 @@ dev = [
     "pytablewriter>=1.2.1,<2",
     "pyright>=1.1.390,<2",
     "pytest-xdist>=3.8.0",
+    "ruff>=0.9.0",
 ]
 
 [build-system]
@@ -53,6 +54,21 @@ markers = [
     "uses_local_data: marks tests that depend on local data files not available in CI (e.g. saved_responses/)",
     "serial: marks tests that must run sequentially (not in parallel)",
 ]
+
+[tool.ruff]
+line-length = 150
+exclude = [
+    "examples/",
+    "tests/metadata/",
+    "tests/core/",
+    "tests/capacity/",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+
+[tool.ruff.lint.per-file-ignores]
+"ofsc/models/__init__.py" = ["E402"]
 
 [tool.pytest_env]
 RUN_ENV = 1
