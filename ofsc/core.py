@@ -23,6 +23,8 @@ from .models import (
     ResourceWorkScheduleResponse,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class OFSCore(OFSApi):
     # OFSC Function Library
@@ -117,14 +119,14 @@ class OFSCore(OFSApi):
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def create_resource(self, resourceId, data):
         url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resourceId}")
-        logging.debug(f"OFSC.Create_Resource: {data} {type(data)}")
+        logger.debug(f"OFSC.Create_Resource: {data} {type(data)}")
         response = requests.put(url, headers=self.headers, data=data)
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def create_resource_from_obj(self, resourceId, data):
         url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resourceId}")
-        logging.debug(f"OFSC.Create_Resource: {data} {type(data)}")
+        logger.debug(f"OFSC.Create_Resource: {data} {type(data)}")
         response = requests.put(url, headers=self.headers, data=json.dumps(data))
         return response
 
@@ -134,7 +136,7 @@ class OFSCore(OFSApi):
         if identify_by_internal_id:
             # add a query parameter to identify the resource by internal id
             url += "?identifyResourceBy=resourceInternalId"
-        logging.debug(f"OFSC.Update_Resource: {data} {type(data)}")
+        logger.debug(f"OFSC.Update_Resource: {data} {type(data)}")
         response = requests.patch(url, headers=self.headers, data=json.dumps(data))
         return response
 
@@ -205,7 +207,7 @@ class OFSCore(OFSApi):
             params["fields"] = resourceFields
         params["limit"] = limit
         params["offset"] = offset
-        logging.debug(json.dumps(params, indent=2))
+        logger.debug(json.dumps(params, indent=2))
 
         response = requests.get(url, params=params, headers=self.headers)
         return response
@@ -275,7 +277,7 @@ class OFSCore(OFSApi):
         params["offset"] = offset
         params["limit"] = limit
 
-        logging.debug(json.dumps(params, indent=2))
+        logger.debug(json.dumps(params, indent=2))
         response = requests.get(url, params=params, headers=self.headers)
         return response
 
@@ -421,7 +423,6 @@ class OFSCore(OFSApi):
             self.baseUrl,
             f"/rest/ofscCore/v1/resources/{str(resource_id)}/locations",
         )
-        print(location.model_dump(exclude="locationId", exclude_unset=True, exclude_none=True))
         response = requests.post(
             url,
             headers=self.headers,
@@ -568,9 +569,8 @@ class OFSCore(OFSApi):
                 "offset": offset,
                 "limit": limit,
             }
-            logging.info(request_params)
+            logger.debug(request_params)
             response = self.get_activities(response_type=FULL_RESPONSE, params=request_params)
-            print(response.json())
             response_body = response.json()
             if "items" in response_body.keys():
                 response_count = len(response_body["items"])
@@ -579,10 +579,10 @@ class OFSCore(OFSApi):
                 response_count = 0
             if "hasMore" in response_body.keys():
                 hasMore = response_body["hasMore"]
-                logging.info("{},{},{}".format(offset, response_count, response.elapsed))
+                logger.debug("{},{},{}".format(offset, response_count, response.elapsed))
             else:
                 hasMore = False
-                logging.info("{},{},{}".format(offset, response_count, response.elapsed))
+                logger.debug("{},{},{}".format(offset, response_count, response.elapsed))
             offset = offset + response_count
         return OFSResponseList(items=items)
 
@@ -600,10 +600,10 @@ class OFSCore(OFSApi):
                 response_count = 0
             if "hasMore" in response_body.keys():
                 hasMore = response_body["hasMore"]
-                logging.info("{},{},{}".format(offset, response_count, response.elapsed))
+                logger.debug("{},{},{}".format(offset, response_count, response.elapsed))
             else:
                 hasMore = False
-                logging.info("{},{},{}".format(offset, response_count, response.elapsed))
+                logger.debug("{},{},{}".format(offset, response_count, response.elapsed))
             offset = offset + response_count
         return items
 
