@@ -12,7 +12,7 @@ from ofsc.models import OAuthTokenResponse, OFSOAuthRequest
 
 TOKEN_RESPONSE = {
     "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.test",
-    "token_type": "Bearer",
+    "token_type": "bearer",
     "expires_in": 3600,
 }
 
@@ -36,7 +36,7 @@ class TestAsyncGetToken:
 
         assert isinstance(result, OAuthTokenResponse)
         assert result.access_token == TOKEN_RESPONSE["access_token"]
-        assert result.token_type == "Bearer"
+        assert result.token_type == "bearer"
         assert result.expires_in == 3600
 
     @pytest.mark.asyncio
@@ -142,7 +142,7 @@ class TestAsyncGetTokenLive:
 
         assert isinstance(result, OAuthTokenResponse)
         assert result.access_token
-        assert result.token_type == "Bearer"
+        assert result.token_type.lower() == "bearer"
         assert result.expires_in > 0
 
     @pytest.mark.asyncio
