@@ -27,7 +27,14 @@ from ..models import (
     ApplicationApiAccessListResponse,
     ApplicationListResponse,
     CapacityArea,
+    CapacityAreaCapacityCategoriesResponse,
+    CapacityAreaChildrenResponse,
     CapacityAreaListResponse,
+    CapacityAreaOrganizationsResponse,
+    CapacityAreaTimeIntervalsResponse,
+    CapacityAreaTimeSlotsResponse,
+    CapacityAreaWorkZonesResponse,
+    CapacityAreaWorkZonesV1Response,
     CapacityCategory,
     CapacityCategoryListResponse,
     EnumerationValue,
@@ -42,6 +49,7 @@ from ..models import (
     LinkTemplateListResponse,
     MapLayer,
     MapLayerListResponse,
+    PopulateStatusResponse,
     NonWorkingReason,
     NonWorkingReasonListResponse,
     OFSConfig,
@@ -64,6 +72,7 @@ from ..models import (
     WorkskillConditionList,
     Workzone,
     WorkzoneListResponse,
+    WorkZoneKeyResponse,
 )
 
 
@@ -748,6 +757,286 @@ class AsyncOFSMetadata:
             return CapacityArea.model_validate(data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(e, f"Failed to get capacity area '{label}'")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_capacity_area_capacity_categories(
+        self, label: str
+    ) -> CapacityAreaCapacityCategoriesResponse:
+        """Get capacity categories for a capacity area (ME012G).
+
+        :param label: The capacity area label
+        :type label: str
+        :return: List of capacity categories for the area
+        :rtype: CapacityAreaCapacityCategoriesResponse
+        :raises OFSCNotFoundError: If capacity area not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}/capacityCategories",
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data:
+                del data["links"]
+            return CapacityAreaCapacityCategoriesResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get capacity categories for area '{label}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_capacity_area_workzones(
+        self, label: str
+    ) -> CapacityAreaWorkZonesResponse:
+        """Get workzones for a capacity area using v2 API (ME013G).
+
+        :param label: The capacity area label
+        :type label: str
+        :return: List of workzones for the area
+        :rtype: CapacityAreaWorkZonesResponse
+        :raises OFSCNotFoundError: If capacity area not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v2/capacityAreas/{encoded_label}/workZones",
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data:
+                del data["links"]
+            return CapacityAreaWorkZonesResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get workzones for capacity area '{label}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_capacity_area_workzones_v1(
+        self, label: str
+    ) -> CapacityAreaWorkZonesV1Response:
+        """Get workzones for a capacity area using v1 API (ME014G).
+
+        .. deprecated::
+            Use get_capacity_area_workzones() (v2) instead, which returns richer data.
+
+        :param label: The capacity area label
+        :type label: str
+        :return: List of workzone labels for the area
+        :rtype: CapacityAreaWorkZonesV1Response
+        :raises OFSCNotFoundError: If capacity area not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}/workZones",
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data:
+                del data["links"]
+            return CapacityAreaWorkZonesV1Response.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get workzones (v1) for capacity area '{label}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_capacity_area_time_slots(
+        self, label: str
+    ) -> CapacityAreaTimeSlotsResponse:
+        """Get time slots for a capacity area (ME015G).
+
+        :param label: The capacity area label
+        :type label: str
+        :return: List of time slots for the area
+        :rtype: CapacityAreaTimeSlotsResponse
+        :raises OFSCNotFoundError: If capacity area not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}/timeSlots",
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data:
+                del data["links"]
+            return CapacityAreaTimeSlotsResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get time slots for capacity area '{label}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_capacity_area_time_intervals(
+        self, label: str
+    ) -> CapacityAreaTimeIntervalsResponse:
+        """Get time intervals for a capacity area (ME016G).
+
+        :param label: The capacity area label
+        :type label: str
+        :return: List of time intervals for the area
+        :rtype: CapacityAreaTimeIntervalsResponse
+        :raises OFSCNotFoundError: If capacity area not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}/timeIntervals",
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data:
+                del data["links"]
+            return CapacityAreaTimeIntervalsResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get time intervals for capacity area '{label}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_capacity_area_organizations(
+        self, label: str
+    ) -> CapacityAreaOrganizationsResponse:
+        """Get organizations for a capacity area (ME017G).
+
+        :param label: The capacity area label
+        :type label: str
+        :return: List of organizations for the area
+        :rtype: CapacityAreaOrganizationsResponse
+        :raises OFSCNotFoundError: If capacity area not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}/organizations",
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data:
+                del data["links"]
+            return CapacityAreaOrganizationsResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get organizations for capacity area '{label}'"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_capacity_area_children(
+        self,
+        label: str,
+        status: str | None = None,
+        fields: list[str] | None = None,
+        expand: str | None = None,
+        type: str | None = None,
+    ) -> CapacityAreaChildrenResponse:
+        """Get child capacity areas for a capacity area (ME018G).
+
+        :param label: The capacity area label
+        :type label: str
+        :param status: Filter by status (e.g. 'active', 'inactive')
+        :type status: str | None
+        :param fields: List of fields to return
+        :type fields: list[str] | None
+        :param expand: Comma-separated list of fields to expand
+        :type expand: str | None
+        :param type: Filter by type (e.g. 'area')
+        :type type: str | None
+        :return: List of child capacity areas
+        :rtype: CapacityAreaChildrenResponse
+        :raises OFSCNotFoundError: If capacity area not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
+        """
+        encoded_label = quote_plus(label)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}/children",
+        )
+
+        params = {}
+        if status is not None:
+            params["status"] = status
+        if fields is not None:
+            params["fields"] = ",".join(fields)
+        if expand is not None:
+            params["expand"] = expand
+        if type is not None:
+            params["type"] = type
+
+        try:
+            response = await self._client.get(
+                url, headers=self.headers, params=params if params else None
+            )
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data:
+                del data["links"]
+            return CapacityAreaChildrenResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get children for capacity area '{label}'"
+            )
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -1456,6 +1745,42 @@ class AsyncOFSMetadata:
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
             self._handle_http_error(e, "Failed to populate map layers")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_populate_map_layers_status(
+        self, download_id: int
+    ) -> PopulateStatusResponse:
+        """Get the status of a populate map layers operation (ME030G).
+
+        :param download_id: The download ID returned by the populate operation
+        :type download_id: int
+        :return: Status of the populate operation
+        :rtype: PopulateStatusResponse
+        :raises OFSCNotFoundError: If download ID not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/mapLayers/custom-actions/populateLayers/{download_id}",
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data:
+                del data["links"]
+            return PopulateStatusResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e,
+                f"Failed to get populate map layers status for download_id={download_id}",
+            )
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -2946,6 +3271,67 @@ class AsyncOFSMetadata:
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
             self._handle_http_error(e, "Failed to populate workzone shapes")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_populate_workzone_shapes_status(
+        self, download_id: int
+    ) -> PopulateStatusResponse:
+        """Get the status of a populate workzone shapes operation (ME057G).
+
+        :param download_id: The download ID returned by the populate operation
+        :type download_id: int
+        :return: Status of the populate operation
+        :rtype: PopulateStatusResponse
+        :raises OFSCNotFoundError: If download ID not found (404)
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscMetadata/v1/workZones/custom-actions/populateShapes/{download_id}",
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data:
+                del data["links"]
+            return PopulateStatusResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e,
+                f"Failed to get populate workzone shapes status for download_id={download_id}",
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_workzone_key(self) -> WorkZoneKeyResponse:
+        """Get the workzone key configuration (ME059G).
+
+        :return: The workzone key with current and optional pending elements
+        :rtype: WorkZoneKeyResponse
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workZoneKey")
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            if "links" in data:
+                del data["links"]
+            return WorkZoneKeyResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to get workzone key")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e

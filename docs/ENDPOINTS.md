@@ -33,13 +33,13 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |ME009P|`/rest/ofscMetadata/v1/applications/{label}/custom-actions/generateClientSecret`                                         |metadata     |POST  |async |
 |ME010G|`/rest/ofscMetadata/v1/capacityAreas`                                                                                    |metadata     |GET   |both  |
 |ME011G|`/rest/ofscMetadata/v1/capacityAreas/{label}`                                                                            |metadata     |GET   |both  |
-|ME012G|`/rest/ofscMetadata/v1/capacityAreas/{label}/capacityCategories`                                                         |metadata     |GET   |-     |
-|ME013G|`/rest/ofscMetadata/v2/capacityAreas/{label}/workZones`                                                                  |metadata     |GET   |-     |
-|ME014G|`/rest/ofscMetadata/v1/capacityAreas/{label}/workZones`                                                                  |metadata     |GET   |-     |
-|ME015G|`/rest/ofscMetadata/v1/capacityAreas/{label}/timeSlots`                                                                  |metadata     |GET   |-     |
-|ME016G|`/rest/ofscMetadata/v1/capacityAreas/{label}/timeIntervals`                                                              |metadata     |GET   |-     |
-|ME017G|`/rest/ofscMetadata/v1/capacityAreas/{label}/organizations`                                                              |metadata     |GET   |-     |
-|ME018G|`/rest/ofscMetadata/v1/capacityAreas/{label}/children`                                                                   |metadata     |GET   |-     |
+|ME012G|`/rest/ofscMetadata/v1/capacityAreas/{label}/capacityCategories`                                                         |metadata     |GET   |async |
+|ME013G|`/rest/ofscMetadata/v2/capacityAreas/{label}/workZones`                                                                  |metadata     |GET   |async |
+|ME014G|`/rest/ofscMetadata/v1/capacityAreas/{label}/workZones`                                                                  |metadata     |GET   |async |
+|ME015G|`/rest/ofscMetadata/v1/capacityAreas/{label}/timeSlots`                                                                  |metadata     |GET   |async |
+|ME016G|`/rest/ofscMetadata/v1/capacityAreas/{label}/timeIntervals`                                                              |metadata     |GET   |async |
+|ME017G|`/rest/ofscMetadata/v1/capacityAreas/{label}/organizations`                                                              |metadata     |GET   |async |
+|ME018G|`/rest/ofscMetadata/v1/capacityAreas/{label}/children`                                                                   |metadata     |GET   |async |
 |ME019G|`/rest/ofscMetadata/v1/capacityCategories`                                                                               |metadata     |GET   |both  |
 |ME020G|`/rest/ofscMetadata/v1/capacityCategories/{label}`                                                                       |metadata     |GET   |both  |
 |ME020U|`/rest/ofscMetadata/v1/capacityCategories/{label}`                                                                       |metadata     |PUT   |async |
@@ -60,7 +60,7 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |ME028P|`/rest/ofscMetadata/v1/mapLayers`                                                                                        |metadata     |POST  |async |
 |ME029G|`/rest/ofscMetadata/v1/mapLayers/{label}`                                                                                |metadata     |GET   |async |
 |ME029U|`/rest/ofscMetadata/v1/mapLayers/{label}`                                                                                |metadata     |PUT   |async |
-|ME030G|`/rest/ofscMetadata/v1/mapLayers/custom-actions/populateLayers/{downloadId}`                                             |metadata     |GET   |-     |
+|ME030G|`/rest/ofscMetadata/v1/mapLayers/custom-actions/populateLayers/{downloadId}`                                             |metadata     |GET   |async |
 |ME031P|`/rest/ofscMetadata/v1/mapLayers/custom-actions/populateLayers`                                                          |metadata     |POST  |async |
 |ME032G|`/rest/ofscMetadata/v1/nonWorkingReasons`                                                                                |metadata     |GET   |async |
 |ME033G|`/rest/ofscMetadata/v1/organizations`                                                                                    |metadata     |GET   |both  |
@@ -101,9 +101,9 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |ME055A|`/rest/ofscMetadata/v1/workZones`                                                                                        |metadata     |PATCH |async |
 |ME056G|`/rest/ofscMetadata/v1/workZones/{label}`                                                                                |metadata     |GET   |both  |
 |ME056U|`/rest/ofscMetadata/v1/workZones/{label}`                                                                                |metadata     |PUT   |both  |
-|ME057G|`/rest/ofscMetadata/v1/workZones/custom-actions/populateShapes/{downloadId}`                                             |metadata     |GET   |-     |
+|ME057G|`/rest/ofscMetadata/v1/workZones/custom-actions/populateShapes/{downloadId}`                                             |metadata     |GET   |async |
 |ME058P|`/rest/ofscMetadata/v1/workZones/custom-actions/populateShapes`                                                          |metadata     |POST  |async |
-|ME059G|`/rest/ofscMetadata/v1/workZoneKey`                                                                                      |metadata     |GET   |-     |
+|ME059G|`/rest/ofscMetadata/v1/workZoneKey`                                                                                      |metadata     |GET   |async |
 |ST001G|`/rest/ofscStatistics/v1/activityDurationStats`                                                                          |statistics   |GET   |async |
 |ST001A|`/rest/ofscStatistics/v1/activityDurationStats`                                                                          |statistics   |PATCH |async |
 |ST002G|`/rest/ofscStatistics/v1/activityTravelStats`                                                                            |statistics   |GET   |async |
@@ -267,11 +267,11 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 ## Implementation Summary
 
 - **Sync only**: 4 endpoints
-- **Async only**: 100 endpoints
+- **Async only**: 110 endpoints
 - **Both**: 85 endpoints
-- **Not implemented**: 54 endpoints
+- **Not implemented**: 44 endpoints
 - **Total sync**: 89 endpoints
-- **Total async**: 185 endpoints
+- **Total async**: 195 endpoints
 
 ## Implementation Statistics by Module and Method
 
@@ -290,16 +290,16 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 
 ### Asynchronous Client
 
-|   Module    |       GET        |Write (POST/PUT/PATCH)|     DELETE      |       Total       |
-|-------------|------------------|----------------------|-----------------|-------------------|
-|metadata     |41/51 (80.4%)     |29/30 (96.7%)         |5/5 (100.0%)     |75/86 (87.2%)      |
-|core         |44/51 (86.3%)     |31/56 (55.4%)         |18/20 (90.0%)    |93/127 (73.2%)     |
-|capacity     |6/7 (85.7%)       |4/5 (80.0%)           |0/0 (0%)         |10/12 (83.3%)      |
-|statistics   |3/3 (100.0%)      |3/3 (100.0%)          |0/0 (0%)         |6/6 (100.0%)       |
-|partscatalog |0/0 (0%)          |0/2 (0.0%)            |0/1 (0.0%)       |0/3 (0.0%)         |
-|collaboration|0/3 (0.0%)        |0/4 (0.0%)            |0/0 (0%)         |0/7 (0.0%)         |
-|auth         |0/0 (0%)          |1/2 (50.0%)           |0/0 (0%)         |1/2 (50.0%)        |
-|**Total**    |**94/115 (81.7%)**|**68/102 (66.7%)**    |**23/26 (88.5%)**|**185/243 (76.1%)**|
+|   Module    |        GET        |Write (POST/PUT/PATCH)|     DELETE      |       Total       |
+|-------------|-------------------|----------------------|-----------------|-------------------|
+|metadata     |51/51 (100.0%)     |29/30 (96.7%)         |5/5 (100.0%)     |85/86 (98.8%)      |
+|core         |44/51 (86.3%)      |31/56 (55.4%)         |18/20 (90.0%)    |93/127 (73.2%)     |
+|capacity     |6/7 (85.7%)        |4/5 (80.0%)           |0/0 (0%)         |10/12 (83.3%)      |
+|statistics   |3/3 (100.0%)       |3/3 (100.0%)          |0/0 (0%)         |6/6 (100.0%)       |
+|partscatalog |0/0 (0%)           |0/2 (0.0%)            |0/1 (0.0%)       |0/3 (0.0%)         |
+|collaboration|0/3 (0.0%)         |0/4 (0.0%)            |0/0 (0%)         |0/7 (0.0%)         |
+|auth         |0/0 (0%)           |1/2 (50.0%)           |0/0 (0%)         |1/2 (50.0%)        |
+|**Total**    |**104/115 (90.4%)**|**68/102 (66.7%)**    |**23/26 (88.5%)**|**195/243 (80.2%)**|
 
 ## Endpoint ID Reference
 
