@@ -1,7 +1,7 @@
 # OFSC API Endpoints Reference
 
 **Version:** 2.24.0
-**Last Updated:** 2026-03-03
+**Last Updated:** 2026-03-04
 
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints and their implementation status in pyOFSC.
 
@@ -54,7 +54,7 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |ME025G|`/rest/ofscMetadata/v1/languages`                                                                                        |metadata     |GET   |async |
 |ME026G|`/rest/ofscMetadata/v1/linkTemplates`                                                                                    |metadata     |GET   |async |
 |ME027G|`/rest/ofscMetadata/v1/linkTemplates/{label}`                                                                            |metadata     |GET   |async |
-|ME027P|`/rest/ofscMetadata/v1/linkTemplates/{label}`                                                                            |metadata     |POST  |-     |
+|ME027P|`/rest/ofscMetadata/v1/linkTemplates/{label}`                                                                            |metadata     |POST  |async |
 |ME027A|`/rest/ofscMetadata/v1/linkTemplates/{label}`                                                                            |metadata     |PATCH |async |
 |ME028G|`/rest/ofscMetadata/v1/mapLayers`                                                                                        |metadata     |GET   |async |
 |ME028P|`/rest/ofscMetadata/v1/mapLayers`                                                                                        |metadata     |POST  |async |
@@ -104,11 +104,11 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |ME057G|`/rest/ofscMetadata/v1/workZones/custom-actions/populateShapes/{downloadId}`                                             |metadata     |GET   |-     |
 |ME058P|`/rest/ofscMetadata/v1/workZones/custom-actions/populateShapes`                                                          |metadata     |POST  |async |
 |ME059G|`/rest/ofscMetadata/v1/workZoneKey`                                                                                      |metadata     |GET   |-     |
-|ST001G|`/rest/ofscStatistics/v1/activityDurationStats`                                                                          |statistics   |GET   |-     |
+|ST001G|`/rest/ofscStatistics/v1/activityDurationStats`                                                                          |statistics   |GET   |async |
 |ST001A|`/rest/ofscStatistics/v1/activityDurationStats`                                                                          |statistics   |PATCH |-     |
-|ST002G|`/rest/ofscStatistics/v1/activityTravelStats`                                                                            |statistics   |GET   |-     |
+|ST002G|`/rest/ofscStatistics/v1/activityTravelStats`                                                                            |statistics   |GET   |async |
 |ST002A|`/rest/ofscStatistics/v1/activityTravelStats`                                                                            |statistics   |PATCH |-     |
-|ST003G|`/rest/ofscStatistics/v1/airlineDistanceBasedTravel`                                                                     |statistics   |GET   |-     |
+|ST003G|`/rest/ofscStatistics/v1/airlineDistanceBasedTravel`                                                                     |statistics   |GET   |async |
 |ST003A|`/rest/ofscStatistics/v1/airlineDistanceBasedTravel`                                                                     |statistics   |PATCH |-     |
 |PC001U|`/rest/ofscPartsCatalog/v1/catalogs/{catalog}/{language}`                                                                |partscatalog |PUT   |-     |
 |PC002U|`/rest/ofscPartsCatalog/v1/catalogs/{catalog}/{language}/{itemLabel}`                                                    |partscatalog |PUT   |-     |
@@ -267,11 +267,11 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 ## Implementation Summary
 
 - **Sync only**: 4 endpoints
-- **Async only**: 88 endpoints
+- **Async only**: 92 endpoints
 - **Both**: 85 endpoints
-- **Not implemented**: 66 endpoints
+- **Not implemented**: 62 endpoints
 - **Total sync**: 89 endpoints
-- **Total async**: 173 endpoints
+- **Total async**: 177 endpoints
 
 ## Implementation Statistics by Module and Method
 
@@ -292,14 +292,14 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 
 |   Module    |       GET        |Write (POST/PUT/PATCH)|     DELETE      |       Total       |
 |-------------|------------------|----------------------|-----------------|-------------------|
-|metadata     |41/51 (80.4%)     |28/30 (93.3%)         |5/5 (100.0%)     |74/86 (86.0%)      |
+|metadata     |41/51 (80.4%)     |29/30 (96.7%)         |5/5 (100.0%)     |75/86 (87.2%)      |
 |core         |42/51 (82.4%)     |30/56 (53.6%)         |17/20 (85.0%)    |89/127 (70.1%)     |
 |capacity     |6/7 (85.7%)       |4/5 (80.0%)           |0/0 (0%)         |10/12 (83.3%)      |
-|statistics   |0/3 (0.0%)        |0/3 (0.0%)            |0/0 (0%)         |0/6 (0.0%)         |
+|statistics   |3/3 (100.0%)      |0/3 (0.0%)            |0/0 (0%)         |3/6 (50.0%)        |
 |partscatalog |0/0 (0%)          |0/2 (0.0%)            |0/1 (0.0%)       |0/3 (0.0%)         |
 |collaboration|0/3 (0.0%)        |0/4 (0.0%)            |0/0 (0%)         |0/7 (0.0%)         |
 |auth         |0/0 (0%)          |0/2 (0.0%)            |0/0 (0%)         |0/2 (0.0%)         |
-|**Total**    |**89/115 (77.4%)**|**62/102 (60.8%)**    |**22/26 (84.6%)**|**173/243 (71.2%)**|
+|**Total**    |**92/115 (80.0%)**|**63/102 (61.8%)**    |**22/26 (84.6%)**|**177/243 (72.8%)**|
 
 ## Endpoint ID Reference
 

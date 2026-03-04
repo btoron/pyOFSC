@@ -186,6 +186,16 @@ from .inventories import (
     RequiredInventory as RequiredInventory,
 )
 
+from .statistics import (
+    ActivityDurationStat as ActivityDurationStat,
+    ActivityDurationStatsList as ActivityDurationStatsList,
+    ActivityTravelStat as ActivityTravelStat,
+    ActivityTravelStatsList as ActivityTravelStatsList,
+    AirlineDistanceData as AirlineDistanceData,
+    AirlineDistanceBasedTravel as AirlineDistanceBasedTravel,
+    AirlineDistanceBasedTravelList as AirlineDistanceBasedTravelList,
+)
+
 # region Core / Activities
 
 
