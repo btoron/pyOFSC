@@ -403,8 +403,7 @@ class TestCreateLinkTemplate:
         assert result.label == "FOLLOW_UP"
         call_url = async_instance.metadata._client.post.call_args[0][0]
         assert "linkTemplates" in call_url
-        # Label is a path parameter per swagger (POST to /linkTemplates/{label})
-        assert "FOLLOW_UP" in call_url
+        assert "FOLLOW_UP" not in call_url  # POST to collection URL, label is in body
 
 
 class TestUpdateLinkTemplate:
