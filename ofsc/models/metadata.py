@@ -61,7 +61,7 @@ class ActivityTypeColors(BaseModel):
 
 
 class ActivityTypeFeatures(BaseModel):
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="ignore")
     allowCreationInBuckets: Optional[bool] = False
     allowMassActivities: Optional[bool] = False
     allowMoveBetweenResources: Optional[bool] = False
@@ -150,7 +150,7 @@ class Link(BaseModel):
 
     rel: str
     href: str
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="ignore")
 
 
 class ApiMethod(BaseModel):
@@ -158,7 +158,7 @@ class ApiMethod(BaseModel):
 
     label: str
     status: str  # "on" or "off"
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="ignore")
 
 
 class ApiEntity(BaseModel):
@@ -166,7 +166,7 @@ class ApiEntity(BaseModel):
 
     label: str
     access: str  # "ReadWrite", "ReadOnly", etc.
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="ignore")
 
 
 class BaseApiAccess(BaseModel):
@@ -268,7 +268,7 @@ class ApplicationApiAccessListResponse(BaseModel):
 
     items: list[ApplicationApiAccess]
     links: Optional[list[Link]] = None
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="ignore")
 
     @field_validator("items", mode="before")
     @classmethod
@@ -372,7 +372,8 @@ class CapacityCategory(BaseModel):
     workSkillGroups: Optional[ItemList] = None
     workSkills: Optional[ItemList] = None
     active: bool
-    model_config = ConfigDict(extra="allow")
+    links: Optional[list[Link]] = None
+    model_config = ConfigDict(extra="ignore")
 
 
 class CapacityCategoryListResponse(OFSResponseList[CapacityCategory]):
@@ -400,7 +401,8 @@ class Form(BaseModel):
         None
     )
     content: Optional[str] = None
-    model_config = ConfigDict(extra="allow")
+    links: Optional[list[Link]] = None
+    model_config = ConfigDict(extra="ignore")
 
 
 class FormList(RootModel[list[Form]]):
@@ -424,6 +426,7 @@ class FormListResponse(OFSResponseList[Form]):
 
 class InventoryType(BaseModel):
     label: str
+    name: Optional[str] = None
     translations: Annotated[Optional[TranslationList], Field(alias="translations")] = (
         None
     )
@@ -431,7 +434,9 @@ class InventoryType(BaseModel):
     model_property: Optional[str] = Field(default=None, alias="modelProperty")
     non_serialized: bool = Field(default=False, alias="nonSerialized")
     quantityPrecision: Optional[int] = 0
-    model_config = ConfigDict(extra="allow", populate_by_name=True)
+    unitOfMeasurement: Optional[str] = None
+    links: Optional[list[Link]] = None
+    model_config = ConfigDict(extra="ignore", populate_by_name=True)
 
 
 class InventoryTypeList(RootModel[list[InventoryType]]):
@@ -597,7 +602,8 @@ class MapLayer(BaseModel):
     tableColumns: Optional[list[str]] = None
     shapeHintColumns: Optional[list[ShapeHintColumn]] = None
     shapeHintButton: Optional[ShapeHintButton] = None
-    model_config = ConfigDict(extra="allow")
+    links: Optional[list[Link]] = None
+    model_config = ConfigDict(extra="ignore")
 
 
 class MapLayerList(RootModel[list[MapLayer]]):
@@ -753,7 +759,9 @@ class ResourceType(BaseModel):
     name: str
     active: bool
     role: str  # TODO: change to enum
-    model_config = ConfigDict(extra="allow")
+    translations: Optional[TranslationList] = None
+    links: Optional[list[Link]] = None
+    model_config = ConfigDict(extra="ignore")
 
 
 class ResourceTypeList(RootModel[list[ResourceType]]):
@@ -783,7 +791,7 @@ class RoutingProfile(BaseModel):
     profileLabel: str = Field(
         ..., description="Unique identifier for the routing profile"
     )
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="ignore")
 
 
 class RoutingProfileList(OFSResponseList[RoutingProfile]):
@@ -800,7 +808,7 @@ class RoutingPlan(BaseModel):
     """
 
     planLabel: str = Field(..., description="Unique identifier for the routing plan")
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="ignore")
 
 
 class RoutingPlanList(OFSResponseList[RoutingPlan]):
@@ -1121,7 +1129,8 @@ class Shift(BaseModel):
     workTimeEnd: time
     points: Optional[int] = None
     decoration: Optional[ShiftDecoration] = None
-    model_config = ConfigDict(extra="allow")
+    links: Optional[list[Link]] = None
+    model_config = ConfigDict(extra="ignore")
 
 
 class ShiftList(RootModel[list[Shift]]):
