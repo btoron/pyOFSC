@@ -6,6 +6,10 @@ from ofsc import OFSC
 from ofsc.models import DailyExtractFiles, DailyExtractFolders
 
 # FOR TESTING THIS GROUP WE NEED A PROD INSTANCE THAT HAS DAILY EXTRACTS ENABLED
+# These tests use a hardcoded instance that requires specific credentials and infrastructure.
+pytestmark = pytest.mark.skip(
+    reason="Requires dedicated daily extract instance with valid credentials"
+)
 
 test_instance = OFSC(
     companyName="<instance>.test",
