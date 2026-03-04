@@ -344,6 +344,130 @@ class CapacityAreaListResponse(OFSResponseList[CapacityArea]):
     pass
 
 
+class CapacityAreaCapacityCategory(BaseModel):
+    label: str
+    name: Optional[str] = None
+    status: Optional[str] = None
+
+
+class CapacityAreaCapacityCategoriesResponse(BaseModel):
+    items: list[CapacityAreaCapacityCategory] = []
+
+    def __iter__(self):  # type: ignore
+        return iter(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+    def __len__(self):
+        return len(self.items)
+
+
+class CapacityAreaWorkZone(BaseModel):
+    workZoneLabel: str
+    workZoneName: Optional[str] = None
+
+
+class CapacityAreaWorkZonesResponse(BaseModel):
+    items: list[CapacityAreaWorkZone] = []
+
+    def __iter__(self):  # type: ignore
+        return iter(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+    def __len__(self):
+        return len(self.items)
+
+
+class CapacityAreaWorkZoneV1(BaseModel):
+    label: str
+
+
+class CapacityAreaWorkZonesV1Response(BaseModel):
+    items: list[CapacityAreaWorkZoneV1] = []
+
+    def __iter__(self):  # type: ignore
+        return iter(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+    def __len__(self):
+        return len(self.items)
+
+
+class CapacityAreaTimeSlot(BaseModel):
+    label: str
+    name: Optional[str] = None
+    timeFrom: Optional[str] = None
+    timeTo: Optional[str] = None
+
+
+class CapacityAreaTimeSlotsResponse(BaseModel):
+    items: list[CapacityAreaTimeSlot] = []
+
+    def __iter__(self):  # type: ignore
+        return iter(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+    def __len__(self):
+        return len(self.items)
+
+
+class CapacityAreaTimeInterval(BaseModel):
+    timeFrom: Optional[str] = None
+    timeTo: Optional[str] = None
+
+
+class CapacityAreaTimeIntervalsResponse(BaseModel):
+    items: list[CapacityAreaTimeInterval] = []
+
+    def __iter__(self):  # type: ignore
+        return iter(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+    def __len__(self):
+        return len(self.items)
+
+
+class CapacityAreaOrganization(BaseModel):
+    label: str
+    name: Optional[str] = None
+    type: Optional[str] = None
+
+
+class CapacityAreaOrganizationsResponse(BaseModel):
+    items: list[CapacityAreaOrganization] = []
+
+    def __iter__(self):  # type: ignore
+        return iter(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+    def __len__(self):
+        return len(self.items)
+
+
+class CapacityAreaChildrenResponse(BaseModel):
+    items: list[CapacityArea] = []
+
+    def __iter__(self):  # type: ignore
+        return iter(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+    def __len__(self):
+        return len(self.items)
+
+
 # endregion Metadata / Capacity Areas
 
 # region Metadata / Capacity Categories
@@ -612,6 +736,14 @@ class MapLayerListResponse(OFSResponseList[MapLayer]):
     """Response from GET /rest/ofscMetadata/v1/mapLayers (CustomMapLayers)."""
 
     pass
+
+
+class PopulateStatusResponse(BaseModel):
+    """Response from GET populate status endpoints (map layers, workzone shapes)."""
+
+    status: Optional[str] = None
+    time: Optional[str] = None
+    downloadId: Optional[int] = None
 
 
 # endregion Metadata / Map Layers
@@ -1309,6 +1441,19 @@ class WorkzoneListResponse(OFSResponseList[Workzone]):
     """Response model for list of workzones"""
 
     pass
+
+
+class WorkZoneKeyElement(BaseModel):
+    label: str
+    length: Optional[int] = None
+    function: Optional[str] = None
+    order: Optional[int] = None
+    apiParameterName: Optional[str] = None
+
+
+class WorkZoneKeyResponse(BaseModel):
+    current: list[WorkZoneKeyElement]
+    pending: Optional[list[WorkZoneKeyElement]] = None
 
 
 # endregion Metadata / Work Zones

@@ -307,6 +307,13 @@ uv run pytest tests/async/test_async_workzones.py
 ### Metadata / Capacity
     get_capacity_areas(self, expandParent: bool = False, fields: list[str] = ["label"], activeOnly: bool = False, areasOnly: bool = False, response_type=OBJ_RESPONSE)
     get_capacity_area(self, label: str, response_type=OBJ_RESPONSE)
+    get_capacity_area_capacity_categories(self, label: str)  [Async]
+    get_capacity_area_workzones(self, label: str)  [Async]
+    get_capacity_area_workzones_v1(self, label: str)  [Async]
+    get_capacity_area_time_slots(self, label: str)  [Async]
+    get_capacity_area_time_intervals(self, label: str)  [Async]
+    get_capacity_area_organizations(self, label: str)  [Async]
+    get_capacity_area_children(self, label: str, status=None, fields=None, expand=None, type=None)  [Async]
     get_capacity_categories(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
     get_capacity_category(self, label: str, response_type=OBJ_RESPONSE)
     create_or_replace_capacity_category(self, data: CapacityCategory)  [Async]
@@ -335,6 +342,7 @@ uv run pytest tests/async/test_async_workzones.py
     create_or_replace_map_layer(self, data: MapLayer)  [Async]
     create_map_layer(self, data: MapLayer)  [Async]
     populate_map_layers(self, data: bytes | Path)  [Async]
+    get_populate_map_layers_status(self, download_id: int)  [Async]
 
 ### Metadata / Plugins
     import_plugin(self, plugin: str)
@@ -387,6 +395,8 @@ uv run pytest tests/async/test_async_workzones.py
     replace_workzones(self, data: list[Workzone])  [Async]
     update_workzones(self, data: list[Workzone])  [Async]
     populate_workzone_shapes(self, data: bytes | Path)  [Async]
+    get_populate_workzone_shapes_status(self, download_id: int)  [Async]
+    get_workzone_key(self)  [Async]
 
 ### Metadata / Organizations
     get_organizations(self, response_type=OBJ_RESPONSE)

@@ -8,7 +8,23 @@ import pytest
 
 from ofsc.async_client import AsyncOFSC
 from ofsc.exceptions import OFSCNotFoundError
-from ofsc.models import CapacityArea, CapacityAreaListResponse
+from ofsc.models import (
+    CapacityArea,
+    CapacityAreaCapacityCategoriesResponse,
+    CapacityAreaCapacityCategory,
+    CapacityAreaChildrenResponse,
+    CapacityAreaListResponse,
+    CapacityAreaOrganization,
+    CapacityAreaOrganizationsResponse,
+    CapacityAreaTimeInterval,
+    CapacityAreaTimeIntervalsResponse,
+    CapacityAreaTimeSlot,
+    CapacityAreaTimeSlotsResponse,
+    CapacityAreaWorkZone,
+    CapacityAreaWorkZonesResponse,
+    CapacityAreaWorkZoneV1,
+    CapacityAreaWorkZonesV1Response,
+)
 
 
 # === GET CAPACITY AREAS (LIST) ===
@@ -268,3 +284,612 @@ class TestAsyncCapacityAreasSavedResponses:
 
         assert isinstance(area, CapacityArea)
         assert area.label == "FLUSA"
+
+
+# === GET CAPACITY AREA CAPACITY CATEGORIES (ME012G) ===
+
+
+class TestAsyncGetCapacityAreaCapacityCategoriesLive:
+    """Live tests for get_capacity_area_capacity_categories against actual API."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_get_capacity_area_capacity_categories(
+        self, async_instance: AsyncOFSC
+    ):
+        """Test get_capacity_area_capacity_categories with actual API."""
+        areas = await async_instance.metadata.get_capacity_areas()
+        assert len(areas.items) > 0
+        test_label = areas.items[0].label
+
+        result = await async_instance.metadata.get_capacity_area_capacity_categories(
+            test_label
+        )
+
+        assert isinstance(result, CapacityAreaCapacityCategoriesResponse)
+        assert hasattr(result, "items")
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_get_capacity_area_capacity_categories_not_found(
+        self, async_instance: AsyncOFSC
+    ):
+        """Test get_capacity_area_capacity_categories with non-existent label."""
+        from ofsc.exceptions import OFSCNotFoundError
+
+        with pytest.raises(OFSCNotFoundError):
+            await async_instance.metadata.get_capacity_area_capacity_categories(
+                "NONEXISTENT_AREA_12345"
+            )
+
+
+class TestAsyncGetCapacityAreaCapacityCategories:
+    """Model validation tests for get_capacity_area_capacity_categories."""
+
+    @pytest.mark.asyncio
+    async def test_returns_correct_model(self, async_instance: AsyncOFSC):
+        """Test that get_capacity_area_capacity_categories returns correct model."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "items": [
+                {"label": "CAT1", "name": "Category 1", "status": "active"},
+                {"label": "CAT2", "name": "Category 2", "status": "inactive"},
+            ]
+        }
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_capacity_categories(
+            "AREA1"
+        )
+
+        assert isinstance(result, CapacityAreaCapacityCategoriesResponse)
+        assert len(result.items) == 2
+        assert isinstance(result.items[0], CapacityAreaCapacityCategory)
+        assert result.items[0].label == "CAT1"
+        assert result.items[0].status == "active"
+
+    @pytest.mark.asyncio
+    async def test_empty_items(self, async_instance: AsyncOFSC):
+        """Test get_capacity_area_capacity_categories with empty items."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"items": []}
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_capacity_categories(
+            "AREA1"
+        )
+
+        assert isinstance(result, CapacityAreaCapacityCategoriesResponse)
+        assert len(result) == 0
+
+    @pytest.mark.asyncio
+    async def test_iterable(self, async_instance: AsyncOFSC):
+        """Test that result is iterable."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "items": [{"label": "CAT1"}, {"label": "CAT2"}]
+        }
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_capacity_categories(
+            "AREA1"
+        )
+
+        labels = [cat.label for cat in result]
+        assert labels == ["CAT1", "CAT2"]
+
+
+# === GET CAPACITY AREA WORKZONES v2 (ME013G) ===
+
+
+class TestAsyncGetCapacityAreaWorkzonesLive:
+    """Live tests for get_capacity_area_workzones against actual API."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_get_capacity_area_workzones(self, async_instance: AsyncOFSC):
+        """Test get_capacity_area_workzones with actual API."""
+        areas = await async_instance.metadata.get_capacity_areas()
+        assert len(areas.items) > 0
+        test_label = areas.items[0].label
+
+        result = await async_instance.metadata.get_capacity_area_workzones(test_label)
+
+        assert isinstance(result, CapacityAreaWorkZonesResponse)
+        assert hasattr(result, "items")
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_get_capacity_area_workzones_not_found(
+        self, async_instance: AsyncOFSC
+    ):
+        """Test get_capacity_area_workzones with non-existent label."""
+        with pytest.raises(OFSCNotFoundError):
+            await async_instance.metadata.get_capacity_area_workzones(
+                "NONEXISTENT_AREA_12345"
+            )
+
+
+class TestAsyncGetCapacityAreaWorkzones:
+    """Model validation tests for get_capacity_area_workzones."""
+
+    @pytest.mark.asyncio
+    async def test_returns_correct_model(self, async_instance: AsyncOFSC):
+        """Test that get_capacity_area_workzones returns CapacityAreaWorkZonesResponse."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "items": [
+                {"workZoneLabel": "WZ1", "workZoneName": "Workzone 1"},
+                {"workZoneLabel": "WZ2", "workZoneName": "Workzone 2"},
+            ]
+        }
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_workzones("AREA1")
+
+        assert isinstance(result, CapacityAreaWorkZonesResponse)
+        assert len(result.items) == 2
+        assert isinstance(result.items[0], CapacityAreaWorkZone)
+        assert result.items[0].workZoneLabel == "WZ1"
+
+    @pytest.mark.asyncio
+    async def test_empty_items(self, async_instance: AsyncOFSC):
+        """Test get_capacity_area_workzones with empty items."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"items": []}
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_workzones("AREA1")
+
+        assert len(result) == 0
+
+    @pytest.mark.asyncio
+    async def test_iterable(self, async_instance: AsyncOFSC):
+        """Test that result is iterable."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "items": [{"workZoneLabel": "WZ1"}, {"workZoneLabel": "WZ2"}]
+        }
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_workzones("AREA1")
+
+        labels = [wz.workZoneLabel for wz in result]
+        assert labels == ["WZ1", "WZ2"]
+
+
+# === GET CAPACITY AREA WORKZONES v1 (ME014G) ===
+
+
+class TestAsyncGetCapacityAreaWorkzonesV1:
+    """Model validation tests for get_capacity_area_workzones_v1."""
+
+    @pytest.mark.asyncio
+    async def test_returns_correct_model(self, async_instance: AsyncOFSC):
+        """Test that get_capacity_area_workzones_v1 returns CapacityAreaWorkZonesV1Response."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "items": [{"label": "WZ1"}, {"label": "WZ2"}]
+        }
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_workzones_v1("AREA1")
+
+        assert isinstance(result, CapacityAreaWorkZonesV1Response)
+        assert len(result.items) == 2
+        assert isinstance(result.items[0], CapacityAreaWorkZoneV1)
+        assert result.items[0].label == "WZ1"
+
+    @pytest.mark.asyncio
+    async def test_empty_items(self, async_instance: AsyncOFSC):
+        """Test get_capacity_area_workzones_v1 with empty items."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"items": []}
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_workzones_v1("AREA1")
+
+        assert len(result) == 0
+
+    @pytest.mark.asyncio
+    async def test_iterable(self, async_instance: AsyncOFSC):
+        """Test that result is iterable."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"items": [{"label": "WZ1"}]}
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_workzones_v1("AREA1")
+
+        assert list(result)[0].label == "WZ1"
+
+
+# === GET CAPACITY AREA TIME SLOTS (ME015G) ===
+
+
+class TestAsyncGetCapacityAreaTimeSlotsLive:
+    """Live tests for get_capacity_area_time_slots against actual API."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_get_capacity_area_time_slots(self, async_instance: AsyncOFSC):
+        """Test get_capacity_area_time_slots with actual API."""
+        areas = await async_instance.metadata.get_capacity_areas()
+        assert len(areas.items) > 0
+        test_label = areas.items[0].label
+
+        result = await async_instance.metadata.get_capacity_area_time_slots(test_label)
+
+        assert isinstance(result, CapacityAreaTimeSlotsResponse)
+        assert hasattr(result, "items")
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_get_capacity_area_time_slots_not_found(
+        self, async_instance: AsyncOFSC
+    ):
+        """Test get_capacity_area_time_slots with non-existent label."""
+        with pytest.raises(OFSCNotFoundError):
+            await async_instance.metadata.get_capacity_area_time_slots(
+                "NONEXISTENT_AREA_12345"
+            )
+
+
+class TestAsyncGetCapacityAreaTimeSlots:
+    """Model validation tests for get_capacity_area_time_slots."""
+
+    @pytest.mark.asyncio
+    async def test_returns_correct_model(self, async_instance: AsyncOFSC):
+        """Test that get_capacity_area_time_slots returns CapacityAreaTimeSlotsResponse."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "items": [
+                {
+                    "label": "TS1",
+                    "name": "Morning",
+                    "timeFrom": "08:00",
+                    "timeTo": "12:00",
+                },
+                {
+                    "label": "TS2",
+                    "name": "Afternoon",
+                    "timeFrom": "13:00",
+                    "timeTo": "17:00",
+                },
+            ]
+        }
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_time_slots("AREA1")
+
+        assert isinstance(result, CapacityAreaTimeSlotsResponse)
+        assert len(result.items) == 2
+        assert isinstance(result.items[0], CapacityAreaTimeSlot)
+        assert result.items[0].label == "TS1"
+        assert result.items[0].timeFrom == "08:00"
+
+    @pytest.mark.asyncio
+    async def test_empty_items(self, async_instance: AsyncOFSC):
+        """Test get_capacity_area_time_slots with empty items."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"items": []}
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_time_slots("AREA1")
+
+        assert len(result) == 0
+
+    @pytest.mark.asyncio
+    async def test_iterable(self, async_instance: AsyncOFSC):
+        """Test that result is iterable."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "items": [{"label": "TS1"}, {"label": "TS2"}]
+        }
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_time_slots("AREA1")
+
+        labels = [ts.label for ts in result]
+        assert labels == ["TS1", "TS2"]
+
+
+# === GET CAPACITY AREA TIME INTERVALS (ME016G) ===
+
+
+class TestAsyncGetCapacityAreaTimeIntervalsLive:
+    """Live tests for get_capacity_area_time_intervals against actual API."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_get_capacity_area_time_intervals(self, async_instance: AsyncOFSC):
+        """Test get_capacity_area_time_intervals with actual API."""
+        areas = await async_instance.metadata.get_capacity_areas()
+        assert len(areas.items) > 0
+        test_label = areas.items[0].label
+
+        result = await async_instance.metadata.get_capacity_area_time_intervals(
+            test_label
+        )
+
+        assert isinstance(result, CapacityAreaTimeIntervalsResponse)
+        assert hasattr(result, "items")
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_get_capacity_area_time_intervals_not_found(
+        self, async_instance: AsyncOFSC
+    ):
+        """Test get_capacity_area_time_intervals with non-existent label."""
+        with pytest.raises(OFSCNotFoundError):
+            await async_instance.metadata.get_capacity_area_time_intervals(
+                "NONEXISTENT_AREA_12345"
+            )
+
+
+class TestAsyncGetCapacityAreaTimeIntervals:
+    """Model validation tests for get_capacity_area_time_intervals."""
+
+    @pytest.mark.asyncio
+    async def test_returns_correct_model(self, async_instance: AsyncOFSC):
+        """Test that get_capacity_area_time_intervals returns correct model."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "items": [
+                {"timeFrom": "08:00", "timeTo": "12:00"},
+                {"timeFrom": "13:00", "timeTo": "17:00"},
+            ]
+        }
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_time_intervals("AREA1")
+
+        assert isinstance(result, CapacityAreaTimeIntervalsResponse)
+        assert len(result.items) == 2
+        assert isinstance(result.items[0], CapacityAreaTimeInterval)
+        assert result.items[0].timeFrom == "08:00"
+
+    @pytest.mark.asyncio
+    async def test_empty_items(self, async_instance: AsyncOFSC):
+        """Test get_capacity_area_time_intervals with empty items."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"items": []}
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_time_intervals("AREA1")
+
+        assert len(result) == 0
+
+    @pytest.mark.asyncio
+    async def test_iterable(self, async_instance: AsyncOFSC):
+        """Test that result is iterable."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "items": [{"timeFrom": "08:00", "timeTo": "12:00"}]
+        }
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_time_intervals("AREA1")
+
+        intervals = list(result)
+        assert intervals[0].timeFrom == "08:00"
+
+
+# === GET CAPACITY AREA ORGANIZATIONS (ME017G) ===
+
+
+class TestAsyncGetCapacityAreaOrganizationsLive:
+    """Live tests for get_capacity_area_organizations against actual API."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_get_capacity_area_organizations(self, async_instance: AsyncOFSC):
+        """Test get_capacity_area_organizations with actual API."""
+        areas = await async_instance.metadata.get_capacity_areas()
+        assert len(areas.items) > 0
+        test_label = areas.items[0].label
+
+        result = await async_instance.metadata.get_capacity_area_organizations(
+            test_label
+        )
+
+        assert isinstance(result, CapacityAreaOrganizationsResponse)
+        assert hasattr(result, "items")
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_get_capacity_area_organizations_not_found(
+        self, async_instance: AsyncOFSC
+    ):
+        """Test get_capacity_area_organizations with non-existent label."""
+        with pytest.raises(OFSCNotFoundError):
+            await async_instance.metadata.get_capacity_area_organizations(
+                "NONEXISTENT_AREA_12345"
+            )
+
+
+class TestAsyncGetCapacityAreaOrganizations:
+    """Model validation tests for get_capacity_area_organizations."""
+
+    @pytest.mark.asyncio
+    async def test_returns_correct_model(self, async_instance: AsyncOFSC):
+        """Test that get_capacity_area_organizations returns correct model."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "items": [
+                {"label": "ORG1", "name": "Organization 1", "type": "inhouse"},
+                {"label": "ORG2", "name": "Organization 2", "type": "contractor"},
+            ]
+        }
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_organizations("AREA1")
+
+        assert isinstance(result, CapacityAreaOrganizationsResponse)
+        assert len(result.items) == 2
+        assert isinstance(result.items[0], CapacityAreaOrganization)
+        assert result.items[0].label == "ORG1"
+        assert result.items[0].type == "inhouse"
+
+    @pytest.mark.asyncio
+    async def test_empty_items(self, async_instance: AsyncOFSC):
+        """Test get_capacity_area_organizations with empty items."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"items": []}
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_organizations("AREA1")
+
+        assert len(result) == 0
+
+    @pytest.mark.asyncio
+    async def test_iterable(self, async_instance: AsyncOFSC):
+        """Test that result is iterable."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "items": [{"label": "ORG1"}, {"label": "ORG2"}]
+        }
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_organizations("AREA1")
+
+        labels = [org.label for org in result]
+        assert labels == ["ORG1", "ORG2"]
+
+
+# === GET CAPACITY AREA CHILDREN (ME018G) ===
+
+
+class TestAsyncGetCapacityAreaChildrenLive:
+    """Live tests for get_capacity_area_children against actual API."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_get_capacity_area_children(self, async_instance: AsyncOFSC):
+        """Test get_capacity_area_children with actual API."""
+        areas = await async_instance.metadata.get_capacity_areas()
+        assert len(areas.items) > 0
+        test_label = areas.items[0].label
+
+        result = await async_instance.metadata.get_capacity_area_children(test_label)
+
+        assert isinstance(result, CapacityAreaChildrenResponse)
+        assert hasattr(result, "items")
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_get_capacity_area_children_not_found(
+        self, async_instance: AsyncOFSC
+    ):
+        """Test get_capacity_area_children with non-existent label."""
+        with pytest.raises(OFSCNotFoundError):
+            await async_instance.metadata.get_capacity_area_children(
+                "NONEXISTENT_AREA_12345"
+            )
+
+
+class TestAsyncGetCapacityAreaChildren:
+    """Model validation tests for get_capacity_area_children."""
+
+    @pytest.mark.asyncio
+    async def test_returns_correct_model(self, async_instance: AsyncOFSC):
+        """Test that get_capacity_area_children returns CapacityAreaChildrenResponse."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "items": [
+                {"label": "CHILD1", "name": "Child Area 1", "type": "area"},
+                {"label": "CHILD2", "name": "Child Area 2", "type": "area"},
+            ]
+        }
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_children("AREA1")
+
+        assert isinstance(result, CapacityAreaChildrenResponse)
+        assert len(result.items) == 2
+        assert isinstance(result.items[0], CapacityArea)
+        assert result.items[0].label == "CHILD1"
+
+    @pytest.mark.asyncio
+    async def test_with_query_params(self, async_instance: AsyncOFSC):
+        """Test get_capacity_area_children with query parameters."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "items": [{"label": "CHILD1", "status": "active"}]
+        }
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_children(
+            "AREA1", status="active", type="area"
+        )
+
+        assert isinstance(result, CapacityAreaChildrenResponse)
+        assert len(result.items) == 1
+
+    @pytest.mark.asyncio
+    async def test_empty_items(self, async_instance: AsyncOFSC):
+        """Test get_capacity_area_children with empty items."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"items": []}
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_children("AREA1")
+
+        assert len(result) == 0
+
+    @pytest.mark.asyncio
+    async def test_iterable(self, async_instance: AsyncOFSC):
+        """Test that result is iterable."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "items": [{"label": "CHILD1"}, {"label": "CHILD2"}]
+        }
+        mock_response.raise_for_status = Mock()
+
+        async_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+        result = await async_instance.metadata.get_capacity_area_children("AREA1")
+
+        labels = [child.label for child in result]
+        assert labels == ["CHILD1", "CHILD2"]
