@@ -9,6 +9,7 @@ Entities without DELETE accumulate TST_ prefixed entries in the instance.
 """
 
 import datetime
+import uuid
 
 import pytest
 
@@ -701,22 +702,22 @@ class TestLinkTemplateRoundtrip:
     async def test_link_template_create_read_update(
         self, async_instance: AsyncOFSC, faker
     ):
-        label = _unique_label(faker, "LT")
+        label = f"TST_LT_{uuid.uuid4().hex[:8].upper()}"
         name = faker.sentence(nb_words=3)[:50]
 
-        # CREATE
+        # CREATE — use "simultaneous" type (no reverseLabel required)
         link = LinkTemplate.model_validate(
             {
                 "label": label,
                 "active": True,
-                "linkType": LinkTemplateType.related,
-                "translations": [{"language": "en", "name": name}],
+                "linkType": LinkTemplateType.simultaneous,
+                "translations": [{"language": "en-US", "name": name}],
             }
         )
         created = await async_instance.metadata.create_link_template(link)
         assert isinstance(created, LinkTemplate)
         assert created.label == label
-        assert created.linkType == LinkTemplateType.related
+        assert created.linkType == LinkTemplateType.simultaneous
 
         # READ
         fetched = await async_instance.metadata.get_link_template(label)
@@ -729,8 +730,8 @@ class TestLinkTemplateRoundtrip:
             {
                 "label": label,
                 "active": False,
-                "linkType": LinkTemplateType.related,
-                "translations": [{"language": "en", "name": new_name}],
+                "linkType": LinkTemplateType.simultaneous,
+                "translations": [{"language": "en-US", "name": new_name}],
             }
         )
         updated = await async_instance.metadata.update_link_template(patch_link)

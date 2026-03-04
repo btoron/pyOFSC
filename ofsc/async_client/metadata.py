@@ -1526,16 +1526,13 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        encoded_label = quote_plus(data.label)
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscMetadata/v1/linkTemplates/{encoded_label}"
-        )
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/linkTemplates")
 
         try:
             response = await self._client.post(
                 url,
                 headers=self.headers,
-                json=data.model_dump(exclude_none=True, mode="json"),
+                content=data.model_dump_json(exclude_none=True),
             )
             response.raise_for_status()
             result = response.json()
