@@ -16,6 +16,7 @@ from ofsc.models import (
     DailyExtractItem,
     DailyExtractItemList,
     ItemList,
+    Link,
     Translation,
     TranslationList,
     Workskill,
@@ -32,8 +33,8 @@ def test_translation_model_base():
 
 def test_translation_model_base_invalid():
     base = {"language": "xx", "Noname": "NoEstimate", "languageISO": "en-US"}
-    with pytest.raises(ValidationError) as validation:
-        obj = Translation.model_validate(base)
+    with pytest.raises(ValidationError):
+        Translation.model_validate(base)
 
 
 def test_translationlist_model_base():
@@ -287,7 +288,7 @@ def test_capacity_area_list_model_base():
         ]
     }
 
-    obj = CapacityAreaListResponse.model_validate(base)
+    CapacityAreaListResponse.model_validate(base)
 
 
 # endregion
@@ -324,7 +325,7 @@ def test_workskill_model_base():
 def test_workskilllist_connected(instance):
     metadata_response = instance.metadata.get_workskills(response_type=OBJ_RESPONSE)
     logging.debug(json.dumps(metadata_response, indent=4))
-    objList = WorkskillList.model_validate(metadata_response["items"])
+    WorkskillList.model_validate(metadata_response["items"])
 
 
 # endregion
@@ -412,7 +413,11 @@ def test_capacity_category_model_list():
         assert item.translations == TranslationList.model_validate(
             capacityCategoryList["items"][idx]["translations"]
         )
-        assert item.links == capacityCategoryList["items"][idx]["links"]
+        expected_links = [
+            Link.model_validate(link)
+            for link in capacityCategoryList["items"][idx]["links"]
+        ]
+        assert item.links == expected_links
         # assert item.workSkills == capacityCategoryList["items"][idx]["workSkills"]
         assert item.workSkillGroups == ItemList.model_validate(
             capacityCategoryList["items"][idx]["workSkillGroups"]
