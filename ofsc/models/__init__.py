@@ -15,6 +15,7 @@ from ._base import (
     OFSApi as OFSApi,
     OFSAPIError as OFSAPIError,
     OFSConfig as OFSConfig,
+    OAuthTokenResponse as OAuthTokenResponse,
     OFSOAuthRequest as OFSOAuthRequest,
     OFSResponseBoundedList as OFSResponseBoundedList,
     OFSResponseList as OFSResponseList,

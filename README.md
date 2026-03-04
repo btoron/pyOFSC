@@ -418,6 +418,9 @@ uv run pytest tests/async/test_async_workzones.py
     get_airline_distance_based_travel(self, level=None, key=None, distance=None, key_id=None, offset=0, limit=100)   [Async]
     update_airline_distance_based_travel(self, data)   [Async]
 
+### Auth / OAuth2
+    get_token(self, request: OFSOAuthRequest = OFSOAuthRequest())   [Async]
+
 ## Usage Examples
 
 ### Capacity API

@@ -248,7 +248,7 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |CO083P|`/rest/ofscCore/v1/users/{login}/collaborationGroups`                                                                    |core         |POST  |async |
 |CO083D|`/rest/ofscCore/v1/users/{login}/collaborationGroups`                                                                    |core         |DELETE|async |
 |AU001P|`/rest/oauthTokenService/v1/token`                                                                                       |auth         |POST  |-     |
-|AU002P|`/rest/oauthTokenService/v2/token`                                                                                       |auth         |POST  |-     |
+|AU002P|`/rest/oauthTokenService/v2/token`                                                                                       |auth         |POST  |async |
 |CA001G|`/rest/ofscCapacity/v1/activityBookingOptions`                                                                           |capacity     |GET   |async |
 |CA002G|`/rest/ofscCapacity/v1/bookingClosingSchedule`                                                                           |capacity     |GET   |async |
 |CA002A|`/rest/ofscCapacity/v1/bookingClosingSchedule`                                                                           |capacity     |PATCH |async |
@@ -267,11 +267,11 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 ## Implementation Summary
 
 - **Sync only**: 4 endpoints
-- **Async only**: 99 endpoints
+- **Async only**: 100 endpoints
 - **Both**: 85 endpoints
-- **Not implemented**: 55 endpoints
+- **Not implemented**: 54 endpoints
 - **Total sync**: 89 endpoints
-- **Total async**: 184 endpoints
+- **Total async**: 185 endpoints
 
 ## Implementation Statistics by Module and Method
 
@@ -298,8 +298,8 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |statistics   |3/3 (100.0%)      |3/3 (100.0%)          |0/0 (0%)         |6/6 (100.0%)       |
 |partscatalog |0/0 (0%)          |0/2 (0.0%)            |0/1 (0.0%)       |0/3 (0.0%)         |
 |collaboration|0/3 (0.0%)        |0/4 (0.0%)            |0/0 (0%)         |0/7 (0.0%)         |
-|auth         |0/0 (0%)          |0/2 (0.0%)            |0/0 (0%)         |0/2 (0.0%)         |
-|**Total**    |**94/115 (81.7%)**|**67/102 (65.7%)**    |**23/26 (88.5%)**|**184/243 (75.7%)**|
+|auth         |0/0 (0%)          |1/2 (50.0%)           |0/0 (0%)         |1/2 (50.0%)        |
+|**Total**    |**94/115 (81.7%)**|**68/102 (66.7%)**    |**23/26 (88.5%)**|**185/243 (76.1%)**|
 
 ## Endpoint ID Reference
 

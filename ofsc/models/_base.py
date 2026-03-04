@@ -168,6 +168,14 @@ class OFSOAuthRequest(BaseModel):
     # ofs_dynamic_scope: Optional[str] = None
 
 
+class OAuthTokenResponse(BaseModel):
+    """Response from OFSC OAuth token endpoints (AU001P / AU002P)."""
+
+    access_token: str
+    token_type: str
+    expires_in: int
+
+
 class OFSAPIError(BaseModel):
     type: str
     title: str

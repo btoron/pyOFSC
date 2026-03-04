@@ -156,12 +156,7 @@ class TestAsyncOFSCapacityStubs:
 
 
 class TestAsyncOFSOauth2Stubs:
-    """Test that AsyncOFSOauth2 methods raise NotImplementedError."""
+    """Test that AsyncOFSOauth2 methods are implemented (not stubs)."""
 
-    @pytest.mark.asyncio
-    async def test_get_token_not_implemented(self):
-        async with AsyncOFSC(
-            clientID="test", companyName="test", secret="test"
-        ) as client:
-            with pytest.raises(NotImplementedError):
-                await client.oauth2.get_token()
+    # Note: get_token is now implemented, see tests/async/test_async_oauth.py
+    pass
