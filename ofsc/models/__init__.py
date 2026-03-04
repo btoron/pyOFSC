@@ -488,207 +488,43 @@ class EventListResponse(OFSResponseList[Event]):
 
 # region Capacity
 
-
-class CapacityRequest(BaseModel):
-    """Request model for capacity queries with CsvList support for string arrays
-
-    Accepts list[str], CsvList, or str for string array parameters but converts internally to CsvList
-    """
-
-    aggregateResults: Optional[bool] = None
-    areas: Optional[CsvList] = None
-    availableTimeIntervals: str = "all"
-    calendarTimeIntervals: str = "all"
-    categories: Optional[CsvList] = None
-    dates: CsvList
-    fields: Optional[CsvList] = None
-
-    @field_validator("areas", "categories", "dates", "fields", mode="before")
-    @classmethod
-    def convert_to_csvlist(cls, v):
-        """Convert list[str], CsvList, str, or dict to CsvList"""
-        if v is None:
-            return None
-        elif isinstance(v, list):
-            return CsvList.from_list(v)
-        elif isinstance(v, CsvList):
-            return v
-        elif isinstance(v, str):
-            # Handle string input as CSV
-            return CsvList(value=v)
-        elif isinstance(v, dict) and "value" in v:
-            # Handle dict from JSON deserialization
-            return CsvList(value=v["value"])
-        else:
-            raise ValueError(
-                f"Expected list[str], CsvList, str, dict with 'value' key, or None, got {type(v)}"
-            )
-
-    def get_areas_list(self) -> list[str]:
-        """Get areas as a list of strings"""
-        return self.areas.to_list() if self.areas is not None else []
-
-    def get_categories_list(self) -> list[str]:
-        """Get categories as a list of strings"""
-        return self.categories.to_list() if self.categories is not None else []
-
-    def get_dates_list(self) -> list[str]:
-        """Get dates as a list of strings"""
-        return self.dates.to_list()
-
-    def get_fields_list(self) -> list[str]:
-        """Get fields as a list of strings"""
-        return self.fields.to_list() if self.fields is not None else []
-
-
-class CapacityMetrics(BaseModel):
-    """Model for capacity metrics with count and optional minutes arrays"""
-
-    count: list[int] = []
-    minutes: Optional[list[int]] = None
-
-
-class CapacityCategoryItem(BaseModel):
-    """Model for capacity category items with metrics"""
-
-    label: str
-    calendar: CapacityMetrics
-    available: Optional[CapacityMetrics] = None
-
-
-class CapacityAreaResponseItem(BaseModel):
-    """Model for capacity area response with proper nested structure"""
-
-    label: str
-    name: Optional[str] = None
-    calendar: Optional[CapacityMetrics] = None
-    available: Optional[CapacityMetrics] = None
-    categories: list[CapacityCategoryItem] = []
-
-
-class CapacityResponseItem(BaseModel):
-    """Model for individual capacity response item by date"""
-
-    date: str
-    areas: list[CapacityAreaResponseItem] = []
-
-
-class GetCapacityResponse(BaseModel):
-    """Model for complete capacity response"""
-
-    items: list[CapacityResponseItem] = []
-
-
-class QuotaTimeInterval(BaseModel):
-    """Model for quota time interval data"""
-
-    timeFrom: str
-    timeTo: str
-    quota: Optional[int] = None
-    used: Optional[int] = None
-    quotaIsClosed: Optional[bool] = None
-    quotaIsAutoClosed: Optional[bool] = None
-    model_config = ConfigDict(extra="allow")
-
-
-class QuotaCategoryItem(BaseModel):
-    """Model for quota category items with category-specific quota fields"""
-
-    label: Optional[str] = None
-    maxAvailable: Optional[int] = None
-    quota: Optional[int] = None
-    quotaPercentDay: Optional[float] = None
-    quotaPercentCategory: Optional[float] = None
-    minQuota: Optional[int] = None
-    used: Optional[int] = None
-    usedQuotaPercent: Optional[float] = None
-    bookedActivities: Optional[int] = None
-    quotaIsClosed: Optional[bool] = None
-    quotaIsAutoClosed: Optional[bool] = None
-    intervals: list[QuotaTimeInterval] = []
-    model_config = ConfigDict(extra="allow")
-
-
-class QuotaAreaItem(BaseModel):
-    """Model for quota area items with quota-specific fields"""
-
-    label: Optional[str] = None
-    name: Optional[str] = None
-    maxAvailable: Optional[int] = None
-    otherActivities: Optional[int] = None
-    quota: Optional[int] = None
-    quotaPercent: Optional[float] = None  # Changed to float
-    minQuota: Optional[int] = None
-    used: Optional[int] = None
-    usedQuotaPercent: Optional[float] = None  # Changed to float
-    bookedActivities: Optional[int] = None
-    quotaIsClosed: Optional[bool] = None  # Added
-    quotaIsAutoClosed: Optional[bool] = None  # Added
-    intervals: list[QuotaTimeInterval] = []  # Added
-    categories: list[QuotaCategoryItem] = []  # Added
-    model_config = ConfigDict(extra="allow")
-
-
-class QuotaResponseItem(BaseModel):
-    """Model for individual quota response item by date"""
-
-    date: str
-    areas: list[QuotaAreaItem] = []
-
-
-class GetQuotaResponse(BaseModel):
-    """Model for complete quota response"""
-
-    items: list[QuotaResponseItem] = []
-
-
-class GetQuotaRequest(BaseModel):
-    """Request model for quota queries with comprehensive parameters
-
-    Accepts list[str] or CsvList for string array parameters but converts internally to CsvList
-    """
-
-    aggregateResults: Optional[bool] = None
-    areas: Optional[CsvList] = None
-    categories: Optional[CsvList] = None
-    categoryLevel: Optional[bool] = None
-    dates: CsvList  # Required parameter
-    intervalLevel: Optional[bool] = None
-    returnStatuses: Optional[bool] = None
-    timeSlotLevel: Optional[bool] = None
-
-    @field_validator("areas", "categories", "dates", mode="before")
-    @classmethod
-    def convert_to_csvlist(cls, v):
-        """Convert list[str], CsvList, str, or dict to CsvList"""
-        if v is None:
-            return None
-        elif isinstance(v, list):
-            return CsvList.from_list(v)
-        elif isinstance(v, CsvList):
-            return v
-        elif isinstance(v, str):
-            # Handle string input as CSV
-            return CsvList(value=v)
-        elif isinstance(v, dict) and "value" in v:
-            # Handle dict from JSON deserialization
-            return CsvList(value=v["value"])
-        else:
-            raise ValueError(
-                f"Expected list[str], CsvList, str, dict with 'value' key, or None, got {type(v)}"
-            )
-
-    def get_areas_list(self) -> list[str]:
-        """Get areas as a list of strings"""
-        return self.areas.to_list() if self.areas is not None else []
-
-    def get_categories_list(self) -> list[str]:
-        """Get categories as a list of strings"""
-        return self.categories.to_list() if self.categories is not None else []
-
-    def get_dates_list(self) -> list[str]:
-        """Get dates as a list of strings"""
-        return self.dates.to_list()
-
+from .capacity import (
+    ActivityBookingOptionsResponse as ActivityBookingOptionsResponse,
+    BookingArea as BookingArea,
+    BookingClosingScheduleItem as BookingClosingScheduleItem,
+    BookingClosingScheduleResponse as BookingClosingScheduleResponse,
+    BookingClosingScheduleUpdateRequest as BookingClosingScheduleUpdateRequest,
+    BookingDate as BookingDate,
+    BookingFieldDependency as BookingFieldDependency,
+    BookingFieldsDependenciesResponse as BookingFieldsDependenciesResponse,
+    BookingGridActivity as BookingGridActivity,
+    BookingGridArea as BookingGridArea,
+    BookingGridDateItem as BookingGridDateItem,
+    BookingGridTimeSlot as BookingGridTimeSlot,
+    BookingStatusEntry as BookingStatusEntry,
+    BookingStatusItem as BookingStatusItem,
+    BookingStatusesResponse as BookingStatusesResponse,
+    BookingStatusesUpdateRequest as BookingStatusesUpdateRequest,
+    BookingTimeSlot as BookingTimeSlot,
+    CapacityAreaResponseItem as CapacityAreaResponseItem,
+    CapacityCategoryItem as CapacityCategoryItem,
+    CapacityMetrics as CapacityMetrics,
+    CapacityRequest as CapacityRequest,
+    CapacityResponseItem as CapacityResponseItem,
+    GetCapacityResponse as GetCapacityResponse,
+    GetQuotaRequest as GetQuotaRequest,
+    GetQuotaResponse as GetQuotaResponse,
+    QuotaAreaItem as QuotaAreaItem,
+    QuotaCategoryItem as QuotaCategoryItem,
+    QuotaResponseItem as QuotaResponseItem,
+    QuotaTimeInterval as QuotaTimeInterval,
+    QuotaUpdateArea as QuotaUpdateArea,
+    QuotaUpdateCategory as QuotaUpdateCategory,
+    QuotaUpdateItem as QuotaUpdateItem,
+    QuotaUpdateRequest as QuotaUpdateRequest,
+    QuotaUpdateResponse as QuotaUpdateResponse,
+    ShowBookingGridRequest as ShowBookingGridRequest,
+    ShowBookingGridResponse as ShowBookingGridResponse,
+)
 
 # endregion

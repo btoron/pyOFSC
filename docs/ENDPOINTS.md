@@ -249,29 +249,29 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |CO083D|`/rest/ofscCore/v1/users/{login}/collaborationGroups`                                                                    |core         |DELETE|async |
 |AU001P|`/rest/oauthTokenService/v1/token`                                                                                       |auth         |POST  |-     |
 |AU002P|`/rest/oauthTokenService/v2/token`                                                                                       |auth         |POST  |-     |
-|CA001G|`/rest/ofscCapacity/v1/activityBookingOptions`                                                                           |capacity     |GET   |-     |
-|CA002G|`/rest/ofscCapacity/v1/bookingClosingSchedule`                                                                           |capacity     |GET   |-     |
-|CA002A|`/rest/ofscCapacity/v1/bookingClosingSchedule`                                                                           |capacity     |PATCH |-     |
-|CA003G|`/rest/ofscCapacity/v1/bookingStatuses`                                                                                  |capacity     |GET   |-     |
-|CA003A|`/rest/ofscCapacity/v1/bookingStatuses`                                                                                  |capacity     |PATCH |-     |
-|CA004G|`/rest/ofscCapacity/v1/capacity`                                                                                         |capacity     |GET   |sync  |
+|CA001G|`/rest/ofscCapacity/v1/activityBookingOptions`                                                                           |capacity     |GET   |async |
+|CA002G|`/rest/ofscCapacity/v1/bookingClosingSchedule`                                                                           |capacity     |GET   |async |
+|CA002A|`/rest/ofscCapacity/v1/bookingClosingSchedule`                                                                           |capacity     |PATCH |async |
+|CA003G|`/rest/ofscCapacity/v1/bookingStatuses`                                                                                  |capacity     |GET   |async |
+|CA003A|`/rest/ofscCapacity/v1/bookingStatuses`                                                                                  |capacity     |PATCH |async |
+|CA004G|`/rest/ofscCapacity/v1/capacity`                                                                                         |capacity     |GET   |both  |
 |CA005G|`/rest/ofscCapacity/v1/quota`                                                                                            |capacity     |GET   |-     |
 |CA005A|`/rest/ofscCapacity/v1/quota`                                                                                            |capacity     |PATCH |-     |
-|CA006G|`/rest/ofscCapacity/v2/quota`                                                                                            |capacity     |GET   |sync  |
-|CA006A|`/rest/ofscCapacity/v2/quota`                                                                                            |capacity     |PATCH |-     |
-|CA007P|`/rest/ofscCapacity/v1/showBookingGrid`                                                                                  |capacity     |POST  |-     |
-|CA008G|`/rest/ofscCapacity/v1/bookingFieldsDependencies`                                                                        |capacity     |GET   |-     |
+|CA006G|`/rest/ofscCapacity/v2/quota`                                                                                            |capacity     |GET   |both  |
+|CA006A|`/rest/ofscCapacity/v2/quota`                                                                                            |capacity     |PATCH |async |
+|CA007P|`/rest/ofscCapacity/v1/showBookingGrid`                                                                                  |capacity     |POST  |async |
+|CA008G|`/rest/ofscCapacity/v1/bookingFieldsDependencies`                                                                        |capacity     |GET   |async |
 
 
 
 ## Implementation Summary
 
-- **Sync only**: 6 endpoints
-- **Async only**: 59 endpoints
-- **Both**: 83 endpoints
-- **Not implemented**: 95 endpoints
+- **Sync only**: 4 endpoints
+- **Async only**: 67 endpoints
+- **Both**: 85 endpoints
+- **Not implemented**: 87 endpoints
 - **Total sync**: 89 endpoints
-- **Total async**: 142 endpoints
+- **Total async**: 152 endpoints
 
 ## Implementation Statistics by Module and Method
 
@@ -294,12 +294,12 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |-------------|------------------|----------------------|-----------------|-------------------|
 |metadata     |41/51 (80.4%)     |10/30 (33.3%)         |2/5 (40.0%)      |53/86 (61.6%)      |
 |core         |42/51 (82.4%)     |30/56 (53.6%)         |17/20 (85.0%)    |89/127 (70.1%)     |
-|capacity     |0/7 (0.0%)        |0/5 (0.0%)            |0/0 (0%)         |0/12 (0.0%)        |
+|capacity     |6/7 (85.7%)       |4/5 (80.0%)           |0/0 (0%)         |10/12 (83.3%)      |
 |statistics   |0/3 (0.0%)        |0/3 (0.0%)            |0/0 (0%)         |0/6 (0.0%)         |
 |partscatalog |0/0 (0%)          |0/2 (0.0%)            |0/1 (0.0%)       |0/3 (0.0%)         |
 |collaboration|0/3 (0.0%)        |0/4 (0.0%)            |0/0 (0%)         |0/7 (0.0%)         |
 |auth         |0/0 (0%)          |0/2 (0.0%)            |0/0 (0%)         |0/2 (0.0%)         |
-|**Total**    |**83/115 (72.2%)**|**40/102 (39.2%)**    |**19/26 (73.1%)**|**142/243 (58.4%)**|
+|**Total**    |**89/115 (77.4%)**|**44/102 (43.1%)**    |**19/26 (73.1%)**|**152/243 (62.6%)**|
 
 ## Endpoint ID Reference
 

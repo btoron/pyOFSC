@@ -162,6 +162,7 @@ class OFSConfig(BaseModel):
 
 
 class OFSOAuthRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
     assertion: Optional[str] = None
     grant_type: str = "client_credentials"
     # ofs_dynamic_scope: Optional[str] = None

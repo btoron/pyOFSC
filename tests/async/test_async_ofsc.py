@@ -148,23 +148,11 @@ class TestAsyncOFSMetadataStubs:
 
 
 class TestAsyncOFSCapacityStubs:
-    """Test that AsyncOFSCapacity methods raise NotImplementedError."""
+    """Test that AsyncOFSCapacity methods are implemented (not stubs)."""
 
-    @pytest.mark.asyncio
-    async def test_get_available_capacity_not_implemented(self):
-        async with AsyncOFSC(
-            clientID="test", companyName="test", secret="test"
-        ) as client:
-            with pytest.raises(NotImplementedError):
-                await client.capacity.getAvailableCapacity(dates=["2025-01-01"])
-
-    @pytest.mark.asyncio
-    async def test_get_quota_not_implemented(self):
-        async with AsyncOFSC(
-            clientID="test", companyName="test", secret="test"
-        ) as client:
-            with pytest.raises(NotImplementedError):
-                await client.capacity.getQuota(dates=["2025-01-01"])
+    # Note: get_available_capacity and get_quota are now implemented,
+    # see tests/async/test_async_capacity.py
+    pass
 
 
 class TestAsyncOFSOauth2Stubs:

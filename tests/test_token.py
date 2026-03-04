@@ -47,4 +47,3 @@ def test_token_assertion(instance, assertion, request_logging):
     assert "access_token" in response.keys()
     assert response["token_type"] == "bearer"
     assert response["expires_in"] == 3600
-    assert False

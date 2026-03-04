@@ -40,6 +40,33 @@ async def bucket_activity_type(async_instance):
 
 
 @pytest.fixture
+async def workzone_activity_type(async_instance):
+    """Get an activity type label that has work zone support enabled."""
+    activity_types = await async_instance.metadata.get_activity_types()
+    label = next(
+        (
+            at.label
+            for at in activity_types
+            if at.features and at.features.supportOfWorkZones
+        ),
+        None,
+    )
+    if label is None:
+        pytest.skip("No activity types with work zone support available")
+    return label
+
+
+@pytest.fixture
+async def workzone_postal_code(async_instance):
+    """Get a postal code from a workzone that has keys defined."""
+    workzones = await async_instance.metadata.get_workzones()
+    for wz in workzones:
+        if wz.keys:
+            return wz.keys[0]
+    pytest.skip("No workzones with postal code keys available")
+
+
+@pytest.fixture
 async def fresh_activity(async_instance, bucket_activity_type):
     """Create a temporary future-dated activity, delete after test."""
     created = await async_instance.core.create_activity(
