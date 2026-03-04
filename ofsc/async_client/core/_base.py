@@ -1122,6 +1122,41 @@ class _AsyncOFSCoreBase:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
+    async def get_multiday_segments(self, activity_id: int) -> ActivityListResponse:
+        """Get multiday segments for an activity.
+
+        Args:
+            activity_id: The activity ID to get segments for
+
+        Returns:
+            ActivityListResponse: List of segment activities
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCNotFoundError: If activity not found (404)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/activities/{activity_id}/multidaySegments",
+        )
+
+        try:
+            response = await self._client.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+
+            return ActivityListResponse.model_validate(data)
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e, f"Failed to get multiday segments for activity {activity_id}"
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
     # endregion
 
     # region Events

@@ -125,7 +125,7 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |CO002A|`/rest/ofscCore/v1/activities/{activityId}`                                                                              |core         |PATCH |both  |
 |CO002D|`/rest/ofscCore/v1/activities/{activityId}`                                                                              |core         |DELETE|both  |
 |CO002G|`/rest/ofscCore/v1/activities/{activityId}`                                                                              |core         |GET   |both  |
-|CO003G|`/rest/ofscCore/v1/activities/{activityId}/multidaySegments`                                                             |core         |GET   |-     |
+|CO003G|`/rest/ofscCore/v1/activities/{activityId}/multidaySegments`                                                             |core         |GET   |async |
 |CO004U|`/rest/ofscCore/v1/activities/{activityId}/{propertyLabel}`                                                              |core         |PUT   |async |
 |CO004G|`/rest/ofscCore/v1/activities/{activityId}/{propertyLabel}`                                                              |core         |GET   |both  |
 |CO004D|`/rest/ofscCore/v1/activities/{activityId}/{propertyLabel}`                                                              |core         |DELETE|async |
@@ -267,11 +267,11 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 ## Implementation Summary
 
 - **Sync only**: 4 endpoints
-- **Async only**: 98 endpoints
+- **Async only**: 99 endpoints
 - **Both**: 85 endpoints
-- **Not implemented**: 56 endpoints
+- **Not implemented**: 55 endpoints
 - **Total sync**: 89 endpoints
-- **Total async**: 183 endpoints
+- **Total async**: 184 endpoints
 
 ## Implementation Statistics by Module and Method
 
@@ -293,13 +293,13 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |   Module    |       GET        |Write (POST/PUT/PATCH)|     DELETE      |       Total       |
 |-------------|------------------|----------------------|-----------------|-------------------|
 |metadata     |41/51 (80.4%)     |29/30 (96.7%)         |5/5 (100.0%)     |75/86 (87.2%)      |
-|core         |43/51 (84.3%)     |31/56 (55.4%)         |18/20 (90.0%)    |92/127 (72.4%)     |
+|core         |44/51 (86.3%)     |31/56 (55.4%)         |18/20 (90.0%)    |93/127 (73.2%)     |
 |capacity     |6/7 (85.7%)       |4/5 (80.0%)           |0/0 (0%)         |10/12 (83.3%)      |
 |statistics   |3/3 (100.0%)      |3/3 (100.0%)          |0/0 (0%)         |6/6 (100.0%)       |
 |partscatalog |0/0 (0%)          |0/2 (0.0%)            |0/1 (0.0%)       |0/3 (0.0%)         |
 |collaboration|0/3 (0.0%)        |0/4 (0.0%)            |0/0 (0%)         |0/7 (0.0%)         |
 |auth         |0/0 (0%)          |0/2 (0.0%)            |0/0 (0%)         |0/2 (0.0%)         |
-|**Total**    |**93/115 (80.9%)**|**67/102 (65.7%)**    |**23/26 (88.5%)**|**183/243 (75.3%)**|
+|**Total**    |**94/115 (81.7%)**|**67/102 (65.7%)**    |**23/26 (88.5%)**|**184/243 (75.7%)**|
 
 ## Endpoint ID Reference
 
