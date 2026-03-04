@@ -258,9 +258,14 @@ class ResourceWorkskillListResponse(OFSResponseList[ResourceWorkskillAssignment]
 class ResourceWorkzoneAssignment(BaseModel):
     """Workzone assigned to a resource."""
 
-    workZoneLabel: Optional[str] = None
+    workZone: Optional[str] = None
+    workZoneItemId: Optional[int] = None
+    workZoneStatus: Optional[str] = None
     ratio: Optional[int] = None
     startDate: Optional[str] = None
+    recurrence: Optional[str] = None
+    recurEvery: Optional[int] = None
+    type: Optional[str] = None
     model_config = ConfigDict(extra="allow")
 
 

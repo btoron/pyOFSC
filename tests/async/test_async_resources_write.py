@@ -670,7 +670,7 @@ class TestAsyncResourceWorkzones:
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
-            "items": [{"workZoneLabel": "ZONE_A", "ratio": 100}],
+            "items": [{"workZone": "ZONE_A", "ratio": 100}],
             "totalResults": 1,
         }
         mock_response.raise_for_status = Mock()

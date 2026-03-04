@@ -920,7 +920,7 @@ class TestAsyncCapacityAreaVsResourceWorkzones:
 
         # Get workzones from core API (same label as resource_id)
         res_workzones = await async_instance.core.get_resource_workzones(label)
-        res_labels = {wz.workZoneLabel for wz in res_workzones if wz.workZoneLabel}
+        res_labels = {wz.workZone for wz in res_workzones if wz.workZone}
 
         # The workzone labels from both APIs should match
         assert ca_labels == res_labels, (
