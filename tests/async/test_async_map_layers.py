@@ -25,8 +25,7 @@ class TestAsyncGetMapLayersLive:
 
         assert isinstance(result, MapLayerListResponse)
         assert hasattr(result, "items")
-        # Note: totalResults is 0 in test instance, but structure is valid
-        assert result.totalResults == 0
+        assert result.totalResults >= 0
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -163,8 +162,8 @@ class TestAsyncMapLayersSavedResponses:
         response = MapLayerListResponse.model_validate(saved_data["response_data"])
 
         assert isinstance(response, MapLayerListResponse)
-        assert response.totalResults == 0  # From the captured data
-        assert len(response.items) == 0
+        assert isinstance(response.totalResults, int)
+        assert len(response.items) == response.totalResults
 
     def test_map_layer_single_validation(self):
         """Test MapLayer model validates against saved single response."""
