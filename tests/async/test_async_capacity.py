@@ -295,7 +295,7 @@ class TestAsyncGetActivityBookingOptionsLive:
     async def test_get_activity_booking_options(self, async_instance):
         """Test get_activity_booking_options with actual API."""
         result = await async_instance.capacity.get_activity_booking_options(
-            dates="2026-03-03"
+            dates="2026-03-03", activityType="LU", determineAreaByWorkZone=False
         )
         assert isinstance(result, ActivityBookingOptionsResponse)
         assert hasattr(result, "items")
@@ -371,7 +371,7 @@ class TestAsyncGetBookingClosingScheduleLive:
     async def test_get_booking_closing_schedule(self, async_instance):
         """Test get_booking_closing_schedule with actual API."""
         result = await async_instance.capacity.get_booking_closing_schedule(
-            dates="2026-03-03"
+            areas=["CAUSA"]
         )
         assert isinstance(result, BookingClosingScheduleResponse)
         assert hasattr(result, "items")
@@ -398,7 +398,7 @@ class TestAsyncGetBookingClosingSchedule:
         async_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
         result = await async_instance.capacity.get_booking_closing_schedule(
-            dates="2026-03-03"
+            areas="FLUSA"
         )
 
         assert isinstance(result, BookingClosingScheduleResponse)
@@ -415,7 +415,7 @@ class TestAsyncGetBookingClosingSchedule:
         async_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
         await async_instance.capacity.get_booking_closing_schedule(
-            dates="2026-03-03", areas=["FLUSA", "CAUSA"]
+            areas=["FLUSA", "CAUSA"]
         )
 
         call_kwargs = async_instance.capacity._client.get.call_args

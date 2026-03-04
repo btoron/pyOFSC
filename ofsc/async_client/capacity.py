@@ -305,6 +305,7 @@ class AsyncOFSCapacity:
         resourceId: Optional[str] = None,
         activityId: Optional[str] = None,
         workZone: Optional[str] = None,
+        determineAreaByWorkZone: Optional[bool] = None,
         aggregateResults: Optional[bool] = None,
         returnAvailableSlots: Optional[bool] = None,
         returnStatuses: Optional[bool] = None,
@@ -324,6 +325,7 @@ class AsyncOFSCapacity:
             resourceId: Optional. Resource identifier
             activityId: Optional. Activity identifier
             workZone: Optional. Work zone label
+            determineAreaByWorkZone: Optional. Auto-determine area by work zone (default: true in API)
             aggregateResults: Optional. Aggregate results flag
             returnAvailableSlots: Optional. Return available slots flag
             returnStatuses: Optional. Return statuses flag
@@ -370,6 +372,8 @@ class AsyncOFSCapacity:
             params["activityId"] = activityId
         if workZone is not None:
             params["workZone"] = workZone
+        if determineAreaByWorkZone is not None:
+            params["determineAreaByWorkZone"] = str(determineAreaByWorkZone).lower()
         if aggregateResults is not None:
             params["aggregateResults"] = str(aggregateResults).lower()
         if returnAvailableSlots is not None:
@@ -394,14 +398,12 @@ class AsyncOFSCapacity:
 
     async def get_booking_closing_schedule(
         self,
-        dates: Union[list[str], str],
-        areas: Optional[Union[list[str], str]] = None,
+        areas: Union[list[str], str],
     ) -> BookingClosingScheduleResponse:
-        """Get booking closing schedule for specified dates and areas.
+        """Get booking closing schedule for specified capacity areas.
 
         Args:
-            dates: Required. Date or list of dates in YYYY-MM-DD format
-            areas: Optional. Capacity area label(s)
+            areas: Required. Capacity area label(s)
 
         Returns:
             BookingClosingScheduleResponse: Closing schedule items
@@ -413,9 +415,7 @@ class AsyncOFSCapacity:
             OFSCNetworkError: For network/transport errors
         """
         params: dict = {}
-        params["dates"] = ",".join(dates) if isinstance(dates, list) else dates
-        if areas is not None:
-            params["areas"] = ",".join(areas) if isinstance(areas, list) else areas
+        params["areas"] = ",".join(areas) if isinstance(areas, list) else areas
 
         url = urljoin(self.baseUrl, "/rest/ofscCapacity/v1/bookingClosingSchedule")
         try:
