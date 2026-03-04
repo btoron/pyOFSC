@@ -1040,14 +1040,14 @@ class TestAsyncResourceFileProperty:
 class TestAsyncResourceFilePropertyLive:
     """Live roundtrip tests for resource file property methods.
 
-    Requires API credentials in .env and a file-type property ('csign') on resources.
+    Requires API credentials in .env and a file-type property on resources.
     """
-
-    _FILE_PROPERTY_LABEL = "csign"
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_set_get_delete_roundtrip(self, async_instance: AsyncOFSC):
+    async def test_set_get_delete_roundtrip(
+        self, async_instance: AsyncOFSC, resource_file_property_label: str
+    ):
         """Test set → get → verify → delete roundtrip for resource file property."""
         resources = await async_instance.core.get_resources(limit=1)
         if not resources.items:
@@ -1060,28 +1060,23 @@ class TestAsyncResourceFilePropertyLive:
         content = b"CLAUDE_TEST_BINARY_CONTENT"
         filename = "test_signature.bin"
 
-        try:
-            await async_instance.core.set_resource_file_property(
-                resource_id,
-                self._FILE_PROPERTY_LABEL,
-                content,
-                filename,
-            )
+        await async_instance.core.set_resource_file_property(
+            resource_id,
+            resource_file_property_label,
+            content,
+            filename,
+        )
 
+        try:
             fetched = await async_instance.core.get_resource_file_property(
-                resource_id, self._FILE_PROPERTY_LABEL
+                resource_id, resource_file_property_label
             )
             assert isinstance(fetched, bytes)
             assert fetched == content
-
-        except OFSCNotFoundError:
-            pytest.skip(
-                f"File property '{self._FILE_PROPERTY_LABEL}' not configured on resources"
-            )
         finally:
             try:
                 await async_instance.core.delete_resource_file_property(
-                    resource_id, self._FILE_PROPERTY_LABEL
+                    resource_id, resource_file_property_label
                 )
             except Exception:
                 pass
