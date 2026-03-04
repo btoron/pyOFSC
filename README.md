@@ -351,8 +351,18 @@ uv run pytest tests/async/test_async_workzones.py
     get_organization(self, label: str, response_type=OBJ_RESPONSE)
 
 ### Capacity / Available Capacity
-    getAvailableCapacity(self, dates, areas, categories=None, aggregateResults=None, availableTimeIntervals="all", calendarTimeIntervals="all", fields=None, response_type=OBJ_RESPONSE)
-    getQuota(self, dates, areas=None, categories=None, aggregateResults=None, categoryLevel=None, intervalLevel=None, returnStatuses=None, timeSlotLevel=None, response_type=OBJ_RESPONSE)
+    getAvailableCapacity(self, dates, areas, categories=None, aggregateResults=None, availableTimeIntervals="all", calendarTimeIntervals="all", fields=None, response_type=OBJ_RESPONSE)   [Sync & Async]
+    get_available_capacity(self, dates, areas=None, categories=None, aggregateResults=None, availableTimeIntervals="all", calendarTimeIntervals="all", fields=None)   [Async]
+    getQuota(self, dates, areas=None, categories=None, aggregateResults=None, categoryLevel=None, intervalLevel=None, returnStatuses=None, timeSlotLevel=None, response_type=OBJ_RESPONSE)   [Sync & Async]
+    get_quota(self, dates, areas=None, categories=None, aggregateResults=None, categoryLevel=None, intervalLevel=None, returnStatuses=None, timeSlotLevel=None)   [Async]
+    update_quota(self, data)   [Async]
+    get_activity_booking_options(self, dates, areas=None, activityType=None, duration=None, ...)   [Async]
+    get_booking_closing_schedule(self, dates, areas=None)   [Async]
+    update_booking_closing_schedule(self, data)   [Async]
+    get_booking_statuses(self, dates, areas=None)   [Async]
+    update_booking_statuses(self, data)   [Async]
+    show_booking_grid(self, data)   [Async]
+    get_booking_fields_dependencies(self, areas=None)   [Async]
 
 ## Usage Examples
 
