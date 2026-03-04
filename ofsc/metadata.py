@@ -30,6 +30,7 @@ from .models import (
     Workskill,
     WorkskillGroup,
     WorkskillGroupListResponse,
+    WorkskillListResponse,
     Workzone,
     WorkzoneListResponse,
     WorkskillConditionList,
@@ -174,7 +175,7 @@ class OFSMetadata(OFSApi):
         response = requests.post(url, headers=self.headers, files=files)
         return response
 
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=WorkskillListResponse)
     def get_workskills(self, offset=0, limit=100, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkills")
         params = {"offset": offset, "limit": limit}
@@ -185,7 +186,7 @@ class OFSMetadata(OFSApi):
         )
         return response
 
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=Workskill)
     def get_workskill(self, label: str, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{label}")
         response = requests.get(
@@ -194,10 +195,12 @@ class OFSMetadata(OFSApi):
         )
         return response
 
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=Workskill)
     def create_or_update_workskill(self, skill: Workskill, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{skill.label}")
-        response = requests.put(url, headers=self.headers, data=skill.model_dump_json())
+        response = requests.put(
+            url, headers=self.headers, data=skill.model_dump_json(exclude_none=True)
+        )
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[204])

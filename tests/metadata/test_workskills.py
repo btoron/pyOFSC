@@ -81,6 +81,7 @@ def test_delete_workskill(instance):
     metadata_response = instance.metadata.create_or_update_workskill(
         skill=skill, response_type=FULL_RESPONSE
     )
+    assert metadata_response.status_code < 299, metadata_response
     response = metadata_response.json()
     assert response["label"] == skill.label
     assert response["name"] == skill.name
