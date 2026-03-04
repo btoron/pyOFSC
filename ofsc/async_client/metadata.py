@@ -287,7 +287,7 @@ class AsyncOFSMetadata:
 
         try:
             response = await self._client.put(
-                url, headers=self.headers, json=data.model_dump(exclude_none=True)
+                url, headers=self.headers, json=data.model_dump(exclude_none=True, mode="json")
             )
             response.raise_for_status()
             result = response.json()
@@ -393,7 +393,7 @@ class AsyncOFSMetadata:
 
         try:
             response = await self._client.put(
-                url, headers=self.headers, json=data.model_dump(exclude_none=True)
+                url, headers=self.headers, json=data.model_dump(exclude_none=True, mode="json")
             )
             response.raise_for_status()
             result = response.json()
@@ -567,7 +567,7 @@ class AsyncOFSMetadata:
 
         try:
             response = await self._client.put(
-                url, headers=self.headers, json=data.model_dump(exclude_none=True)
+                url, headers=self.headers, json=data.model_dump(exclude_none=True, mode="json")
             )
             response.raise_for_status()
             result = response.json()
@@ -834,7 +834,7 @@ class AsyncOFSMetadata:
 
         try:
             response = await self._client.put(
-                url, headers=self.headers, json=data.model_dump(exclude_none=True)
+                url, headers=self.headers, json=data.model_dump(exclude_none=True, mode="json")
             )
             response.raise_for_status()
             result = response.json()
@@ -956,7 +956,7 @@ class AsyncOFSMetadata:
 
         try:
             response = await self._client.put(
-                url, headers=self.headers, json=data.model_dump(exclude_none=True)
+                url, headers=self.headers, json=data.model_dump(exclude_none=True, mode="json")
             )
             response.raise_for_status()
             result = response.json()
@@ -1085,7 +1085,7 @@ class AsyncOFSMetadata:
 
         try:
             response = await self._client.put(
-                url, headers=self.headers, json=data.model_dump(exclude_none=True)
+                url, headers=self.headers, json=data.model_dump(exclude_none=True, mode="json")
             )
             response.raise_for_status()
             result = response.json()
@@ -1222,11 +1222,14 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/linkTemplates")
+        encoded_label = quote_plus(data.label)
+        url = urljoin(
+            self.baseUrl, f"/rest/ofscMetadata/v1/linkTemplates/{encoded_label}"
+        )
 
         try:
             response = await self._client.post(
-                url, headers=self.headers, json=data.model_dump(exclude_none=True)
+                url, headers=self.headers, json=data.model_dump(exclude_none=True, mode="json")
             )
             response.raise_for_status()
             result = response.json()
@@ -1260,7 +1263,7 @@ class AsyncOFSMetadata:
 
         try:
             response = await self._client.patch(
-                url, headers=self.headers, json=data.model_dump(exclude_none=True)
+                url, headers=self.headers, json=data.model_dump(exclude_none=True, mode="json")
             )
             response.raise_for_status()
             result = response.json()
@@ -1356,7 +1359,7 @@ class AsyncOFSMetadata:
 
         try:
             response = await self._client.put(
-                url, headers=self.headers, json=data.model_dump(exclude_none=True)
+                url, headers=self.headers, json=data.model_dump(exclude_none=True, mode="json")
             )
             response.raise_for_status()
             result = response.json()
@@ -1389,7 +1392,7 @@ class AsyncOFSMetadata:
 
         try:
             response = await self._client.post(
-                url, headers=self.headers, json=data.model_dump(exclude_none=True)
+                url, headers=self.headers, json=data.model_dump(exclude_none=True, mode="json")
             )
             response.raise_for_status()
             result = response.json()
@@ -1849,7 +1852,7 @@ class AsyncOFSMetadata:
             self.baseUrl,
             f"/rest/ofscMetadata/v1/properties/{label}/enumerationList",
         )
-        data = {"items": [item.model_dump() for item in value]}
+        data = {"items": [item.model_dump(mode="json") for item in value]}
 
         try:
             response = await self._client.put(url, headers=self.headers, json=data)
@@ -2272,7 +2275,7 @@ class AsyncOFSMetadata:
 
         try:
             response = await self._client.put(
-                url, headers=self.headers, json=data.model_dump(exclude_none=True)
+                url, headers=self.headers, json=data.model_dump(exclude_none=True, mode="json")
             )
             response.raise_for_status()
             result = response.json()
@@ -2448,7 +2451,7 @@ class AsyncOFSMetadata:
 
         try:
             response = await self._client.put(
-                url, headers=self.headers, json=skill.model_dump(exclude_none=True)
+                url, headers=self.headers, json=skill.model_dump(exclude_none=True, mode="json")
             )
             response.raise_for_status()
             data = response.json()
@@ -2528,7 +2531,7 @@ class AsyncOFSMetadata:
         :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillConditions")
-        body = {"items": [item.model_dump(exclude_none=True) for item in data]}
+        body = {"items": [item.model_dump(exclude_none=True, mode="json") for item in data]}
 
         try:
             response = await self._client.put(url, headers=self.headers, json=body)
@@ -2620,7 +2623,7 @@ class AsyncOFSMetadata:
 
         try:
             response = await self._client.put(
-                url, headers=self.headers, json=data.model_dump(exclude_none=True)
+                url, headers=self.headers, json=data.model_dump(exclude_none=True, mode="json")
             )
             response.raise_for_status()
             response_data = response.json()
@@ -2836,7 +2839,7 @@ class AsyncOFSMetadata:
         :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workZones")
-        body = {"items": [item.model_dump(exclude_none=True) for item in data]}
+        body = {"items": [item.model_dump(exclude_none=True, mode="json") for item in data]}
 
         try:
             response = await self._client.put(url, headers=self.headers, json=body)
@@ -2865,7 +2868,7 @@ class AsyncOFSMetadata:
         :raises OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workZones")
-        body = {"items": [item.model_dump(exclude_none=True) for item in data]}
+        body = {"items": [item.model_dump(exclude_none=True, mode="json") for item in data]}
 
         try:
             response = await self._client.patch(url, headers=self.headers, json=body)

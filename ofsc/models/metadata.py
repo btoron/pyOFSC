@@ -688,7 +688,7 @@ class Property(BaseModel):
     @field_validator("translations")
     def set_default(cls, field_value, values):
         if field_value is None:
-            return TranslationList([Translation(name=values.name)])
+            return TranslationList([Translation(name=values.data.get("name"))])
         return field_value
 
     @field_validator("gui")
