@@ -1,3 +1,5 @@
+import pytest
+
 from ofsc.common import FULL_RESPONSE, OBJ_RESPONSE
 from ofsc.models import TranslationList, WorkskillAssignmentList, WorkskillGroup
 
@@ -50,6 +52,7 @@ def test_workskill_group_model_base():
     )
 
 
+@pytest.mark.uses_real_data
 def test_get_workskill_group_full(instance):
     instance.metadata.create_or_update_workskill_group(
         WorkskillGroup.model_validate(_workskill_group), response_type=FULL_RESPONSE
@@ -65,6 +68,7 @@ def test_get_workskill_group_full(instance):
     instance.metadata.delete_workskill_group(label="TESTGROUP")
 
 
+@pytest.mark.uses_real_data
 def test_get_workskill_group_obj(instance):
     instance.metadata.create_or_update_workskill_group(
         WorkskillGroup.model_validate(_workskill_group), response_type=FULL_RESPONSE
@@ -78,10 +82,12 @@ def test_get_workskill_group_obj(instance):
     instance.metadata.delete_workskill_group(label="TESTGROUP")
 
 
+@pytest.mark.uses_real_data
 def test_get_workskill_groups_base(instance):
-    instance.metadata.create_or_update_workskill_group(
+    create_response = instance.metadata.create_or_update_workskill_group(
         WorkskillGroup.model_validate(_workskill_group), response_type=FULL_RESPONSE
     )
+    assert create_response.status_code in (200, 201)
     metadata_response = instance.metadata.get_workskill_groups(
         response_type=FULL_RESPONSE
     )
@@ -105,6 +111,7 @@ def test_get_workskill_groups_base(instance):
     instance.metadata.delete_workskill_group(label="TESTGROUP")
 
 
+@pytest.mark.uses_real_data
 def test_workskill_groups_obj(instance):
     instance.metadata.create_or_update_workskill_group(
         WorkskillGroup.model_validate(_workskill_group), response_type=FULL_RESPONSE
@@ -117,6 +124,7 @@ def test_workskill_groups_obj(instance):
     instance.metadata.delete_workskill_group(label="TESTGROUP")
 
 
+@pytest.mark.uses_real_data
 def test_create_or_update_workskill_group(instance):
     group = WorkskillGroup(
         label="TESTGROUP2",

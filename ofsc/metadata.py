@@ -372,7 +372,7 @@ class OFSMetadata(OFSApi):
         response = requests.get(url, headers=self.headers)
         return response
 
-    @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200, 201], model=WorkskillGroup)
     def create_or_update_workskill_group(self, data: WorkskillGroup):
         label = data.label
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillGroups/{label}")

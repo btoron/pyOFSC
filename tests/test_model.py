@@ -21,6 +21,7 @@ from ofsc.models import (
     TranslationList,
     Workskill,
     WorkskillList,
+    WorkskillListResponse,
 )
 
 
@@ -324,8 +325,9 @@ def test_workskill_model_base():
 
 def test_workskilllist_connected(instance):
     metadata_response = instance.metadata.get_workskills(response_type=OBJ_RESPONSE)
-    logging.debug(json.dumps(metadata_response, indent=4))
-    WorkskillList.model_validate(metadata_response["items"])
+    assert isinstance(metadata_response, WorkskillListResponse)
+    logging.debug(metadata_response.model_dump_json(indent=4))
+    WorkskillList.model_validate(metadata_response.items)
 
 
 # endregion
