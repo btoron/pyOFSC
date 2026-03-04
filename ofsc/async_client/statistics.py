@@ -54,7 +54,9 @@ class AsyncOFSStatistics:
                 "utf-8"
             )
         else:
-            raise NotImplementedError("Token-based auth not yet implemented for async")
+            if self._config.access_token is None:
+                raise ValueError("access_token required when useToken=True")
+            headers["Authorization"] = f"Bearer {self._config.access_token}"
         return headers
 
     def _parse_error_response(self, response: httpx.Response) -> dict:

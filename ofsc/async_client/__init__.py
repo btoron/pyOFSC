@@ -76,6 +76,7 @@ class AsyncOFSC:
         root: Optional[str] = None,
         baseUrl: Optional[str] = None,
         useToken: bool = False,
+        access_token: Optional[str] = None,
         enable_auto_raise: bool = True,
         enable_auto_model: bool = True,
     ):
@@ -86,6 +87,7 @@ class AsyncOFSC:
             companyName=companyName,
             root=root,
             useToken=useToken,
+            access_token=access_token,
             auto_raise=enable_auto_raise,
             auto_model=enable_auto_model,
         )

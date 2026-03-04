@@ -143,6 +143,7 @@ class OFSConfig(BaseModel):
     secret: str
     companyName: str
     useToken: bool = False
+    access_token: Optional[str] = None
     root: Optional[str] = None
     baseURL: Optional[str] = None
     auto_raise: bool = True

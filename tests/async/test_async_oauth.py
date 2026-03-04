@@ -157,3 +157,39 @@ class TestAsyncGetTokenLive:
 
 
 # endregion
+
+# region E2E tests
+
+
+class TestAsyncTokenAuthE2E:
+    """E2E tests: get token, then use it for API calls."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_token_auth_get_activity_types(self, async_instance: AsyncOFSC):
+        """Get token, create token-authed client, compare activity_types results."""
+        # 1. Get activity types with normal Basic auth
+        basic_result = await async_instance.metadata.get_activity_types()
+
+        # 2. Get OAuth token
+        token_response = await async_instance.oauth2.get_token()
+
+        # 3. Create new client using the token
+        async with AsyncOFSC(
+            clientID=async_instance._config.clientID,
+            companyName=async_instance._config.companyName,
+            secret=async_instance._config.secret,
+            root=async_instance._config.root,
+            useToken=True,
+            access_token=token_response.access_token,
+        ) as token_client:
+            # 4. Get activity types with token auth
+            token_result = await token_client.metadata.get_activity_types()
+
+        # 5. Compare results
+        assert token_result.totalResults == basic_result.totalResults
+        assert len(token_result) == len(basic_result)
+        assert {at.label for at in token_result} == {at.label for at in basic_result}
+
+
+# endregion
