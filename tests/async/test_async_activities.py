@@ -16,6 +16,7 @@ from ofsc.models import (
     InventoryListResponse,
     LinkedActivitiesResponse,
     LinkedActivity,
+    MultidaySegmentListResponse,
     RequiredInventoriesResponse,
     ResourcePreferencesResponse,
     SubmittedFormsResponse,
@@ -766,14 +767,16 @@ class TestAsyncGetMultidaySegmentsLive:
     async def test_get_multiday_segments(
         self, async_instance: AsyncOFSC, segmentable_activity
     ):
-        """Test get_multiday_segments returns ActivityListResponse with segments."""
+        """Test get_multiday_segments returns MultidaySegmentListResponse with segments."""
         result = await async_instance.core.get_multiday_segments(
             segmentable_activity.activityId
         )
-        assert isinstance(result, ActivityListResponse)
+        assert isinstance(result, MultidaySegmentListResponse)
         assert result.items is not None
+        assert len(result.items) > 0
         for segment in result.items:
             assert isinstance(segment, Activity)
+        assert not hasattr(result, "totalResults")
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data

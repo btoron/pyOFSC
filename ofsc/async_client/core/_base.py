@@ -21,6 +21,7 @@ from ...models import (
     Activity,
     ActivityCapacityCategoriesResponse,
     ActivityListResponse,
+    MultidaySegmentListResponse,
     BulkUpdateRequest,
     CreateSubscriptionRequest,
     DailyExtractFiles,
@@ -1122,14 +1123,16 @@ class _AsyncOFSCoreBase:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_multiday_segments(self, activity_id: int) -> ActivityListResponse:
+    async def get_multiday_segments(
+        self, activity_id: int
+    ) -> MultidaySegmentListResponse:
         """Get multiday segments for an activity.
 
         Args:
             activity_id: The activity ID to get segments for
 
         Returns:
-            ActivityListResponse: List of segment activities
+            MultidaySegmentListResponse: List of segment activities (no totalResults)
 
         Raises:
             OFSCAuthenticationError: If authentication fails (401)
@@ -1148,7 +1151,7 @@ class _AsyncOFSCoreBase:
             response.raise_for_status()
             data = response.json()
 
-            return ActivityListResponse.model_validate(data)
+            return MultidaySegmentListResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(
                 e, f"Failed to get multiday segments for activity {activity_id}"
