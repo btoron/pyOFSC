@@ -404,12 +404,15 @@ uv run pytest tests/async/test_async_workzones.py
 
 ### Statistics / Activity Duration Stats
     get_activity_duration_stats(self, resource_id=None, include_children=None, akey=None, offset=0, limit=100)   [Async]
+    update_activity_duration_stats(self, data)   [Async]
 
 ### Statistics / Activity Travel Stats
     get_activity_travel_stats(self, region=None, tkey=None, fkey=None, key_id=None, offset=0, limit=100)   [Async]
+    update_activity_travel_stats(self, data)   [Async]
 
 ### Statistics / Airline Distance Based Travel
     get_airline_distance_based_travel(self, level=None, key=None, distance=None, key_id=None, offset=0, limit=100)   [Async]
+    update_airline_distance_based_travel(self, data)   [Async]
 
 ## Usage Examples
 

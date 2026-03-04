@@ -75,3 +75,88 @@ class AirlineDistanceBasedTravelList(OFSResponseList[AirlineDistanceBasedTravel]
 
 
 # endregion
+
+
+# region Statistics / Write Operations (shared PATCH response)
+
+
+class StatisticsPatchResponse(BaseModel):
+    status: Optional[str] = None
+    updatedRecords: Optional[int] = None
+
+
+# endregion
+
+
+# region Statistics / Activity Duration Stats Write
+
+
+class ActivityDurationStatRequest(BaseModel):
+    resourceId: str = ""
+    akey: str
+    override: int
+
+
+class ActivityDurationStatRequestList(BaseModel):
+    items: list[ActivityDurationStatRequest]
+
+
+# endregion
+
+
+# region Statistics / Activity Travel Stats Write
+
+
+class ActivityTravelStatRequest(BaseModel):
+    fkey: str
+    tkey: str
+    override: int
+    keyId: Optional[int] = None
+
+
+class ActivityTravelStatRequestList(BaseModel):
+    items: list[ActivityTravelStatRequest]
+
+
+# endregion
+
+
+# region Statistics / Airline Distance Based Travel Write
+
+
+class AirlineDistanceOverrideData(BaseModel):
+    distance: int
+    override: int
+
+
+class AirlineDistanceBasedTravelRequest(BaseModel):
+    data: list[AirlineDistanceOverrideData]
+    key: Optional[str] = None
+    keyId: Optional[int] = None
+    level: Optional[str] = None
+
+
+class AirlineDistanceBasedTravelRequestList(BaseModel):
+    items: list[AirlineDistanceBasedTravelRequest]
+
+
+# endregion
+
+
+__all__ = [
+    "ActivityDurationStat",
+    "ActivityDurationStatsList",
+    "ActivityDurationStatRequest",
+    "ActivityDurationStatRequestList",
+    "ActivityTravelStat",
+    "ActivityTravelStatsList",
+    "ActivityTravelStatRequest",
+    "ActivityTravelStatRequestList",
+    "AirlineDistanceData",
+    "AirlineDistanceBasedTravel",
+    "AirlineDistanceBasedTravelList",
+    "AirlineDistanceOverrideData",
+    "AirlineDistanceBasedTravelRequest",
+    "AirlineDistanceBasedTravelRequestList",
+    "StatisticsPatchResponse",
+]
