@@ -21,6 +21,7 @@ from .capacity import AsyncOFSCapacity
 from .core import AsyncOFSCore
 from .metadata import AsyncOFSMetadata
 from .oauth import AsyncOFSOauth2
+from .statistics import AsyncOFSStatistics
 
 __all__ = [
     "AsyncOFSC",
@@ -93,6 +94,7 @@ class AsyncOFSC:
         self._metadata: Optional[AsyncOFSMetadata] = None
         self._capacity: Optional[AsyncOFSCapacity] = None
         self._oauth: Optional[AsyncOFSOauth2] = None
+        self._statistics: Optional[AsyncOFSStatistics] = None
 
     async def __aenter__(self) -> "AsyncOFSC":
         """Enter async context manager - create shared httpx.AsyncClient."""
@@ -101,6 +103,7 @@ class AsyncOFSC:
         self._metadata = AsyncOFSMetadata(config=self._config, client=self._client)
         self._capacity = AsyncOFSCapacity(config=self._config, client=self._client)
         self._oauth = AsyncOFSOauth2(config=self._config, client=self._client)
+        self._statistics = AsyncOFSStatistics(config=self._config, client=self._client)
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
@@ -134,6 +137,12 @@ class AsyncOFSC:
         return self._oauth
 
     @property
+    def statistics(self) -> AsyncOFSStatistics:
+        if self._statistics is None:
+            raise RuntimeError("AsyncOFSC must be used as async context manager")
+        return self._statistics
+
+    @property
     def auto_model(self) -> bool:
         return self._config.auto_model
 
@@ -148,6 +157,8 @@ class AsyncOFSC:
             self._capacity.config.auto_model = value
         if self._oauth:
             self._oauth.config.auto_model = value
+        if self._statistics:
+            self._statistics.config.auto_model = value
 
     def __str__(self) -> str:
         return f"AsyncOFSC(baseURL={self._config.baseURL})"

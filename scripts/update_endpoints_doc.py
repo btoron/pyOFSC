@@ -29,7 +29,7 @@ MODULE_FILE_MAP = {
     "capacity": ("ofsc/capacity.py", "ofsc/async_client/capacity.py"),
     "auth": ("ofsc/oauth.py", "ofsc/async_client/oauth.py"),
     # These modules have no implementation files
-    "statistics": (None, None),
+    "statistics": (None, "ofsc/async_client/statistics.py"),
     "partscatalog": (None, None),
     "collaboration": (None, None),
 }
