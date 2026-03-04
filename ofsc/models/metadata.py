@@ -52,6 +52,7 @@ class ActivityTypeGroupListResponse(OFSResponseList[ActivityTypeGroup]):
 class ActivityTypeColors(BaseModel):
     cancelled: Annotated[Optional[str], Field(alias="cancelled")]
     completed: Annotated[Optional[str], Field(alias="completed")]
+    enroute: Annotated[Optional[str], Field(alias="enroute")] = None
     notdone: Annotated[Optional[str], Field(alias="notdone")]
     notOrdered: Annotated[Optional[str], Field(alias="notOrdered")]
     pending: Annotated[Optional[str], Field(alias="pending")]
@@ -97,9 +98,9 @@ class ActivityTypeTimeSlots(BaseModel):
 
 class ActivityType(BaseModel):
     active: bool
-    colors: Optional[ActivityTypeColors]
+    colors: Optional[ActivityTypeColors] = None
     defaultDuration: int
-    features: Optional[ActivityTypeFeatures]
+    features: Optional[ActivityTypeFeatures] = None
     groupLabel: Optional[str]
     label: str
     name: str
@@ -1248,12 +1249,25 @@ class Shift(BaseModel):
     label: str
     name: str
     active: bool
-    type: ShiftType
+    type: Optional[ShiftType] = None
     workTimeStart: time
     workTimeEnd: time
     points: Optional[int] = None
     decoration: Optional[ShiftDecoration] = None
     model_config = ConfigDict(extra="allow")
+
+
+class ShiftUpdate(BaseModel):
+    """Shift update payload — excludes immutable 'type' field."""
+
+    label: str
+    name: str
+    active: bool
+    workTimeStart: time
+    workTimeEnd: time
+    points: Optional[int] = None
+    decoration: Optional[ShiftDecoration] = None
+    model_config = ConfigDict(extra="forbid")
 
 
 class ShiftList(RootModel[list[Shift]]):

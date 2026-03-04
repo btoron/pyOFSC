@@ -172,6 +172,7 @@ from .metadata import (
     ShiftDecoration as ShiftDecoration,
     ShiftList as ShiftList,
     ShiftListResponse as ShiftListResponse,
+    ShiftUpdate as ShiftUpdate,
     ShiftType as ShiftType,
     SimpleApiAccess as SimpleApiAccess,
     StructuredApiAccess as StructuredApiAccess,

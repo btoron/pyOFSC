@@ -63,6 +63,7 @@ from ..models import (
     RoutingProfileList,
     Shift,
     ShiftListResponse,
+    ShiftUpdate,
     TimeSlot,
     TimeSlotListResponse,
     Workskill,
@@ -2604,7 +2605,7 @@ class AsyncOFSMetadata:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def create_or_replace_shift(self, data: Shift) -> Shift:
+    async def create_or_replace_shift(self, data: Shift | ShiftUpdate) -> Shift:
         """Create or replace a shift.
 
         :param data: The shift to create or replace

@@ -12,6 +12,8 @@ import datetime
 
 import pytest
 
+MINIMAL_FORM_CONTENT = '{"formatVersion":"1.1","items":[]}'
+
 from ofsc.async_client import AsyncOFSC
 from ofsc.exceptions import OFSCAuthorizationError, OFSCNotFoundError
 from ofsc.models import (
@@ -24,6 +26,7 @@ from ofsc.models import (
     MapLayer,
     Property,
     Shift,
+    ShiftUpdate,
     Translation,
     TranslationList,
     Workskill,
@@ -218,6 +221,7 @@ class TestCapacityCategoryRoundtrip:
                     "label": label,
                     "name": name,
                     "active": True,
+                    "translations": [{"language": "en", "name": name}],
                 }
             )
             created = await async_instance.metadata.create_or_replace_capacity_category(
@@ -238,6 +242,7 @@ class TestCapacityCategoryRoundtrip:
                     "label": label,
                     "name": new_name,
                     "active": False,
+                    "translations": [{"language": "en", "name": new_name}],
                 }
             )
             updated = await async_instance.metadata.create_or_replace_capacity_category(
@@ -273,7 +278,14 @@ class TestFormRoundtrip:
         name = faker.sentence(nb_words=3)[:50]
         try:
             # CREATE
-            form = Form.model_validate({"label": label, "name": name})
+            form = Form.model_validate(
+                {
+                    "label": label,
+                    "name": name,
+                    "content": MINIMAL_FORM_CONTENT,
+                    "translations": [{"language": "en", "name": name}],
+                }
+            )
             created = await async_instance.metadata.create_or_replace_form(form)
             assert isinstance(created, Form)
             assert created.label == label
@@ -285,7 +297,14 @@ class TestFormRoundtrip:
 
             # UPDATE (replace)
             new_name = faker.sentence(nb_words=3)[:50]
-            replaced = Form.model_validate({"label": label, "name": new_name})
+            replaced = Form.model_validate(
+                {
+                    "label": label,
+                    "name": new_name,
+                    "content": MINIMAL_FORM_CONTENT,
+                    "translations": [{"language": "en", "name": new_name}],
+                }
+            )
             updated = await async_instance.metadata.create_or_replace_form(replaced)
             assert isinstance(updated, Form)
 
@@ -338,14 +357,13 @@ class TestShiftRoundtrip:
             assert fetched.workTimeStart == datetime.time(8, 0, 0)
             assert fetched.workTimeEnd == datetime.time(17, 0, 0)
 
-            # UPDATE (replace with new times)
+            # UPDATE (replace with new times) — omit 'type' as it cannot be changed
             new_name = faker.sentence(nb_words=3)[:50]
-            replaced = Shift.model_validate(
+            replaced = ShiftUpdate.model_validate(
                 {
                     "label": label,
                     "name": new_name,
                     "active": True,
-                    "type": ShiftType.regular,
                     "workTimeStart": "09:00:00",
                     "workTimeEnd": "18:00:00",
                 }
@@ -573,13 +591,10 @@ class TestMapLayerRoundtrip:
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
     async def test_map_layer_create_read_update(self, async_instance: AsyncOFSC, faker):
-        # Max 24 chars, alphanumeric + underscore only
-        random_part = faker.pystr(min_chars=6, max_chars=8).upper()
-        random_part = "".join(c for c in random_part if c.isalnum())[:8]
-        label = f"TST_{random_part}"[:24]
+        label = _unique_label(faker, "ML", max_len=24)
         name = faker.sentence(nb_words=3)[:50]
 
-        # CREATE via POST (create_map_layer, not create_or_replace_map_layer)
+        # CREATE via PUT (idempotent — no DELETE endpoint exists)
         layer = MapLayer.model_validate(
             {
                 "label": label,
@@ -637,6 +652,7 @@ class TestPropertyRoundtrip:
                 "name": name,
                 "type": "string",
                 "entity": EntityEnum.activity,
+                "gui": "text",
             }
         )
         created = await async_instance.metadata.create_or_replace_property(prop)
@@ -657,6 +673,7 @@ class TestPropertyRoundtrip:
                 "name": new_name,
                 "type": "string",
                 "entity": EntityEnum.activity,
+                "gui": "text",
             }
         )
         updated = await async_instance.metadata.update_property(patch_prop)
