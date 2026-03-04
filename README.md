@@ -246,6 +246,9 @@ uv run pytest tests/async/test_async_workzones.py
     delete_resource_workzone(self, resource_id, workzone_item_id)  [Async]
     delete_resource_workschedule(self, resource_id, schedule_item_id)  [Async]
     update_resource_location(self, resource_id, location_id, data)  [Async]
+    get_resource_file_property(self, resource_id, property_label, media_type)  [Async]
+    set_resource_file_property(self, resource_id, property_label, content, filename, content_type)  [Async]
+    delete_resource_file_property(self, resource_id, property_label)  [Async]
 
 ### Core / Inventories (Standalone)
     create_inventory(self, data)  [Async]

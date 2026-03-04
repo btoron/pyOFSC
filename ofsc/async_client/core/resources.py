@@ -2,7 +2,7 @@
 
 from datetime import date
 from typing import Any, Protocol
-from urllib.parse import urljoin
+from urllib.parse import quote_plus, urljoin
 
 import httpx
 
@@ -1344,5 +1344,139 @@ class AsyncOFSCoreResourcesMixin:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     # endregion
+
+    # endregion
+
+    # region File Properties
+
+    async def get_resource_file_property(
+        self: _CoreBaseProtocol,
+        resource_id: str,
+        property_label: str,
+        media_type: str = "application/octet-stream",
+    ) -> bytes:
+        """Get a binary file property for a resource.
+
+        Args:
+            resource_id: Resource identifier
+            property_label: Property label (e.g., 'csign')
+            media_type: Expected MIME type (default: application/octet-stream)
+
+        Returns:
+            bytes: Binary content of the property
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCNotFoundError: If resource or property not found (404)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_resource_id = quote_plus(resource_id)
+        encoded_label = quote_plus(property_label)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{encoded_resource_id}/{encoded_label}",
+        )
+        headers = {**self.headers, "Accept": media_type}
+
+        try:
+            response = await self._client.get(url, headers=headers)
+            response.raise_for_status()
+            return response.content
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e,
+                f"Failed to get property '{property_label}' for resource '{resource_id}'",
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def set_resource_file_property(
+        self: _CoreBaseProtocol,
+        resource_id: str,
+        property_label: str,
+        content: bytes,
+        filename: str,
+        content_type: str = "application/octet-stream",
+    ) -> None:
+        """Upload a binary file property for a resource.
+
+        Args:
+            resource_id: Resource identifier
+            property_label: Property label (e.g., 'csign')
+            content: Binary content to upload
+            filename: Filename for the Content-Disposition header
+            content_type: MIME type of the content (default: application/octet-stream)
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCNotFoundError: If resource not found (404)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_resource_id = quote_plus(resource_id)
+        encoded_label = quote_plus(property_label)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{encoded_resource_id}/{encoded_label}",
+        )
+        base_headers = {k: v for k, v in self.headers.items() if k != "Content-Type"}
+        headers = {
+            **base_headers,
+            "Content-Type": content_type,
+            "Content-Disposition": f'attachment; filename="{filename}"',
+        }
+
+        try:
+            response = await self._client.put(url, headers=headers, content=content)
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e,
+                f"Failed to set property '{property_label}' for resource '{resource_id}'",
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def delete_resource_file_property(
+        self: _CoreBaseProtocol,
+        resource_id: str,
+        property_label: str,
+    ) -> None:
+        """Delete a binary file property for a resource.
+
+        Args:
+            resource_id: Resource identifier
+            property_label: Property label to delete
+
+        Raises:
+            OFSCAuthenticationError: If authentication fails (401)
+            OFSCAuthorizationError: If authorization fails (403)
+            OFSCNotFoundError: If resource or property not found (404)
+            OFSCApiError: For other API errors
+            OFSCNetworkError: For network/transport errors
+        """
+        encoded_resource_id = quote_plus(resource_id)
+        encoded_label = quote_plus(property_label)
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/resources/{encoded_resource_id}/{encoded_label}",
+        )
+
+        try:
+            response = await self._client.delete(url, headers=self.headers)
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(
+                e,
+                f"Failed to delete property '{property_label}' for resource '{resource_id}'",
+            )
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     # endregion

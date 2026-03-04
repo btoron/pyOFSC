@@ -943,3 +943,145 @@ class TestAsyncResourceWriteLive:
                 await async_instance.core.delete_resource_location(
                     resource_id, created_location.locationId
                 )
+
+
+class TestAsyncResourceFileProperty:
+    """Mocked tests for resource file property methods."""
+
+    @pytest.mark.asyncio
+    async def test_get_resource_file_property_returns_bytes(
+        self, async_instance: AsyncOFSC
+    ):
+        """Test get_resource_file_property returns bytes."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.content = b"fake_binary_data"
+        mock_response.raise_for_status = Mock()
+        async_instance.core._client.get = AsyncMock(return_value=mock_response)
+
+        result = await async_instance.core.get_resource_file_property("RES001", "csign")
+
+        assert isinstance(result, bytes)
+        assert result == b"fake_binary_data"
+
+        call_kwargs = async_instance.core._client.get.call_args
+        assert call_kwargs.kwargs["headers"]["Accept"] == "application/octet-stream"
+
+    @pytest.mark.asyncio
+    async def test_set_resource_file_property_returns_none(
+        self, async_instance: AsyncOFSC
+    ):
+        """Test set_resource_file_property returns None on success (204)."""
+        mock_response = Mock()
+        mock_response.status_code = 204
+        mock_response.raise_for_status = Mock()
+        async_instance.core._client.put = AsyncMock(return_value=mock_response)
+
+        result = await async_instance.core.set_resource_file_property(
+            "RES001",
+            "csign",
+            b"image_data",
+            "signature.png",
+            "image/png",
+        )
+
+        assert result is None
+
+        call_kwargs = async_instance.core._client.put.call_args
+        headers = call_kwargs.kwargs["headers"]
+        assert headers["Content-Type"] == "image/png"
+        assert 'filename="signature.png"' in headers["Content-Disposition"]
+
+    @pytest.mark.asyncio
+    async def test_delete_resource_file_property_returns_none(
+        self, async_instance: AsyncOFSC
+    ):
+        """Test delete_resource_file_property returns None on success (204)."""
+        mock_response = Mock()
+        mock_response.status_code = 204
+        mock_response.raise_for_status = Mock()
+        async_instance.core._client.delete = AsyncMock(return_value=mock_response)
+
+        result = await async_instance.core.delete_resource_file_property(
+            "RES001", "csign"
+        )
+
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_set_resource_file_property_not_found(
+        self, async_instance: AsyncOFSC
+    ):
+        """Test set_resource_file_property raises OFSCNotFoundError on 404."""
+        async_instance.core._client.put = AsyncMock(
+            side_effect=_make_http_error(404, "Resource not found")
+        )
+
+        with pytest.raises(OFSCNotFoundError):
+            await async_instance.core.set_resource_file_property(
+                "NONEXISTENT", "csign", b"data", "file.bin"
+            )
+
+    @pytest.mark.asyncio
+    async def test_delete_resource_file_property_not_found(
+        self, async_instance: AsyncOFSC
+    ):
+        """Test delete_resource_file_property raises OFSCNotFoundError on 404."""
+        async_instance.core._client.delete = AsyncMock(
+            side_effect=_make_http_error(404, "Resource not found")
+        )
+
+        with pytest.raises(OFSCNotFoundError):
+            await async_instance.core.delete_resource_file_property(
+                "NONEXISTENT", "csign"
+            )
+
+
+class TestAsyncResourceFilePropertyLive:
+    """Live roundtrip tests for resource file property methods.
+
+    Requires API credentials in .env and a file-type property ('csign') on resources.
+    """
+
+    _FILE_PROPERTY_LABEL = "csign"
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_set_get_delete_roundtrip(self, async_instance: AsyncOFSC):
+        """Test set → get → verify → delete roundtrip for resource file property."""
+        resources = await async_instance.core.get_resources(limit=1)
+        if not resources.items:
+            pytest.skip("No resources available")
+
+        resource_id = resources.items[0].resourceId
+        if not resource_id:
+            pytest.skip("Resource has no resourceId")
+
+        content = b"CLAUDE_TEST_BINARY_CONTENT"
+        filename = "test_signature.bin"
+
+        try:
+            await async_instance.core.set_resource_file_property(
+                resource_id,
+                self._FILE_PROPERTY_LABEL,
+                content,
+                filename,
+            )
+
+            fetched = await async_instance.core.get_resource_file_property(
+                resource_id, self._FILE_PROPERTY_LABEL
+            )
+            assert isinstance(fetched, bytes)
+            assert fetched == content
+
+        except OFSCNotFoundError:
+            pytest.skip(
+                f"File property '{self._FILE_PROPERTY_LABEL}' not configured on resources"
+            )
+        finally:
+            try:
+                await async_instance.core.delete_resource_file_property(
+                    resource_id, self._FILE_PROPERTY_LABEL
+                )
+            except Exception:
+                pass
