@@ -8,6 +8,7 @@ from ofsc.common import FULL_RESPONSE
 
 
 @pytest.mark.serial
+@pytest.mark.uses_real_data
 def test_get_subscriptions(instance):
     raw_response = instance.core.get_subscriptions(response_type=FULL_RESPONSE)
     assert raw_response.status_code == 200
@@ -16,6 +17,7 @@ def test_get_subscriptions(instance):
 
 
 @pytest.mark.serial
+@pytest.mark.uses_real_data
 def test_get_subscriptions_with_token(instance_with_token):
     raw_response = instance_with_token.core.get_subscriptions(
         response_type=FULL_RESPONSE
@@ -26,6 +28,7 @@ def test_get_subscriptions_with_token(instance_with_token):
 
 
 @pytest.mark.serial
+@pytest.mark.uses_real_data
 def test_create_delete_subscription(instance):
     data = {"events": ["activityMoved"], "title": "Simple Subscription"}
     raw_response = instance.core.create_subscription(
@@ -50,6 +53,7 @@ def test_create_delete_subscription(instance):
 
 
 @pytest.mark.serial
+@pytest.mark.uses_real_data
 def test_get_events(instance, pp, demo_data, clear_subscriptions):
     move_data = demo_data.get("events")
 

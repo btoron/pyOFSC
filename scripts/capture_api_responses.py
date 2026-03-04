@@ -24,6 +24,46 @@ from dotenv import load_dotenv
 
 # Configuration for endpoints to capture
 ENDPOINTS = {
+    "inventories": [
+        {
+            "name": "get_inventory_404_not_found",
+            "description": "Get a non-existent inventory by ID",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/inventories/999999999",
+            "params": None,
+            "body": None,
+            "metadata": {"inventory_id": 999999999},
+        },
+    ],
+    "users": [
+        {
+            "name": "get_users_200_success",
+            "description": "Get all users with pagination",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/users",
+            "params": {"offset": 0, "limit": 100},
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_user_200_success",
+            "description": "Get a single user by login",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/users/demoauth",
+            "params": None,
+            "body": None,
+            "metadata": {"user_login": "demoauth"},
+        },
+        {
+            "name": "get_user_404_not_found",
+            "description": "Get a non-existent user",
+            "method": "GET",
+            "path": "/rest/ofscCore/v1/users/NONEXISTENT_12345",
+            "params": None,
+            "body": None,
+            "metadata": {"user_login": "NONEXISTENT_12345"},
+        },
+    ],
     "workzones": [
         {
             "name": "get_workzone_200_success",
@@ -1082,6 +1122,62 @@ ENDPOINTS = {
         #     "body": None,
         #     "metadata": {"subscriptionId": "12345"},
         # },
+    ],
+    "capacity": [
+        {
+            "name": "get_available_capacity_200_success",
+            "description": "Get available capacity for a date range",
+            "method": "GET",
+            "path": "/rest/ofscCapacity/v1/capacity",
+            "params": {"dates": "2026-03-03", "availableTimeIntervals": "all", "calendarTimeIntervals": "all"},
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_quota_200_success",
+            "description": "Get quota for a date range",
+            "method": "GET",
+            "path": "/rest/ofscCapacity/v2/quota",
+            "params": {"dates": "2026-03-03"},
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_booking_closing_schedule_200_success",
+            "description": "Get booking closing schedule for a date",
+            "method": "GET",
+            "path": "/rest/ofscCapacity/v1/bookingClosingSchedule",
+            "params": {"dates": "2026-03-03"},
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_booking_statuses_200_success",
+            "description": "Get booking statuses for a date",
+            "method": "GET",
+            "path": "/rest/ofscCapacity/v1/bookingStatuses",
+            "params": {"dates": "2026-03-03"},
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_booking_fields_dependencies_200_success",
+            "description": "Get booking fields dependencies",
+            "method": "GET",
+            "path": "/rest/ofscCapacity/v1/bookingFieldsDependencies",
+            "params": None,
+            "body": None,
+            "metadata": {},
+        },
+        {
+            "name": "get_activity_booking_options_200_success",
+            "description": "Get activity booking options for a date",
+            "method": "GET",
+            "path": "/rest/ofscCapacity/v1/activityBookingOptions",
+            "params": {"dates": "2026-03-03"},
+            "body": None,
+            "metadata": {},
+        },
     ],
 }
 

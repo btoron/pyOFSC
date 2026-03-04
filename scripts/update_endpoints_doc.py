@@ -24,7 +24,7 @@ PYPROJECT_PATH = PROJECT_ROOT / "pyproject.toml"
 ENDPOINTS_PATH = PROJECT_ROOT / "docs" / "ENDPOINTS.md"
 
 MODULE_FILE_MAP = {
-    "core": ("ofsc/core.py", "ofsc/async_client/core.py"),
+    "core": ("ofsc/core.py", "ofsc/async_client/core"),
     "metadata": ("ofsc/metadata.py", "ofsc/async_client/metadata.py"),
     "capacity": ("ofsc/capacity.py", "ofsc/async_client/capacity.py"),
     "auth": ("ofsc/oauth.py", "ofsc/async_client/oauth.py"),
@@ -332,16 +332,28 @@ def build_implementation_map() -> dict[str, dict]:
             impl_map[module]["sync"] = {k for k, v in sync_endpoints.items() if v}
             print(f"  - {sync_file}: {len(impl_map[module]['sync'])} endpoints found")
 
-        # Scan async file
+        # Scan async file (or package directory)
         if async_file:
             async_path = PROJECT_ROOT / async_file
-            async_endpoints = scan_file_for_endpoints(async_path)
+            async_endpoints: dict[tuple[str, str], bool] = {}
+            if async_path.is_dir():
+                # Package directory: scan all .py files
+                for py_file in sorted(async_path.glob("*.py")):
+                    if py_file.name.startswith("__"):
+                        continue
+                    async_endpoints.update(scan_file_for_endpoints(py_file))
+                print(
+                    f"  - {async_file}: {len([k for k, v in async_endpoints.items() if v])} endpoints found "
+                    f"({len([v for v in async_endpoints.values() if not v])} stubs)"
+                )
+            else:
+                async_endpoints = scan_file_for_endpoints(async_path)
+                stubs = len([v for v in async_endpoints.values() if not v])
+                print(
+                    f"  - {async_file}: {len([k for k, v in async_endpoints.items() if v])} endpoints found "
+                    f"({stubs} stubs)"
+                )
             impl_map[module]["async"] = {k for k, v in async_endpoints.items() if v}
-            stubs = len([v for v in async_endpoints.values() if not v])
-            print(
-                f"  - {async_file}: {len(impl_map[module]['async'])} endpoints found "
-                f"({stubs} stubs)"
-            )
 
     return impl_map
 

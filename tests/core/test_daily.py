@@ -1,5 +1,7 @@
 from datetime import datetime
 
+import pytest
+
 from ofsc import OFSC
 from ofsc.models import DailyExtractFiles, DailyExtractFolders
 
@@ -12,6 +14,7 @@ test_instance = OFSC(
 )
 
 
+@pytest.mark.uses_real_data
 def test_daily_extract_dates():
     folders: DailyExtractFolders = test_instance.core.get_daily_extract_dates()
     assert folders is not None
@@ -21,6 +24,7 @@ def test_daily_extract_dates():
         assert folder.name is not None
 
 
+@pytest.mark.uses_real_data
 def test_daily_extract_files_with_date():
     folders: DailyExtractFolders = test_instance.core.get_daily_extract_dates()
     assert folders is not None
@@ -46,6 +50,7 @@ def test_daily_extract_files_with_date():
             assert file.name is not None
 
 
+@pytest.mark.uses_real_data
 def test_daily_extract_file():
     folders: DailyExtractFolders = test_instance.core.get_daily_extract_dates()
     assert folders is not None

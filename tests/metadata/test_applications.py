@@ -9,9 +9,9 @@ def test_get_applications_basic(instance: OFSC):
     assert raw_response.status_code == 200
     response = raw_response.json()
     assert response["items"] is not None
-    assert (
-        len(response["items"]) > 0
-    ), f"Received {[i['label'] for i in response['items']]}"
+    assert len(response["items"]) > 0, (
+        f"Received {[i['label'] for i in response['items']]}"
+    )
     applications = {app["label"]: app for app in response["items"]}
     assert instance._config.clientID in applications.keys()
 

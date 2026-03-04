@@ -2,6 +2,7 @@ import json
 import logging
 from pathlib import Path
 
+import pytest
 from requests import Response
 
 from ofsc import OFSC
@@ -23,18 +24,20 @@ from ofsc.models import (
 )
 
 
+@pytest.mark.uses_real_data
 def test_activity_type_group_model(instance):
     instance.core.config.auto_model = True
     metadata_response = instance.metadata.get_activity_type_groups(
         response_type=OBJ_RESPONSE
     )
-    assert isinstance(
-        metadata_response, ActivityTypeGroupListResponse
-    ), f"Response is {type(metadata_response)}"
+    assert isinstance(metadata_response, ActivityTypeGroupListResponse), (
+        f"Response is {type(metadata_response)}"
+    )
     for item in metadata_response.items:
         assert isinstance(item, ActivityTypeGroup)
 
 
+@pytest.mark.uses_real_data
 def test_get_activity_type_groups(instance, pp, demo_data):
     expected_activity_type_groups = demo_data.get("metadata").get(
         "expected_activity_type_groups"
@@ -52,6 +55,7 @@ def test_get_activity_type_groups(instance, pp, demo_data):
     assert response["items"][0]["label"] == "customer"
 
 
+@pytest.mark.uses_real_data
 def test_get_activity_type_group(instance, demo_data, pp):
     expected_activity_types = demo_data.get("metadata").get(
         "expected_activity_types_customer"
@@ -73,6 +77,7 @@ def test_get_activity_type_group(instance, demo_data, pp):
 # Activity Types
 
 
+@pytest.mark.uses_real_data
 def test_get_activity_types_auto_model_full(instance, demo_data, pp):
     expected_activity_types = demo_data.get("metadata").get("expected_activity_types")
     raw_response = instance.metadata.get_activity_types(response_type=FULL_RESPONSE)
@@ -91,6 +96,7 @@ def test_get_activity_types_auto_model_full(instance, demo_data, pp):
     assert activityType["features"]["allowMoveBetweenResources"] == True
 
 
+@pytest.mark.uses_real_data
 def test_get_activity_types_auto_model_obj(instance, demo_data, pp):
     instance.auto_model = True
     expected_activity_types = demo_data.get("metadata").get("expected_activity_types")
@@ -109,6 +115,7 @@ def test_get_activity_types_auto_model_obj(instance, demo_data, pp):
     assert activityType.features.allowMoveBetweenResources == True
 
 
+@pytest.mark.uses_real_data
 def test_get_activity_type_auto_model_full(instance, demo_data, pp):
     raw_response = instance.metadata.get_activity_type(
         "fitness_emergency", response_type=FULL_RESPONSE
@@ -124,6 +131,7 @@ def test_get_activity_type_auto_model_full(instance, demo_data, pp):
     assert response["features"]["allowMoveBetweenResources"] == True
 
 
+@pytest.mark.uses_real_data
 def test_activity_types_no_model_list(instance):
     limit = 10
     instance.core.config.auto_model = False
@@ -145,6 +153,7 @@ def test_activity_types_no_model_list(instance):
         assert new_obj.label == obj.label
 
 
+@pytest.mark.uses_real_data
 def test_activity_type_no_model_simple(instance):
     instance.core.config.auto_model = False
     metadata_response = instance.metadata.get_activity_type(

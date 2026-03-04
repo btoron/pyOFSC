@@ -122,6 +122,9 @@ class TestAsyncGetEventsLive:
         subscription_id = created.subscriptionId
 
         try:
+            # Brief delay for API eventual consistency
+            await asyncio.sleep(1)
+
             # Step 2: Get subscription details to verify it's active
             details = await async_instance.core.get_subscription(subscription_id)
             assert details.subscriptionId == subscription_id
