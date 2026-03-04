@@ -4,6 +4,7 @@ from ofsc.common import FULL_RESPONSE
 from ofsc.models import Workzone, WorkzoneListResponse
 
 
+@pytest.mark.uses_real_data
 def test_get_workzones(instance):
     metadata_response = instance.metadata.get_workzones(
         offset=0, limit=1000, response_type=FULL_RESPONSE
@@ -15,6 +16,7 @@ def test_get_workzones(instance):
     assert response["items"][1]["workZoneName"] == "CASSELBERRY"
 
 
+@pytest.mark.uses_real_data
 def test_get_workzones_with_model(instance):
     """Test that get_workzones returns WorkzoneListResponse when using model parameter"""
     workzones = instance.metadata.get_workzones(offset=0, limit=100)
@@ -32,6 +34,7 @@ def test_get_workzones_with_model(instance):
         assert hasattr(workzones.items[0], "workZoneName")
 
 
+@pytest.mark.uses_real_data
 def test_get_workzone(instance):
     """Test getting a single workzone by label"""
     # First get a list of workzones to get a valid label
@@ -54,6 +57,7 @@ def test_get_workzone(instance):
     assert hasattr(workzone, "travelArea")
 
 
+@pytest.mark.uses_real_data
 def test_get_workzone_with_response_type(instance):
     """Test getting a single workzone using FULL_RESPONSE"""
     # Get a valid label first

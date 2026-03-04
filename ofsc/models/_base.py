@@ -159,7 +159,12 @@ class OFSConfig(BaseModel):
 
     @field_validator("baseURL")
     def set_base_URL(cls, url, info: ValidationInfo):
-        return url or f"https://{info.data['companyName']}.fs.ocs.oraclecloud.com"
+        if url:
+            return url
+        company_name = info.data.get("companyName")
+        if company_name is None:
+            return url
+        return f"https://{company_name}.fs.ocs.oraclecloud.com"
 
 
 class OFSOAuthRequest(BaseModel):

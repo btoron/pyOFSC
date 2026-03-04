@@ -1,9 +1,12 @@
 import json
 import logging
 
+import pytest
+
 from ofsc.common import FULL_RESPONSE
 
 
+@pytest.mark.uses_real_data
 def test_get_users(instance, demo_data, pp):
     raw_response = instance.core.get_users(response_type=FULL_RESPONSE)
     logging.debug(pp.pformat(raw_response.json()))
@@ -14,6 +17,7 @@ def test_get_users(instance, demo_data, pp):
     assert response["items"][0]["login"] == "admin"
 
 
+@pytest.mark.uses_real_data
 def test_get_user(instance, demo_data, pp):
     raw_response = instance.core.get_user(login="chris", response_type=FULL_RESPONSE)
     logging.debug(pp.pformat(raw_response.json()))
@@ -25,6 +29,7 @@ def test_get_user(instance, demo_data, pp):
     assert response["resourceInternalIds"][0] == 3000000
 
 
+@pytest.mark.uses_real_data
 def test_update_user(instance, demo_data, pp):
     raw_response = instance.core.get_user(login="chris", response_type=FULL_RESPONSE)
     assert raw_response.status_code == 200
@@ -51,6 +56,7 @@ def test_update_user(instance, demo_data, pp):
     assert response["name"] == "Chris"
 
 
+@pytest.mark.uses_real_data
 def test_create_user(instance, demo_data, pp):
     new_data = {
         "name": "Test Name",

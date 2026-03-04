@@ -59,6 +59,7 @@ class TestAsyncImportPluginFileMock:
     """Mock tests for import_plugin_file."""
 
     @pytest.mark.asyncio
+    @pytest.mark.uses_local_data
     async def test_import_plugin_file_success(self, mock_instance: AsyncOFSC):
         """Test import_plugin_file returns None on 204."""
         mock_response = Mock()
