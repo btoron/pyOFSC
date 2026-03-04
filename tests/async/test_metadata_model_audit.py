@@ -43,10 +43,7 @@ def _collect_extras(instance, path="") -> list[dict]:
             {
                 "model": type(instance).__name__,
                 "path": path or "(root)",
-                "extra_fields": {
-                    k: _summarize_value(v)
-                    for k, v in instance.__pydantic_extra__.items()
-                },
+                "extra_fields": {k: _summarize_value(v) for k, v in instance.__pydantic_extra__.items()},
             }
         )
 
@@ -104,9 +101,7 @@ class TestMetadataModelAudit:
         )
 
         if extras:
-            logger.warning(
-                f"ActivityTypeGroupListResponse has unmapped fields: {extras}"
-            )
+            logger.warning(f"ActivityTypeGroupListResponse has unmapped fields: {extras}")
         # Check individual items too
         if response.items:
             group = response.items[0]
@@ -114,9 +109,7 @@ class TestMetadataModelAudit:
             if item_extras:
                 logger.warning(f"ActivityTypeGroup has unmapped fields: {item_extras}")
 
-        assert not extras, (
-            f"ActivityTypeGroupListResponse has unmapped extra fields: {extras}"
-        )
+        assert not extras, f"ActivityTypeGroupListResponse has unmapped extra fields: {extras}"
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -126,9 +119,7 @@ class TestMetadataModelAudit:
         if not groups.items:
             pytest.skip("No activity type groups available")
 
-        group = await async_instance.metadata.get_activity_type_group(
-            groups.items[0].label
-        )
+        group = await async_instance.metadata.get_activity_type_group(groups.items[0].label)
         extras = _collect_extras(group)
 
         _save_audit_result(
@@ -169,9 +160,7 @@ class TestMetadataModelAudit:
         all_extras = extras + item_extras
         if all_extras:
             logger.warning(f"ActivityType models have unmapped fields: {all_extras}")
-        assert not all_extras, (
-            f"ActivityType models have unmapped extra fields: {all_extras}"
-        )
+        assert not all_extras, f"ActivityType models have unmapped extra fields: {all_extras}"
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -221,12 +210,8 @@ class TestMetadataModelAudit:
 
         all_extras = extras + item_extras
         if all_extras:
-            logger.warning(
-                f"CapacityCategory models have unmapped fields: {all_extras}"
-            )
-        assert not all_extras, (
-            f"CapacityCategory models have unmapped extra fields: {all_extras}"
-        )
+            logger.warning(f"CapacityCategory models have unmapped fields: {all_extras}")
+        assert not all_extras, f"CapacityCategory models have unmapped extra fields: {all_extras}"
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -250,9 +235,7 @@ class TestMetadataModelAudit:
 
         if extras:
             logger.warning(f"CapacityCategory single has unmapped fields: {extras}")
-        assert not extras, (
-            f"CapacityCategory single has unmapped extra fields: {extras}"
-        )
+        assert not extras, f"CapacityCategory single has unmapped extra fields: {extras}"
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -306,9 +289,7 @@ class TestMetadataModelAudit:
         all_extras = extras + item_extras
         if all_extras:
             logger.warning(f"InventoryType models have unmapped fields: {all_extras}")
-        assert not all_extras, (
-            f"InventoryType models have unmapped extra fields: {all_extras}"
-        )
+        assert not all_extras, f"InventoryType models have unmapped extra fields: {all_extras}"
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -335,9 +316,7 @@ class TestMetadataModelAudit:
         all_extras = extras + item_extras
         if all_extras:
             logger.warning(f"Language models have unmapped fields: {all_extras}")
-        assert not all_extras, (
-            f"Language models have unmapped extra fields: {all_extras}"
-        )
+        assert not all_extras, f"Language models have unmapped extra fields: {all_extras}"
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -364,9 +343,7 @@ class TestMetadataModelAudit:
         all_extras = extras + item_extras
         if all_extras:
             logger.warning(f"MapLayer models have unmapped fields: {all_extras}")
-        assert not all_extras, (
-            f"MapLayer models have unmapped extra fields: {all_extras}"
-        )
+        assert not all_extras, f"MapLayer models have unmapped extra fields: {all_extras}"
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -383,12 +360,8 @@ class TestMetadataModelAudit:
 
         all_extras = extras + item_extras
         if all_extras:
-            logger.warning(
-                f"NonWorkingReason models have unmapped fields: {all_extras}"
-            )
-        assert not all_extras, (
-            f"NonWorkingReason models have unmapped extra fields: {all_extras}"
-        )
+            logger.warning(f"NonWorkingReason models have unmapped fields: {all_extras}")
+        assert not all_extras, f"NonWorkingReason models have unmapped extra fields: {all_extras}"
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -436,9 +409,7 @@ class TestMetadataModelAudit:
         all_extras = extras + item_extras
         if all_extras:
             logger.warning(f"ResourceType models have unmapped fields: {all_extras}")
-        assert not all_extras, (
-            f"ResourceType models have unmapped extra fields: {all_extras}"
-        )
+        assert not all_extras, f"ResourceType models have unmapped extra fields: {all_extras}"
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -459,14 +430,8 @@ class TestMetadataModelAudit:
                 "total_items": len(response.items),
                 "response_extras": extras,
                 "item_extras": item_extras,
-                "sample_item_dict": (
-                    response.items[0].model_dump() if response.items else {}
-                ),
-                "sample_item_extra": (
-                    dict(response.items[0].__pydantic_extra__)
-                    if response.items and response.items[0].__pydantic_extra__
-                    else {}
-                ),
+                "sample_item_dict": (response.items[0].model_dump() if response.items else {}),
+                "sample_item_extra": (dict(response.items[0].__pydantic_extra__) if response.items and response.items[0].__pydantic_extra__ else {}),
             },
         )
 
@@ -474,9 +439,7 @@ class TestMetadataModelAudit:
         if all_extras:
             logger.warning(f"RoutingProfile models have unmapped fields: {all_extras}")
         # This is expected to fail - RoutingProfile only has profileLabel
-        assert not all_extras, (
-            f"RoutingProfile models have unmapped extra fields: {all_extras}"
-        )
+        assert not all_extras, f"RoutingProfile models have unmapped extra fields: {all_extras}"
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -530,9 +493,7 @@ class TestMetadataModelAudit:
         all_extras = extras + item_extras
         if all_extras:
             logger.warning(f"TimeSlot models have unmapped fields: {all_extras}")
-        assert not all_extras, (
-            f"TimeSlot models have unmapped extra fields: {all_extras}"
-        )
+        assert not all_extras, f"TimeSlot models have unmapped extra fields: {all_extras}"
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -550,9 +511,7 @@ class TestMetadataModelAudit:
         all_extras = extras + item_extras
         if all_extras:
             logger.warning(f"Workskill models have unmapped fields: {all_extras}")
-        assert not all_extras, (
-            f"Workskill models have unmapped extra fields: {all_extras}"
-        )
+        assert not all_extras, f"Workskill models have unmapped extra fields: {all_extras}"
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -570,9 +529,7 @@ class TestMetadataModelAudit:
         all_extras = extras + item_extras
         if all_extras:
             logger.warning(f"WorkskillGroup models have unmapped fields: {all_extras}")
-        assert not all_extras, (
-            f"WorkskillGroup models have unmapped extra fields: {all_extras}"
-        )
+        assert not all_extras, f"WorkskillGroup models have unmapped extra fields: {all_extras}"
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -590,9 +547,7 @@ class TestMetadataModelAudit:
         all_extras = extras + item_extras
         if all_extras:
             logger.warning(f"Workzone models have unmapped fields: {all_extras}")
-        assert not all_extras, (
-            f"Workzone models have unmapped extra fields: {all_extras}"
-        )
+        assert not all_extras, f"Workzone models have unmapped extra fields: {all_extras}"
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -619,9 +574,7 @@ class TestMetadataModelAudit:
         all_extras = extras + item_extras
         if all_extras:
             logger.warning(f"CapacityArea models have unmapped fields: {all_extras}")
-        assert not all_extras, (
-            f"CapacityArea models have unmapped extra fields: {all_extras}"
-        )
+        assert not all_extras, f"CapacityArea models have unmapped extra fields: {all_extras}"
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -639,9 +592,7 @@ class TestMetadataModelAudit:
         all_extras = extras + item_extras
         if all_extras:
             logger.warning(f"Organization models have unmapped fields: {all_extras}")
-        assert not all_extras, (
-            f"Organization models have unmapped extra fields: {all_extras}"
-        )
+        assert not all_extras, f"Organization models have unmapped extra fields: {all_extras}"
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -668,9 +619,7 @@ class TestMetadataModelAudit:
         all_extras = extras + item_extras
         if all_extras:
             logger.warning(f"Application models have unmapped fields: {all_extras}")
-        assert not all_extras, (
-            f"Application models have unmapped extra fields: {all_extras}"
-        )
+        assert not all_extras, f"Application models have unmapped extra fields: {all_extras}"
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -697,9 +646,7 @@ class TestMetadataModelAudit:
         all_extras = extras + item_extras
         if all_extras:
             logger.warning(f"LinkTemplate models have unmapped fields: {all_extras}")
-        assert not all_extras, (
-            f"LinkTemplate models have unmapped extra fields: {all_extras}"
-        )
+        assert not all_extras, f"LinkTemplate models have unmapped extra fields: {all_extras}"
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -725,17 +672,11 @@ class TestMetadataModelAudit:
                 "total_checked": min(10, len(types.items)),
                 "extras": feature_extras,
                 "defined_fields": list(
-                    __import__(
-                        "ofsc.models.metadata", fromlist=["ActivityTypeFeatures"]
-                    ).ActivityTypeFeatures.model_fields.keys()
+                    __import__("ofsc.models.metadata", fromlist=["ActivityTypeFeatures"]).ActivityTypeFeatures.model_fields.keys()
                 ),
             },
         )
 
         if feature_extras:
-            logger.warning(
-                f"ActivityTypeFeatures has unmapped fields: {feature_extras}"
-            )
-        assert not feature_extras, (
-            f"ActivityTypeFeatures has unmapped extra fields: {feature_extras}"
-        )
+            logger.warning(f"ActivityTypeFeatures has unmapped fields: {feature_extras}")
+        assert not feature_extras, f"ActivityTypeFeatures has unmapped extra fields: {feature_extras}"

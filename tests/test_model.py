@@ -192,21 +192,13 @@ def test_capacity_area_model_base():
         "name": "Capacity Area",
         "type": "area",
         "status": "active",
-        "workZones": {
-            "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/workZones"
-        },
-        "organizations": {
-            "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/organizations"
-        },
+        "workZones": {"href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/workZones"},
+        "organizations": {"href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/organizations"},
         "capacityCategories": {
             "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/capacityCategories"
         },
-        "timeIntervals": {
-            "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/timeIntervals"
-        },
-        "timeSlots": {
-            "href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/timeSlots"
-        },
+        "timeIntervals": {"href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/timeIntervals"},
+        "timeSlots": {"href": "https://<instance_name>.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/capacityAreas/CapacityArea/timeSlots"},
         "parentLabel": "66000",
         "configuration": {
             "definitionLevel": ["day"],
@@ -300,9 +292,7 @@ def test_workskill_model_base():
         "name": "Estimate",
         "active": True,
         "sharing": "maximal",
-        "translations": [
-            {"language": "en", "name": "Estimate", "languageISO": "en-US"}
-        ],
+        "translations": [{"language": "en", "name": "Estimate", "languageISO": "en-US"}],
         "links": [
             {
                 "rel": "canonical",
@@ -410,21 +400,12 @@ def test_capacity_category_model_list():
         assert item.label == capacityCategoryList["items"][idx]["label"]
         assert item.name == capacityCategoryList["items"][idx]["name"]
         assert item.active == capacityCategoryList["items"][idx]["active"]
-        assert item.timeSlots == ItemList.model_validate(
-            capacityCategoryList["items"][idx]["timeSlots"]
-        )
-        assert item.translations == TranslationList.model_validate(
-            capacityCategoryList["items"][idx]["translations"]
-        )
-        expected_links = [
-            Link.model_validate(link)
-            for link in capacityCategoryList["items"][idx]["links"]
-        ]
+        assert item.timeSlots == ItemList.model_validate(capacityCategoryList["items"][idx]["timeSlots"])
+        assert item.translations == TranslationList.model_validate(capacityCategoryList["items"][idx]["translations"])
+        expected_links = [Link.model_validate(link) for link in capacityCategoryList["items"][idx]["links"]]
         assert item.links == expected_links
         # assert item.workSkills == capacityCategoryList["items"][idx]["workSkills"]
-        assert item.workSkillGroups == ItemList.model_validate(
-            capacityCategoryList["items"][idx]["workSkillGroups"]
-        )
+        assert item.workSkillGroups == ItemList.model_validate(capacityCategoryList["items"][idx]["workSkillGroups"])
 
 
 # endregion

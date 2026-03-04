@@ -54,9 +54,7 @@ class TestGetActivitiesParamsValidation:
                 dateFrom=date(2025, 12, 1),
             )
 
-        assert "dateFrom and dateTo must both be specified or both omitted" in str(
-            exc_info.value
-        )
+        assert "dateFrom and dateTo must both be specified or both omitted" in str(exc_info.value)
 
     def test_invalid_date_to_without_date_from(self):
         """Test invalid: dateTo without dateFrom."""
@@ -66,9 +64,7 @@ class TestGetActivitiesParamsValidation:
                 dateTo=date(2025, 12, 31),
             )
 
-        assert "dateFrom and dateTo must both be specified or both omitted" in str(
-            exc_info.value
-        )
+        assert "dateFrom and dateTo must both be specified or both omitted" in str(exc_info.value)
 
     def test_invalid_date_from_after_date_to(self):
         """Test invalid: dateFrom > dateTo."""
@@ -89,10 +85,7 @@ class TestGetActivitiesParamsValidation:
                 includeNonScheduled=False,
             )
 
-        assert (
-            "Either dateFrom/dateTo, svcWorkOrderId, or includeNonScheduled=True is required"
-            in str(exc_info.value)
-        )
+        assert "Either dateFrom/dateTo, svcWorkOrderId, or includeNonScheduled=True is required" in str(exc_info.value)
 
     def test_include_children_enum_validation(self):
         """Test includeChildren accepts only valid enum values."""

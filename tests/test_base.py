@@ -50,9 +50,7 @@ def test_wrapper_with_error(instance, pp):
 @pytest.mark.uses_real_data
 def test_wrapper_with_model_list(instance, demo_data):
     instance.core.config.auto_model = True
-    raw_response = instance.metadata.get_activity_type_groups(
-        response_type=FULL_RESPONSE
-    )
+    raw_response = instance.metadata.get_activity_type_groups(response_type=FULL_RESPONSE)
     assert isinstance(raw_response, requests.Response)
     assert raw_response.status_code == 200
 
@@ -87,9 +85,7 @@ def test_demo_data(demo_data):
 
 @pytest.mark.uses_real_data
 def test_generic_call_get(instance):
-    raw_response = instance.core.call(
-        method="GET", partialUrl="/rest/ofscCore/v1/events/subscriptions"
-    )
+    raw_response = instance.core.call(method="GET", partialUrl="/rest/ofscCore/v1/events/subscriptions")
     assert isinstance(raw_response, requests.Response)
     assert raw_response.status_code == 200
     response = raw_response.json()

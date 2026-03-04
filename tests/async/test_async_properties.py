@@ -149,9 +149,7 @@ class TestAsyncGetEnumerationValues:
     async def test_get_enumeration_values(self, async_instance: AsyncOFSC):
         """Test getting enumeration values for a property"""
         # Use a known property with enumeration values
-        enumeration_values = await async_instance.metadata.get_enumeration_values(
-            "complete_code", offset=0, limit=100
-        )
+        enumeration_values = await async_instance.metadata.get_enumeration_values("complete_code", offset=0, limit=100)
 
         # Verify type validation
         assert isinstance(enumeration_values, EnumerationValueList)
@@ -170,30 +168,22 @@ class TestAsyncGetEnumerationValues:
     async def test_get_enumeration_values_pagination(self, async_instance: AsyncOFSC):
         """Test get_enumeration_values with pagination"""
         # Get first page with smaller limit
-        page1 = await async_instance.metadata.get_enumeration_values(
-            "complete_code", offset=0, limit=2
-        )
+        page1 = await async_instance.metadata.get_enumeration_values("complete_code", offset=0, limit=2)
         assert isinstance(page1, EnumerationValueList)
         assert len(page1.items) <= 2
 
         # Get second page if there are enough values
         if page1.totalResults > 2:
-            page2 = await async_instance.metadata.get_enumeration_values(
-                "complete_code", offset=2, limit=2
-            )
+            page2 = await async_instance.metadata.get_enumeration_values("complete_code", offset=2, limit=2)
             assert isinstance(page2, EnumerationValueList)
             # Pages should have different items
             if len(page1.items) > 0 and len(page2.items) > 0:
                 assert page1.items[0].label != page2.items[0].label
 
     @pytest.mark.asyncio
-    async def test_get_enumeration_values_total_results(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_get_enumeration_values_total_results(self, async_instance: AsyncOFSC):
         """Test that totalResults is populated"""
-        enumeration_values = await async_instance.metadata.get_enumeration_values(
-            "complete_code", offset=0, limit=100
-        )
+        enumeration_values = await async_instance.metadata.get_enumeration_values("complete_code", offset=0, limit=100)
         assert enumeration_values.totalResults is not None
         assert isinstance(enumeration_values.totalResults, int)
         assert enumeration_values.totalResults >= 0
@@ -202,9 +192,7 @@ class TestAsyncGetEnumerationValues:
     async def test_get_enumeration_values_not_found(self, async_instance: AsyncOFSC):
         """Test that getting enumeration values for non-existent property raises OFSCNotFoundError"""
         with pytest.raises(OFSCNotFoundError) as exc_info:
-            await async_instance.metadata.get_enumeration_values(
-                "NONEXISTENT_PROPERTY_12345"
-            )
+            await async_instance.metadata.get_enumeration_values("NONEXISTENT_PROPERTY_12345")
 
         # Verify it's a 404 error
         assert exc_info.value.status_code == 404
@@ -217,9 +205,7 @@ class TestAsyncGetEnumerationValuesLive:
     @pytest.mark.uses_real_data
     async def test_get_enumeration_values_live(self, async_instance: AsyncOFSC):
         """Test get_enumeration_values with actual API - validates structure"""
-        enumeration_values = await async_instance.metadata.get_enumeration_values(
-            "complete_code", offset=0, limit=100
-        )
+        enumeration_values = await async_instance.metadata.get_enumeration_values("complete_code", offset=0, limit=100)
 
         # Verify type validation
         assert isinstance(enumeration_values, EnumerationValueList)
@@ -248,17 +234,13 @@ class TestAsyncCreateOrUpdateEnumerationValue:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_create_or_update_enumeration_value(
-        self, async_instance: AsyncOFSC, faker
-    ):
+    async def test_create_or_update_enumeration_value(self, async_instance: AsyncOFSC, faker):
         """Test creating and updating enumeration values"""
         # Use a test property that we can safely modify
         label = "XA_SEVERITY"
 
         # Get existing values
-        existing_values_response = await async_instance.metadata.get_enumeration_values(
-            label, offset=0, limit=100
-        )
+        existing_values_response = await async_instance.metadata.get_enumeration_values(label, offset=0, limit=100)
         assert isinstance(existing_values_response, EnumerationValueList)
         existing_values = existing_values_response.items
         original_count = len(existing_values)
@@ -269,24 +251,18 @@ class TestAsyncCreateOrUpdateEnumerationValue:
         new_value = EnumerationValue(
             label=test_label,
             active=True,
-            translations=TranslationList(
-                [Translation(name="Test Value", language="en")]
-            ),
+            translations=TranslationList([Translation(name="Test Value", language="en")]),
         )
 
         # Add the new value to existing values
         updated_values = tuple(list(existing_values) + [new_value])
 
         # Update the enumeration list
-        result = await async_instance.metadata.create_or_update_enumeration_value(
-            label, updated_values
-        )
+        result = await async_instance.metadata.create_or_update_enumeration_value(label, updated_values)
 
         # Verify the result
         assert isinstance(result, EnumerationValueList)
-        assert (
-            result.totalResults >= original_count
-        )  # Should have at least original count
+        assert result.totalResults >= original_count  # Should have at least original count
         assert any(v.label == test_label for v in result.items)
 
         # Verify by fetching again
@@ -298,15 +274,11 @@ class TestAsyncCreateOrUpdateEnumerationValue:
 
         # Clean up: restore original values
         # Note: We attempt to restore but don't verify strictly as API behavior may vary
-        await async_instance.metadata.create_or_update_enumeration_value(
-            label, tuple(existing_values)
-        )
+        await async_instance.metadata.create_or_update_enumeration_value(label, tuple(existing_values))
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_update_existing_enumeration_value(
-        self, async_instance: AsyncOFSC, faker
-    ):
+    async def test_update_existing_enumeration_value(self, async_instance: AsyncOFSC, faker):
         """Test updating an existing enumeration value"""
         label = "XA_SEVERITY"
 
@@ -326,9 +298,7 @@ class TestAsyncCreateOrUpdateEnumerationValue:
             new_active_status = False
         else:
             # Toggle an inactive value to active (always safe)
-            value_to_modify = next(
-                (v for v in existing.items if not v.active), existing.items[0]
-            )
+            value_to_modify = next((v for v in existing.items if not v.active), existing.items[0])
             new_active_status = True
 
         # Create modified values list
@@ -345,27 +315,19 @@ class TestAsyncCreateOrUpdateEnumerationValue:
                 modified_values.append(item)
 
         # Update
-        result = await async_instance.metadata.create_or_update_enumeration_value(
-            label, tuple(modified_values)
-        )
+        result = await async_instance.metadata.create_or_update_enumeration_value(label, tuple(modified_values))
 
         # Verify the update
         assert isinstance(result, EnumerationValueList)
-        updated_value = next(
-            v for v in result.items if v.label == value_to_modify.label
-        )
+        updated_value = next(v for v in result.items if v.label == value_to_modify.label)
         assert updated_value.active == new_active_status
 
         # Restore original
-        await async_instance.metadata.create_or_update_enumeration_value(
-            label, tuple(existing.items)
-        )
+        await async_instance.metadata.create_or_update_enumeration_value(label, tuple(existing.items))
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_create_or_update_enumeration_value_not_found(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_create_or_update_enumeration_value_not_found(self, async_instance: AsyncOFSC):
         """Test that updating enumeration values for non-existent property raises OFSCNotFoundError"""
         test_value = EnumerationValue(
             label="TEST",
@@ -374,18 +336,14 @@ class TestAsyncCreateOrUpdateEnumerationValue:
         )
 
         with pytest.raises(OFSCNotFoundError) as exc_info:
-            await async_instance.metadata.create_or_update_enumeration_value(
-                "NONEXISTENT_PROPERTY_12345", (test_value,)
-            )
+            await async_instance.metadata.create_or_update_enumeration_value("NONEXISTENT_PROPERTY_12345", (test_value,))
 
         # Verify it's a 404 error
         assert exc_info.value.status_code == 404
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_create_or_update_enumeration_value_model_validation(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_create_or_update_enumeration_value_model_validation(self, async_instance: AsyncOFSC):
         """Test that create_or_update_enumeration_value returns valid EnumerationValueList model"""
         label = "complete_code"
 
@@ -393,9 +351,7 @@ class TestAsyncCreateOrUpdateEnumerationValue:
         existing = await async_instance.metadata.get_enumeration_values(label)
 
         # Update with same values (idempotent operation)
-        result = await async_instance.metadata.create_or_update_enumeration_value(
-            label, tuple(existing.items)
-        )
+        result = await async_instance.metadata.create_or_update_enumeration_value(label, tuple(existing.items))
 
         # Verify type validation
         assert isinstance(result, EnumerationValueList)
@@ -430,9 +386,7 @@ class TestAsyncCreateOrUpdateEnumerationValue:
         # they may be deactivated or the API may reject the deletion
         reduced_values = tuple([existing.items[0]])
 
-        result = await async_instance.metadata.create_or_update_enumeration_value(
-            label, reduced_values
-        )
+        result = await async_instance.metadata.create_or_update_enumeration_value(label, reduced_values)
 
         # Verify: The API should either reject deletion or keep the values
         # In practice, OFSC keeps the values and may just deactivate them
@@ -442,9 +396,7 @@ class TestAsyncCreateOrUpdateEnumerationValue:
         # assert result.totalResults >= original_count - 1
 
         # Restore original values
-        await async_instance.metadata.create_or_update_enumeration_value(
-            label, tuple(existing.items)
-        )
+        await async_instance.metadata.create_or_update_enumeration_value(label, tuple(existing.items))
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -467,12 +419,8 @@ class TestAsyncCreateOrUpdateEnumerationValue:
             all_inactive.append(inactive_item)
 
         # This should fail with a validation error
-        with pytest.raises(
-            Exception
-        ) as exc_info:  # Could be OFSCValidationError or other
-            await async_instance.metadata.create_or_update_enumeration_value(
-                label, tuple(all_inactive)
-            )
+        with pytest.raises(Exception) as exc_info:  # Could be OFSCValidationError or other
+            await async_instance.metadata.create_or_update_enumeration_value(label, tuple(all_inactive))
 
         # Verify it's some kind of error (400 or validation error)
         # The exact error type may vary
@@ -492,29 +440,21 @@ class TestAsyncCreateOrUpdateEnumerationValue:
         invalid_value_minus_one = EnumerationValue(
             label="-1",
             active=True,
-            translations=TranslationList(
-                [Translation(name="Invalid -1", language="en")]
-            ),
+            translations=TranslationList([Translation(name="Invalid -1", language="en")]),
         )
 
         with pytest.raises(Exception):  # Should raise validation error
-            await async_instance.metadata.create_or_update_enumeration_value(
-                label, tuple(original_values + [invalid_value_minus_one])
-            )
+            await async_instance.metadata.create_or_update_enumeration_value(label, tuple(original_values + [invalid_value_minus_one]))
 
         # Test 2: Try to add a value with label '0'
         invalid_value_zero = EnumerationValue(
             label="0",
             active=True,
-            translations=TranslationList(
-                [Translation(name="Invalid 0", language="en")]
-            ),
+            translations=TranslationList([Translation(name="Invalid 0", language="en")]),
         )
 
         with pytest.raises(Exception):  # Should raise validation error
-            await async_instance.metadata.create_or_update_enumeration_value(
-                label, tuple(original_values + [invalid_value_zero])
-            )
+            await async_instance.metadata.create_or_update_enumeration_value(label, tuple(original_values + [invalid_value_zero]))
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
@@ -530,9 +470,7 @@ class TestAsyncCreateOrUpdateEnumerationValue:
         first_item = existing.items[0]
 
         # Create translation list without English (only Spanish)
-        no_english_translations = TranslationList(
-            [Translation(name="Solo Español", language="es")]
-        )
+        no_english_translations = TranslationList([Translation(name="Solo Español", language="es")])
 
         modified_item = EnumerationValue(
             label=first_item.label,
@@ -545,15 +483,11 @@ class TestAsyncCreateOrUpdateEnumerationValue:
 
         # This should fail - English translation is required
         with pytest.raises(Exception):  # Could be OFSCValidationError
-            await async_instance.metadata.create_or_update_enumeration_value(
-                label, tuple(modified_values)
-            )
+            await async_instance.metadata.create_or_update_enumeration_value(label, tuple(modified_values))
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_country_code_property_cannot_be_updated(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_country_code_property_cannot_be_updated(self, async_instance: AsyncOFSC):
         """Test that country_code property cannot be updated via this API"""
         # Note: country_code is a special property that cannot be updated
         # In some environments it may not be an enumeration type
@@ -563,15 +497,11 @@ class TestAsyncCreateOrUpdateEnumerationValue:
         # Try to get country_code enumeration values
         # This may fail if country_code is not an enumeration property
         try:
-            existing = await async_instance.metadata.get_enumeration_values(
-                "country_code"
-            )
+            existing = await async_instance.metadata.get_enumeration_values("country_code")
 
             # If we got values, try to update (should fail)
             with pytest.raises(Exception):  # Should raise some error
-                await async_instance.metadata.create_or_update_enumeration_value(
-                    "country_code", tuple(existing.items)
-                )
+                await async_instance.metadata.create_or_update_enumeration_value("country_code", tuple(existing.items))
         except OFSCNotFoundError:
             # If country_code doesn't exist, skip this test
             pytest.skip("country_code property does not exist in this environment")
@@ -633,9 +563,7 @@ class TestAsyncCreateOrReplaceProperty:
         modified_property.translations = TranslationList([Translation(name=new_name)])
 
         # Replace the property
-        updated_result = await async_instance.metadata.create_or_replace_property(
-            modified_property
-        )
+        updated_result = await async_instance.metadata.create_or_replace_property(modified_property)
 
         # Verify the update
         assert isinstance(updated_result, Property)
@@ -650,9 +578,7 @@ class TestAsyncCreateOrReplaceProperty:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_create_property_with_translations(
-        self, async_instance: AsyncOFSC, faker
-    ):
+    async def test_create_property_with_translations(self, async_instance: AsyncOFSC, faker):
         """Test creating a property with multiple translations"""
         unique_label = f"TEST_TRANS_{faker.pystr(min_chars=8, max_chars=12).upper()}"
 
@@ -696,9 +622,7 @@ class TestAsyncCreateOrReplaceProperty:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_create_or_replace_property_model_validation(
-        self, async_instance: AsyncOFSC, faker
-    ):
+    async def test_create_or_replace_property_model_validation(self, async_instance: AsyncOFSC, faker):
         """Test that create_or_replace_property returns valid Property model"""
         unique_label = f"TEST_VALID_{faker.pystr(min_chars=8, max_chars=12).upper()}"
 
@@ -735,12 +659,7 @@ class TestAsyncPropertySavedResponses:
     def test_property_list_response_validation(self):
         """Test PropertyListResponse model validates against saved response"""
         # Load saved response
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "properties"
-            / "get_properties_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "properties" / "get_properties_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)
@@ -758,12 +677,7 @@ class TestAsyncPropertySavedResponses:
     def test_property_response_validation(self):
         """Test Property model validates against saved response"""
         # Load saved response
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "properties"
-            / "get_property_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "properties" / "get_property_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)
@@ -782,12 +696,7 @@ class TestAsyncPropertySavedResponses:
     def test_enumeration_value_list_response_validation(self):
         """Test EnumerationValueList model validates against saved response"""
         # Load saved response
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "properties"
-            / "get_enumeration_values_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "properties" / "get_enumeration_values_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)
@@ -818,12 +727,7 @@ class TestAsyncPropertySavedResponses:
     def test_create_or_update_enumeration_values_response_validation(self):
         """Test EnumerationValueList model validates against create/update saved response"""
         # Load saved response
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "properties"
-            / "create_or_update_enumeration_values_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "properties" / "create_or_update_enumeration_values_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)

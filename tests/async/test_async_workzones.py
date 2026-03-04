@@ -27,9 +27,7 @@ class TestAsyncGetWorkzonesLive:
         # Verify type validation
         assert isinstance(workzones, WorkzoneListResponse)
         assert workzones.totalResults is not None
-        assert (
-            workzones.totalResults >= 18
-        )  # 22.B - at least 18, may have test workzones
+        assert workzones.totalResults >= 18  # 22.B - at least 18, may have test workzones
         assert workzones.items[0].workZoneLabel == "ALTAMONTE_SPRINGS"
         assert workzones.items[1].workZoneName == "CASSELBERRY"
 
@@ -164,9 +162,7 @@ class TestAsyncReplaceWorkzone:
     @pytest.mark.serial
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_replace_workzone_with_auto_resolve_conflicts(
-        self, async_instance, faker
-    ):
+    async def test_replace_workzone_with_auto_resolve_conflicts(self, async_instance, faker):
         """Test replacing a workzone with auto_resolve_conflicts parameter"""
         # Get an existing workzone
         workzones = await async_instance.metadata.get_workzones(offset=0, limit=1)
@@ -182,9 +178,7 @@ class TestAsyncReplaceWorkzone:
         modified_workzone.workZoneName = f"TEST_AUTO_{faker.city()}"
 
         # Replace with auto_resolve_conflicts
-        result = await async_instance.metadata.replace_workzone(
-            modified_workzone, auto_resolve_conflicts=True
-        )
+        result = await async_instance.metadata.replace_workzone(modified_workzone, auto_resolve_conflicts=True)
 
         # Result can be Workzone (200) or None (204)
         if result is not None:
@@ -276,9 +270,7 @@ class TestAsyncCreateWorkzone:
         except Exception as e:
             if isinstance(e, OFSCConflictError):
                 # Workzone already exists from previous test run - that's ok, it means create worked
-                pytest.skip(
-                    f"Workzone {unique_label} already exists (from previous test run)"
-                )
+                pytest.skip(f"Workzone {unique_label} already exists (from previous test run)")
             else:
                 raise
 

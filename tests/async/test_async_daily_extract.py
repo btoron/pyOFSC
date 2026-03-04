@@ -87,9 +87,7 @@ class TestAsyncGetDailyExtractFileLive:
 
         # Get the first file
         first_file = files_result.files.items[0].name
-        result = await async_instance.core.get_daily_extract_file(
-            first_date, first_file
-        )
+        result = await async_instance.core.get_daily_extract_file(first_date, first_file)
 
         # Verify it returns bytes
         assert isinstance(result, bytes)
@@ -107,12 +105,7 @@ class TestAsyncDailyExtractSavedResponses:
 
     def test_daily_extract_dates_response_validation(self):
         """Test DailyExtractFolders validates against saved response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "daily_extracts"
-            / "get_daily_extract_dates_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "daily_extracts" / "get_daily_extract_dates_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)

@@ -54,9 +54,7 @@ def dict_list_to_markdown_table(data: list[dict]) -> str:
     value_matrix = [[row[header] for header in headers] for row in data]
 
     # Create table using pytablewriter
-    writer = MarkdownTableWriter(
-        headers=headers, value_matrix=value_matrix, flavor="github"
-    )
+    writer = MarkdownTableWriter(headers=headers, value_matrix=value_matrix, flavor="github")
 
     # Capture output
     output = io.StringIO()
@@ -226,10 +224,7 @@ def _function_raises_not_implemented(
                 if node.exc.id == "NotImplementedError":
                     return True
             elif node.exc and isinstance(node.exc, ast.Call):
-                if (
-                    isinstance(node.exc.func, ast.Name)
-                    and node.exc.func.id == "NotImplementedError"
-                ):
+                if isinstance(node.exc.func, ast.Name) and node.exc.func.id == "NotImplementedError":
                     return True
     return False
 
@@ -302,9 +297,7 @@ def scan_file_for_endpoints(file_path: Path) -> dict[tuple[str, str], bool]:
         # Heuristic: pair each urljoin with the closest HTTP method call after it
         for url, urljoin_line in urljoin_urls:
             # Find the first HTTP method call after this urljoin
-            matching_methods = [
-                (method, line) for method, line in http_methods if line >= urljoin_line
-            ]
+            matching_methods = [(method, line) for method, line in http_methods if line >= urljoin_line]
 
             if matching_methods:
                 # Use the first (closest) HTTP method
@@ -349,10 +342,7 @@ def build_implementation_map() -> dict[str, dict]:
             else:
                 async_endpoints = scan_file_for_endpoints(async_path)
                 stubs = len([v for v in async_endpoints.values() if not v])
-                print(
-                    f"  - {async_file}: {len([k for k, v in async_endpoints.items() if v])} endpoints found "
-                    f"({stubs} stubs)"
-                )
+                print(f"  - {async_file}: {len([k for k, v in async_endpoints.items() if v])} endpoints found ({stubs} stubs)")
             impl_map[module]["async"] = {k for k, v in async_endpoints.items() if v}
 
     return impl_map
@@ -492,9 +482,7 @@ def generate_summary_tables(endpoints: list[dict]) -> str:
         for method_cat in method_cats:
             data = sync_stats[module][method_cat]
             if method_cat == "Write":
-                row_data["Write (POST/PUT/PATCH)"] = format_cell(
-                    data["implemented"], data["total"]
-                )
+                row_data["Write (POST/PUT/PATCH)"] = format_cell(data["implemented"], data["total"])
             else:
                 row_data[method_cat] = format_cell(data["implemented"], data["total"])
             row_total["total"] += data["total"]
@@ -516,9 +504,7 @@ def generate_summary_tables(endpoints: list[dict]) -> str:
             totals_row["Write (POST/PUT/PATCH)"] = formatted
         else:
             totals_row[method_cat] = formatted
-    totals_row["Total"] = (
-        f"**{format_cell(grand_total_sync['implemented'], grand_total_sync['total'])}**"
-    )
+    totals_row["Total"] = f"**{format_cell(grand_total_sync['implemented'], grand_total_sync['total'])}**"
     sync_table_data.append(totals_row)
 
     lines.append(dict_list_to_markdown_table(sync_table_data))
@@ -544,9 +530,7 @@ def generate_summary_tables(endpoints: list[dict]) -> str:
         for method_cat in method_cats:
             data = async_stats[module][method_cat]
             if method_cat == "Write":
-                row_data["Write (POST/PUT/PATCH)"] = format_cell(
-                    data["implemented"], data["total"]
-                )
+                row_data["Write (POST/PUT/PATCH)"] = format_cell(data["implemented"], data["total"])
             else:
                 row_data[method_cat] = format_cell(data["implemented"], data["total"])
             row_total["total"] += data["total"]
@@ -568,9 +552,7 @@ def generate_summary_tables(endpoints: list[dict]) -> str:
             totals_row["Write (POST/PUT/PATCH)"] = formatted
         else:
             totals_row[method_cat] = formatted
-    totals_row["Total"] = (
-        f"**{format_cell(grand_total_async['implemented'], grand_total_async['total'])}**"
-    )
+    totals_row["Total"] = f"**{format_cell(grand_total_async['implemented'], grand_total_async['total'])}**"
     async_table_data.append(totals_row)
 
     lines.append(dict_list_to_markdown_table(async_table_data))
@@ -595,7 +577,8 @@ def write_endpoints_md(endpoints: list[dict], version: str) -> None:
         f"**Version:** {version}",
         f"**Last Updated:** {today}",
         "",
-        "This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints and their implementation status in pyOFSC.",
+        "This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API"
+        " endpoints and their implementation status in pyOFSC.",
         "",
         f"**Total Endpoints:** {len(endpoints)}",
         "",
@@ -707,9 +690,11 @@ def write_endpoints_md(endpoints: list[dict], version: str) -> None:
             "When adding new endpoints:",
             "",
             "1. **New endpoint path**: Use the next available serial number for that module",
-            "2. **Existing path with new method**: Use the same serial number as the existing endpoint(s) for that path, with the appropriate method code",
+            "2. **Existing path with new method**: Use the same serial number as the existing endpoint(s)"
+            " for that path, with the appropriate method code",
             "",
-            "**Example:** If `/rest/ofscCore/v1/activities` has `CO015G` (GET), adding POST would be `CO015P` (same serial number, different method letter).",
+            "**Example:** If `/rest/ofscCore/v1/activities` has `CO015G` (GET), adding POST would be"
+            " `CO015P` (same serial number, different method letter).",
         ]
     )
 
@@ -721,9 +706,7 @@ def write_endpoints_md(endpoints: list[dict], version: str) -> None:
 
 def main():
     """Main entry point."""
-    parser = argparse.ArgumentParser(
-        description="Update ENDPOINTS.md with current implementation status"
-    )
+    parser = argparse.ArgumentParser(description="Update ENDPOINTS.md with current implementation status")
     parser.add_argument(
         "--force",
         action="store_true",
@@ -737,9 +720,7 @@ def main():
 
     # Check if update is needed
     if current_version == new_version and not args.force:
-        print(
-            f"Version unchanged ({new_version}), skipping update. Use --force to regenerate."
-        )
+        print(f"Version unchanged ({new_version}), skipping update. Use --force to regenerate.")
         return 0
 
     if current_version != new_version:
@@ -766,9 +747,7 @@ def main():
     print("Regenerating ENDPOINTS.md...")
     write_endpoints_md(endpoints, new_version)
 
-    print(
-        f"✓ Updated docs/ENDPOINTS.md (version {new_version}, {date.today().isoformat()})"
-    )
+    print(f"✓ Updated docs/ENDPOINTS.md (version {new_version}, {date.today().isoformat()})")
     return 0
 
 

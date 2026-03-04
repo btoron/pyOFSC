@@ -118,12 +118,7 @@ class TestAsyncOrganizationSavedResponses:
     def test_organization_list_response_validation(self):
         """Test OrganizationListResponse model validates against saved response"""
         # Load saved response
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "organizations"
-            / "get_organizations_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "organizations" / "get_organizations_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)
@@ -148,12 +143,7 @@ class TestAsyncOrganizationSavedResponses:
     def test_organization_single_response_validation(self):
         """Test Organization model validates against saved single response"""
         # Load saved response
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "organizations"
-            / "get_organization_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "organizations" / "get_organization_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)

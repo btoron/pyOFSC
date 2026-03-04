@@ -20,19 +20,13 @@ def wrap_return(*decorator_args, **decorator_kwargs):
     def decorator(func):
         @wraps(func)
         def wrapper(*func_args, **func_kwargs):
-            logging.debug(
-                f"{func_args=}, {func_kwargs=}, {decorator_args=}, {decorator_kwargs=}"
-            )
+            logging.debug(f"{func_args=}, {func_kwargs=}, {decorator_args=}, {decorator_kwargs=}")
             config = func_args[0].config
             # Pre:
-            response_type = func_kwargs.get(
-                "response_type", decorator_kwargs.get("response_type", OBJ_RESPONSE)
-            )
+            response_type = func_kwargs.get("response_type", decorator_kwargs.get("response_type", OBJ_RESPONSE))
             func_kwargs.pop("response_type", None)
             expected_codes = decorator_kwargs.get("expected", [200])
-            model: pydantic.BaseModel | None = func_kwargs.get(
-                "model", decorator_kwargs.get("model", None)
-            )
+            model: pydantic.BaseModel | None = func_kwargs.get("model", decorator_kwargs.get("model", None))
             func_kwargs.pop("model", None)
 
             response = func(*func_args, **func_kwargs)
@@ -42,9 +36,7 @@ def wrap_return(*decorator_args, **decorator_kwargs):
             if response_type == FULL_RESPONSE:
                 return response
             elif response_type == OBJ_RESPONSE:
-                logging.debug(
-                    f"{response_type=}, {config.auto_model=}, {model=} {func_args= } {func_kwargs=}"
-                )
+                logging.debug(f"{response_type=}, {config.auto_model=}, {model=} {func_args= } {func_kwargs=}")
                 if response.status_code in expected_codes:
                     match response.status_code:
                         case 204:

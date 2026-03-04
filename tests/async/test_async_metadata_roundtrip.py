@@ -13,8 +13,6 @@ import uuid
 
 import pytest
 
-MINIMAL_FORM_CONTENT = '{"formatVersion":"1.1","items":[]}'
-
 from ofsc.async_client import AsyncOFSC
 from ofsc.exceptions import OFSCAuthorizationError, OFSCNotFoundError
 from ofsc.models import (
@@ -35,6 +33,8 @@ from ofsc.models import (
 )
 from ofsc.models._base import EntityEnum, SharingEnum
 from ofsc.models.metadata import LinkTemplateType, ShiftType
+
+MINIMAL_FORM_CONTENT = '{"formatVersion":"1.1","items":[]}'
 
 
 def _unique_label(faker, prefix: str, max_len: int = 40) -> str:
@@ -91,9 +91,7 @@ class TestWorkskillRoundtrip:
                     "sharing": SharingEnum.maximal,
                 }
             )
-            updated = await async_instance.metadata.create_or_update_workskill(
-                updated_skill
-            )
+            updated = await async_instance.metadata.create_or_update_workskill(updated_skill)
             assert isinstance(updated, Workskill)
 
             # READ to verify update
@@ -153,9 +151,7 @@ class TestWorkskillGroupRoundtrip:
                     "translations": [{"language": "en", "name": group_name}],
                 }
             )
-            created = await async_instance.metadata.create_or_update_workskill_group(
-                group
-            )
+            created = await async_instance.metadata.create_or_update_workskill_group(group)
             assert isinstance(created, WorkskillGroup)
             assert created.label == group_label
 
@@ -177,9 +173,7 @@ class TestWorkskillGroupRoundtrip:
                     "translations": [{"language": "en", "name": new_name}],
                 }
             )
-            updated = await async_instance.metadata.create_or_update_workskill_group(
-                updated_group
-            )
+            updated = await async_instance.metadata.create_or_update_workskill_group(updated_group)
             assert isinstance(updated, WorkskillGroup)
 
             # READ to verify update
@@ -225,9 +219,7 @@ class TestCapacityCategoryRoundtrip:
                     "translations": [{"language": "en", "name": name}],
                 }
             )
-            created = await async_instance.metadata.create_or_replace_capacity_category(
-                category
-            )
+            created = await async_instance.metadata.create_or_replace_capacity_category(category)
             assert isinstance(created, CapacityCategory)
             assert created.label == label
 
@@ -246,9 +238,7 @@ class TestCapacityCategoryRoundtrip:
                     "translations": [{"language": "en", "name": new_name}],
                 }
             )
-            updated = await async_instance.metadata.create_or_replace_capacity_category(
-                replaced
-            )
+            updated = await async_instance.metadata.create_or_replace_capacity_category(replaced)
             assert isinstance(updated, CapacityCategory)
 
             # READ to verify
@@ -397,9 +387,7 @@ class TestActivityTypeGroupRoundtrip:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_activity_type_group_create_read_update(
-        self, async_instance: AsyncOFSC, faker
-    ):
+    async def test_activity_type_group_create_read_update(self, async_instance: AsyncOFSC, faker):
         label = _unique_label(faker, "ATG")
         name = faker.sentence(nb_words=3)[:50]
 
@@ -411,9 +399,7 @@ class TestActivityTypeGroupRoundtrip:
                 "translations": [{"language": "en", "name": name}],
             }
         )
-        created = await async_instance.metadata.create_or_replace_activity_type_group(
-            atg
-        )
+        created = await async_instance.metadata.create_or_replace_activity_type_group(atg)
         assert isinstance(created, ActivityTypeGroup)
         assert created.label == label
 
@@ -431,9 +417,7 @@ class TestActivityTypeGroupRoundtrip:
                 "translations": [{"language": "en", "name": new_name}],
             }
         )
-        updated = await async_instance.metadata.create_or_replace_activity_type_group(
-            replaced
-        )
+        updated = await async_instance.metadata.create_or_replace_activity_type_group(replaced)
         assert isinstance(updated, ActivityTypeGroup)
 
         # READ to verify
@@ -456,9 +440,7 @@ class TestActivityTypeRoundtrip:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_activity_type_create_read_update(
-        self, async_instance: AsyncOFSC, faker
-    ):
+    async def test_activity_type_create_read_update(self, async_instance: AsyncOFSC, faker):
         atg_label = _unique_label(faker, "ATG")
         label = _unique_label(faker, "AT")
         name = faker.sentence(nb_words=3)[:50]
@@ -506,9 +488,7 @@ class TestActivityTypeRoundtrip:
                 "translations": [{"language": "en", "name": new_name}],
             }
         )
-        updated = await async_instance.metadata.create_or_replace_activity_type(
-            replaced
-        )
+        updated = await async_instance.metadata.create_or_replace_activity_type(replaced)
         assert isinstance(updated, ActivityType)
 
         # READ to verify
@@ -528,9 +508,7 @@ class TestInventoryTypeRoundtrip:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_inventory_type_create_read_update(
-        self, async_instance: AsyncOFSC, faker
-    ):
+    async def test_inventory_type_create_read_update(self, async_instance: AsyncOFSC, faker):
         label = _unique_label(faker, "IT")
         name = faker.word()[:30]
 
@@ -543,9 +521,7 @@ class TestInventoryTypeRoundtrip:
                     "translations": [{"language": "en", "name": name}],
                 }
             )
-            created = await async_instance.metadata.create_or_replace_inventory_type(
-                inv_type
-            )
+            created = await async_instance.metadata.create_or_replace_inventory_type(inv_type)
         except OFSCAuthorizationError:
             pytest.skip("Test account lacks write permissions for inventory types")
 
@@ -566,9 +542,7 @@ class TestInventoryTypeRoundtrip:
                 "translations": [{"language": "en", "name": new_name}],
             }
         )
-        updated = await async_instance.metadata.create_or_replace_inventory_type(
-            replaced
-        )
+        updated = await async_instance.metadata.create_or_replace_inventory_type(replaced)
         assert isinstance(updated, InventoryType)
 
         # READ to verify
@@ -699,9 +673,7 @@ class TestLinkTemplateRoundtrip:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_link_template_create_read_update(
-        self, async_instance: AsyncOFSC, faker
-    ):
+    async def test_link_template_create_read_update(self, async_instance: AsyncOFSC, faker):
         label = f"TST_LT_{uuid.uuid4().hex[:8].upper()}"
         name = faker.sentence(nb_words=3)[:50]
 

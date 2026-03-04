@@ -50,9 +50,7 @@ class TestAsyncGetCapacityAreasLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_get_capacity_areas_with_expand_parent(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_get_capacity_areas_with_expand_parent(self, async_instance: AsyncOFSC):
         """Test get_capacity_areas with expandParent=True."""
         result = await async_instance.metadata.get_capacity_areas(expandParent=True)
 
@@ -63,9 +61,7 @@ class TestAsyncGetCapacityAreasLive:
     @pytest.mark.uses_real_data
     async def test_get_capacity_areas_with_fields(self, async_instance: AsyncOFSC):
         """Test get_capacity_areas with custom fields."""
-        result = await async_instance.metadata.get_capacity_areas(
-            fields=["label", "name", "status"]
-        )
+        result = await async_instance.metadata.get_capacity_areas(fields=["label", "name", "status"])
 
         assert isinstance(result, CapacityAreaListResponse)
         assert len(result.items) > 0
@@ -112,9 +108,7 @@ class TestAsyncGetCapacityAreasLive:
         # Iterate through each area and get it individually
         for area in all_areas.items:
             try:
-                individual_area = await async_instance.metadata.get_capacity_area(
-                    area.label
-                )
+                individual_area = await async_instance.metadata.get_capacity_area(area.label)
 
                 # Validate the returned area
                 assert isinstance(individual_area, CapacityArea)
@@ -239,12 +233,7 @@ class TestAsyncCapacityAreasSavedResponses:
 
     def test_capacity_area_list_response_validation(self):
         """Test CapacityAreaListResponse model validates against saved response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "capacity_areas"
-            / "get_capacity_areas_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "capacity_areas" / "get_capacity_areas_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 
@@ -256,12 +245,7 @@ class TestAsyncCapacityAreasSavedResponses:
 
     def test_capacity_area_expanded_validation(self):
         """Test CapacityAreaListResponse with expanded parent validates."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "capacity_areas"
-            / "get_capacity_areas_expanded_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "capacity_areas" / "get_capacity_areas_expanded_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 
@@ -272,12 +256,7 @@ class TestAsyncCapacityAreasSavedResponses:
 
     def test_capacity_area_single_validation(self):
         """Test CapacityArea model validates against saved single response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "capacity_areas"
-            / "get_capacity_area_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "capacity_areas" / "get_capacity_area_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 
@@ -295,33 +274,25 @@ class TestAsyncGetCapacityAreaCapacityCategoriesLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_get_capacity_area_capacity_categories(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_get_capacity_area_capacity_categories(self, async_instance: AsyncOFSC):
         """Test get_capacity_area_capacity_categories with actual API."""
         areas = await async_instance.metadata.get_capacity_areas()
         assert len(areas.items) > 0
         test_label = areas.items[0].label
 
-        result = await async_instance.metadata.get_capacity_area_capacity_categories(
-            test_label
-        )
+        result = await async_instance.metadata.get_capacity_area_capacity_categories(test_label)
 
         assert isinstance(result, CapacityAreaCapacityCategoriesResponse)
         assert hasattr(result, "items")
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_get_capacity_area_capacity_categories_not_found(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_get_capacity_area_capacity_categories_not_found(self, async_instance: AsyncOFSC):
         """Test get_capacity_area_capacity_categories with non-existent label."""
         from ofsc.exceptions import OFSCNotFoundError
 
         with pytest.raises(OFSCNotFoundError):
-            await async_instance.metadata.get_capacity_area_capacity_categories(
-                "NONEXISTENT_AREA_12345"
-            )
+            await async_instance.metadata.get_capacity_area_capacity_categories("NONEXISTENT_AREA_12345")
 
 
 class TestAsyncGetCapacityAreaCapacityCategories:
@@ -341,9 +312,7 @@ class TestAsyncGetCapacityAreaCapacityCategories:
         mock_response.raise_for_status = Mock()
 
         mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await mock_instance.metadata.get_capacity_area_capacity_categories(
-            "AREA1"
-        )
+        result = await mock_instance.metadata.get_capacity_area_capacity_categories("AREA1")
 
         assert isinstance(result, CapacityAreaCapacityCategoriesResponse)
         assert len(result.items) == 2
@@ -360,9 +329,7 @@ class TestAsyncGetCapacityAreaCapacityCategories:
         mock_response.raise_for_status = Mock()
 
         mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await mock_instance.metadata.get_capacity_area_capacity_categories(
-            "AREA1"
-        )
+        result = await mock_instance.metadata.get_capacity_area_capacity_categories("AREA1")
 
         assert isinstance(result, CapacityAreaCapacityCategoriesResponse)
         assert len(result) == 0
@@ -372,15 +339,11 @@ class TestAsyncGetCapacityAreaCapacityCategories:
         """Test that result is iterable."""
         mock_response = Mock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "items": [{"label": "CAT1"}, {"label": "CAT2"}]
-        }
+        mock_response.json.return_value = {"items": [{"label": "CAT1"}, {"label": "CAT2"}]}
         mock_response.raise_for_status = Mock()
 
         mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await mock_instance.metadata.get_capacity_area_capacity_categories(
-            "AREA1"
-        )
+        result = await mock_instance.metadata.get_capacity_area_capacity_categories("AREA1")
 
         labels = [cat.label for cat in result]
         assert labels == ["CAT1", "CAT2"]
@@ -407,14 +370,10 @@ class TestAsyncGetCapacityAreaWorkzonesLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_get_capacity_area_workzones_not_found(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_get_capacity_area_workzones_not_found(self, async_instance: AsyncOFSC):
         """Test get_capacity_area_workzones with non-existent label."""
         with pytest.raises(OFSCNotFoundError):
-            await async_instance.metadata.get_capacity_area_workzones(
-                "NONEXISTENT_AREA_12345"
-            )
+            await async_instance.metadata.get_capacity_area_workzones("NONEXISTENT_AREA_12345")
 
 
 class TestAsyncGetCapacityAreaWorkzones:
@@ -459,9 +418,7 @@ class TestAsyncGetCapacityAreaWorkzones:
         """Test that result is iterable."""
         mock_response = Mock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "items": [{"workZoneLabel": "WZ1"}, {"workZoneLabel": "WZ2"}]
-        }
+        mock_response.json.return_value = {"items": [{"workZoneLabel": "WZ1"}, {"workZoneLabel": "WZ2"}]}
         mock_response.raise_for_status = Mock()
 
         mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
@@ -482,9 +439,7 @@ class TestAsyncGetCapacityAreaWorkzonesV1:
         """Test that get_capacity_area_workzones_v1 returns CapacityAreaWorkZonesV1Response."""
         mock_response = Mock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "items": [{"label": "WZ1"}, {"label": "WZ2"}]
-        }
+        mock_response.json.return_value = {"items": [{"label": "WZ1"}, {"label": "WZ2"}]}
         mock_response.raise_for_status = Mock()
 
         mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
@@ -543,14 +498,10 @@ class TestAsyncGetCapacityAreaTimeSlotsLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_get_capacity_area_time_slots_not_found(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_get_capacity_area_time_slots_not_found(self, async_instance: AsyncOFSC):
         """Test get_capacity_area_time_slots with non-existent label."""
         with pytest.raises(OFSCNotFoundError):
-            await async_instance.metadata.get_capacity_area_time_slots(
-                "NONEXISTENT_AREA_12345"
-            )
+            await async_instance.metadata.get_capacity_area_time_slots("NONEXISTENT_AREA_12345")
 
 
 class TestAsyncGetCapacityAreaTimeSlots:
@@ -606,9 +557,7 @@ class TestAsyncGetCapacityAreaTimeSlots:
         """Test that result is iterable."""
         mock_response = Mock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "items": [{"label": "TS1"}, {"label": "TS2"}]
-        }
+        mock_response.json.return_value = {"items": [{"label": "TS1"}, {"label": "TS2"}]}
         mock_response.raise_for_status = Mock()
 
         mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
@@ -632,23 +581,17 @@ class TestAsyncGetCapacityAreaTimeIntervalsLive:
         assert len(areas.items) > 0
         test_label = areas.items[0].label
 
-        result = await async_instance.metadata.get_capacity_area_time_intervals(
-            test_label
-        )
+        result = await async_instance.metadata.get_capacity_area_time_intervals(test_label)
 
         assert isinstance(result, CapacityAreaTimeIntervalsResponse)
         assert hasattr(result, "items")
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_get_capacity_area_time_intervals_not_found(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_get_capacity_area_time_intervals_not_found(self, async_instance: AsyncOFSC):
         """Test get_capacity_area_time_intervals with non-existent label."""
         with pytest.raises(OFSCNotFoundError):
-            await async_instance.metadata.get_capacity_area_time_intervals(
-                "NONEXISTENT_AREA_12345"
-            )
+            await async_instance.metadata.get_capacity_area_time_intervals("NONEXISTENT_AREA_12345")
 
 
 class TestAsyncGetCapacityAreaTimeIntervals:
@@ -693,9 +636,7 @@ class TestAsyncGetCapacityAreaTimeIntervals:
         """Test that result is iterable."""
         mock_response = Mock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "items": [{"timeFrom": "08:00", "timeTo": "12:00"}]
-        }
+        mock_response.json.return_value = {"items": [{"timeFrom": "08:00", "timeTo": "12:00"}]}
         mock_response.raise_for_status = Mock()
 
         mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
@@ -719,23 +660,17 @@ class TestAsyncGetCapacityAreaOrganizationsLive:
         assert len(areas.items) > 0
         test_label = areas.items[0].label
 
-        result = await async_instance.metadata.get_capacity_area_organizations(
-            test_label
-        )
+        result = await async_instance.metadata.get_capacity_area_organizations(test_label)
 
         assert isinstance(result, CapacityAreaOrganizationsResponse)
         assert hasattr(result, "items")
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_get_capacity_area_organizations_not_found(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_get_capacity_area_organizations_not_found(self, async_instance: AsyncOFSC):
         """Test get_capacity_area_organizations with non-existent label."""
         with pytest.raises(OFSCNotFoundError):
-            await async_instance.metadata.get_capacity_area_organizations(
-                "NONEXISTENT_AREA_12345"
-            )
+            await async_instance.metadata.get_capacity_area_organizations("NONEXISTENT_AREA_12345")
 
 
 class TestAsyncGetCapacityAreaOrganizations:
@@ -781,9 +716,7 @@ class TestAsyncGetCapacityAreaOrganizations:
         """Test that result is iterable."""
         mock_response = Mock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "items": [{"label": "ORG1"}, {"label": "ORG2"}]
-        }
+        mock_response.json.return_value = {"items": [{"label": "ORG1"}, {"label": "ORG2"}]}
         mock_response.raise_for_status = Mock()
 
         mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
@@ -814,14 +747,10 @@ class TestAsyncGetCapacityAreaChildrenLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_get_capacity_area_children_not_found(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_get_capacity_area_children_not_found(self, async_instance: AsyncOFSC):
         """Test get_capacity_area_children with non-existent label."""
         with pytest.raises(OFSCNotFoundError):
-            await async_instance.metadata.get_capacity_area_children(
-                "NONEXISTENT_AREA_12345"
-            )
+            await async_instance.metadata.get_capacity_area_children("NONEXISTENT_AREA_12345")
 
 
 class TestAsyncGetCapacityAreaChildren:
@@ -853,15 +782,11 @@ class TestAsyncGetCapacityAreaChildren:
         """Test get_capacity_area_children with query parameters."""
         mock_response = Mock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "items": [{"label": "CHILD1", "status": "active"}]
-        }
+        mock_response.json.return_value = {"items": [{"label": "CHILD1", "status": "active"}]}
         mock_response.raise_for_status = Mock()
 
         mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
-        result = await mock_instance.metadata.get_capacity_area_children(
-            "AREA1", status="active", type="area"
-        )
+        result = await mock_instance.metadata.get_capacity_area_children("AREA1", status="active", type="area")
 
         assert isinstance(result, CapacityAreaChildrenResponse)
         assert len(result.items) == 1
@@ -884,9 +809,7 @@ class TestAsyncGetCapacityAreaChildren:
         """Test that result is iterable."""
         mock_response = Mock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "items": [{"label": "CHILD1"}, {"label": "CHILD2"}]
-        }
+        mock_response.json.return_value = {"items": [{"label": "CHILD1"}, {"label": "CHILD2"}]}
         mock_response.raise_for_status = Mock()
 
         mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
@@ -904,9 +827,7 @@ class TestAsyncCapacityAreaVsResourceWorkzones:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_capacity_area_workzones_match_resource_workzones(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_capacity_area_workzones_match_resource_workzones(self, async_instance: AsyncOFSC):
         """Validate that get_capacity_area_workzones and get_resource_workzones
         return the same workzone labels when queried with the same label.
         """
@@ -924,8 +845,4 @@ class TestAsyncCapacityAreaVsResourceWorkzones:
         res_labels = {wz.workZone for wz in res_workzones if wz.workZone}
 
         # The workzone labels from both APIs should match
-        assert ca_labels == res_labels, (
-            f"Workzone mismatch for '{label}': "
-            f"metadata={ca_labels - res_labels}, "
-            f"core={res_labels - ca_labels}"
-        )
+        assert ca_labels == res_labels, f"Workzone mismatch for '{label}': metadata={ca_labels - res_labels}, core={res_labels - ca_labels}"

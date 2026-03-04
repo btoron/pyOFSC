@@ -22,9 +22,7 @@ class _CoreBaseProtocol(Protocol):
     baseUrl: str
     headers: dict
 
-    def _handle_http_error(
-        self, e: httpx.HTTPStatusError, context: str = ""
-    ) -> None: ...
+    def _handle_http_error(self, e: httpx.HTTPStatusError, context: str = "") -> None: ...
 
     async def _inventory_custom_action(
         self,
@@ -44,9 +42,7 @@ class AsyncOFSCoreInventoriesMixin:
 
     # region Inventories
 
-    async def create_inventory(
-        self: _CoreBaseProtocol, data: "InventoryCreate | dict"
-    ) -> Inventory:
+    async def create_inventory(self: _CoreBaseProtocol, data: "InventoryCreate | dict") -> Inventory:
         """Create a new inventory item.
 
         Args:
@@ -106,9 +102,7 @@ class AsyncOFSCoreInventoriesMixin:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def update_inventory(
-        self: _CoreBaseProtocol, inventory_id: int, data: dict
-    ) -> Inventory:
+    async def update_inventory(self: _CoreBaseProtocol, inventory_id: int, data: dict) -> Inventory:
         """Update an inventory item (PATCH — partial update).
 
         Args:
@@ -164,9 +158,7 @@ class AsyncOFSCoreInventoriesMixin:
 
     # region File Properties
 
-    async def get_inventory_property(
-        self: _CoreBaseProtocol, inventory_id: int, label: str
-    ) -> bytes:
+    async def get_inventory_property(self: _CoreBaseProtocol, inventory_id: int, label: str) -> bytes:
         """Get a binary file property for an inventory item.
 
         Args:
@@ -183,9 +175,7 @@ class AsyncOFSCoreInventoriesMixin:
             OFSCApiError: For other API errors
             OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/inventories/{inventory_id}/{label}"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/inventories/{inventory_id}/{label}")
         headers = {**self.headers, "Accept": "application/octet-stream"}
 
         try:
@@ -193,9 +183,7 @@ class AsyncOFSCoreInventoriesMixin:
             response.raise_for_status()
             return response.content
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get property '{label}' for inventory {inventory_id}"
-            )
+            self._handle_http_error(e, f"Failed to get property '{label}' for inventory {inventory_id}")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -224,9 +212,7 @@ class AsyncOFSCoreInventoriesMixin:
             OFSCApiError: For other API errors
             OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/inventories/{inventory_id}/{label}"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/inventories/{inventory_id}/{label}")
         base_headers = {k: v for k, v in self.headers.items() if k != "Content-Type"}
         headers = {
             **base_headers,
@@ -238,16 +224,12 @@ class AsyncOFSCoreInventoriesMixin:
             response = await self._client.put(url, headers=headers, content=content)
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to set property '{label}' for inventory {inventory_id}"
-            )
+            self._handle_http_error(e, f"Failed to set property '{label}' for inventory {inventory_id}")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def delete_inventory_property(
-        self: _CoreBaseProtocol, inventory_id: int, label: str
-    ) -> None:
+    async def delete_inventory_property(self: _CoreBaseProtocol, inventory_id: int, label: str) -> None:
         """Delete a binary file property for an inventory item.
 
         Args:
@@ -261,17 +243,13 @@ class AsyncOFSCoreInventoriesMixin:
             OFSCApiError: For other API errors
             OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/inventories/{inventory_id}/{label}"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/inventories/{inventory_id}/{label}")
 
         try:
             response = await self._client.delete(url, headers=self.headers)
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to delete property '{label}' for inventory {inventory_id}"
-            )
+            self._handle_http_error(e, f"Failed to delete property '{label}' for inventory {inventory_id}")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -298,9 +276,7 @@ class AsyncOFSCoreInventoriesMixin:
             body = data.model_dump(exclude_none=True)
 
         try:
-            response = await self._client.post(
-                url, headers=self.headers, json=body or {}
-            )
+            response = await self._client.post(url, headers=self.headers, json=body or {})
             response.raise_for_status()
             return Inventory.model_validate(response.json())
         except httpx.HTTPStatusError as e:

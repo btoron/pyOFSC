@@ -39,11 +39,7 @@ async def bucket_activity_type(async_instance):
     """Get a bucket-compatible activity type label for creating test activities."""
     activity_types = await async_instance.metadata.get_activity_types()
     activity_type = next(
-        (
-            at.label
-            for at in activity_types
-            if at.features and at.features.allowCreationInBuckets
-        ),
+        (at.label for at in activity_types if at.features and at.features.allowCreationInBuckets),
         None,
     )
     assert activity_type is not None, "No bucket-compatible activity types available"
@@ -55,11 +51,7 @@ async def workzone_activity_type(async_instance):
     """Get an activity type label that has work zone support enabled."""
     activity_types = await async_instance.metadata.get_activity_types()
     label = next(
-        (
-            at.label
-            for at in activity_types
-            if at.features and at.features.supportOfWorkZones
-        ),
+        (at.label for at in activity_types if at.features and at.features.supportOfWorkZones),
         None,
     )
     if label is None:
@@ -130,11 +122,7 @@ async def segmentable_activity_type(async_instance):
     """Get an activity type label that supports segmenting."""
     activity_types = await async_instance.metadata.get_activity_types()
     label = next(
-        (
-            at.label
-            for at in activity_types
-            if at.features and at.features.isSegmentingEnabled
-        ),
+        (at.label for at in activity_types if at.features and at.features.isSegmentingEnabled),
         None,
     )
     if label is None:

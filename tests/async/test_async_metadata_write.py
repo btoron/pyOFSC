@@ -22,9 +22,7 @@ from ofsc.models import (
 )
 
 
-def _mock_response(
-    status_code: int, json_data: dict | None = None, content: bool = False
-):
+def _mock_response(status_code: int, json_data: dict | None = None, content: bool = False):
     """Build a mock httpx response."""
     mock = Mock()
     mock.status_code = status_code
@@ -58,9 +56,7 @@ class TestCreateOrReplaceActivityTypeGroup:
         mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
         data = ActivityTypeGroup.model_validate(_ATG_DATA)
-        result = await mock_instance.metadata.create_or_replace_activity_type_group(
-            data
-        )
+        result = await mock_instance.metadata.create_or_replace_activity_type_group(data)
 
         assert isinstance(result, ActivityTypeGroup)
         assert result.label == "RESIDENTIAL"
@@ -75,9 +71,7 @@ class TestCreateOrReplaceActivityTypeGroup:
         mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
         data = ActivityTypeGroup.model_validate(_ATG_DATA)
-        result = await mock_instance.metadata.create_or_replace_activity_type_group(
-            data
-        )
+        result = await mock_instance.metadata.create_or_replace_activity_type_group(data)
         assert isinstance(result, ActivityTypeGroup)
 
 
@@ -94,9 +88,7 @@ _AT_DATA = {
     "defaultDuration": 60,
     "features": None,
     "groupLabel": None,
-    "translations": [
-        {"language": "en", "name": "Installation", "languageISO": "en-US"}
-    ],
+    "translations": [{"language": "en", "name": "Installation", "languageISO": "en-US"}],
 }
 
 _AT_SPACE_DATA = {
@@ -185,9 +177,7 @@ class TestUpdateApplicationApiAccess:
         )
         mock_instance.metadata._client.patch = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.metadata.update_application_api_access(
-            "MY_APP", "outboundAPI", {"status": "active"}
-        )
+        result = await mock_instance.metadata.update_application_api_access("MY_APP", "outboundAPI", {"status": "active"})
 
         # parse_application_api_access returns a union type — just check it's not None
         assert result is not None
@@ -197,15 +187,11 @@ class TestUpdateApplicationApiAccess:
     @pytest.mark.asyncio
     async def test_update_passes_body(self, mock_instance: AsyncOFSC):
         """Test that update sends correct body."""
-        mock_response = _mock_response(
-            200, {"label": "outboundAPI", "name": "Outbound API", "status": "inactive"}
-        )
+        mock_response = _mock_response(200, {"label": "outboundAPI", "name": "Outbound API", "status": "inactive"})
         mock_instance.metadata._client.patch = AsyncMock(return_value=mock_response)
 
         patch_data = {"status": "inactive"}
-        await mock_instance.metadata.update_application_api_access(
-            "MY_APP", "outboundAPI", patch_data
-        )
+        await mock_instance.metadata.update_application_api_access("MY_APP", "outboundAPI", patch_data)
 
         call_kwargs = mock_instance.metadata._client.patch.call_args[1]
         assert call_kwargs["json"] == patch_data
@@ -223,9 +209,7 @@ class TestGenerateApplicationClientSecret:
         )
         mock_instance.metadata._client.post = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.metadata.generate_application_client_secret(
-            "MY_APP"
-        )
+        result = await mock_instance.metadata.generate_application_client_secret("MY_APP")
 
         assert isinstance(result, dict)
         assert result["clientSecret"] == "abc123xyz"
@@ -293,9 +277,7 @@ class TestDeleteCapacityCategory:
         error_response.request = mock_request
         error_response.text = '{"type":"not-found","title":"Not Found","detail":"..."}'
 
-        http_error = httpx.HTTPStatusError(
-            "404", request=mock_request, response=error_response
-        )
+        http_error = httpx.HTTPStatusError("404", request=mock_request, response=error_response)
 
         mock_response = Mock()
         mock_response.raise_for_status = Mock(side_effect=http_error)

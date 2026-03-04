@@ -50,9 +50,7 @@ class AsyncOFSStatistics:
         """Build authorization headers."""
         headers = {"Content-Type": "application/json;charset=UTF-8"}
         if not self._config.useToken:
-            headers["Authorization"] = "Basic " + self._config.basicAuthString.decode(
-                "utf-8"
-            )
+            headers["Authorization"] = "Basic " + self._config.basicAuthString.decode("utf-8")
         else:
             if self._config.access_token is None:
                 raise ValueError("access_token required when useToken=True")
@@ -80,9 +78,7 @@ class AsyncOFSStatistics:
         status = e.response.status_code
         error_info = self._parse_error_response(e.response)
 
-        message = (
-            f"{context}: {error_info['detail']}" if context else error_info["detail"]
-        )
+        message = f"{context}: {error_info['detail']}" if context else error_info["detail"]
 
         error_map = {
             401: OFSCAuthenticationError,
@@ -261,9 +257,7 @@ class AsyncOFSStatistics:
             OFSCApiError: For other API errors
             OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(
-            self.baseUrl, "/rest/ofscStatistics/v1/airlineDistanceBasedTravel"
-        )
+        url = urljoin(self.baseUrl, "/rest/ofscStatistics/v1/airlineDistanceBasedTravel")
         params: dict = {"offset": offset, "limit": limit}
         if level is not None:
             params["level"] = level
@@ -383,9 +377,7 @@ class AsyncOFSStatistics:
         """
         if isinstance(data, dict):
             data = AirlineDistanceBasedTravelRequestList.model_validate(data)
-        url = urljoin(
-            self.baseUrl, "/rest/ofscStatistics/v1/airlineDistanceBasedTravel"
-        )
+        url = urljoin(self.baseUrl, "/rest/ofscStatistics/v1/airlineDistanceBasedTravel")
         try:
             response = await self._client.patch(
                 url,

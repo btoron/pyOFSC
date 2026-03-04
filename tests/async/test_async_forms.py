@@ -107,9 +107,7 @@ class TestAsyncGetFormsModel:
                 {
                     "label": "test_form",
                     "name": "Test Form",
-                    "translations": [
-                        {"language": "en", "name": "Test Form", "languageISO": "en-US"}
-                    ],
+                    "translations": [{"language": "en", "name": "Test Form", "languageISO": "en-US"}],
                 },
                 {
                     "label": "another_form",
@@ -145,9 +143,7 @@ class TestAsyncGetFormsModel:
                 {
                     "label": "TEST_FORM",
                     "name": "Test Form",
-                    "translations": [
-                        {"language": "en", "name": "Test Form", "languageISO": "en-US"}
-                    ],
+                    "translations": [{"language": "en", "name": "Test Form", "languageISO": "en-US"}],
                 }
             ],
             "totalResults": 1,
@@ -202,9 +198,7 @@ class TestAsyncGetFormModel:
         mock_response.json.return_value = {
             "label": "TEST_FORM",
             "name": "Test Form",
-            "translations": [
-                {"language": "en", "name": "Test Form", "languageISO": "en-US"}
-            ],
+            "translations": [{"language": "en", "name": "Test Form", "languageISO": "en-US"}],
             "content": '{"formatVersion":"1.1","items":[]}',
         }
 
@@ -226,12 +220,7 @@ class TestAsyncFormsSavedResponses:
 
     def test_form_list_response_validation(self):
         """Test FormListResponse model validates against saved response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "forms"
-            / "get_forms_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "forms" / "get_forms_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 
@@ -244,12 +233,7 @@ class TestAsyncFormsSavedResponses:
 
     def test_form_single_validation(self):
         """Test Form model validates against saved single response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "forms"
-            / "get_form_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "forms" / "get_form_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 

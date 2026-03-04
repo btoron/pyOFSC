@@ -97,17 +97,13 @@ class TestAsyncGetRoutingProfilePlansLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_get_routing_profile_plans_pagination(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_get_routing_profile_plans_pagination(self, async_instance: AsyncOFSC):
         """Test get_routing_profile_plans with pagination."""
         # Get first routing profile
         profiles = await async_instance.metadata.get_routing_profiles()
         if len(profiles.items) > 0:
             profile_label = profiles.items[0].profileLabel
-            result = await async_instance.metadata.get_routing_profile_plans(
-                profile_label, offset=0, limit=2
-            )
+            result = await async_instance.metadata.get_routing_profile_plans(profile_label, offset=0, limit=2)
             assert isinstance(result, RoutingPlanList)
             assert result.limit == 2
 
@@ -116,9 +112,7 @@ class TestAsyncGetRoutingProfilePlansLive:
     async def test_get_routing_profile_plans_not_found(self, async_instance: AsyncOFSC):
         """Test get_routing_profile_plans with non-existent profile."""
         with pytest.raises(OFSCNotFoundError) as exc_info:
-            await async_instance.metadata.get_routing_profile_plans(
-                "NONEXISTENT_PROFILE_12345"
-            )
+            await async_instance.metadata.get_routing_profile_plans("NONEXISTENT_PROFILE_12345")
         assert exc_info.value.status_code == 404
 
 
@@ -127,32 +121,24 @@ class TestAsyncGetRoutingProfilePlans:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_get_routing_profile_plans_with_model(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_get_routing_profile_plans_with_model(self, async_instance: AsyncOFSC):
         """Test that get_routing_profile_plans returns RoutingPlanList model."""
         # Get first routing profile
         profiles = await async_instance.metadata.get_routing_profiles()
         if len(profiles.items) > 0:
             profile_label = profiles.items[0].profileLabel
-            result = await async_instance.metadata.get_routing_profile_plans(
-                profile_label
-            )
+            result = await async_instance.metadata.get_routing_profile_plans(profile_label)
             assert isinstance(result, RoutingPlanList)
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_get_routing_profile_plans_field_types(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_get_routing_profile_plans_field_types(self, async_instance: AsyncOFSC):
         """Test that fields have correct types."""
         # Get first routing profile
         profiles = await async_instance.metadata.get_routing_profiles()
         if len(profiles.items) > 0:
             profile_label = profiles.items[0].profileLabel
-            result = await async_instance.metadata.get_routing_profile_plans(
-                profile_label
-            )
+            result = await async_instance.metadata.get_routing_profile_plans(profile_label)
             if len(result.items) > 0:
                 plan = result.items[0]
                 assert isinstance(plan, RoutingPlan)
@@ -175,14 +161,10 @@ class TestAsyncExportRoutingPlanLive:
         profiles = await async_instance.metadata.get_routing_profiles()
         if len(profiles.items) > 0:
             profile_label = profiles.items[0].profileLabel
-            plans = await async_instance.metadata.get_routing_profile_plans(
-                profile_label
-            )
+            plans = await async_instance.metadata.get_routing_profile_plans(profile_label)
             if len(plans.items) > 0:
                 plan_label = plans.items[0].planLabel
-                result = await async_instance.metadata.export_routing_plan(
-                    profile_label, plan_label
-                )
+                result = await async_instance.metadata.export_routing_plan(profile_label, plan_label)
                 assert isinstance(result, RoutingPlanData)
 
     @pytest.mark.asyncio
@@ -194,9 +176,7 @@ class TestAsyncExportRoutingPlanLive:
         if len(profiles.items) > 0:
             profile_label = profiles.items[0].profileLabel
             with pytest.raises(OFSCNotFoundError) as exc_info:
-                await async_instance.metadata.export_routing_plan(
-                    profile_label, "NONEXISTENT_PLAN_12345"
-                )
+                await async_instance.metadata.export_routing_plan(profile_label, "NONEXISTENT_PLAN_12345")
             assert exc_info.value.status_code == 404
 
 
@@ -211,14 +191,10 @@ class TestAsyncExportRoutingPlan:
         profiles = await async_instance.metadata.get_routing_profiles()
         if len(profiles.items) > 0:
             profile_label = profiles.items[0].profileLabel
-            plans = await async_instance.metadata.get_routing_profile_plans(
-                profile_label
-            )
+            plans = await async_instance.metadata.get_routing_profile_plans(profile_label)
             if len(plans.items) > 0:
                 plan_label = plans.items[0].planLabel
-                result = await async_instance.metadata.export_routing_plan(
-                    profile_label, plan_label
-                )
+                result = await async_instance.metadata.export_routing_plan(profile_label, plan_label)
                 assert isinstance(result, RoutingPlanData)
 
     @pytest.mark.asyncio
@@ -228,14 +204,10 @@ class TestAsyncExportRoutingPlan:
         profiles = await async_instance.metadata.get_routing_profiles()
         if len(profiles.items) > 0:
             profile_label = profiles.items[0].profileLabel
-            plans = await async_instance.metadata.get_routing_profile_plans(
-                profile_label
-            )
+            plans = await async_instance.metadata.get_routing_profile_plans(profile_label)
             if len(plans.items) > 0:
                 plan_label = plans.items[0].planLabel
-                result = await async_instance.metadata.export_routing_plan(
-                    profile_label, plan_label
-                )
+                result = await async_instance.metadata.export_routing_plan(profile_label, plan_label)
                 assert hasattr(result, "sign")
                 assert isinstance(result.sign, str)
 
@@ -246,14 +218,10 @@ class TestAsyncExportRoutingPlan:
         profiles = await async_instance.metadata.get_routing_profiles()
         if len(profiles.items) > 0:
             profile_label = profiles.items[0].profileLabel
-            plans = await async_instance.metadata.get_routing_profile_plans(
-                profile_label
-            )
+            plans = await async_instance.metadata.get_routing_profile_plans(profile_label)
             if len(plans.items) > 0:
                 plan_label = plans.items[0].planLabel
-                result = await async_instance.metadata.export_routing_plan(
-                    profile_label, plan_label
-                )
+                result = await async_instance.metadata.export_routing_plan(profile_label, plan_label)
                 assert hasattr(result, "version")
                 assert isinstance(result.version, str)
 
@@ -274,14 +242,10 @@ class TestAsyncExportPlanFileLive:
         profiles = await async_instance.metadata.get_routing_profiles()
         if len(profiles.items) > 0:
             profile_label = profiles.items[0].profileLabel
-            plans = await async_instance.metadata.get_routing_profile_plans(
-                profile_label
-            )
+            plans = await async_instance.metadata.get_routing_profile_plans(profile_label)
             if len(plans.items) > 0:
                 plan_label = plans.items[0].planLabel
-                result = await async_instance.metadata.export_plan_file(
-                    profile_label, plan_label
-                )
+                result = await async_instance.metadata.export_plan_file(profile_label, plan_label)
                 assert isinstance(result, bytes)
                 assert len(result) > 0
 
@@ -293,9 +257,7 @@ class TestAsyncExportPlanFileLive:
         if len(profiles.items) > 0:
             profile_label = profiles.items[0].profileLabel
             with pytest.raises(OFSCNotFoundError) as exc_info:
-                await async_instance.metadata.export_plan_file(
-                    profile_label, "NONEXISTENT_PLAN_12345"
-                )
+                await async_instance.metadata.export_plan_file(profile_label, "NONEXISTENT_PLAN_12345")
             assert exc_info.value.status_code == 404
 
 
@@ -319,15 +281,11 @@ class TestAsyncImportRoutingPlanLive:
         profiles = await async_instance.metadata.get_routing_profiles()
         if len(profiles.items) > 0:
             profile_label = profiles.items[0].profileLabel
-            plans = await async_instance.metadata.get_routing_profile_plans(
-                profile_label
-            )
+            plans = await async_instance.metadata.get_routing_profile_plans(profile_label)
             if len(plans.items) > 0:
                 plan_label = plans.items[0].planLabel
                 # Export the plan
-                plan_data_bytes = await async_instance.metadata.export_plan_file(
-                    profile_label, plan_label
-                )
+                plan_data_bytes = await async_instance.metadata.export_plan_file(profile_label, plan_label)
                 assert isinstance(plan_data_bytes, bytes)
 
                 # Try regular import (should fail with 409 if plan exists)
@@ -344,21 +302,15 @@ class TestAsyncImportRoutingPlanLive:
         profiles = await async_instance.metadata.get_routing_profiles()
         if len(profiles.items) > 0:
             profile_label = profiles.items[0].profileLabel
-            plans = await async_instance.metadata.get_routing_profile_plans(
-                profile_label
-            )
+            plans = await async_instance.metadata.get_routing_profile_plans(profile_label)
             if len(plans.items) > 0:
                 plan_label = plans.items[0].planLabel
                 # Export the plan
-                plan_data_bytes = await async_instance.metadata.export_plan_file(
-                    profile_label, plan_label
-                )
+                plan_data_bytes = await async_instance.metadata.export_plan_file(profile_label, plan_label)
 
                 # Try to import (should fail with 409 conflict)
                 with pytest.raises(OFSCConflictError) as exc_info:
-                    await async_instance.metadata.import_routing_plan(
-                        profile_label, plan_data_bytes
-                    )
+                    await async_instance.metadata.import_routing_plan(profile_label, plan_data_bytes)
                 assert exc_info.value.status_code == 409
 
 
@@ -378,20 +330,14 @@ class TestAsyncForceImportRoutingPlanLive:
         profiles = await async_instance.metadata.get_routing_profiles()
         if len(profiles.items) > 0:
             profile_label = profiles.items[0].profileLabel
-            plans = await async_instance.metadata.get_routing_profile_plans(
-                profile_label
-            )
+            plans = await async_instance.metadata.get_routing_profile_plans(profile_label)
             if len(plans.items) > 0:
                 plan_label = plans.items[0].planLabel
                 # Export the plan
-                plan_data_bytes = await async_instance.metadata.export_plan_file(
-                    profile_label, plan_label
-                )
+                plan_data_bytes = await async_instance.metadata.export_plan_file(profile_label, plan_label)
 
                 # Force import (should succeed even if plan exists)
-                await async_instance.metadata.force_import_routing_plan(
-                    profile_label, plan_data_bytes
-                )
+                await async_instance.metadata.force_import_routing_plan(profile_label, plan_data_bytes)
                 # Success - method returns None
 
 
@@ -411,16 +357,12 @@ class TestAsyncStartRoutingPlanLive:
         profiles = await async_instance.metadata.get_routing_profiles()
         if len(profiles.items) > 0:
             profile_label = profiles.items[0].profileLabel
-            plans = await async_instance.metadata.get_routing_profile_plans(
-                profile_label
-            )
+            plans = await async_instance.metadata.get_routing_profile_plans(profile_label)
             if len(plans.items) > 0:
                 plan_label = plans.items[0].planLabel
                 # Try to start plan for non-existent resource
                 with pytest.raises(OFSCNotFoundError) as exc_info:
-                    await async_instance.metadata.start_routing_plan(
-                        profile_label, plan_label, "INVALID_RESOURCE", "2025-10-23"
-                    )
+                    await async_instance.metadata.start_routing_plan(profile_label, plan_label, "INVALID_RESOURCE", "2025-10-23")
                 assert exc_info.value.status_code == 404
 
 
@@ -435,12 +377,7 @@ class TestAsyncRoutingProfileSavedResponses:
 
     def test_routing_profile_list_validation(self):
         """Test RoutingProfileList model validates against saved response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "routing_profiles"
-            / "get_routing_profiles_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "routing_profiles" / "get_routing_profiles_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)
@@ -453,12 +390,7 @@ class TestAsyncRoutingProfileSavedResponses:
 
     def test_routing_plan_list_validation(self):
         """Test RoutingPlanList model validates against saved response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "routing_profiles"
-            / "get_routing_profile_plans_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "routing_profiles" / "get_routing_profile_plans_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)
@@ -471,12 +403,7 @@ class TestAsyncRoutingProfileSavedResponses:
 
     def test_routing_plan_data_validation(self):
         """Test RoutingPlanData model validates against saved response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "routing_profiles"
-            / "export_routing_plan_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "routing_profiles" / "export_routing_plan_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)
@@ -497,12 +424,7 @@ class TestAsyncRoutingProfileSavedResponses:
 
     def test_import_routing_plan_validation(self):
         """Test import response validates against saved response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "routing_profiles"
-            / "import_routing_plan_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "routing_profiles" / "import_routing_plan_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)
@@ -513,12 +435,7 @@ class TestAsyncRoutingProfileSavedResponses:
 
     def test_force_import_routing_plan_validation(self):
         """Test force import response validates against saved response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "routing_profiles"
-            / "force_import_routing_plan_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "routing_profiles" / "force_import_routing_plan_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)

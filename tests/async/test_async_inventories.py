@@ -39,25 +39,19 @@ class TestInventoryCreateModel:
 
     def test_inventory_create_valid_with_resource_id(self):
         """Test InventoryCreate with inventoryType and resourceId."""
-        inv = InventoryCreate.model_validate(
-            {"inventoryType": "PART_A", "resourceId": "RES1"}
-        )
+        inv = InventoryCreate.model_validate({"inventoryType": "PART_A", "resourceId": "RES1"})
         assert inv.inventoryType == "PART_A"
         assert inv.resourceId == "RES1"
 
     def test_inventory_create_valid_with_activity_id(self):
         """Test InventoryCreate with inventoryType and activityId."""
-        inv = InventoryCreate.model_validate(
-            {"inventoryType": "PART_A", "activityId": 12345}
-        )
+        inv = InventoryCreate.model_validate({"inventoryType": "PART_A", "activityId": 12345})
         assert inv.inventoryType == "PART_A"
         assert inv.activityId == 12345
 
     def test_inventory_create_valid_with_resource_internal_id(self):
         """Test InventoryCreate with inventoryType and resourceInternalId."""
-        inv = InventoryCreate.model_validate(
-            {"inventoryType": "PART_A", "resourceInternalId": 99}
-        )
+        inv = InventoryCreate.model_validate({"inventoryType": "PART_A", "resourceInternalId": 99})
         assert inv.inventoryType == "PART_A"
         assert inv.resourceInternalId == 99
 
@@ -81,9 +75,7 @@ class TestInventoryCreateModel:
 
     def test_inventory_create_model_dump_excludes_none(self):
         """Test that model_dump with exclude_none works correctly."""
-        inv = InventoryCreate.model_validate(
-            {"inventoryType": "PART_C", "resourceId": "RES1"}
-        )
+        inv = InventoryCreate.model_validate({"inventoryType": "PART_C", "resourceId": "RES1"})
         dumped = inv.model_dump(exclude_none=True)
         assert "inventoryType" in dumped
         assert "resourceId" in dumped
@@ -101,9 +93,7 @@ class TestInventoryCustomActionModel:
 
     def test_inventory_custom_action_with_fields(self):
         """Test InventoryCustomAction with optional fields."""
-        action = InventoryCustomAction.model_validate(
-            {"activityId": 99, "quantity": 1.5}
-        )
+        action = InventoryCustomAction.model_validate({"activityId": 99, "quantity": 1.5})
         assert action.activityId == 99
         assert action.quantity == 1.5
 
@@ -137,9 +127,7 @@ class TestAsyncCreateInventory:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.post = AsyncMock(return_value=mock_response)
 
-        data = InventoryCreate.model_validate(
-            {"inventoryType": "PART_A", "resourceId": "RES1"}
-        )
+        data = InventoryCreate.model_validate({"inventoryType": "PART_A", "resourceId": "RES1"})
         result = await mock_instance.core.create_inventory(data)
 
         assert isinstance(result, Inventory)
@@ -158,9 +146,7 @@ class TestAsyncCreateInventory:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.post = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.core.create_inventory(
-            {"inventoryType": "PART_B", "resourceId": "RES2"}
-        )
+        result = await mock_instance.core.create_inventory({"inventoryType": "PART_B", "resourceId": "RES2"})
 
         assert isinstance(result, Inventory)
         assert result.inventoryId == 102
@@ -177,9 +163,7 @@ class TestAsyncCreateInventory:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.post = AsyncMock(return_value=mock_response)
 
-        await mock_instance.core.create_inventory(
-            {"inventoryType": "PART_C", "resourceId": "RES3", "quantity": 3.0}
-        )
+        await mock_instance.core.create_inventory({"inventoryType": "PART_C", "resourceId": "RES3", "quantity": 3.0})
 
         call_kwargs = mock_instance.core._client.post.call_args
         assert call_kwargs.kwargs["json"]["inventoryType"] == "PART_C"
@@ -301,9 +285,7 @@ class TestAsyncInventoryProperties:
     """Mocked tests for inventory file properties."""
 
     @pytest.mark.asyncio
-    async def test_get_inventory_property_returns_bytes(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_get_inventory_property_returns_bytes(self, mock_instance: AsyncOFSC):
         """Test that get_inventory_property returns bytes."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -317,9 +299,7 @@ class TestAsyncInventoryProperties:
         assert result == b"binary_data_here"
 
     @pytest.mark.asyncio
-    async def test_get_inventory_property_sets_accept_header(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_get_inventory_property_sets_accept_header(self, mock_instance: AsyncOFSC):
         """Test that get_inventory_property sets Accept header."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -340,25 +320,19 @@ class TestAsyncInventoryProperties:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.put = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.core.set_inventory_property(
-            10, "photo", b"image_bytes", "photo.jpg"
-        )
+        result = await mock_instance.core.set_inventory_property(10, "photo", b"image_bytes", "photo.jpg")
 
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_set_inventory_property_content_disposition(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_set_inventory_property_content_disposition(self, mock_instance: AsyncOFSC):
         """Test that set_inventory_property sets Content-Disposition header."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.put = AsyncMock(return_value=mock_response)
 
-        await mock_instance.core.set_inventory_property(
-            10, "photo", b"data", "my_photo.png", "image/png"
-        )
+        await mock_instance.core.set_inventory_property(10, "photo", b"data", "my_photo.png", "image/png")
 
         call_kwargs = mock_instance.core._client.put.call_args
         assert "Content-Disposition" in call_kwargs.kwargs["headers"]
@@ -366,9 +340,7 @@ class TestAsyncInventoryProperties:
         assert call_kwargs.kwargs["headers"]["Content-Type"] == "image/png"
 
     @pytest.mark.asyncio
-    async def test_delete_inventory_property_returns_none(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_delete_inventory_property_returns_none(self, mock_instance: AsyncOFSC):
         """Test that delete_inventory_property returns None on success."""
         mock_response = Mock()
         mock_response.status_code = 204
@@ -505,9 +477,7 @@ class TestAsyncInventoryCustomActions:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.post = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.core.inventory_install(
-            60, {"activityId": 999, "quantity": 1.0}
-        )
+        result = await mock_instance.core.inventory_install(60, {"activityId": 999, "quantity": 1.0})
 
         assert isinstance(result, Inventory)
         call_kwargs = mock_instance.core._client.post.call_args
@@ -532,11 +502,7 @@ class TestAsyncInventoryExceptions:
             "title": "Not Found",
             "detail": "Inventory not found",
         }
-        mock_response.raise_for_status = Mock(
-            side_effect=httpx.HTTPStatusError(
-                "404", request=Mock(), response=mock_response
-            )
-        )
+        mock_response.raise_for_status = Mock(side_effect=httpx.HTTPStatusError("404", request=Mock(), response=mock_response))
         mock_instance.core._client.get = AsyncMock(return_value=mock_response)
 
         with pytest.raises(OFSCNotFoundError):
@@ -548,11 +514,7 @@ class TestAsyncInventoryExceptions:
         mock_response = Mock()
         mock_response.status_code = 401
         mock_response.json.return_value = {"title": "Unauthorized"}
-        mock_response.raise_for_status = Mock(
-            side_effect=httpx.HTTPStatusError(
-                "401", request=Mock(), response=mock_response
-            )
-        )
+        mock_response.raise_for_status = Mock(side_effect=httpx.HTTPStatusError("401", request=Mock(), response=mock_response))
         mock_instance.core._client.get = AsyncMock(return_value=mock_response)
 
         with pytest.raises(OFSCAuthenticationError):
@@ -561,9 +523,7 @@ class TestAsyncInventoryExceptions:
     @pytest.mark.asyncio
     async def test_get_inventory_network_error(self, mock_instance: AsyncOFSC):
         """Test that network errors raise OFSCNetworkError."""
-        mock_instance.core._client.get = AsyncMock(
-            side_effect=httpx.ConnectError("Connection refused")
-        )
+        mock_instance.core._client.get = AsyncMock(side_effect=httpx.ConnectError("Connection refused"))
 
         with pytest.raises(OFSCNetworkError):
             await mock_instance.core.get_inventory(1)
@@ -571,14 +531,10 @@ class TestAsyncInventoryExceptions:
     @pytest.mark.asyncio
     async def test_create_inventory_network_error(self, mock_instance: AsyncOFSC):
         """Test that network errors on create raise OFSCNetworkError."""
-        mock_instance.core._client.post = AsyncMock(
-            side_effect=httpx.ConnectError("Connection refused")
-        )
+        mock_instance.core._client.post = AsyncMock(side_effect=httpx.ConnectError("Connection refused"))
 
         with pytest.raises(OFSCNetworkError):
-            await mock_instance.core.create_inventory(
-                {"inventoryType": "PART_A", "resourceId": "RES1"}
-            )
+            await mock_instance.core.create_inventory({"inventoryType": "PART_A", "resourceId": "RES1"})
 
     @pytest.mark.asyncio
     async def test_delete_inventory_not_found(self, mock_instance: AsyncOFSC):
@@ -586,11 +542,7 @@ class TestAsyncInventoryExceptions:
         mock_response = Mock()
         mock_response.status_code = 404
         mock_response.json.return_value = {"title": "Not Found"}
-        mock_response.raise_for_status = Mock(
-            side_effect=httpx.HTTPStatusError(
-                "404", request=Mock(), response=mock_response
-            )
-        )
+        mock_response.raise_for_status = Mock(side_effect=httpx.HTTPStatusError("404", request=Mock(), response=mock_response))
         mock_instance.core._client.delete = AsyncMock(return_value=mock_response)
 
         with pytest.raises(OFSCNotFoundError):
@@ -602,11 +554,7 @@ class TestAsyncInventoryExceptions:
         mock_response = Mock()
         mock_response.status_code = 404
         mock_response.json.return_value = {"title": "Not Found"}
-        mock_response.raise_for_status = Mock(
-            side_effect=httpx.HTTPStatusError(
-                "404", request=Mock(), response=mock_response
-            )
-        )
+        mock_response.raise_for_status = Mock(side_effect=httpx.HTTPStatusError("404", request=Mock(), response=mock_response))
         mock_instance.core._client.post = AsyncMock(return_value=mock_response)
 
         with pytest.raises(OFSCNotFoundError):
@@ -623,9 +571,7 @@ class TestAsyncInventoriesLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_serialized_inventory_crud_lifecycle(
-        self, async_instance: AsyncOFSC, serialized_inventory_type: str
-    ):
+    async def test_serialized_inventory_crud_lifecycle(self, async_instance: AsyncOFSC, serialized_inventory_type: str):
         """Test full CRUD lifecycle for a serialized inventory type."""
         resources = await async_instance.core.get_resources(limit=1)
         if not resources.items:
@@ -651,9 +597,7 @@ class TestAsyncInventoriesLive:
             assert isinstance(fetched, Inventory)
             assert fetched.inventoryId == created_id
 
-            updated = await async_instance.core.update_inventory(
-                created_id, {"serialNumber": "SN-TEST-001"}
-            )
+            updated = await async_instance.core.update_inventory(created_id, {"serialNumber": "SN-TEST-001"})
             assert isinstance(updated, Inventory)
 
         finally:
@@ -662,9 +606,7 @@ class TestAsyncInventoriesLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_non_serialized_inventory_crud_lifecycle(
-        self, async_instance: AsyncOFSC, non_serialized_inventory_type: str
-    ):
+    async def test_non_serialized_inventory_crud_lifecycle(self, async_instance: AsyncOFSC, non_serialized_inventory_type: str):
         """Test full CRUD lifecycle for a non-serialized inventory type."""
         resources = await async_instance.core.get_resources(limit=1)
         if not resources.items:
@@ -690,9 +632,7 @@ class TestAsyncInventoriesLive:
             assert isinstance(fetched, Inventory)
             assert fetched.inventoryId == created_id
 
-            updated = await async_instance.core.update_inventory(
-                created_id, {"quantity": 5.0}
-            )
+            updated = await async_instance.core.update_inventory(created_id, {"quantity": 5.0})
             assert isinstance(updated, Inventory)
 
         finally:

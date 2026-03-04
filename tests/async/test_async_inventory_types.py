@@ -56,9 +56,7 @@ class TestAsyncGetInventoryTypes:
     @pytest.mark.asyncio
     async def test_get_inventory_types_pagination(self, async_instance: AsyncOFSC):
         """Test get_inventory_types with pagination"""
-        inventory_types = await async_instance.metadata.get_inventory_types(
-            offset=0, limit=2
-        )
+        inventory_types = await async_instance.metadata.get_inventory_types(offset=0, limit=2)
         assert isinstance(inventory_types, InventoryTypeListResponse)
         assert inventory_types.totalResults is not None
 
@@ -119,12 +117,7 @@ class TestAsyncInventoryTypeSavedResponses:
     def test_inventory_type_list_response_validation(self):
         """Test InventoryTypeListResponse model validates against saved response"""
         # Load saved response
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "inventory_types"
-            / "get_inventory_types_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "inventory_types" / "get_inventory_types_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)
@@ -148,12 +141,7 @@ class TestAsyncInventoryTypeSavedResponses:
     def test_inventory_type_single_response_validation(self):
         """Test InventoryType model validates against saved single response"""
         # Load saved response
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "inventory_types"
-            / "get_inventory_type_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "inventory_types" / "get_inventory_type_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)

@@ -120,12 +120,7 @@ class TestAsyncTimeSlotSavedResponses:
     def test_time_slot_list_response_validation(self):
         """Test TimeSlotListResponse model validates against saved response"""
         # Load saved response
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "time_slots"
-            / "get_time_slots_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "time_slots" / "get_time_slots_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)

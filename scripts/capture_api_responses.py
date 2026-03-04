@@ -168,23 +168,17 @@ ENDPOINTS = {
                     {
                         "label": "1",
                         "active": True,
-                        "translations": [
-                            {"language": "en", "name": "E1 - Complete, No Issues"}
-                        ],
+                        "translations": [{"language": "en", "name": "E1 - Complete, No Issues"}],
                     },
                     {
                         "label": "2",
                         "active": True,
-                        "translations": [
-                            {"language": "en", "name": "E2 - Complete, Plant Issue"}
-                        ],
+                        "translations": [{"language": "en", "name": "E2 - Complete, Plant Issue"}],
                     },
                     {
                         "label": "3",
                         "active": True,
-                        "translations": [
-                            {"language": "en", "name": "E3 - Complete, Drop Replace"}
-                        ],
+                        "translations": [{"language": "en", "name": "E3 - Complete, Drop Replace"}],
                     },
                 ]
             },
@@ -1290,9 +1284,7 @@ def load_config() -> Dict[str, Any]:
     root = os.environ.get("OFSC_ROOT")
 
     if not all([client_id, company_name, secret]):
-        raise ValueError(
-            "Missing required environment variables: OFSC_CLIENT_ID, OFSC_COMPANY, OFSC_CLIENT_SECRET"
-        )
+        raise ValueError("Missing required environment variables: OFSC_CLIENT_ID, OFSC_COMPANY, OFSC_CLIENT_SECRET")
 
     return {
         "clientID": client_id,
@@ -1349,12 +1341,8 @@ async def capture_response(
             "description": endpoint["description"],
             "status_code": response.status_code,
             "headers": {
-                "Content-Type": response.headers.get(
-                    "Content-Type", "application/json"
-                ),
-                "Cache-Control": response.headers.get(
-                    "Cache-Control", "no-store, no-cache"
-                ),
+                "Content-Type": response.headers.get("Content-Type", "application/json"),
+                "Cache-Control": response.headers.get("Cache-Control", "no-store, no-cache"),
             },
             "request": {
                 "url": url,
@@ -1379,11 +1367,7 @@ async def capture_response(
         if 200 <= response.status_code < 300:
             saved_response["response_data"] = response_data
         else:
-            saved_response["body"] = (
-                json.dumps(response_data)
-                if isinstance(response_data, dict)
-                else response_data
-            )
+            saved_response["body"] = json.dumps(response_data) if isinstance(response_data, dict) else response_data
 
         print(f"    ✓ Status: {response.status_code}")
         return saved_response
@@ -1414,17 +1398,13 @@ async def save_all_responses():
             print(f"Processing category: {category}")
 
             # Create output directory
-            output_dir = (
-                Path(__file__).parent.parent / "tests" / "saved_responses" / category
-            )
+            output_dir = Path(__file__).parent.parent / "tests" / "saved_responses" / category
             output_dir.mkdir(parents=True, exist_ok=True)
 
             # Capture each endpoint
             for endpoint in endpoints:
                 try:
-                    saved_response = await capture_response(
-                        client, endpoint, base_url, auth_header
-                    )
+                    saved_response = await capture_response(client, endpoint, base_url, auth_header)
 
                     # Save to file
                     output_file = output_dir / f"{endpoint['name']}.json"

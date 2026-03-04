@@ -5,7 +5,6 @@ from pydantic import (
     AnyHttpUrl,
     BaseModel,
     ConfigDict,
-    field_validator,
     model_validator,
 )
 
@@ -253,9 +252,7 @@ class GetActivitiesParams(BaseModel):
     def validate_date_requirements(self):
         # dateFrom and dateTo must both be specified or both be None
         if (self.dateFrom is None) != (self.dateTo is None):
-            raise ValueError(
-                "dateFrom and dateTo must both be specified or both omitted"
-            )
+            raise ValueError("dateFrom and dateTo must both be specified or both omitted")
 
         # Check date range is valid
         if self.dateFrom and self.dateTo and self.dateFrom > self.dateTo:
@@ -264,9 +261,7 @@ class GetActivitiesParams(BaseModel):
         # If no dates and no svcWorkOrderId, must have includeNonScheduled=True
         if self.dateFrom is None and self.svcWorkOrderId is None:
             if not self.includeNonScheduled:
-                raise ValueError(
-                    "Either dateFrom/dateTo, svcWorkOrderId, or includeNonScheduled=True is required"
-                )
+                raise ValueError("Either dateFrom/dateTo, svcWorkOrderId, or includeNonScheduled=True is required")
 
         return self
 

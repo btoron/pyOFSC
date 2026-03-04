@@ -63,20 +63,14 @@ class OFSMetadata(OFSApi):
     # 202209 Create Property
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def create_or_replace_property(self, property: Property):
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscMetadata/v1/properties/{property.label}"
-        )
-        response = requests.put(
-            url, headers=self.headers, data=property.model_dump_json().encode("utf-8")
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/properties/{property.label}")
+        response = requests.put(url, headers=self.headers, data=property.model_dump_json().encode("utf-8"))
         return response
 
     # 202412 Get Enumerated Property Values
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=EnumerationValueList)
     def get_enumeration_values(self, label: str, offset=0, limit=100):
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscMetadata/v1/properties/{label}/enumerationList"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/properties/{label}/enumerationList")
         params = {
             "offset": offset,
             "limit": limit,
@@ -90,9 +84,7 @@ class OFSMetadata(OFSApi):
 
     # 202503 Update or create Enumeration Value
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=EnumerationValueList)
-    def create_or_update_enumeration_value(
-        self, label: str, value: Tuple[EnumerationValue, ...]
-    ):
+    def create_or_update_enumeration_value(self, label: str, value: Tuple[EnumerationValue, ...]):
         url = urljoin(
             self.baseUrl,
             f"/rest/ofscMetadata/v1/properties/{label}/enumerationList",
@@ -158,9 +150,7 @@ class OFSMetadata(OFSApi):
     # 202212 Import plugin
     @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
     def import_plugin_file(self, plugin: Path):
-        url = urljoin(
-            self.baseUrl, "/rest/ofscMetadata/v1/plugins/custom-actions/import"
-        )
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/plugins/custom-actions/import")
         files = [("pluginFile", (plugin.name, plugin.read_text(), "text/xml"))]
         response = requests.post(url, headers=self.headers, files=files)
         return response
@@ -168,9 +158,7 @@ class OFSMetadata(OFSApi):
     # 202212 Import plugin
     @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
     def import_plugin(self, plugin: str):
-        url = urljoin(
-            self.baseUrl, "/rest/ofscMetadata/v1/plugins/custom-actions/import"
-        )
+        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/plugins/custom-actions/import")
         files = [("pluginFile", ("noname.xml", plugin, "text/xml"))]
         response = requests.post(url, headers=self.headers, files=files)
         return response
@@ -198,9 +186,7 @@ class OFSMetadata(OFSApi):
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=Workskill)
     def create_or_update_workskill(self, skill: Workskill, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{skill.label}")
-        response = requests.put(
-            url, headers=self.headers, data=skill.model_dump_json(exclude_none=True)
-        )
+        response = requests.put(url, headers=self.headers, data=skill.model_dump_json(exclude_none=True))
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[204])
@@ -220,9 +206,7 @@ class OFSMetadata(OFSApi):
         return response
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
-    def replace_workskill_conditions(
-        self, data: WorkskillConditionList, response_type=FULL_RESPONSE
-    ):
+    def replace_workskill_conditions(self, data: WorkskillConditionList, response_type=FULL_RESPONSE):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillConditions")
         content = '{"items":' + data.model_dump_json(exclude_none=True) + "}"
         headers = self.headers
@@ -234,9 +218,7 @@ class OFSMetadata(OFSApi):
     # Migration to OFS 2.0 model format
 
     # 202402 Metadata - Activity Type Groups
-    @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=ActivityTypeGroupListResponse
-    )
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=ActivityTypeGroupListResponse)
     def get_activity_type_groups(self, offset=0, limit=100):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/activityTypeGroups")
         params = {"offset": offset, "limit": limit}
@@ -254,9 +236,7 @@ class OFSMetadata(OFSApi):
         return response
 
     ## 202402 Activity Type
-    @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=ActivityTypeListResponse
-    )
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=ActivityTypeListResponse)
     def get_activity_types(self, offset=0, limit=100):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/activityTypes")
         params = {"offset": offset, "limit": limit}
@@ -266,9 +246,7 @@ class OFSMetadata(OFSApi):
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_activity_type(self, label):
         encoded_label = urllib.parse.quote_plus(label)
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscMetadata/v1/activityTypes/{encoded_label}"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/activityTypes/{encoded_label}")
         response = requests.get(url, headers=self.headers)
         return response
 
@@ -282,9 +260,7 @@ class OFSMetadata(OFSApi):
         "parent.label",
     ]
 
-    @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=CapacityAreaListResponse
-    )
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=CapacityAreaListResponse)
     def get_capacity_areas(
         self,
         expandParent: bool = False,
@@ -296,9 +272,7 @@ class OFSMetadata(OFSApi):
         assert isinstance(fields, list)
         params = {
             "expand": None if not expandParent else "parent",
-            "fields": (
-                ",".join(fields) if fields else ",".join(self.capacityAreasFields)
-            ),
+            "fields": (",".join(fields) if fields else ",".join(self.capacityAreasFields)),
             "status": None if not activeOnly else "active",
             "type": None if not areasOnly else "area",
         }
@@ -308,18 +282,14 @@ class OFSMetadata(OFSApi):
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=CapacityArea)
     def get_capacity_area(self, label: str):
         encoded_label = urllib.parse.quote_plus(label)
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}")
         response = requests.get(url, headers=self.headers)
         return response
 
     # endregion
 
     # region 202402 Metadata - Capacity Categories
-    @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=CapacityCategoryListResponse
-    )
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=CapacityCategoryListResponse)
     def get_capacity_categories(self, offset=0, limit=100):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/capacityCategories")
         params = {"offset": offset, "limit": limit}
@@ -329,18 +299,14 @@ class OFSMetadata(OFSApi):
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=CapacityCategory)
     def get_capacity_category(self, label: str):
         encoded_label = urllib.parse.quote_plus(label)
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscMetadata/v1/capacityCategories/{encoded_label}"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/capacityCategories/{encoded_label}")
         response = requests.get(url, headers=self.headers)
         return response
 
     # endregion
 
     # region 202405 Inventory Types
-    @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=InventoryTypeListResponse
-    )
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=InventoryTypeListResponse)
     def get_inventory_types(self):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/inventoryTypes")
         response = requests.get(url, headers=self.headers)
@@ -349,18 +315,14 @@ class OFSMetadata(OFSApi):
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=InventoryType)
     def get_inventory_type(self, label: str):
         encoded_label = urllib.parse.quote_plus(label)
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscMetadata/v1/inventoryTypes/{encoded_label}"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/inventoryTypes/{encoded_label}")
         response = requests.get(url, headers=self.headers)
         return response
 
     # endregion
 
     # region 202410 Metadata - Workskill Groups
-    @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=WorkskillGroupListResponse
-    )
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=WorkskillGroupListResponse)
     def get_workskill_groups(self):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillGroups")
         response = requests.get(url, headers=self.headers)
@@ -387,9 +349,7 @@ class OFSMetadata(OFSApi):
 
     # endregion 202410 Metadata - Workskill Groups
     # region Applications
-    @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=ApplicationListResponse
-    )
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=ApplicationListResponse)
     def get_applications(self):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/applications")
         response = requests.get(url, headers=self.headers)
@@ -403,9 +363,7 @@ class OFSMetadata(OFSApi):
 
     @wrap_return(response_type=OBJ_RESPONSE, expected=[200])
     def get_application_api_accesses(self, label: str):
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscMetadata/v1/applications/{label}/apiAccess"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/applications/{label}/apiAccess")
         response = requests.get(url, headers=self.headers)
         return response
 
@@ -420,9 +378,7 @@ class OFSMetadata(OFSApi):
 
     # endregion Applications
     # region Organizations
-    @wrap_return(
-        response_type=OBJ_RESPONSE, expected=[200], model=OrganizationListResponse
-    )
+    @wrap_return(response_type=OBJ_RESPONSE, expected=[200], model=OrganizationListResponse)
     def get_organizations(self):
         url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/organizations")
         response = requests.get(url, headers=self.headers)
@@ -469,9 +425,7 @@ class OFSMetadata(OFSApi):
             RoutingPlanList: List of routing plans with pagination info
         """
         encoded_label = urllib.parse.quote_plus(profile_label)
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscMetadata/v1/routingProfiles/{encoded_label}/plans"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/routingProfiles/{encoded_label}/plans")
         params = {"offset": offset, "limit": limit}
         response = requests.get(url, headers=self.headers, params=params)
         return response
@@ -654,8 +608,7 @@ class OFSMetadata(OFSApi):
 
         url = urljoin(
             self.baseUrl,
-            f"/rest/ofscMetadata/v1/routingProfiles/{encoded_profile}/plans/{encoded_plan}/"
-            f"{encoded_resource}/{date}/custom-actions/start",
+            f"/rest/ofscMetadata/v1/routingProfiles/{encoded_profile}/plans/{encoded_plan}/{encoded_resource}/{date}/custom-actions/start",
         )
         response = requests.post(url, headers=self.headers)
         return response

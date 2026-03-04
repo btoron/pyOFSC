@@ -509,9 +509,7 @@ class TestAsyncCreateUpdateDeleteUser:
 
         try:
             # 3. Update user
-            updated = await async_instance.core.update_user(
-                _TEST_USER_LOGIN, {"name": "Claude Test User Updated"}
-            )
+            updated = await async_instance.core.update_user(_TEST_USER_LOGIN, {"name": "Claude Test User Updated"})
             assert isinstance(updated, User)
             assert updated.name == "Claude Test User Updated"
 
@@ -602,9 +600,7 @@ class TestAsyncUserCollabGroups:
         assert call_kwargs.kwargs["json"] == {"items": [{"name": "GroupX"}]}
 
     @pytest.mark.asyncio
-    async def test_delete_user_collab_groups_returns_none(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_delete_user_collab_groups_returns_none(self, mock_instance: AsyncOFSC):
         """Test delete_user_collab_groups returns None."""
         mock_response = Mock()
         mock_response.status_code = 204
@@ -705,9 +701,7 @@ class TestAsyncUserExceptions:
         }
         mock_response.text = "User not found"
 
-        http_error = httpx.HTTPStatusError(
-            "404 Not Found", request=mock_request, response=mock_response
-        )
+        http_error = httpx.HTTPStatusError("404 Not Found", request=mock_request, response=mock_response)
         mock_response.raise_for_status = Mock(side_effect=http_error)
         mock_instance.core._client.get = AsyncMock(return_value=mock_response)
 

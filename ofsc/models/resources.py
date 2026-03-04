@@ -133,9 +133,7 @@ class CalendarViewList(RootModel[list[CalendarViewItem]]):
 
 class CalendarViewShift(BaseModel):
     regular: Optional[CalendarViewItem] = Field(default=None)
-    on_call: Optional[CalendarViewItem] = Field(
-        default=None, validation_alias=AliasChoices("onCall", "on-call")
-    )
+    on_call: Optional[CalendarViewItem] = Field(default=None, validation_alias=AliasChoices("onCall", "on-call"))
 
 
 class CalendarView(RootModel[Dict[str, CalendarViewShift]]):
@@ -153,9 +151,7 @@ class ResourceWorkScheduleItem(BaseModel):
     nonWorkingReason: Optional[str] = None
     points: Optional[int] = None
     recordType: CalendarViewItemRecordType
-    recurrence: Optional[Recurrence] = Recurrence(
-        recurEvery=1, recurrenceType=RecurrenceType.daily
-    )
+    recurrence: Optional[Recurrence] = Recurrence(recurEvery=1, recurrenceType=RecurrenceType.daily)
     scheduleItemId: Optional[int] = None
     scheduleLabel: Optional[str] = None
     scheduleShifts: Optional[list[CalendarViewItem]] = None

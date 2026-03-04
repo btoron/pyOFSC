@@ -64,9 +64,7 @@ class TestAsyncGetLinkTemplates:
     @pytest.mark.asyncio
     async def test_get_link_templates_pagination(self, async_instance: AsyncOFSC):
         """Test get_link_templates with pagination"""
-        link_templates = await async_instance.metadata.get_link_templates(
-            offset=0, limit=2
-        )
+        link_templates = await async_instance.metadata.get_link_templates(offset=0, limit=2)
         assert isinstance(link_templates, LinkTemplateListResponse)
         assert link_templates.totalResults is not None
 
@@ -166,9 +164,7 @@ class TestAsyncGetLinkTemplate:
     async def test_get_link_template_not_found(self, async_instance: AsyncOFSC):
         """Test get_link_template with non-existent link template"""
         with pytest.raises(OFSCNotFoundError):
-            await async_instance.metadata.get_link_template(
-                "NONEXISTENT_TEMPLATE_12345"
-            )
+            await async_instance.metadata.get_link_template("NONEXISTENT_TEMPLATE_12345")
 
 
 @pytest.mark.uses_local_data
@@ -178,12 +174,7 @@ class TestAsyncLinkTemplateSavedResponses:
     def test_link_template_list_response_validation(self):
         """Test LinkTemplateListResponse model validates against saved response"""
         # Load saved response
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "link_templates"
-            / "get_link_templates_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "link_templates" / "get_link_templates_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)
@@ -210,12 +201,7 @@ class TestAsyncLinkTemplateSavedResponses:
     def test_link_template_single_response_validation(self):
         """Test LinkTemplate model validates against saved single response"""
         # Load saved response
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "link_templates"
-            / "get_link_template_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "link_templates" / "get_link_template_200_success.json"
 
         with open(saved_response_path) as f:
             saved_data = json.load(f)

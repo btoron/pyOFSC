@@ -151,12 +151,7 @@ class TestAsyncMapLayersSavedResponses:
 
     def test_map_layer_list_response_validation(self):
         """Test MapLayerListResponse model validates against saved response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "map_layers"
-            / "get_map_layers_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "map_layers" / "get_map_layers_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 
@@ -168,12 +163,7 @@ class TestAsyncMapLayersSavedResponses:
 
     def test_map_layer_single_validation(self):
         """Test MapLayer model validates against saved single response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "map_layers"
-            / "get_map_layer_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "map_layers" / "get_map_layer_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 

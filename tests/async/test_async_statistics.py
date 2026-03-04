@@ -95,9 +95,7 @@ class TestAsyncGetActivityDurationStats:
         mock_get = AsyncMock(return_value=mock_response)
         mock_instance.statistics._client.get = mock_get
 
-        await mock_instance.statistics.get_activity_duration_stats(
-            resource_id="RES001", include_children=True, akey="KEY1"
-        )
+        await mock_instance.statistics.get_activity_duration_stats(resource_id="RES001", include_children=True, akey="KEY1")
 
         params = mock_get.call_args[1]["params"]
         assert params["resourceId"] == "RES001"
@@ -147,9 +145,7 @@ class TestAsyncGetActivityDurationStats:
         }
         mock_response.text = "Unauthorized"
 
-        http_error = httpx.HTTPStatusError(
-            "401", request=mock_request, response=mock_response
-        )
+        http_error = httpx.HTTPStatusError("401", request=mock_request, response=mock_response)
         mock_get = AsyncMock(side_effect=http_error)
         mock_instance.statistics._client.get = mock_get
 
@@ -221,9 +217,7 @@ class TestAsyncGetActivityTravelStats:
         mock_get = AsyncMock(return_value=mock_response)
         mock_instance.statistics._client.get = mock_get
 
-        await mock_instance.statistics.get_activity_travel_stats(
-            region="WEST", tkey="TK1", fkey="FK1", key_id=42
-        )
+        await mock_instance.statistics.get_activity_travel_stats(region="WEST", tkey="TK1", fkey="FK1", key_id=42)
 
         params = mock_get.call_args[1]["params"]
         assert params["region"] == "WEST"
@@ -275,9 +269,7 @@ class TestAsyncGetActivityTravelStats:
         }
         mock_response.text = "Unauthorized"
 
-        http_error = httpx.HTTPStatusError(
-            "401", request=mock_request, response=mock_response
-        )
+        http_error = httpx.HTTPStatusError("401", request=mock_request, response=mock_response)
         mock_instance.statistics._client.get = AsyncMock(side_effect=http_error)
 
         with pytest.raises(OFSCAuthenticationError):
@@ -333,9 +325,7 @@ class TestAsyncGetAirlineDistanceBasedTravel:
         mock_get = AsyncMock(return_value=mock_response)
         mock_instance.statistics._client.get = mock_get
 
-        await mock_instance.statistics.get_airline_distance_based_travel(
-            offset=20, limit=10
-        )
+        await mock_instance.statistics.get_airline_distance_based_travel(offset=20, limit=10)
 
         params = mock_get.call_args[1]["params"]
         assert params["offset"] == 20
@@ -351,9 +341,7 @@ class TestAsyncGetAirlineDistanceBasedTravel:
         mock_get = AsyncMock(return_value=mock_response)
         mock_instance.statistics._client.get = mock_get
 
-        await mock_instance.statistics.get_airline_distance_based_travel(
-            level="region", key="WEST", distance=50, key_id=1
-        )
+        await mock_instance.statistics.get_airline_distance_based_travel(level="region", key="WEST", distance=50, key_id=1)
 
         params = mock_get.call_args[1]["params"]
         assert params["level"] == "region"
@@ -405,9 +393,7 @@ class TestAsyncGetAirlineDistanceBasedTravel:
         }
         mock_response.text = "Unauthorized"
 
-        http_error = httpx.HTTPStatusError(
-            "401", request=mock_request, response=mock_response
-        )
+        http_error = httpx.HTTPStatusError("401", request=mock_request, response=mock_response)
         mock_instance.statistics._client.get = AsyncMock(side_effect=http_error)
 
         with pytest.raises(OFSCAuthenticationError):
@@ -567,9 +553,7 @@ class TestAsyncStatisticsLive:
     @pytest.mark.uses_real_data
     async def test_get_airline_distance_based_travel(self, async_instance: AsyncOFSC):
         """Test get_airline_distance_based_travel with actual API."""
-        result = await async_instance.statistics.get_airline_distance_based_travel(
-            limit=10
-        )
+        result = await async_instance.statistics.get_airline_distance_based_travel(limit=10)
         assert isinstance(result, AirlineDistanceBasedTravelList)
         assert isinstance(result.items, list)
         assert result.totalResults >= 0
@@ -597,12 +581,8 @@ class TestAsyncUpdateActivityDurationStats:
         mock_response = _make_mock_patch_response()
         mock_instance.statistics._client.patch = AsyncMock(return_value=mock_response)
 
-        request_data = ActivityDurationStatRequestList(
-            items=[{"resourceId": "RES001", "akey": "INSTALL", "override": 60}]
-        )
-        result = await mock_instance.statistics.update_activity_duration_stats(
-            request_data
-        )
+        request_data = ActivityDurationStatRequestList(items=[{"resourceId": "RES001", "akey": "INSTALL", "override": 60}])
+        result = await mock_instance.statistics.update_activity_duration_stats(request_data)
 
         assert isinstance(result, StatisticsPatchResponse)
         assert result.updatedRecords == 1
@@ -614,9 +594,7 @@ class TestAsyncUpdateActivityDurationStats:
         mock_patch = AsyncMock(return_value=mock_response)
         mock_instance.statistics._client.patch = mock_patch
 
-        request_data = ActivityDurationStatRequestList(
-            items=[{"resourceId": "", "akey": "REPAIR", "override": 120}]
-        )
+        request_data = ActivityDurationStatRequestList(items=[{"resourceId": "", "akey": "REPAIR", "override": 120}])
         await mock_instance.statistics.update_activity_duration_stats(request_data)
 
         call_kwargs = mock_patch.call_args[1]
@@ -629,9 +607,7 @@ class TestAsyncUpdateActivityDurationStats:
         mock_response = _make_mock_patch_response()
         mock_instance.statistics._client.patch = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.statistics.update_activity_duration_stats(
-            {"items": [{"resourceId": "R1", "akey": "VISIT", "override": 30}]}
-        )
+        result = await mock_instance.statistics.update_activity_duration_stats({"items": [{"resourceId": "R1", "akey": "VISIT", "override": 30}]})
 
         assert isinstance(result, StatisticsPatchResponse)
 
@@ -645,15 +621,11 @@ class TestAsyncUpdateActivityDurationStats:
         mock_response.status_code = 401
         mock_response.json.return_value = {"detail": "Unauthorized"}
         mock_response.text = "Unauthorized"
-        http_error = httpx.HTTPStatusError(
-            "401", request=mock_request, response=mock_response
-        )
+        http_error = httpx.HTTPStatusError("401", request=mock_request, response=mock_response)
         mock_instance.statistics._client.patch = AsyncMock(side_effect=http_error)
 
         with pytest.raises(OFSCAuthenticationError):
-            await mock_instance.statistics.update_activity_duration_stats(
-                {"items": [{"resourceId": "", "akey": "X", "override": 0}]}
-            )
+            await mock_instance.statistics.update_activity_duration_stats({"items": [{"resourceId": "", "akey": "X", "override": 0}]})
 
     @pytest.mark.asyncio
     async def test_validation_error(self, mock_instance: AsyncOFSC):
@@ -665,15 +637,11 @@ class TestAsyncUpdateActivityDurationStats:
         mock_response.status_code = 400
         mock_response.json.return_value = {"detail": "Bad request"}
         mock_response.text = "Bad request"
-        http_error = httpx.HTTPStatusError(
-            "400", request=mock_request, response=mock_response
-        )
+        http_error = httpx.HTTPStatusError("400", request=mock_request, response=mock_response)
         mock_instance.statistics._client.patch = AsyncMock(side_effect=http_error)
 
         with pytest.raises(OFSCValidationError):
-            await mock_instance.statistics.update_activity_duration_stats(
-                {"items": [{"resourceId": "", "akey": "X", "override": 0}]}
-            )
+            await mock_instance.statistics.update_activity_duration_stats({"items": [{"resourceId": "", "akey": "X", "override": 0}]})
 
 
 # ---------------------------------------------------------------------------
@@ -690,12 +658,8 @@ class TestAsyncUpdateActivityTravelStats:
         mock_response = _make_mock_patch_response()
         mock_instance.statistics._client.patch = AsyncMock(return_value=mock_response)
 
-        request_data = ActivityTravelStatRequestList(
-            items=[{"fkey": "FK1", "tkey": "TK1", "override": 15}]
-        )
-        result = await mock_instance.statistics.update_activity_travel_stats(
-            request_data
-        )
+        request_data = ActivityTravelStatRequestList(items=[{"fkey": "FK1", "tkey": "TK1", "override": 15}])
+        result = await mock_instance.statistics.update_activity_travel_stats(request_data)
 
         assert isinstance(result, StatisticsPatchResponse)
         assert result.updatedRecords == 1
@@ -706,9 +670,7 @@ class TestAsyncUpdateActivityTravelStats:
         mock_response = _make_mock_patch_response()
         mock_instance.statistics._client.patch = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.statistics.update_activity_travel_stats(
-            {"items": [{"fkey": "A", "tkey": "B", "override": 5}]}
-        )
+        result = await mock_instance.statistics.update_activity_travel_stats({"items": [{"fkey": "A", "tkey": "B", "override": 5}]})
 
         assert isinstance(result, StatisticsPatchResponse)
 
@@ -719,9 +681,7 @@ class TestAsyncUpdateActivityTravelStats:
         mock_patch = AsyncMock(return_value=mock_response)
         mock_instance.statistics._client.patch = mock_patch
 
-        request_data = ActivityTravelStatRequestList(
-            items=[{"fkey": "FK1", "tkey": "TK1", "override": 10, "keyId": 42}]
-        )
+        request_data = ActivityTravelStatRequestList(items=[{"fkey": "FK1", "tkey": "TK1", "override": 10, "keyId": 42}])
         await mock_instance.statistics.update_activity_travel_stats(request_data)
 
         call_kwargs = mock_patch.call_args[1]
@@ -735,19 +695,13 @@ class TestAsyncUpdateActivityTravelStats:
         mock_request = Mock()
         mock_response = Mock(spec=httpx.Response)
         mock_response.status_code = 409
-        mock_response.json.return_value = {
-            "detail": "Detect activity travel keys automatically is enabled"
-        }
+        mock_response.json.return_value = {"detail": "Detect activity travel keys automatically is enabled"}
         mock_response.text = "Conflict"
-        http_error = httpx.HTTPStatusError(
-            "409", request=mock_request, response=mock_response
-        )
+        http_error = httpx.HTTPStatusError("409", request=mock_request, response=mock_response)
         mock_instance.statistics._client.patch = AsyncMock(side_effect=http_error)
 
         with pytest.raises(OFSCConflictError):
-            await mock_instance.statistics.update_activity_travel_stats(
-                {"items": [{"fkey": "A", "tkey": "B", "override": 5}]}
-            )
+            await mock_instance.statistics.update_activity_travel_stats({"items": [{"fkey": "A", "tkey": "B", "override": 5}]})
 
     @pytest.mark.asyncio
     async def test_auth_error(self, mock_instance: AsyncOFSC):
@@ -759,15 +713,11 @@ class TestAsyncUpdateActivityTravelStats:
         mock_response.status_code = 401
         mock_response.json.return_value = {"detail": "Unauthorized"}
         mock_response.text = "Unauthorized"
-        http_error = httpx.HTTPStatusError(
-            "401", request=mock_request, response=mock_response
-        )
+        http_error = httpx.HTTPStatusError("401", request=mock_request, response=mock_response)
         mock_instance.statistics._client.patch = AsyncMock(side_effect=http_error)
 
         with pytest.raises(OFSCAuthenticationError):
-            await mock_instance.statistics.update_activity_travel_stats(
-                {"items": [{"fkey": "A", "tkey": "B", "override": 5}]}
-            )
+            await mock_instance.statistics.update_activity_travel_stats({"items": [{"fkey": "A", "tkey": "B", "override": 5}]})
 
 
 # ---------------------------------------------------------------------------
@@ -784,12 +734,8 @@ class TestAsyncUpdateAirlineDistanceBasedTravel:
         mock_response = _make_mock_patch_response()
         mock_instance.statistics._client.patch = AsyncMock(return_value=mock_response)
 
-        request_data = AirlineDistanceBasedTravelRequestList(
-            items=[{"data": [{"distance": 10, "override": 12}]}]
-        )
-        result = await mock_instance.statistics.update_airline_distance_based_travel(
-            request_data
-        )
+        request_data = AirlineDistanceBasedTravelRequestList(items=[{"data": [{"distance": 10, "override": 12}]}])
+        result = await mock_instance.statistics.update_airline_distance_based_travel(request_data)
 
         assert isinstance(result, StatisticsPatchResponse)
         assert result.updatedRecords == 1
@@ -823,9 +769,7 @@ class TestAsyncUpdateAirlineDistanceBasedTravel:
                 }
             ]
         )
-        await mock_instance.statistics.update_airline_distance_based_travel(
-            request_data
-        )
+        await mock_instance.statistics.update_airline_distance_based_travel(request_data)
 
         call_kwargs = mock_patch.call_args[1]
         item = call_kwargs["json"]["items"][0]
@@ -843,15 +787,11 @@ class TestAsyncUpdateAirlineDistanceBasedTravel:
         mock_response.status_code = 409
         mock_response.json.return_value = {"detail": "Auto-detect is enabled"}
         mock_response.text = "Conflict"
-        http_error = httpx.HTTPStatusError(
-            "409", request=mock_request, response=mock_response
-        )
+        http_error = httpx.HTTPStatusError("409", request=mock_request, response=mock_response)
         mock_instance.statistics._client.patch = AsyncMock(side_effect=http_error)
 
         with pytest.raises(OFSCConflictError):
-            await mock_instance.statistics.update_airline_distance_based_travel(
-                {"items": [{"data": [{"distance": 5, "override": 6}]}]}
-            )
+            await mock_instance.statistics.update_airline_distance_based_travel({"items": [{"data": [{"distance": 5, "override": 6}]}]})
 
     @pytest.mark.asyncio
     async def test_auth_error(self, mock_instance: AsyncOFSC):
@@ -863,15 +803,11 @@ class TestAsyncUpdateAirlineDistanceBasedTravel:
         mock_response.status_code = 401
         mock_response.json.return_value = {"detail": "Unauthorized"}
         mock_response.text = "Unauthorized"
-        http_error = httpx.HTTPStatusError(
-            "401", request=mock_request, response=mock_response
-        )
+        http_error = httpx.HTTPStatusError("401", request=mock_request, response=mock_response)
         mock_instance.statistics._client.patch = AsyncMock(side_effect=http_error)
 
         with pytest.raises(OFSCAuthenticationError):
-            await mock_instance.statistics.update_airline_distance_based_travel(
-                {"items": [{"data": [{"distance": 5, "override": 6}]}]}
-            )
+            await mock_instance.statistics.update_airline_distance_based_travel({"items": [{"data": [{"distance": 5, "override": 6}]}]})
 
 
 # ---------------------------------------------------------------------------
@@ -987,9 +923,7 @@ class TestAsyncStatisticsWriteLive:
         akey = first.akey or ""
 
         result = await async_instance.statistics.update_activity_duration_stats(
-            ActivityDurationStatRequestList(
-                items=[{"resourceId": resource_id, "akey": akey, "override": 30}]
-            )
+            ActivityDurationStatRequestList(items=[{"resourceId": resource_id, "akey": akey, "override": 30}])
         )
         assert isinstance(result, StatisticsPatchResponse)
         assert result.updatedRecords is not None
@@ -997,9 +931,7 @@ class TestAsyncStatisticsWriteLive:
 
         # Reset override back to learned (0 means use learned value)
         reset = await async_instance.statistics.update_activity_duration_stats(
-            ActivityDurationStatRequestList(
-                items=[{"resourceId": resource_id, "akey": akey, "override": 0}]
-            )
+            ActivityDurationStatRequestList(items=[{"resourceId": resource_id, "akey": akey, "override": 0}])
         )
         assert isinstance(reset, StatisticsPatchResponse)
 
@@ -1017,33 +949,23 @@ class TestAsyncStatisticsWriteLive:
 
         try:
             result = await async_instance.statistics.update_activity_travel_stats(
-                ActivityTravelStatRequestList(
-                    items=[{"fkey": fkey, "tkey": tkey, "override": 10}]
-                )
+                ActivityTravelStatRequestList(items=[{"fkey": fkey, "tkey": tkey, "override": 10}])
             )
             assert isinstance(result, StatisticsPatchResponse)
             assert result.updatedRecords is not None
 
             reset = await async_instance.statistics.update_activity_travel_stats(
-                ActivityTravelStatRequestList(
-                    items=[{"fkey": fkey, "tkey": tkey, "override": 0}]
-                )
+                ActivityTravelStatRequestList(items=[{"fkey": fkey, "tkey": tkey, "override": 0}])
             )
             assert isinstance(reset, StatisticsPatchResponse)
         except OFSCConflictError:
-            pytest.skip(
-                "Auto-detect travel keys is enabled; manual overrides not allowed"
-            )
+            pytest.skip("Auto-detect travel keys is enabled; manual overrides not allowed")
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_airline_distance_based_travel_roundtrip(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_airline_distance_based_travel_roundtrip(self, async_instance: AsyncOFSC):
         """Test roundtrip: GET current airline distance data, PATCH, PATCH back."""
-        data = await async_instance.statistics.get_airline_distance_based_travel(
-            limit=1
-        )
+        data = await async_instance.statistics.get_airline_distance_based_travel(limit=1)
         if not data.items:
             pytest.skip("No airline distance based travel data available")
 
@@ -1058,57 +980,51 @@ class TestAsyncStatisticsWriteLive:
 
         try:
             # Modify first point's override by +1 to keep values reasonable
-            result = (
-                await async_instance.statistics.update_airline_distance_based_travel(
-                    AirlineDistanceBasedTravelRequestList(
-                        items=[
-                            {
-                                "data": [
-                                    {
-                                        "distance": dp0.distance,
-                                        "override": dp0.override + 1,
-                                    },
-                                    {
-                                        "distance": dp1.distance,
-                                        "override": dp1.override,
-                                    },
-                                ],
-                                "key": first.key,
-                                "keyId": first.keyId,
-                                "level": first.level,
-                            }
-                        ]
-                    )
+            result = await async_instance.statistics.update_airline_distance_based_travel(
+                AirlineDistanceBasedTravelRequestList(
+                    items=[
+                        {
+                            "data": [
+                                {
+                                    "distance": dp0.distance,
+                                    "override": dp0.override + 1,
+                                },
+                                {
+                                    "distance": dp1.distance,
+                                    "override": dp1.override,
+                                },
+                            ],
+                            "key": first.key,
+                            "keyId": first.keyId,
+                            "level": first.level,
+                        }
+                    ]
                 )
             )
             assert isinstance(result, StatisticsPatchResponse)
 
             # Restore original values
-            reset = (
-                await async_instance.statistics.update_airline_distance_based_travel(
-                    AirlineDistanceBasedTravelRequestList(
-                        items=[
-                            {
-                                "data": [
-                                    {
-                                        "distance": dp0.distance,
-                                        "override": original_override,
-                                    },
-                                    {
-                                        "distance": dp1.distance,
-                                        "override": dp1.override,
-                                    },
-                                ],
-                                "key": first.key,
-                                "keyId": first.keyId,
-                                "level": first.level,
-                            }
-                        ]
-                    )
+            reset = await async_instance.statistics.update_airline_distance_based_travel(
+                AirlineDistanceBasedTravelRequestList(
+                    items=[
+                        {
+                            "data": [
+                                {
+                                    "distance": dp0.distance,
+                                    "override": original_override,
+                                },
+                                {
+                                    "distance": dp1.distance,
+                                    "override": dp1.override,
+                                },
+                            ],
+                            "key": first.key,
+                            "keyId": first.keyId,
+                            "level": first.level,
+                        }
+                    ]
                 )
             )
             assert isinstance(reset, StatisticsPatchResponse)
         except OFSCConflictError:
-            pytest.skip(
-                "Auto-detect travel keys is enabled; manual overrides not allowed"
-            )
+            pytest.skip("Auto-detect travel keys is enabled; manual overrides not allowed")

@@ -89,9 +89,7 @@ class AsyncOFSOauth2:
                 detail=detail,
             ) from e
 
-    async def get_token(
-        self, request: OFSOAuthRequest = OFSOAuthRequest()
-    ) -> OAuthTokenResponse:
+    async def get_token(self, request: OFSOAuthRequest = OFSOAuthRequest()) -> OAuthTokenResponse:
         """Get OAuth access token via v2 endpoint (AU002P).
 
         Args:

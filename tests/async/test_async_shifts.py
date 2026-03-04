@@ -233,12 +233,7 @@ class TestAsyncShiftsSavedResponses:
 
     def test_shift_list_response_validation(self):
         """Test ShiftListResponse model validates against saved response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "shifts"
-            / "get_shifts_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "shifts" / "get_shifts_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 
@@ -251,12 +246,7 @@ class TestAsyncShiftsSavedResponses:
 
     def test_shift_single_validation(self):
         """Test Shift model validates against saved single response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "shifts"
-            / "get_shift_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "shifts" / "get_shift_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 

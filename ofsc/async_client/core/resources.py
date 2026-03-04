@@ -42,9 +42,7 @@ class _CoreBaseProtocol(Protocol):
     @property
     def headers(self) -> dict: ...
 
-    def _handle_http_error(
-        self, e: httpx.HTTPStatusError, context: str = ""
-    ) -> None: ...
+    def _handle_http_error(self, e: httpx.HTTPStatusError, context: str = "") -> None: ...
 
     def _build_expand_param(
         self,
@@ -89,9 +87,7 @@ class AsyncOFSCoreResourcesMixin:
         date_to: date,
     ) -> AssignedLocationsResponse:
         """Get assigned locations for a resource."""
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/assignedLocations"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/assignedLocations")
         params = {
             "dateFrom": date_from.isoformat(),
             "dateTo": date_to.isoformat(),
@@ -103,9 +99,7 @@ class AsyncOFSCoreResourcesMixin:
             data = response.json()
             return AssignedLocationsResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get assigned locations for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to get assigned locations for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -154,13 +148,9 @@ class AsyncOFSCoreResourcesMixin:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_position_history(
-        self: _CoreBaseProtocol, resource_id: str, position_date: date
-    ) -> PositionHistoryResponse:
+    async def get_position_history(self: _CoreBaseProtocol, resource_id: str, position_date: date) -> PositionHistoryResponse:
         """Get position history for a resource on a specific date."""
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/positionHistory"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/positionHistory")
         params = {"date": position_date.isoformat()}
 
         try:
@@ -173,9 +163,7 @@ class AsyncOFSCoreResourcesMixin:
 
             return PositionHistoryResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get position history for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to get position history for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -202,9 +190,7 @@ class AsyncOFSCoreResourcesMixin:
             params["expand"] = expand
 
         try:
-            response = await self._client.get(
-                url, headers=self.headers, params=params if params else None
-            )
+            response = await self._client.get(url, headers=self.headers, params=params if params else None)
             response.raise_for_status()
             data = response.json()
             return Resource.model_validate(data)
@@ -214,9 +200,7 @@ class AsyncOFSCoreResourcesMixin:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_resource_assistants(
-        self: _CoreBaseProtocol, resource_id: str, date_from: date, date_to: date
-    ) -> ResourceAssistantsResponse:
+    async def get_resource_assistants(self: _CoreBaseProtocol, resource_id: str, date_from: date, date_to: date) -> ResourceAssistantsResponse:
         """Get assistant resources for a date range.
 
         Args:
@@ -233,9 +217,7 @@ class AsyncOFSCoreResourcesMixin:
             OFSCApiError: For other API errors
             OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/assistants"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/assistants")
         params = {"dateFrom": date_from.isoformat(), "dateTo": date_to.isoformat()}
 
         try:
@@ -248,16 +230,12 @@ class AsyncOFSCoreResourcesMixin:
 
             return ResourceAssistantsResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get assistants for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to get assistants for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_resource_calendar(
-        self: _CoreBaseProtocol, resource_id: str, date_from: date, date_to: date
-    ) -> CalendarView:
+    async def get_resource_calendar(self: _CoreBaseProtocol, resource_id: str, date_from: date, date_to: date) -> CalendarView:
         """Get calendar view for a resource."""
         url = urljoin(
             self.baseUrl,
@@ -275,20 +253,14 @@ class AsyncOFSCoreResourcesMixin:
 
             return CalendarView.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get calendar for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to get calendar for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_resource_children(
-        self: _CoreBaseProtocol, resource_id: str, offset: int = 0, limit: int = 100
-    ) -> ResourceListResponse:
+    async def get_resource_children(self: _CoreBaseProtocol, resource_id: str, offset: int = 0, limit: int = 100) -> ResourceListResponse:
         """Get child resources."""
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/children"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/children")
         params = {"offset": offset, "limit": limit}
 
         try:
@@ -301,9 +273,7 @@ class AsyncOFSCoreResourcesMixin:
 
             return ResourceListResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get children for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to get children for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -320,9 +290,7 @@ class AsyncOFSCoreResourcesMixin:
         expand_workschedules: bool = False,
     ) -> ResourceListResponse:
         """Get descendant resources."""
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/descendants"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/descendants")
 
         params: dict[str, Any] = {"offset": offset, "limit": limit}
         if fields:
@@ -346,20 +314,14 @@ class AsyncOFSCoreResourcesMixin:
 
             return ResourceListResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get descendants for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to get descendants for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_resource_inventories(
-        self: _CoreBaseProtocol, resource_id: str
-    ) -> InventoryListResponse:
+    async def get_resource_inventories(self: _CoreBaseProtocol, resource_id: str) -> InventoryListResponse:
         """Get inventories assigned to a resource."""
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/inventories"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/inventories")
 
         try:
             response = await self._client.get(url, headers=self.headers)
@@ -371,16 +333,12 @@ class AsyncOFSCoreResourcesMixin:
 
             return InventoryListResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get inventories for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to get inventories for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_resource_location(
-        self: _CoreBaseProtocol, resource_id: str, location_id: int
-    ) -> Location:
+    async def get_resource_location(self: _CoreBaseProtocol, resource_id: str, location_id: int) -> Location:
         """Get a single location for a resource."""
         url = urljoin(
             self.baseUrl,
@@ -401,13 +359,9 @@ class AsyncOFSCoreResourcesMixin:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_resource_locations(
-        self: _CoreBaseProtocol, resource_id: str
-    ) -> LocationListResponse:
+    async def get_resource_locations(self: _CoreBaseProtocol, resource_id: str) -> LocationListResponse:
         """Get locations for a resource."""
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/locations"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/locations")
 
         try:
             response = await self._client.get(url, headers=self.headers)
@@ -419,16 +373,12 @@ class AsyncOFSCoreResourcesMixin:
 
             return LocationListResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get locations for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to get locations for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_resource_plans(
-        self: _CoreBaseProtocol, resource_id: str, date_from: date, date_to: date
-    ) -> ResourcePlansResponse:
+    async def get_resource_plans(self: _CoreBaseProtocol, resource_id: str, date_from: date, date_to: date) -> ResourcePlansResponse:
         """Get routing plans for a resource for a date range.
 
         Args:
@@ -458,9 +408,7 @@ class AsyncOFSCoreResourcesMixin:
 
             return ResourcePlansResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get plans for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to get plans for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -497,9 +445,7 @@ class AsyncOFSCoreResourcesMixin:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_resource_users(
-        self: _CoreBaseProtocol, resource_id: str
-    ) -> ResourceUsersListResponse:
+    async def get_resource_users(self: _CoreBaseProtocol, resource_id: str) -> ResourceUsersListResponse:
         """Get users assigned to a resource."""
         url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/users")
 
@@ -513,20 +459,14 @@ class AsyncOFSCoreResourcesMixin:
 
             return ResourceUsersListResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get users for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to get users for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_resource_workschedules(
-        self: _CoreBaseProtocol, resource_id: str, actual_date: date
-    ) -> ResourceWorkScheduleResponse:
+    async def get_resource_workschedules(self: _CoreBaseProtocol, resource_id: str, actual_date: date) -> ResourceWorkScheduleResponse:
         """Get workschedules for a resource."""
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/workSchedules"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/workSchedules")
         params = {"actualDate": actual_date.isoformat()}
 
         try:
@@ -539,20 +479,14 @@ class AsyncOFSCoreResourcesMixin:
 
             return ResourceWorkScheduleResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get workschedules for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to get workschedules for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_resource_workskills(
-        self: _CoreBaseProtocol, resource_id: str
-    ) -> ResourceWorkskillListResponse:
+    async def get_resource_workskills(self: _CoreBaseProtocol, resource_id: str) -> ResourceWorkskillListResponse:
         """Get workskills assigned to a resource."""
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/workSkills"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/workSkills")
 
         try:
             response = await self._client.get(url, headers=self.headers)
@@ -564,20 +498,14 @@ class AsyncOFSCoreResourcesMixin:
 
             return ResourceWorkskillListResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get workskills for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to get workskills for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def get_resource_workzones(
-        self: _CoreBaseProtocol, resource_id: str
-    ) -> ResourceWorkzoneListResponse:
+    async def get_resource_workzones(self: _CoreBaseProtocol, resource_id: str) -> ResourceWorkzoneListResponse:
         """Get workzones assigned to a resource."""
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/workZones"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/workZones")
 
         try:
             response = await self._client.get(url, headers=self.headers)
@@ -589,9 +517,7 @@ class AsyncOFSCoreResourcesMixin:
 
             return ResourceWorkzoneListResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to get workzones for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to get workzones for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -665,9 +591,7 @@ class AsyncOFSCoreResourcesMixin:
             body = ResourceCreate.model_validate(data).model_dump(exclude_none=True)
         else:
             # Resource or other BaseModel — validate required create fields
-            body = ResourceCreate.model_validate(
-                data.model_dump(exclude_none=True)
-            ).model_dump(exclude_none=True)
+            body = ResourceCreate.model_validate(data.model_dump(exclude_none=True)).model_dump(exclude_none=True)
 
         url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}")
 
@@ -681,9 +605,7 @@ class AsyncOFSCoreResourcesMixin:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def create_resource_from_obj(
-        self: _CoreBaseProtocol, resource_id: str, data: dict
-    ) -> Resource:
+    async def create_resource_from_obj(self: _CoreBaseProtocol, resource_id: str, data: dict) -> Resource:
         """Create or replace a resource from a dict (PUT — idempotent).
 
         Args:
@@ -707,9 +629,7 @@ class AsyncOFSCoreResourcesMixin:
             response.raise_for_status()
             return Resource.model_validate(response.json())
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to create resource '{resource_id}' from dict"
-            )
+            self._handle_http_error(e, f"Failed to create resource '{resource_id}' from dict")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -739,16 +659,10 @@ class AsyncOFSCoreResourcesMixin:
             OFSCNetworkError: For network/transport errors
         """
         url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}")
-        params = (
-            {"identifyResourceBy": "resourceInternalId"}
-            if identify_by_internal_id
-            else None
-        )
+        params = {"identifyResourceBy": "resourceInternalId"} if identify_by_internal_id else None
 
         try:
-            response = await self._client.patch(
-                url, headers=self.headers, json=data, params=params
-            )
+            response = await self._client.patch(url, headers=self.headers, json=data, params=params)
             response.raise_for_status()
             return Resource.model_validate(response.json())
         except httpx.HTTPStatusError as e:
@@ -790,9 +704,7 @@ class AsyncOFSCoreResourcesMixin:
                 del data["links"]
             return ResourceUsersListResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to set users for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to set users for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -816,9 +728,7 @@ class AsyncOFSCoreResourcesMixin:
             response = await self._client.delete(url, headers=self.headers)
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to delete users for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to delete users for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -845,9 +755,7 @@ class AsyncOFSCoreResourcesMixin:
             OFSCApiError: For other API errors
             OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/workSchedules"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/workSchedules")
         if isinstance(data, dict):
             body = data
         else:
@@ -861,16 +769,12 @@ class AsyncOFSCoreResourcesMixin:
                 del resp_data["links"]
             return ResourceWorkScheduleResponse.model_validate(resp_data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to set workschedules for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to set workschedules for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def bulk_update_resource_workzones(
-        self: _CoreBaseProtocol, *, data: dict
-    ) -> dict:
+    async def bulk_update_resource_workzones(self: _CoreBaseProtocol, *, data: dict) -> dict:
         """Bulk update work zones for multiple resources (POST).
 
         Args:
@@ -901,9 +805,7 @@ class AsyncOFSCoreResourcesMixin:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def bulk_update_resource_workskills(
-        self: _CoreBaseProtocol, *, data: dict
-    ) -> dict:
+    async def bulk_update_resource_workskills(self: _CoreBaseProtocol, *, data: dict) -> dict:
         """Bulk update work skills for multiple resources (POST).
 
         Args:
@@ -934,9 +836,7 @@ class AsyncOFSCoreResourcesMixin:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def bulk_update_resource_workschedules(
-        self: _CoreBaseProtocol, *, data: dict
-    ) -> dict:
+    async def bulk_update_resource_workschedules(self: _CoreBaseProtocol, *, data: dict) -> dict:
         """Bulk update work schedules for multiple resources (POST).
 
         Args:
@@ -967,9 +867,7 @@ class AsyncOFSCoreResourcesMixin:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def create_resource_location(
-        self: _CoreBaseProtocol, resource_id: str, *, location: "Location | dict"
-    ) -> Location:
+    async def create_resource_location(self: _CoreBaseProtocol, resource_id: str, *, location: "Location | dict") -> Location:
         """Create a new location for a resource (POST — returns 201).
 
         Args:
@@ -987,31 +885,23 @@ class AsyncOFSCoreResourcesMixin:
             OFSCApiError: For other API errors
             OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/locations"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/locations")
         if isinstance(location, dict):
             body = location
         else:
-            body = location.model_dump(
-                exclude={"locationId"}, exclude_unset=True, exclude_none=True
-            )
+            body = location.model_dump(exclude={"locationId"}, exclude_unset=True, exclude_none=True)
 
         try:
             response = await self._client.post(url, headers=self.headers, json=body)
             response.raise_for_status()
             return Location.model_validate(response.json())
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to create location for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to create location for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def delete_resource_location(
-        self: _CoreBaseProtocol, resource_id: str, location_id: int
-    ) -> None:
+    async def delete_resource_location(self: _CoreBaseProtocol, resource_id: str, location_id: int) -> None:
         """Delete a location from a resource (DELETE — returns 204).
 
         Args:
@@ -1077,9 +967,7 @@ class AsyncOFSCoreResourcesMixin:
             response.raise_for_status()
             return AssignedLocationsResponse.model_validate(response.json())
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to set assigned locations for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to set assigned locations for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
@@ -1106,9 +994,7 @@ class AsyncOFSCoreResourcesMixin:
             OFSCApiError: For other API errors
             OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/inventories"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/inventories")
         if isinstance(inventory_data, dict):
             body = inventory_data
         else:
@@ -1119,16 +1005,12 @@ class AsyncOFSCoreResourcesMixin:
             response.raise_for_status()
             return Inventory.model_validate(response.json())
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to create inventory for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to create inventory for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def install_resource_inventory(
-        self: _CoreBaseProtocol, resource_id: str, inventory_id: int
-    ) -> Inventory:
+    async def install_resource_inventory(self: _CoreBaseProtocol, resource_id: str, inventory_id: int) -> Inventory:
         """Install an inventory item for a resource (POST custom-action).
 
         Args:
@@ -1185,9 +1067,7 @@ class AsyncOFSCoreResourcesMixin:
             OFSCApiError: For other API errors
             OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/workSkills"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/workSkills")
         items = []
         for ws in workskills:
             if isinstance(ws, dict):
@@ -1204,16 +1084,12 @@ class AsyncOFSCoreResourcesMixin:
                 del data["links"]
             return ResourceWorkskillListResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to set workskills for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to set workskills for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def delete_resource_workskill(
-        self: _CoreBaseProtocol, resource_id: str, workskill: str
-    ) -> None:
+    async def delete_resource_workskill(self: _CoreBaseProtocol, resource_id: str, workskill: str) -> None:
         """Delete a specific work skill from a resource (DELETE — returns 204).
 
         Args:
@@ -1266,9 +1142,7 @@ class AsyncOFSCoreResourcesMixin:
             OFSCApiError: For other API errors
             OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(
-            self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/workZones"
-        )
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/resources/{resource_id}/workZones")
         items = []
         for wz in workzones:
             if isinstance(wz, dict):
@@ -1285,16 +1159,12 @@ class AsyncOFSCoreResourcesMixin:
                 del data["links"]
             return ResourceWorkzoneListResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
-            self._handle_http_error(
-                e, f"Failed to set workzones for resource '{resource_id}'"
-            )
+            self._handle_http_error(e, f"Failed to set workzones for resource '{resource_id}'")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def delete_resource_workzone(
-        self: _CoreBaseProtocol, resource_id: str, workzone_item_id: int
-    ) -> None:
+    async def delete_resource_workzone(self: _CoreBaseProtocol, resource_id: str, workzone_item_id: int) -> None:
         """Delete a specific work zone from a resource (DELETE — returns 204).
 
         Args:
@@ -1325,9 +1195,7 @@ class AsyncOFSCoreResourcesMixin:
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def delete_resource_workschedule(
-        self: _CoreBaseProtocol, resource_id: str, schedule_item_id: int
-    ) -> None:
+    async def delete_resource_workschedule(self: _CoreBaseProtocol, resource_id: str, schedule_item_id: int) -> None:
         """Delete a specific work schedule item from a resource (DELETE — returns 204).
 
         Args:

@@ -76,9 +76,7 @@ class TestAsyncGetWorkskillsLive:
         # Iterate through each work skill and get it individually
         for skill in all_skills.items:
             try:
-                individual_skill = await async_instance.metadata.get_workskill(
-                    skill.label
-                )
+                individual_skill = await async_instance.metadata.get_workskill(skill.label)
 
                 # Validate the returned work skill
                 assert isinstance(individual_skill, Workskill)
@@ -100,9 +98,7 @@ class TestAsyncGetWorkskillsLive:
                 print(f"  - {failure['label']}: {failure['error']}")
 
         # All work skills should be retrieved successfully
-        assert len(failed) == 0, (
-            f"Failed to retrieve {len(failed)} work skills: {failed}"
-        )
+        assert len(failed) == 0, f"Failed to retrieve {len(failed)} work skills: {failed}"
         assert successful == len(all_skills.items)
 
 
@@ -121,9 +117,7 @@ class TestAsyncGetWorkskillsModel:
                     "name": "Estimate",
                     "active": True,
                     "sharing": "maximal",
-                    "translations": [
-                        {"language": "en", "name": "Estimate", "languageISO": "en-US"}
-                    ],
+                    "translations": [{"language": "en", "name": "Estimate", "languageISO": "en-US"}],
                 },
                 {
                     "label": "RES",
@@ -264,9 +258,7 @@ class TestAsyncCreateOrUpdateWorkskillLive:
             )
 
             # Update the skill
-            result = await async_instance.metadata.create_or_update_workskill(
-                updated_skill
-            )
+            result = await async_instance.metadata.create_or_update_workskill(updated_skill)
 
             # Verify the update worked
             assert isinstance(result, Workskill)
@@ -311,9 +303,7 @@ class TestAsyncCreateOrUpdateWorkskill:
 
         from ofsc.models import Workskill
 
-        skill = Workskill(
-            label="NEW_SKILL", name="New Skill", active=True, sharing="maximal"
-        )
+        skill = Workskill(label="NEW_SKILL", name="New Skill", active=True, sharing="maximal")
         result = await mock_instance.metadata.create_or_update_workskill(skill)
 
         assert isinstance(result, Workskill)
@@ -337,9 +327,7 @@ class TestAsyncCreateOrUpdateWorkskill:
 
         from ofsc.models import Workskill
 
-        skill = Workskill(
-            label="EST", name="Updated Estimate", active=True, sharing="summary"
-        )
+        skill = Workskill(label="EST", name="Updated Estimate", active=True, sharing="summary")
         result = await mock_instance.metadata.create_or_update_workskill(skill)
 
         assert isinstance(result, Workskill)
@@ -412,9 +400,7 @@ class TestAsyncGetWorkskillConditionsModel:
     """Model validation tests for get_workskill_conditions."""
 
     @pytest.mark.asyncio
-    async def test_get_workskill_conditions_returns_model(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_get_workskill_conditions_returns_model(self, mock_instance: AsyncOFSC):
         """Test that get_workskill_conditions returns WorkskillConditionList model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -425,9 +411,7 @@ class TestAsyncGetWorkskillConditionsModel:
                     "label": "test_condition",
                     "requiredLevel": 1,
                     "preferableLevel": 2,
-                    "conditions": [
-                        {"label": "skill1", "function": "in", "value": "value1"}
-                    ],
+                    "conditions": [{"label": "skill1", "function": "in", "value": "value1"}],
                 }
             ]
         }
@@ -445,9 +429,7 @@ class TestAsyncReplaceWorkskillConditionsLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_replace_workskill_conditions_roundtrip(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_replace_workskill_conditions_roundtrip(self, async_instance: AsyncOFSC):
         """Test replacing work skill conditions and restoring original.
 
         This test:
@@ -461,9 +443,7 @@ class TestAsyncReplaceWorkskillConditionsLive:
 
         try:
             # Replace with the same conditions (safe operation)
-            result = await async_instance.metadata.replace_workskill_conditions(
-                original_conditions
-            )
+            result = await async_instance.metadata.replace_workskill_conditions(original_conditions)
 
             # Verify the replace operation worked
             assert isinstance(result, WorkskillConditionList)
@@ -472,18 +452,14 @@ class TestAsyncReplaceWorkskillConditionsLive:
         finally:
             # Always restore original conditions (suppress cleanup exceptions)
             try:
-                await async_instance.metadata.replace_workskill_conditions(
-                    original_conditions
-                )
+                await async_instance.metadata.replace_workskill_conditions(original_conditions)
 
                 # Verify restoration
                 restored = await async_instance.metadata.get_workskill_conditions()
                 assert len(restored.root) == len(original_conditions.root)
             except Exception as cleanup_error:
                 # Log cleanup failure but don't hide test failure
-                print(
-                    f"\n[WARNING] Failed to restore work skill conditions: {cleanup_error}"
-                )
+                print(f"\n[WARNING] Failed to restore work skill conditions: {cleanup_error}")
                 # If test passed but cleanup failed, re-raise
                 import sys
 
@@ -506,9 +482,7 @@ class TestAsyncReplaceWorkskillConditions:
                     "label": "updated_condition",
                     "requiredLevel": 2,
                     "preferableLevel": 3,
-                    "conditions": [
-                        {"label": "skill1", "function": "in", "value": "value1"}
-                    ],
+                    "conditions": [{"label": "skill1", "function": "in", "value": "value1"}],
                 }
             ]
         }
@@ -524,9 +498,7 @@ class TestAsyncReplaceWorkskillConditions:
                     label="updated_condition",
                     requiredLevel=2,
                     preferableLevel=3,
-                    conditions=[
-                        Condition(label="skill1", function="in", value="value1")
-                    ],
+                    conditions=[Condition(label="skill1", function="in", value="value1")],
                 )
             ]
         )
@@ -581,9 +553,7 @@ class TestAsyncGetWorkskillGroupsLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_get_all_workskill_groups_individually(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_get_all_workskill_groups_individually(self, async_instance: AsyncOFSC):
         """Test getting all work skill groups individually."""
         # First get all work skill groups
         all_groups = await async_instance.metadata.get_workskill_groups()
@@ -597,9 +567,7 @@ class TestAsyncGetWorkskillGroupsLive:
         # Iterate through each work skill group and get it individually
         for group in all_groups.items:
             try:
-                individual_group = await async_instance.metadata.get_workskill_group(
-                    group.label
-                )
+                individual_group = await async_instance.metadata.get_workskill_group(group.label)
 
                 # Validate the returned work skill group
                 assert isinstance(individual_group, WorkskillGroup)
@@ -622,9 +590,7 @@ class TestAsyncGetWorkskillGroupsLive:
 
         # All groups should be retrieved successfully
         if len(all_groups.items) > 0:
-            assert len(failed) == 0, (
-                f"Failed to retrieve {len(failed)} groups: {failed}"
-            )
+            assert len(failed) == 0, f"Failed to retrieve {len(failed)} groups: {failed}"
             assert successful == len(all_groups.items)
 
 
@@ -744,27 +710,21 @@ class TestAsyncCreateOrUpdateWorkskillGroupLive:
             )
 
             # Update the group
-            result = await async_instance.metadata.create_or_update_workskill_group(
-                updated_group
-            )
+            result = await async_instance.metadata.create_or_update_workskill_group(updated_group)
             assert isinstance(result, WorkskillGroup)
             assert result.label == original_group.label
 
         finally:
             # Always restore original group (suppress cleanup exceptions)
             try:
-                await async_instance.metadata.create_or_update_workskill_group(
-                    original_group
-                )
+                await async_instance.metadata.create_or_update_workskill_group(original_group)
 
                 # Verify restoration
                 restored = await async_instance.metadata.get_workskill_group(test_label)
                 assert restored.label == original_group.label
             except Exception as cleanup_error:
                 # Log cleanup failure but don't hide test failure
-                print(
-                    f"\n[WARNING] Failed to restore work skill group: {cleanup_error}"
-                )
+                print(f"\n[WARNING] Failed to restore work skill group: {cleanup_error}")
                 # If test passed but cleanup failed, re-raise
                 import sys
 
@@ -815,9 +775,7 @@ class TestAsyncCreateOrUpdateWorkskillGroup:
                     WorkskillAssignment(label="RES", ratio=50),
                 ]
             ),
-            translations=TranslationList(
-                [Translation(language="en", name="New Group")]
-            ),
+            translations=TranslationList([Translation(language="en", name="New Group")]),
         )
 
         result = await mock_instance.metadata.create_or_update_workskill_group(group)
@@ -858,12 +816,8 @@ class TestAsyncCreateOrUpdateWorkskillGroup:
             assignToResource=False,
             addToCapacityCategory=True,
             active=True,
-            workSkills=WorkskillAssignmentList(
-                [WorkskillAssignment(label="EST", ratio=100)]
-            ),
-            translations=TranslationList(
-                [Translation(language="en", name="Updated Test Group")]
-            ),
+            workSkills=WorkskillAssignmentList([WorkskillAssignment(label="EST", ratio=100)]),
+            translations=TranslationList([Translation(language="en", name="Updated Test Group")]),
         )
 
         result = await mock_instance.metadata.create_or_update_workskill_group(group)
@@ -927,12 +881,7 @@ class TestAsyncWorkskillsSavedResponses:
 
     def test_workskill_list_response_validation(self):
         """Test WorkskillListResponse model validates against saved response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "work_skills"
-            / "get_work_skills_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "work_skills" / "get_work_skills_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 
@@ -945,12 +894,7 @@ class TestAsyncWorkskillsSavedResponses:
 
     def test_workskill_single_validation(self):
         """Test Workskill model validates against saved single response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "work_skills"
-            / "get_work_skill_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "work_skills" / "get_work_skill_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 
@@ -965,10 +909,7 @@ class TestAsyncWorkskillsSavedResponses:
     def test_workskill_conditions_validation(self):
         """Test WorkskillConditionList model validates against saved response."""
         saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "work_skill_conditions"
-            / "get_work_skill_conditions_200_success.json"
+            Path(__file__).parent.parent / "saved_responses" / "work_skill_conditions" / "get_work_skill_conditions_200_success.json"
         )
         with open(saved_response_path) as f:
             saved_data = json.load(f)
@@ -981,18 +922,11 @@ class TestAsyncWorkskillsSavedResponses:
 
     def test_workskill_group_list_response_validation(self):
         """Test WorkskillGroupListResponse model validates against saved response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "work_skill_groups"
-            / "get_work_skill_groups_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "work_skill_groups" / "get_work_skill_groups_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 
-        response = WorkskillGroupListResponse.model_validate(
-            saved_data["response_data"]
-        )
+        response = WorkskillGroupListResponse.model_validate(saved_data["response_data"])
 
         assert isinstance(response, WorkskillGroupListResponse)
         assert response.totalResults == 1  # From the captured data
@@ -1001,12 +935,7 @@ class TestAsyncWorkskillsSavedResponses:
 
     def test_workskill_group_single_validation(self):
         """Test WorkskillGroup model validates against saved single response."""
-        saved_response_path = (
-            Path(__file__).parent.parent
-            / "saved_responses"
-            / "work_skill_groups"
-            / "get_work_skill_group_200_success.json"
-        )
+        saved_response_path = Path(__file__).parent.parent / "saved_responses" / "work_skill_groups" / "get_work_skill_group_200_success.json"
         with open(saved_response_path) as f:
             saved_data = json.load(f)
 

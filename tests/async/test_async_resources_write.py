@@ -37,9 +37,7 @@ def _make_http_error(status_code: int, detail: str = "Error") -> httpx.HTTPStatu
         "detail": detail,
     }
     mock_response.text = detail
-    http_error = httpx.HTTPStatusError(
-        f"{status_code} Error", request=mock_request, response=mock_response
-    )
+    http_error = httpx.HTTPStatusError(f"{status_code} Error", request=mock_request, response=mock_response)
     mock_response.raise_for_status = Mock(side_effect=http_error)
     return http_error
 
@@ -74,9 +72,7 @@ class TestAsyncCreateResource:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.put = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.core.create_resource(
-            "TEST_RES_001", _resource_payload()
-        )
+        result = await mock_instance.core.create_resource("TEST_RES_001", _resource_payload())
 
         assert isinstance(result, Resource)
         assert result.resourceId == "TEST_RES_001"
@@ -92,9 +88,7 @@ class TestAsyncCreateResource:
         mock_instance.core._client.put = AsyncMock(return_value=mock_response)
 
         resource_model = Resource.model_validate(_resource_payload())
-        result = await mock_instance.core.create_resource(
-            "TEST_RES_001", resource_model
-        )
+        result = await mock_instance.core.create_resource("TEST_RES_001", resource_model)
 
         assert isinstance(result, Resource)
         call_kwargs = mock_instance.core._client.put.call_args
@@ -125,9 +119,7 @@ class TestAsyncCreateResourceFromObj:
     """Mocked tests for create_resource_from_obj."""
 
     @pytest.mark.asyncio
-    async def test_create_resource_from_obj_returns_resource(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_create_resource_from_obj_returns_resource(self, mock_instance: AsyncOFSC):
         """Test create_resource_from_obj returns Resource model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -135,9 +127,7 @@ class TestAsyncCreateResourceFromObj:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.put = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.core.create_resource_from_obj(
-            "TEST_RES_001", _resource_payload()
-        )
+        result = await mock_instance.core.create_resource_from_obj("TEST_RES_001", _resource_payload())
 
         assert isinstance(result, Resource)
 
@@ -175,9 +165,7 @@ class TestAsyncUpdateResource:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.patch = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.core.update_resource(
-            "TEST_RES_001", {"name": "Updated Name"}
-        )
+        result = await mock_instance.core.update_resource("TEST_RES_001", {"name": "Updated Name"})
 
         assert isinstance(result, Resource)
         assert result.name == "Updated Name"
@@ -196,9 +184,7 @@ class TestAsyncUpdateResource:
         assert mock_instance.core._client.patch.called
 
     @pytest.mark.asyncio
-    async def test_update_resource_identify_by_internal_id(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_update_resource_identify_by_internal_id(self, mock_instance: AsyncOFSC):
         """Test update_resource passes identifyResourceBy param when flag is set."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -206,14 +192,10 @@ class TestAsyncUpdateResource:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.patch = AsyncMock(return_value=mock_response)
 
-        await mock_instance.core.update_resource(
-            "12345", {"name": "X"}, identify_by_internal_id=True
-        )
+        await mock_instance.core.update_resource("12345", {"name": "X"}, identify_by_internal_id=True)
 
         call_kwargs = mock_instance.core._client.patch.call_args
-        assert call_kwargs.kwargs.get("params") == {
-            "identifyResourceBy": "resourceInternalId"
-        }
+        assert call_kwargs.kwargs.get("params") == {"identifyResourceBy": "resourceInternalId"}
 
 
 # ---------------------------------------------------------------------------
@@ -225,9 +207,7 @@ class TestAsyncSetDeleteResourceUsers:
     """Mocked tests for set_resource_users and delete_resource_users."""
 
     @pytest.mark.asyncio
-    async def test_set_resource_users_returns_list_response(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_set_resource_users_returns_list_response(self, mock_instance: AsyncOFSC):
         """Test set_resource_users returns ResourceUsersListResponse."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -238,9 +218,7 @@ class TestAsyncSetDeleteResourceUsers:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.put = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.core.set_resource_users(
-            resource_id="TEST_RES_001", users=["user1", "user2"]
-        )
+        result = await mock_instance.core.set_resource_users(resource_id="TEST_RES_001", users=["user1", "user2"])
 
         assert isinstance(result, ResourceUsersListResponse)
         assert len(result.items) == 2
@@ -254,14 +232,10 @@ class TestAsyncSetDeleteResourceUsers:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.put = AsyncMock(return_value=mock_response)
 
-        await mock_instance.core.set_resource_users(
-            resource_id="RES1", users=["alice", "bob"]
-        )
+        await mock_instance.core.set_resource_users(resource_id="RES1", users=["alice", "bob"])
 
         call_kwargs = mock_instance.core._client.put.call_args
-        assert call_kwargs.kwargs["json"] == {
-            "items": [{"login": "alice"}, {"login": "bob"}]
-        }
+        assert call_kwargs.kwargs["json"] == {"items": [{"login": "alice"}, {"login": "bob"}]}
 
     @pytest.mark.asyncio
     async def test_delete_resource_users_returns_none(self, mock_instance: AsyncOFSC):
@@ -288,9 +262,7 @@ class TestAsyncSetResourceWorkschedules:
     """Mocked tests for set_resource_workschedules."""
 
     @pytest.mark.asyncio
-    async def test_set_resource_workschedules_returns_response(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_set_resource_workschedules_returns_response(self, mock_instance: AsyncOFSC):
         """Test set_resource_workschedules returns ResourceWorkScheduleResponse."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -309,9 +281,7 @@ class TestAsyncSetResourceWorkschedules:
         assert isinstance(result, ResourceWorkScheduleResponse)
 
     @pytest.mark.asyncio
-    async def test_set_resource_workschedules_uses_post(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_set_resource_workschedules_uses_post(self, mock_instance: AsyncOFSC):
         """Test set_resource_workschedules uses POST."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -319,9 +289,7 @@ class TestAsyncSetResourceWorkschedules:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.post = AsyncMock(return_value=mock_response)
 
-        await mock_instance.core.set_resource_workschedules(
-            "RES1", {"recordType": "schedule"}
-        )
+        await mock_instance.core.set_resource_workschedules("RES1", {"recordType": "schedule"})
 
         assert mock_instance.core._client.post.called
         url = mock_instance.core._client.post.call_args.args[0]
@@ -345,9 +313,7 @@ class TestAsyncBulkUpdateResources:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.post = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.core.bulk_update_resource_workzones(
-            data={"items": []}
-        )
+        result = await mock_instance.core.bulk_update_resource_workzones(data={"items": []})
 
         assert isinstance(result, dict)
         url = mock_instance.core._client.post.call_args.args[0]
@@ -362,18 +328,14 @@ class TestAsyncBulkUpdateResources:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.post = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.core.bulk_update_resource_workskills(
-            data={"items": []}
-        )
+        result = await mock_instance.core.bulk_update_resource_workskills(data={"items": []})
 
         assert isinstance(result, dict)
         url = mock_instance.core._client.post.call_args.args[0]
         assert "bulkUpdateWorkSkills" in url
 
     @pytest.mark.asyncio
-    async def test_bulk_update_workschedules_returns_dict(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_bulk_update_workschedules_returns_dict(self, mock_instance: AsyncOFSC):
         """Test bulk_update_resource_workschedules returns dict."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -381,9 +343,7 @@ class TestAsyncBulkUpdateResources:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.post = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.core.bulk_update_resource_workschedules(
-            data={"items": []}
-        )
+        result = await mock_instance.core.bulk_update_resource_workschedules(data={"items": []})
 
         assert isinstance(result, dict)
         url = mock_instance.core._client.post.call_args.args[0]
@@ -399,9 +359,7 @@ class TestAsyncResourceLocations:
     """Mocked tests for resource location methods."""
 
     @pytest.mark.asyncio
-    async def test_create_resource_location_returns_location(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_create_resource_location_returns_location(self, mock_instance: AsyncOFSC):
         """Test create_resource_location returns Location model."""
         mock_response = Mock()
         mock_response.status_code = 201
@@ -415,18 +373,14 @@ class TestAsyncResourceLocations:
         mock_instance.core._client.post = AsyncMock(return_value=mock_response)
 
         location = Location(label="LOC001", city="Springfield", country="US")
-        result = await mock_instance.core.create_resource_location(
-            "RES1", location=location
-        )
+        result = await mock_instance.core.create_resource_location("RES1", location=location)
 
         assert isinstance(result, Location)
         assert result.city == "Springfield"
         assert result.locationId == 42
 
     @pytest.mark.asyncio
-    async def test_create_resource_location_accepts_dict(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_create_resource_location_accepts_dict(self, mock_instance: AsyncOFSC):
         """Test create_resource_location accepts dict."""
         mock_response = Mock()
         mock_response.status_code = 201
@@ -434,16 +388,12 @@ class TestAsyncResourceLocations:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.post = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.core.create_resource_location(
-            "RES1", location={"label": "LOC002", "country": "US"}
-        )
+        result = await mock_instance.core.create_resource_location("RES1", location={"label": "LOC002", "country": "US"})
 
         assert isinstance(result, Location)
 
     @pytest.mark.asyncio
-    async def test_delete_resource_location_returns_none(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_delete_resource_location_returns_none(self, mock_instance: AsyncOFSC):
         """Test delete_resource_location returns None on 204."""
         mock_response = Mock()
         mock_response.status_code = 204
@@ -457,9 +407,7 @@ class TestAsyncResourceLocations:
         assert "locations/42" in url
 
     @pytest.mark.asyncio
-    async def test_update_resource_location_returns_location(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_update_resource_location_returns_location(self, mock_instance: AsyncOFSC):
         """Test update_resource_location returns Location model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -471,9 +419,7 @@ class TestAsyncResourceLocations:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.patch = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.core.update_resource_location(
-            "RES1", 42, {"city": "Shelbyville"}
-        )
+        result = await mock_instance.core.update_resource_location("RES1", 42, {"city": "Shelbyville"})
 
         assert isinstance(result, Location)
         assert result.city == "Shelbyville"
@@ -490,9 +436,7 @@ class TestAsyncSetAssignedLocations:
     """Mocked tests for set_assigned_locations."""
 
     @pytest.mark.asyncio
-    async def test_set_assigned_locations_returns_response(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_set_assigned_locations_returns_response(self, mock_instance: AsyncOFSC):
         """Test set_assigned_locations returns AssignedLocationsResponse."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -502,9 +446,7 @@ class TestAsyncSetAssignedLocations:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.put = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.core.set_assigned_locations(
-            "RES1", {"mon": {"start": 1, "end": 2}}
-        )
+        result = await mock_instance.core.set_assigned_locations("RES1", {"mon": {"start": 1, "end": 2}})
 
         assert isinstance(result, AssignedLocationsResponse)
         assert result.mon is not None
@@ -533,9 +475,7 @@ class TestAsyncResourceInventory:
     """Mocked tests for inventory write methods."""
 
     @pytest.mark.asyncio
-    async def test_create_resource_inventory_returns_inventory(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_create_resource_inventory_returns_inventory(self, mock_instance: AsyncOFSC):
         """Test create_resource_inventory returns Inventory model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -547,9 +487,7 @@ class TestAsyncResourceInventory:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.post = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.core.create_resource_inventory(
-            "RES1", {"inventoryType": "TOOL_A", "quantity": 1}
-        )
+        result = await mock_instance.core.create_resource_inventory("RES1", {"inventoryType": "TOOL_A", "quantity": 1})
 
         assert isinstance(result, Inventory)
         assert result.inventoryId == 100
@@ -563,17 +501,13 @@ class TestAsyncResourceInventory:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.post = AsyncMock(return_value=mock_response)
 
-        await mock_instance.core.create_resource_inventory(
-            "RES1", {"inventoryType": "T"}
-        )
+        await mock_instance.core.create_resource_inventory("RES1", {"inventoryType": "T"})
 
         url = mock_instance.core._client.post.call_args.args[0]
         assert "inventories" in url and "RES1" in url
 
     @pytest.mark.asyncio
-    async def test_install_resource_inventory_returns_inventory(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_install_resource_inventory_returns_inventory(self, mock_instance: AsyncOFSC):
         """Test install_resource_inventory returns Inventory model."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -600,9 +534,7 @@ class TestAsyncResourceWorkskills:
     """Mocked tests for workskill write methods."""
 
     @pytest.mark.asyncio
-    async def test_set_resource_workskills_returns_list_response(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_set_resource_workskills_returns_list_response(self, mock_instance: AsyncOFSC):
         """Test set_resource_workskills returns ResourceWorkskillListResponse."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -613,9 +545,7 @@ class TestAsyncResourceWorkskills:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.post = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.core.set_resource_workskills(
-            "RES1", [{"workSkill": "ELEC", "ratio": 100}]
-        )
+        result = await mock_instance.core.set_resource_workskills("RES1", [{"workSkill": "ELEC", "ratio": 100}])
 
         assert isinstance(result, ResourceWorkskillListResponse)
         assert len(result.items) == 1
@@ -629,18 +559,14 @@ class TestAsyncResourceWorkskills:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.post = AsyncMock(return_value=mock_response)
 
-        await mock_instance.core.set_resource_workskills(
-            "RES1", [{"workSkill": "PLUMB", "ratio": 50}]
-        )
+        await mock_instance.core.set_resource_workskills("RES1", [{"workSkill": "PLUMB", "ratio": 50}])
 
         call_kwargs = mock_instance.core._client.post.call_args
         assert "items" in call_kwargs.kwargs["json"]
         assert call_kwargs.kwargs["json"]["items"][0]["workSkill"] == "PLUMB"
 
     @pytest.mark.asyncio
-    async def test_delete_resource_workskill_returns_none(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_delete_resource_workskill_returns_none(self, mock_instance: AsyncOFSC):
         """Test delete_resource_workskill returns None on 204."""
         mock_response = Mock()
         mock_response.status_code = 204
@@ -663,9 +589,7 @@ class TestAsyncResourceWorkzones:
     """Mocked tests for workzone write methods."""
 
     @pytest.mark.asyncio
-    async def test_set_resource_workzones_returns_list_response(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_set_resource_workzones_returns_list_response(self, mock_instance: AsyncOFSC):
         """Test set_resource_workzones returns ResourceWorkzoneListResponse."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -676,17 +600,13 @@ class TestAsyncResourceWorkzones:
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.post = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.core.set_resource_workzones(
-            "RES1", [{"workZoneLabel": "ZONE_A", "ratio": 100}]
-        )
+        result = await mock_instance.core.set_resource_workzones("RES1", [{"workZoneLabel": "ZONE_A", "ratio": 100}])
 
         assert isinstance(result, ResourceWorkzoneListResponse)
         assert len(result.items) == 1
 
     @pytest.mark.asyncio
-    async def test_delete_resource_workzone_returns_none(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_delete_resource_workzone_returns_none(self, mock_instance: AsyncOFSC):
         """Test delete_resource_workzone returns None on 204."""
         mock_response = Mock()
         mock_response.status_code = 204
@@ -709,9 +629,7 @@ class TestAsyncDeleteResourceWorkschedule:
     """Mocked tests for delete_resource_workschedule."""
 
     @pytest.mark.asyncio
-    async def test_delete_resource_workschedule_returns_none(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_delete_resource_workschedule_returns_none(self, mock_instance: AsyncOFSC):
         """Test delete_resource_workschedule returns None on 204."""
         mock_response = Mock()
         mock_response.status_code = 204
@@ -734,9 +652,7 @@ class TestAsyncResourceWriteExceptions:
     """Test exception handling for resource write/delete methods."""
 
     @pytest.mark.asyncio
-    async def test_create_resource_404_raises_not_found(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_create_resource_404_raises_not_found(self, mock_instance: AsyncOFSC):
         """Test create_resource raises OFSCNotFoundError on 404."""
         http_error = _make_http_error(404, "Resource not found")
         mock_response = Mock()
@@ -750,9 +666,7 @@ class TestAsyncResourceWriteExceptions:
             await mock_instance.core.create_resource("BAD_ID", _resource_payload())
 
     @pytest.mark.asyncio
-    async def test_update_resource_404_raises_not_found(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_update_resource_404_raises_not_found(self, mock_instance: AsyncOFSC):
         """Test update_resource raises OFSCNotFoundError on 404."""
         http_error = _make_http_error(404, "Resource not found")
         mock_response = Mock()
@@ -766,18 +680,14 @@ class TestAsyncResourceWriteExceptions:
             await mock_instance.core.update_resource("BAD_ID", {"name": "X"})
 
     @pytest.mark.asyncio
-    async def test_create_resource_400_raises_validation_error(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_create_resource_400_raises_validation_error(self, mock_instance: AsyncOFSC):
         """Test create_resource raises pydantic.ValidationError for missing required fields."""
         # Empty dict is caught client-side by ResourceCreate before the API call
         with pytest.raises(pydantic.ValidationError):
             await mock_instance.core.create_resource("RES1", {})
 
     @pytest.mark.asyncio
-    async def test_create_resource_401_raises_authentication_error(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_create_resource_401_raises_authentication_error(self, mock_instance: AsyncOFSC):
         """Test create_resource raises OFSCAuthenticationError on 401."""
         http_error = _make_http_error(401, "Unauthorized")
         mock_response = Mock()
@@ -793,21 +703,15 @@ class TestAsyncResourceWriteExceptions:
     @pytest.mark.asyncio
     async def test_delete_resource_users_network_error(self, mock_instance: AsyncOFSC):
         """Test delete_resource_users raises OFSCNetworkError on transport failure."""
-        mock_instance.core._client.delete = AsyncMock(
-            side_effect=httpx.ConnectError("Connection refused")
-        )
+        mock_instance.core._client.delete = AsyncMock(side_effect=httpx.ConnectError("Connection refused"))
 
         with pytest.raises(OFSCNetworkError):
             await mock_instance.core.delete_resource_users("RES1")
 
     @pytest.mark.asyncio
-    async def test_set_resource_workzones_network_error(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_set_resource_workzones_network_error(self, mock_instance: AsyncOFSC):
         """Test set_resource_workzones raises OFSCNetworkError on transport failure."""
-        mock_instance.core._client.post = AsyncMock(
-            side_effect=httpx.ConnectError("Connection refused")
-        )
+        mock_instance.core._client.post = AsyncMock(side_effect=httpx.ConnectError("Connection refused"))
 
         with pytest.raises(OFSCNetworkError):
             await mock_instance.core.set_resource_workzones("RES1", [])
@@ -850,25 +754,19 @@ class TestAsyncResourceWriteLive:
         )
 
         try:
-            created = await async_instance.core.create_resource(
-                self._TEST_RESOURCE_ID, create_data
-            )
+            created = await async_instance.core.create_resource(self._TEST_RESOURCE_ID, create_data)
             assert isinstance(created, Resource)
             assert created.name == "Claude Test Resource"
 
             # Update it
-            updated = await async_instance.core.update_resource(
-                self._TEST_RESOURCE_ID, {"name": "Claude Test Resource Updated"}
-            )
+            updated = await async_instance.core.update_resource(self._TEST_RESOURCE_ID, {"name": "Claude Test Resource Updated"})
             assert isinstance(updated, Resource)
             assert updated.name == "Claude Test Resource Updated"
 
         finally:
             # Mark as inactive — OFSC typically doesn't allow deleting resources
             try:
-                await async_instance.core.update_resource(
-                    self._TEST_RESOURCE_ID, {"status": "inactive"}
-                )
+                await async_instance.core.update_resource(self._TEST_RESOURCE_ID, {"status": "inactive"})
             except Exception:
                 pass
 
@@ -900,15 +798,11 @@ class TestAsyncResourceWriteLive:
         finally:
             # Restore original users
             if original_logins:
-                await async_instance.core.set_resource_users(
-                    resource_id=resource_id, users=original_logins
-                )
+                await async_instance.core.set_resource_users(resource_id=resource_id, users=original_logins)
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_create_delete_resource_location_live(
-        self, async_instance: AsyncOFSC
-    ):
+    async def test_create_delete_resource_location_live(self, async_instance: AsyncOFSC):
         """Test create_resource_location and delete_resource_location against real API."""
         resources = await async_instance.core.get_resources(limit=1)
         if not resources.items:
@@ -924,34 +818,26 @@ class TestAsyncResourceWriteLive:
             country="US",
         )
 
-        created_location = await async_instance.core.create_resource_location(
-            resource_id, location=new_location
-        )
+        created_location = await async_instance.core.create_resource_location(resource_id, location=new_location)
         assert isinstance(created_location, Location)
         assert created_location.locationId is not None
 
         try:
             # Update it
-            updated = await async_instance.core.update_resource_location(
-                resource_id, created_location.locationId, {"city": "Updated City"}
-            )
+            updated = await async_instance.core.update_resource_location(resource_id, created_location.locationId, {"city": "Updated City"})
             assert isinstance(updated, Location)
 
         finally:
             # Delete it
             if created_location.locationId:
-                await async_instance.core.delete_resource_location(
-                    resource_id, created_location.locationId
-                )
+                await async_instance.core.delete_resource_location(resource_id, created_location.locationId)
 
 
 class TestAsyncResourceFileProperty:
     """Mocked tests for resource file property methods."""
 
     @pytest.mark.asyncio
-    async def test_get_resource_file_property_returns_bytes(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_get_resource_file_property_returns_bytes(self, mock_instance: AsyncOFSC):
         """Test get_resource_file_property returns bytes."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -968,9 +854,7 @@ class TestAsyncResourceFileProperty:
         assert call_kwargs.kwargs["headers"]["Accept"] == "application/octet-stream"
 
     @pytest.mark.asyncio
-    async def test_set_resource_file_property_returns_none(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_set_resource_file_property_returns_none(self, mock_instance: AsyncOFSC):
         """Test set_resource_file_property returns None on success (204)."""
         mock_response = Mock()
         mock_response.status_code = 204
@@ -993,48 +877,32 @@ class TestAsyncResourceFileProperty:
         assert 'filename="signature.png"' in headers["Content-Disposition"]
 
     @pytest.mark.asyncio
-    async def test_delete_resource_file_property_returns_none(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_delete_resource_file_property_returns_none(self, mock_instance: AsyncOFSC):
         """Test delete_resource_file_property returns None on success (204)."""
         mock_response = Mock()
         mock_response.status_code = 204
         mock_response.raise_for_status = Mock()
         mock_instance.core._client.delete = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.core.delete_resource_file_property(
-            "RES001", "csign"
-        )
+        result = await mock_instance.core.delete_resource_file_property("RES001", "csign")
 
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_set_resource_file_property_not_found(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_set_resource_file_property_not_found(self, mock_instance: AsyncOFSC):
         """Test set_resource_file_property raises OFSCNotFoundError on 404."""
-        mock_instance.core._client.put = AsyncMock(
-            side_effect=_make_http_error(404, "Resource not found")
-        )
+        mock_instance.core._client.put = AsyncMock(side_effect=_make_http_error(404, "Resource not found"))
 
         with pytest.raises(OFSCNotFoundError):
-            await mock_instance.core.set_resource_file_property(
-                "NONEXISTENT", "csign", b"data", "file.bin"
-            )
+            await mock_instance.core.set_resource_file_property("NONEXISTENT", "csign", b"data", "file.bin")
 
     @pytest.mark.asyncio
-    async def test_delete_resource_file_property_not_found(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_delete_resource_file_property_not_found(self, mock_instance: AsyncOFSC):
         """Test delete_resource_file_property raises OFSCNotFoundError on 404."""
-        mock_instance.core._client.delete = AsyncMock(
-            side_effect=_make_http_error(404, "Resource not found")
-        )
+        mock_instance.core._client.delete = AsyncMock(side_effect=_make_http_error(404, "Resource not found"))
 
         with pytest.raises(OFSCNotFoundError):
-            await mock_instance.core.delete_resource_file_property(
-                "NONEXISTENT", "csign"
-            )
+            await mock_instance.core.delete_resource_file_property("NONEXISTENT", "csign")
 
 
 class TestAsyncResourceFilePropertyLive:
@@ -1045,9 +913,7 @@ class TestAsyncResourceFilePropertyLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_set_get_delete_roundtrip(
-        self, async_instance: AsyncOFSC, resource_file_property_label: str
-    ):
+    async def test_set_get_delete_roundtrip(self, async_instance: AsyncOFSC, resource_file_property_label: str):
         """Test set → get → verify → delete roundtrip for resource file property."""
         resources = await async_instance.core.get_resources(limit=1)
         if not resources.items:
@@ -1068,15 +934,11 @@ class TestAsyncResourceFilePropertyLive:
         )
 
         try:
-            fetched = await async_instance.core.get_resource_file_property(
-                resource_id, resource_file_property_label
-            )
+            fetched = await async_instance.core.get_resource_file_property(resource_id, resource_file_property_label)
             assert isinstance(fetched, bytes)
             assert fetched == content
         finally:
             try:
-                await async_instance.core.delete_resource_file_property(
-                    resource_id, resource_file_property_label
-                )
+                await async_instance.core.delete_resource_file_property(resource_id, resource_file_property_label)
             except Exception:
                 pass

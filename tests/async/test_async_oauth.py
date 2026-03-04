@@ -86,9 +86,7 @@ class TestAsyncGetToken:
         assert call_data["grant_type"] == "client_credentials"
 
     @pytest.mark.asyncio
-    async def test_invalid_credentials_raises_authentication_error(
-        self, mock_instance: AsyncOFSC
-    ):
+    async def test_invalid_credentials_raises_authentication_error(self, mock_instance: AsyncOFSC):
         """Test that a 401 response raises OFSCAuthenticationError."""
         mock_response = Mock()
         mock_response.status_code = 401
@@ -98,9 +96,7 @@ class TestAsyncGetToken:
             "title": "Unauthorized",
             "detail": "Invalid client credentials",
         }
-        error = httpx.HTTPStatusError(
-            "401 Unauthorized", request=Mock(), response=mock_response
-        )
+        error = httpx.HTTPStatusError("401 Unauthorized", request=Mock(), response=mock_response)
         mock_instance.oauth2._client.post = AsyncMock(side_effect=error)
 
         with pytest.raises(OFSCAuthenticationError):
@@ -117,9 +113,7 @@ class TestAsyncGetToken:
             "title": "Bad Request",
             "detail": "Invalid grant_type",
         }
-        error = httpx.HTTPStatusError(
-            "400 Bad Request", request=Mock(), response=mock_response
-        )
+        error = httpx.HTTPStatusError("400 Bad Request", request=Mock(), response=mock_response)
         mock_instance.oauth2._client.post = AsyncMock(side_effect=error)
 
         with pytest.raises(OFSCValidationError):

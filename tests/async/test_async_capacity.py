@@ -33,9 +33,7 @@ class TestAsyncGetAvailableCapacityLive:
     @pytest.mark.uses_real_data
     async def test_get_available_capacity(self, async_instance):
         """Test get_available_capacity with actual API."""
-        result = await async_instance.capacity.get_available_capacity(
-            dates="2026-03-03"
-        )
+        result = await async_instance.capacity.get_available_capacity(dates="2026-03-03")
         assert isinstance(result, GetCapacityResponse)
         assert hasattr(result, "items")
         assert isinstance(result.items, list)
@@ -95,15 +93,11 @@ class TestAsyncGetAvailableCapacity:
         mock_response.raise_for_status = Mock()
         mock_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.capacity.get_available_capacity(
-            dates=["2026-03-03", "2026-03-04"]
-        )
+        result = await mock_instance.capacity.get_available_capacity(dates=["2026-03-03", "2026-03-04"])
 
         assert isinstance(result, GetCapacityResponse)
         call_kwargs = mock_instance.capacity._client.get.call_args
-        params = call_kwargs.kwargs.get(
-            "params", call_kwargs.args[1] if len(call_kwargs.args) > 1 else {}
-        )
+        params = call_kwargs.kwargs.get("params", call_kwargs.args[1] if len(call_kwargs.args) > 1 else {})
         assert "dates" in params
 
     @pytest.mark.asyncio
@@ -117,9 +111,7 @@ class TestAsyncGetAvailableCapacity:
             "detail": "Authentication required",
         }
         mock_response.text = "Unauthorized"
-        http_error = httpx.HTTPStatusError(
-            "401", request=Mock(), response=mock_response
-        )
+        http_error = httpx.HTTPStatusError("401", request=Mock(), response=mock_response)
         mock_response.raise_for_status = Mock(side_effect=http_error)
         mock_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
@@ -275,9 +267,7 @@ class TestAsyncUpdateQuota:
         mock_response.raise_for_status = Mock()
         mock_instance.capacity._client.patch = AsyncMock(return_value=mock_response)
 
-        await mock_instance.capacity.update_quota(
-            {"items": [{"date": "2026-03-03", "areas": []}]}
-        )
+        await mock_instance.capacity.update_quota({"items": [{"date": "2026-03-03", "areas": []}]})
         assert mock_instance.capacity._client.patch.called
 
 
@@ -291,9 +281,7 @@ class TestAsyncGetActivityBookingOptionsLive:
 
     @pytest.mark.asyncio
     @pytest.mark.uses_real_data
-    async def test_get_activity_booking_options(
-        self, async_instance, workzone_activity_type, workzone_postal_code
-    ):
+    async def test_get_activity_booking_options(self, async_instance, workzone_activity_type, workzone_postal_code):
         """Test get_activity_booking_options with actual API."""
         result = await async_instance.capacity.get_activity_booking_options(
             dates="2026-03-03",
@@ -329,9 +317,7 @@ class TestAsyncGetActivityBookingOptions:
         mock_response.raise_for_status = Mock()
         mock_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.capacity.get_activity_booking_options(
-            dates="2026-03-03"
-        )
+        result = await mock_instance.capacity.get_activity_booking_options(dates="2026-03-03")
 
         assert isinstance(result, ActivityBookingOptionsResponse)
         assert len(result.items) == 1
@@ -373,9 +359,7 @@ class TestAsyncGetBookingClosingScheduleLive:
     @pytest.mark.uses_real_data
     async def test_get_booking_closing_schedule(self, async_instance):
         """Test get_booking_closing_schedule with actual API."""
-        result = await async_instance.capacity.get_booking_closing_schedule(
-            areas=["CAUSA"]
-        )
+        result = await async_instance.capacity.get_booking_closing_schedule(areas=["CAUSA"])
         assert isinstance(result, BookingClosingScheduleResponse)
         assert hasattr(result, "items")
 
@@ -400,9 +384,7 @@ class TestAsyncGetBookingClosingSchedule:
         mock_response.raise_for_status = Mock()
         mock_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.capacity.get_booking_closing_schedule(
-            areas="FLUSA"
-        )
+        result = await mock_instance.capacity.get_booking_closing_schedule(areas="FLUSA")
 
         assert isinstance(result, BookingClosingScheduleResponse)
         assert len(result.items) == 1
@@ -417,9 +399,7 @@ class TestAsyncGetBookingClosingSchedule:
         mock_response.raise_for_status = Mock()
         mock_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
-        await mock_instance.capacity.get_booking_closing_schedule(
-            areas=["FLUSA", "CAUSA"]
-        )
+        await mock_instance.capacity.get_booking_closing_schedule(areas=["FLUSA", "CAUSA"])
 
         call_kwargs = mock_instance.capacity._client.get.call_args
         params = call_kwargs.kwargs.get("params", {})
@@ -467,9 +447,7 @@ class TestAsyncUpdateBookingClosingSchedule:
         mock_response.raise_for_status = Mock()
         mock_instance.capacity._client.patch = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.capacity.update_booking_closing_schedule(
-            {"items": [{"areaLabel": "FLUSA", "date": "2026-03-03"}]}
-        )
+        result = await mock_instance.capacity.update_booking_closing_schedule({"items": [{"areaLabel": "FLUSA", "date": "2026-03-03"}]})
         assert isinstance(result, BookingClosingScheduleResponse)
         assert mock_instance.capacity._client.patch.called
 
@@ -560,9 +538,7 @@ class TestAsyncUpdateBookingStatuses:
         mock_response.raise_for_status = Mock()
         mock_instance.capacity._client.patch = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.capacity.update_booking_statuses(
-            {"items": [{"areaLabel": "FLUSA", "date": "2026-03-03"}]}
-        )
+        result = await mock_instance.capacity.update_booking_statuses({"items": [{"areaLabel": "FLUSA", "date": "2026-03-03"}]})
         assert isinstance(result, BookingStatusesResponse)
         assert mock_instance.capacity._client.patch.called
 
@@ -604,9 +580,7 @@ class TestAsyncShowBookingGrid:
         mock_response.raise_for_status = Mock()
         mock_instance.capacity._client.post = AsyncMock(return_value=mock_response)
 
-        request = ShowBookingGridRequest.model_validate(
-            {"dates": ["2026-03-03"], "areas": ["FLUSA"]}
-        )
+        request = ShowBookingGridRequest.model_validate({"dates": ["2026-03-03"], "areas": ["FLUSA"]})
         result = await mock_instance.capacity.show_booking_grid(request)
 
         assert isinstance(result, ShowBookingGridResponse)
@@ -622,9 +596,7 @@ class TestAsyncShowBookingGrid:
         mock_response.raise_for_status = Mock()
         mock_instance.capacity._client.post = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.capacity.show_booking_grid(
-            {"dates": ["2026-03-03"]}
-        )
+        result = await mock_instance.capacity.show_booking_grid({"dates": ["2026-03-03"]})
         assert isinstance(result, ShowBookingGridResponse)
         assert mock_instance.capacity._client.post.called
 
@@ -692,9 +664,7 @@ class TestAsyncGetBookingFieldsDependencies:
         mock_response.raise_for_status = Mock()
         mock_instance.capacity._client.get = AsyncMock(return_value=mock_response)
 
-        result = await mock_instance.capacity.get_booking_fields_dependencies(
-            areas=["FLUSA"]
-        )
+        result = await mock_instance.capacity.get_booking_fields_dependencies(areas=["FLUSA"])
         assert isinstance(result, BookingFieldsDependenciesResponse)
         call_kwargs = mock_instance.capacity._client.get.call_args
         params = call_kwargs.kwargs.get("params", {})
@@ -790,9 +760,7 @@ class TestAsyncCapacityModelValidation:
 
     def test_booking_statuses_update_request_validation(self):
         """Test BookingStatusesUpdateRequest model validation."""
-        request = BookingStatusesUpdateRequest.model_validate(
-            {"items": [{"areaLabel": "FLUSA", "date": "2026-03-03", "status": "open"}]}
-        )
+        request = BookingStatusesUpdateRequest.model_validate({"items": [{"areaLabel": "FLUSA", "date": "2026-03-03", "status": "open"}]})
         assert len(request.items) == 1
         assert request.items[0].status == "open"
 
