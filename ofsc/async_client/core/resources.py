@@ -7,6 +7,7 @@ from urllib.parse import quote_plus, urljoin
 import httpx
 
 from ...exceptions import OFSCNetworkError
+from .._protocols import _CoreBaseProtocol as _SharedCoreProtocol
 from ...models import Inventory, InventoryListResponse
 from ...models.resources import (
     AssignedLocationsResponse,
@@ -31,18 +32,8 @@ from ...models.resources import (
 )
 
 
-class _CoreBaseProtocol(Protocol):
-    """Type stub declaring what AsyncOFSCoreResourcesMixin expects from its base class."""
-
-    _client: httpx.AsyncClient
-
-    @property
-    def baseUrl(self) -> str: ...
-
-    @property
-    def headers(self) -> dict: ...
-
-    def _handle_http_error(self, e: httpx.HTTPStatusError, context: str = "") -> None: ...
+class _CoreBaseProtocol(_SharedCoreProtocol, Protocol):
+    """Type stub for AsyncOFSCoreResourcesMixin — extends shared protocol with resource helpers."""
 
     def _build_expand_param(
         self,

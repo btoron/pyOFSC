@@ -942,3 +942,77 @@ class TestAsyncResourceFilePropertyLive:
                 await async_instance.core.delete_resource_file_property(resource_id, resource_file_property_label)
             except Exception:
                 pass
+
+
+# ---------------------------------------------------------------------------
+# ResourceCreate extra fields (custom properties)
+# ---------------------------------------------------------------------------
+
+
+class TestResourceCreateExtraFields:
+    """Tests that ResourceCreate preserves custom properties via extra='allow'."""
+
+    def test_resource_create_extra_fields_preserved_in_dump(self):
+        """ResourceCreate.model_dump() includes extra custom properties."""
+        data = {
+            "parentResourceId": "BUCKET",
+            "resourceType": "BK",
+            "name": "Test",
+            "language": "en",
+            "timeZone": "US/Eastern",
+            "XA_CUSTOM_FIELD": "custom_value",
+            "XA_ANOTHER": "another_value",
+        }
+        rc = ResourceCreate.model_validate(data)
+        dumped = rc.model_dump(exclude_none=True)
+        assert dumped["XA_CUSTOM_FIELD"] == "custom_value"
+        assert dumped["XA_ANOTHER"] == "another_value"
+
+    def test_resource_create_extra_fields_not_dropped(self):
+        """ResourceCreate constructed directly preserves extra fields."""
+        rc = ResourceCreate(
+            parentResourceId="BUCKET",
+            resourceType="BK",
+            name="Test",
+            language="en",
+            timeZone="US/Eastern",
+            XA_MY_PROP="hello",
+        )
+        dumped = rc.model_dump(exclude_none=True)
+        assert "XA_MY_PROP" in dumped
+        assert dumped["XA_MY_PROP"] == "hello"
+
+    def test_resource_extra_fields_preserved_in_dump(self):
+        """Resource.model_dump() (read path) also includes extra custom properties."""
+        data = {
+            "resourceType": "BK",
+            "name": "Test",
+            "language": "en",
+            "timeZone": "US/Eastern",
+            "XA_READ_PROP": "read_value",
+        }
+        r = Resource.model_validate(data)
+        dumped = r.model_dump(exclude_none=True)
+        assert dumped["XA_READ_PROP"] == "read_value"
+
+    @pytest.mark.asyncio
+    async def test_create_resource_passes_extra_fields_to_api(self, mock_instance: AsyncOFSC):
+        """create_resource() sends custom properties in the PUT body."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            **_resource_payload(),
+            "XA_CUSTOM_FIELD": "custom_value",
+        }
+        mock_response.raise_for_status = Mock()
+        mock_instance.core._client.put = AsyncMock(return_value=mock_response)
+
+        payload = {
+            **_resource_payload(),
+            "XA_CUSTOM_FIELD": "custom_value",
+        }
+        await mock_instance.core.create_resource("TEST_RES_001", payload)
+
+        call_kwargs = mock_instance.core._client.put.call_args
+        sent_body = call_kwargs.kwargs["json"]
+        assert sent_body["XA_CUSTOM_FIELD"] == "custom_value"

@@ -1,6 +1,5 @@
 """Async user methods mixin for OFSCore API."""
 
-from typing import Protocol
 from urllib.parse import quote_plus, urljoin
 
 import httpx
@@ -8,22 +7,13 @@ import httpx
 from ...exceptions import (
     OFSCNetworkError,
 )
+from .._protocols import _CoreBaseProtocol
 from ...models.users import (
     CollaborationGroupsResponse,
     User,
     UserCreate,
     UserListResponse,
 )
-
-
-class _CoreBaseProtocol(Protocol):
-    """Type stub declaring what AsyncOFSCoreUsersMixin expects from its base class."""
-
-    _client: httpx.AsyncClient
-    baseUrl: str
-    headers: dict
-
-    def _handle_http_error(self, e: httpx.HTTPStatusError, context: str = "") -> None: ...
 
 
 class AsyncOFSCoreUsersMixin:

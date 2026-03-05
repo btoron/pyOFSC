@@ -34,6 +34,17 @@ MODULE_FILE_MAP = {
     "collaboration": (None, None),
 }
 
+# Maps helper method names (used in refactored async code) to their HTTP methods
+HELPER_METHOD_MAP = {
+    "_get_paginated_list": "GET",
+    "_get_single_item": "GET",
+    "_get_all_items": "GET",
+    "_put_item": "PUT",
+    "_post_item": "POST",
+    "_patch_item": "PATCH",
+    "_delete_item": "DELETE",
+}
+
 
 def dict_list_to_markdown_table(data: list[dict]) -> str:
     """Convert list of dictionaries to GitHub-flavored markdown table.
@@ -292,6 +303,17 @@ def scan_file_for_endpoints(file_path: Path) -> dict[tuple[str, str], bool]:
             http_method = _get_http_method_from_call(child)
             if http_method:
                 http_methods.append((http_method, child.lineno))
+
+            # Check if this is a call to a helper method (e.g. self._get_paginated_list)
+            # These are used in refactored async code that delegates to AsyncClientBase helpers
+            if isinstance(func, ast.Attribute) and func.attr in HELPER_METHOD_MAP:
+                if child.args:
+                    url = _extract_url_from_ast_node(child.args[0])
+                    if url and url.startswith("/rest/"):
+                        url = re.sub(r"\?[^/]*$", "", url).rstrip("/")
+                        helper_method = HELPER_METHOD_MAP[func.attr]
+                        is_implemented = not is_stub
+                        endpoints[(url, helper_method)] = is_implemented
 
         # Match urljoin calls with HTTP methods in the same function
         # Heuristic: pair each urljoin with the closest HTTP method call after it

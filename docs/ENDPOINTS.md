@@ -1,7 +1,7 @@
 # OFSC API Endpoints Reference
 
-**Version:** 2.24.0
-**Last Updated:** 2026-03-04
+**Version:** 2.24.3
+**Last Updated:** 2026-03-05
 
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints and their implementation status in pyOFSC.
 
@@ -54,7 +54,7 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |ME025G|`/rest/ofscMetadata/v1/languages`                                                                                        |metadata     |GET   |async |
 |ME026G|`/rest/ofscMetadata/v1/linkTemplates`                                                                                    |metadata     |GET   |async |
 |ME027G|`/rest/ofscMetadata/v1/linkTemplates/{label}`                                                                            |metadata     |GET   |async |
-|ME027P|`/rest/ofscMetadata/v1/linkTemplates/{label}`                                                                            |metadata     |POST  |async |
+|ME027P|`/rest/ofscMetadata/v1/linkTemplates/{label}`                                                                            |metadata     |POST  |-     |
 |ME027A|`/rest/ofscMetadata/v1/linkTemplates/{label}`                                                                            |metadata     |PATCH |async |
 |ME028G|`/rest/ofscMetadata/v1/mapLayers`                                                                                        |metadata     |GET   |async |
 |ME028P|`/rest/ofscMetadata/v1/mapLayers`                                                                                        |metadata     |POST  |async |
@@ -267,11 +267,11 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 ## Implementation Summary
 
 - **Sync only**: 4 endpoints
-- **Async only**: 110 endpoints
+- **Async only**: 109 endpoints
 - **Both**: 85 endpoints
-- **Not implemented**: 44 endpoints
+- **Not implemented**: 45 endpoints
 - **Total sync**: 89 endpoints
-- **Total async**: 195 endpoints
+- **Total async**: 194 endpoints
 
 ## Implementation Statistics by Module and Method
 
@@ -292,14 +292,14 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 
 |   Module    |        GET        |Write (POST/PUT/PATCH)|     DELETE      |       Total       |
 |-------------|-------------------|----------------------|-----------------|-------------------|
-|metadata     |51/51 (100.0%)     |29/30 (96.7%)         |5/5 (100.0%)     |85/86 (98.8%)      |
+|metadata     |51/51 (100.0%)     |28/30 (93.3%)         |5/5 (100.0%)     |84/86 (97.7%)      |
 |core         |44/51 (86.3%)      |31/56 (55.4%)         |18/20 (90.0%)    |93/127 (73.2%)     |
 |capacity     |6/7 (85.7%)        |4/5 (80.0%)           |0/0 (0%)         |10/12 (83.3%)      |
 |statistics   |3/3 (100.0%)       |3/3 (100.0%)          |0/0 (0%)         |6/6 (100.0%)       |
 |partscatalog |0/0 (0%)           |0/2 (0.0%)            |0/1 (0.0%)       |0/3 (0.0%)         |
 |collaboration|0/3 (0.0%)         |0/4 (0.0%)            |0/0 (0%)         |0/7 (0.0%)         |
 |auth         |0/0 (0%)           |1/2 (50.0%)           |0/0 (0%)         |1/2 (50.0%)        |
-|**Total**    |**104/115 (90.4%)**|**68/102 (66.7%)**    |**23/26 (88.5%)**|**195/243 (80.2%)**|
+|**Total**    |**104/115 (90.4%)**|**67/102 (65.7%)**    |**23/26 (88.5%)**|**194/243 (79.8%)**|
 
 ## Endpoint ID Reference
 

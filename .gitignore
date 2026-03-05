@@ -179,3 +179,4 @@ plans
 tmp
 docs/qa.md
 tests/**/audit_results
+docs/patterns

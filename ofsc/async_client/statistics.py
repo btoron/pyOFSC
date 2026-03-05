@@ -5,17 +5,8 @@ from urllib.parse import urljoin
 
 import httpx
 
-from ..exceptions import (
-    OFSCApiError,
-    OFSCAuthenticationError,
-    OFSCAuthorizationError,
-    OFSCConflictError,
-    OFSCNetworkError,
-    OFSCNotFoundError,
-    OFSCRateLimitError,
-    OFSCServerError,
-    OFSCValidationError,
-)
+from ..exceptions import OFSCNetworkError
+from ._base import AsyncClientBase
 from ..models import (
     ActivityDurationStatRequestList,
     ActivityDurationStatsList,
@@ -23,107 +14,12 @@ from ..models import (
     ActivityTravelStatsList,
     AirlineDistanceBasedTravelList,
     AirlineDistanceBasedTravelRequestList,
-    OFSConfig,
     StatisticsPatchResponse,
 )
 
 
-class AsyncOFSStatistics:
+class AsyncOFSStatistics(AsyncClientBase):
     """Async version of OFSC Statistics API module."""
-
-    def __init__(self, config: OFSConfig, client: httpx.AsyncClient):
-        self._config = config
-        self._client = client
-
-    @property
-    def config(self) -> OFSConfig:
-        return self._config
-
-    @property
-    def baseUrl(self) -> str:
-        if self._config.baseURL is None:
-            raise ValueError("Base URL is not configured")
-        return self._config.baseURL
-
-    @property
-    def headers(self) -> dict:
-        """Build authorization headers."""
-        headers = {"Content-Type": "application/json;charset=UTF-8"}
-        if not self._config.useToken:
-            headers["Authorization"] = "Basic " + self._config.basicAuthString.decode("utf-8")
-        else:
-            if self._config.access_token is None:
-                raise ValueError("access_token required when useToken=True")
-            headers["Authorization"] = f"Bearer {self._config.access_token}"
-        return headers
-
-    def _parse_error_response(self, response: httpx.Response) -> dict:
-        """Parse OFSC error response format."""
-        try:
-            error_data = response.json()
-            return {
-                "type": error_data.get("type", "about:blank"),
-                "title": error_data.get("title", ""),
-                "detail": error_data.get("detail", response.text),
-            }
-        except Exception:
-            return {
-                "type": "about:blank",
-                "title": f"HTTP {response.status_code}",
-                "detail": response.text,
-            }
-
-    def _handle_http_error(self, e: httpx.HTTPStatusError, context: str = "") -> None:
-        """Convert httpx exceptions to OFSC exceptions with error details."""
-        status = e.response.status_code
-        error_info = self._parse_error_response(e.response)
-
-        message = f"{context}: {error_info['detail']}" if context else error_info["detail"]
-
-        error_map = {
-            401: OFSCAuthenticationError,
-            403: OFSCAuthorizationError,
-            404: OFSCNotFoundError,
-            409: OFSCConflictError,
-            429: OFSCRateLimitError,
-        }
-
-        if status in error_map:
-            raise error_map[status](
-                message,
-                status_code=status,
-                response=e.response,
-                error_type=error_info["type"],
-                title=error_info["title"],
-                detail=error_info["detail"],
-            ) from e
-        elif 400 <= status < 500:
-            raise OFSCValidationError(
-                message,
-                status_code=status,
-                response=e.response,
-                error_type=error_info["type"],
-                title=error_info["title"],
-                detail=error_info["detail"],
-            ) from e
-        elif 500 <= status < 600:
-            raise OFSCServerError(
-                message,
-                status_code=status,
-                response=e.response,
-                error_type=error_info["type"],
-                title=error_info["title"],
-                detail=error_info["detail"],
-            ) from e
-        else:
-            raise OFSCApiError(
-                message,
-                status_code=status,
-                response=e.response,
-                error_type=error_info["type"],
-                title=error_info["title"],
-                detail=error_info["detail"],
-            ) from e
 
     # region Activity Duration Stats
 

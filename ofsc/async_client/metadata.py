@@ -6,17 +6,8 @@ from urllib.parse import quote_plus, urljoin
 
 import httpx
 
-from ..exceptions import (
-    OFSCApiError,
-    OFSCAuthenticationError,
-    OFSCAuthorizationError,
-    OFSCConflictError,
-    OFSCNetworkError,
-    OFSCNotFoundError,
-    OFSCRateLimitError,
-    OFSCServerError,
-    OFSCValidationError,
-)
+from ..exceptions import OFSCNetworkError
+from ._base import AsyncClientBase
 from ..models import (
     ActivityType,
     ActivityTypeGroup,
@@ -52,7 +43,6 @@ from ..models import (
     PopulateStatusResponse,
     NonWorkingReason,
     NonWorkingReasonListResponse,
-    OFSConfig,
     Organization,
     OrganizationListResponse,
     Property,
@@ -77,131 +67,8 @@ from ..models import (
 )
 
 
-class AsyncOFSMetadata:
+class AsyncOFSMetadata(AsyncClientBase):
     """Async version of OFSMetadata API module."""
-
-    def __init__(self, config: OFSConfig, client: httpx.AsyncClient):
-        self._config = config
-        self._client = client
-
-    @property
-    def config(self) -> OFSConfig:
-        return self._config
-
-    @property
-    def baseUrl(self) -> str:
-        if self._config.baseURL is None:
-            raise ValueError("Base URL is not configured")
-        return self._config.baseURL
-
-    @property
-    def headers(self) -> dict:
-        """Build authorization headers."""
-        headers = {"Content-Type": "application/json;charset=UTF-8"}
-        if not self._config.useToken:
-            headers["Authorization"] = "Basic " + self._config.basicAuthString.decode("utf-8")
-        else:
-            if self._config.access_token is None:
-                raise ValueError("access_token required when useToken=True")
-            headers["Authorization"] = f"Bearer {self._config.access_token}"
-        return headers
-
-    def _parse_error_response(self, response: httpx.Response) -> dict:
-        """Parse OFSC error response format.
-
-        OFSC API returns errors in the format:
-        {
-            "type": "string",
-            "title": "string",
-            "detail": "string"
-        }
-
-        :param response: The httpx Response object
-        :type response: httpx.Response
-        :return: Error information with type, title, and detail keys
-        :rtype: dict
-        """
-        try:
-            error_data = response.json()
-            return {
-                "type": error_data.get("type", "about:blank"),
-                "title": error_data.get("title", ""),
-                "detail": error_data.get("detail", response.text),
-            }
-        except Exception:
-            # If response is not JSON or doesn't match format
-            return {
-                "type": "about:blank",
-                "title": f"HTTP {response.status_code}",
-                "detail": response.text,
-            }
-
-    def _handle_http_error(self, e: httpx.HTTPStatusError, context: str = "") -> None:
-        """Convert httpx exceptions to OFSC exceptions with error details.
-
-        :param e: The httpx HTTPStatusError exception
-        :type e: httpx.HTTPStatusError
-        :param context: Additional context for the error message
-        :type context: str
-        :raises OFSCAuthenticationError: For 401 errors
-        :raises OFSCAuthorizationError: For 403 errors
-        :raises OFSCNotFoundError: For 404 errors
-        :raises OFSCConflictError: For 409 errors
-        :raises OFSCRateLimitError: For 429 errors
-        :raises OFSCValidationError: For 400, 422 errors
-        :raises OFSCServerError: For 5xx errors
-        :raises OFSCApiError: For other HTTP errors
-        """
-        status = e.response.status_code
-        error_info = self._parse_error_response(e.response)
-
-        # Build message with detail
-        message = f"{context}: {error_info['detail']}" if context else error_info["detail"]
-
-        error_map = {
-            401: OFSCAuthenticationError,
-            403: OFSCAuthorizationError,
-            404: OFSCNotFoundError,
-            409: OFSCConflictError,
-            429: OFSCRateLimitError,
-        }
-
-        if status in error_map:
-            raise error_map[status](
-                message,
-                status_code=status,
-                response=e.response,
-                error_type=error_info["type"],
-                title=error_info["title"],
-                detail=error_info["detail"],
-            ) from e
-        elif 400 <= status < 500:
-            raise OFSCValidationError(
-                message,
-                status_code=status,
-                response=e.response,
-                error_type=error_info["type"],
-                title=error_info["title"],
-                detail=error_info["detail"],
-            ) from e
-        elif 500 <= status < 600:
-            raise OFSCServerError(
-                message,
-                status_code=status,
-                response=e.response,
-                error_type=error_info["type"],
-                title=error_info["title"],
-                detail=error_info["detail"],
-            ) from e
-        else:
-            raise OFSCApiError(
-                message,
-                status_code=status,
-                response=e.response,
-                error_type=error_info["type"],
-                title=error_info["title"],
-                detail=error_info["detail"],
-            ) from e
 
     # region Activity Type Groups
 
@@ -219,23 +86,13 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/activityTypeGroups")
-        params = {"offset": offset, "limit": limit}
-
-        try:
-            response = await self._client.get(url, headers=self.headers, params=params)
-            response.raise_for_status()
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(ActivityTypeGroupListResponse, "links"):
-                del data["links"]
-
-            return ActivityTypeGroupListResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get activity type groups")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_paginated_list(
+            "/rest/ofscMetadata/v1/activityTypeGroups",
+            ActivityTypeGroupListResponse,
+            "Failed to get activity type groups",
+            offset,
+            limit,
+        )
 
     async def get_activity_type_group(self, label: str) -> ActivityTypeGroup:
         """Get a single activity type group by label.
@@ -250,23 +107,12 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        encoded_label = quote_plus(label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/activityTypeGroups/{encoded_label}")
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(ActivityTypeGroup, "links"):
-                del data["links"]
-
-            return ActivityTypeGroup.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get activity type group '{label}'")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_single_item(
+            "/rest/ofscMetadata/v1/activityTypeGroups/{label}",
+            label,
+            ActivityTypeGroup,
+            f"Failed to get activity type group '{label}'",
+        )
 
     async def create_or_replace_activity_type_group(self, data: ActivityTypeGroup) -> ActivityTypeGroup:
         """Create or replace an activity type group.
@@ -282,27 +128,12 @@ class AsyncOFSMetadata:
         :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(data.label)
-        url = urljoin(
-            self.baseUrl,
+        return await self._put_item(
             f"/rest/ofscMetadata/v1/activityTypeGroups/{encoded_label}",
+            data,
+            ActivityTypeGroup,
+            f"Failed to create/replace activity type group '{data.label}'",
         )
-
-        try:
-            response = await self._client.put(
-                url,
-                headers=self.headers,
-                json=data.model_dump(exclude_none=True, mode="json"),
-            )
-            response.raise_for_status()
-            result = response.json()
-            if "links" in result:
-                del result["links"]
-            return ActivityTypeGroup.model_validate(result)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to create/replace activity type group '{data.label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     # endregion
 
@@ -322,23 +153,13 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/activityTypes")
-        params = {"offset": offset, "limit": limit}
-
-        try:
-            response = await self._client.get(url, headers=self.headers, params=params)
-            response.raise_for_status()
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(ActivityTypeListResponse, "links"):
-                del data["links"]
-
-            return ActivityTypeListResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get activity types")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_paginated_list(
+            "/rest/ofscMetadata/v1/activityTypes",
+            ActivityTypeListResponse,
+            "Failed to get activity types",
+            offset,
+            limit,
+        )
 
     async def get_activity_type(self, label: str) -> ActivityType:
         """Get a single activity type by label.
@@ -353,23 +174,12 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        encoded_label = quote_plus(label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/activityTypes/{encoded_label}")
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(ActivityType, "links"):
-                del data["links"]
-
-            return ActivityType.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get activity type '{label}'")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_single_item(
+            "/rest/ofscMetadata/v1/activityTypes/{label}",
+            label,
+            ActivityType,
+            f"Failed to get activity type '{label}'",
+        )
 
     async def create_or_replace_activity_type(self, data: ActivityType) -> ActivityType:
         """Create or replace an activity type.
@@ -385,24 +195,12 @@ class AsyncOFSMetadata:
         :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(data.label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/activityTypes/{encoded_label}")
-
-        try:
-            response = await self._client.put(
-                url,
-                headers=self.headers,
-                json=data.model_dump(exclude_none=True, mode="json"),
-            )
-            response.raise_for_status()
-            result = response.json()
-            if "links" in result:
-                del result["links"]
-            return ActivityType.model_validate(result)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to create/replace activity type '{data.label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._put_item(
+            f"/rest/ofscMetadata/v1/activityTypes/{encoded_label}",
+            data,
+            ActivityType,
+            f"Failed to create/replace activity type '{data.label}'",
+        )
 
     # endregion
 
@@ -418,20 +216,11 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/applications")
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data:
-                del data["links"]
-            return ApplicationListResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get applications")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_all_items(
+            "/rest/ofscMetadata/v1/applications",
+            ApplicationListResponse,
+            "Failed to get applications",
+        )
 
     async def get_application(self, label: str) -> Application:
         """Get a single application by label.
@@ -446,21 +235,12 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        encoded_label = quote_plus(label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/applications/{encoded_label}")
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data:
-                del data["links"]
-            return Application.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get application '{label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_single_item(
+            "/rest/ofscMetadata/v1/applications/{label}",
+            label,
+            Application,
+            f"Failed to get application '{label}'",
+        )
 
     async def get_application_api_accesses(self, label: str) -> ApplicationApiAccessListResponse:
         """Get all API accesses for an application.
@@ -484,9 +264,7 @@ class AsyncOFSMetadata:
         try:
             response = await self._client.get(url, headers=self.headers)
             response.raise_for_status()
-            data = response.json()
-            if "links" in data:
-                del data["links"]
+            data = self._clean_response(response.json())
             return ApplicationApiAccessListResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(e, f"Failed to get API accesses for application '{label}'")
@@ -509,6 +287,8 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
+        from ..models import parse_application_api_access
+
         encoded_label = quote_plus(label)
         encoded_access_id = quote_plus(access_id)
         url = urljoin(
@@ -519,12 +299,7 @@ class AsyncOFSMetadata:
         try:
             response = await self._client.get(url, headers=self.headers)
             response.raise_for_status()
-            data = response.json()
-            if "links" in data:
-                del data["links"]
-            # Import parse function from models
-            from ..models import parse_application_api_access
-
+            data = self._clean_response(response.json())
             return parse_application_api_access(data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(
@@ -549,24 +324,12 @@ class AsyncOFSMetadata:
         :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(data.label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/applications/{encoded_label}")
-
-        try:
-            response = await self._client.put(
-                url,
-                headers=self.headers,
-                json=data.model_dump(exclude_none=True, mode="json"),
-            )
-            response.raise_for_status()
-            result = response.json()
-            if "links" in result:
-                del result["links"]
-            return Application.model_validate(result)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to create/replace application '{data.label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._put_item(
+            f"/rest/ofscMetadata/v1/applications/{encoded_label}",
+            data,
+            Application,
+            f"Failed to create/replace application '{data.label}'",
+        )
 
     async def update_application_api_access(self, label: str, api_label: str, data: dict) -> ApplicationApiAccess:
         """Update API access settings for an application.
@@ -597,9 +360,7 @@ class AsyncOFSMetadata:
         try:
             response = await self._client.patch(url, headers=self.headers, json=data)
             response.raise_for_status()
-            result = response.json()
-            if "links" in result:
-                del result["links"]
+            result = self._clean_response(response.json())
             return parse_application_api_access(result)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(
@@ -683,9 +444,7 @@ class AsyncOFSMetadata:
         try:
             response = await self._client.get(url, headers=self.headers, params=params if params else None)
             response.raise_for_status()
-            data = response.json()
-            if "links" in data and not hasattr(CapacityAreaListResponse, "links"):
-                del data["links"]
+            data = self._clean_response(response.json())
             return CapacityAreaListResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(e, "Failed to get capacity areas")
@@ -706,21 +465,12 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        encoded_label = quote_plus(label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}")
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data and not hasattr(CapacityArea, "links"):
-                del data["links"]
-            return CapacityArea.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get capacity area '{label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_single_item(
+            "/rest/ofscMetadata/v1/capacityAreas/{label}",
+            label,
+            CapacityArea,
+            f"Failed to get capacity area '{label}'",
+        )
 
     async def get_capacity_area_capacity_categories(self, label: str) -> CapacityAreaCapacityCategoriesResponse:
         """Get capacity categories for a capacity area (ME012G).
@@ -736,23 +486,11 @@ class AsyncOFSMetadata:
         :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
-        url = urljoin(
-            self.baseUrl,
+        return await self._get_all_items(
             f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}/capacityCategories",
+            CapacityAreaCapacityCategoriesResponse,
+            f"Failed to get capacity categories for area '{label}'",
         )
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data:
-                del data["links"]
-            return CapacityAreaCapacityCategoriesResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get capacity categories for area '{label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def get_capacity_area_workzones(self, label: str) -> CapacityAreaWorkZonesResponse:
         """Get workzones for a capacity area using v2 API (ME013G).
@@ -768,23 +506,11 @@ class AsyncOFSMetadata:
         :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
-        url = urljoin(
-            self.baseUrl,
+        return await self._get_all_items(
             f"/rest/ofscMetadata/v2/capacityAreas/{encoded_label}/workZones",
+            CapacityAreaWorkZonesResponse,
+            f"Failed to get workzones for capacity area '{label}'",
         )
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data:
-                del data["links"]
-            return CapacityAreaWorkZonesResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get workzones for capacity area '{label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def get_capacity_area_workzones_v1(self, label: str) -> CapacityAreaWorkZonesV1Response:
         """Get workzones for a capacity area using v1 API (ME014G).
@@ -803,23 +529,11 @@ class AsyncOFSMetadata:
         :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
-        url = urljoin(
-            self.baseUrl,
+        return await self._get_all_items(
             f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}/workZones",
+            CapacityAreaWorkZonesV1Response,
+            f"Failed to get workzones (v1) for capacity area '{label}'",
         )
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data:
-                del data["links"]
-            return CapacityAreaWorkZonesV1Response.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get workzones (v1) for capacity area '{label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def get_capacity_area_time_slots(self, label: str) -> CapacityAreaTimeSlotsResponse:
         """Get time slots for a capacity area (ME015G).
@@ -835,23 +549,11 @@ class AsyncOFSMetadata:
         :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
-        url = urljoin(
-            self.baseUrl,
+        return await self._get_all_items(
             f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}/timeSlots",
+            CapacityAreaTimeSlotsResponse,
+            f"Failed to get time slots for capacity area '{label}'",
         )
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data:
-                del data["links"]
-            return CapacityAreaTimeSlotsResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get time slots for capacity area '{label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def get_capacity_area_time_intervals(self, label: str) -> CapacityAreaTimeIntervalsResponse:
         """Get time intervals for a capacity area (ME016G).
@@ -867,23 +569,11 @@ class AsyncOFSMetadata:
         :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
-        url = urljoin(
-            self.baseUrl,
+        return await self._get_all_items(
             f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}/timeIntervals",
+            CapacityAreaTimeIntervalsResponse,
+            f"Failed to get time intervals for capacity area '{label}'",
         )
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data:
-                del data["links"]
-            return CapacityAreaTimeIntervalsResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get time intervals for capacity area '{label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def get_capacity_area_organizations(self, label: str) -> CapacityAreaOrganizationsResponse:
         """Get organizations for a capacity area (ME017G).
@@ -899,23 +589,11 @@ class AsyncOFSMetadata:
         :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(label)
-        url = urljoin(
-            self.baseUrl,
+        return await self._get_all_items(
             f"/rest/ofscMetadata/v1/capacityAreas/{encoded_label}/organizations",
+            CapacityAreaOrganizationsResponse,
+            f"Failed to get organizations for capacity area '{label}'",
         )
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data:
-                del data["links"]
-            return CapacityAreaOrganizationsResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get organizations for capacity area '{label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def get_capacity_area_children(
         self,
@@ -964,9 +642,7 @@ class AsyncOFSMetadata:
         try:
             response = await self._client.get(url, headers=self.headers, params=params if params else None)
             response.raise_for_status()
-            data = response.json()
-            if "links" in data:
-                del data["links"]
+            data = self._clean_response(response.json())
             return CapacityAreaChildrenResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(e, f"Failed to get children for capacity area '{label}'")
@@ -992,21 +668,13 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/capacityCategories")
-        params = {"offset": offset, "limit": limit}
-
-        try:
-            response = await self._client.get(url, headers=self.headers, params=params)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data and not hasattr(CapacityCategoryListResponse, "links"):
-                del data["links"]
-            return CapacityCategoryListResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get capacity categories")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_paginated_list(
+            "/rest/ofscMetadata/v1/capacityCategories",
+            CapacityCategoryListResponse,
+            "Failed to get capacity categories",
+            offset,
+            limit,
+        )
 
     async def get_capacity_category(self, label: str) -> CapacityCategory:
         """Get a single capacity category by label.
@@ -1021,21 +689,12 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        encoded_label = quote_plus(label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/capacityCategories/{encoded_label}")
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data and not hasattr(CapacityCategory, "links"):
-                del data["links"]
-            return CapacityCategory.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get capacity category '{label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_single_item(
+            "/rest/ofscMetadata/v1/capacityCategories/{label}",
+            label,
+            CapacityCategory,
+            f"Failed to get capacity category '{label}'",
+        )
 
     async def create_or_replace_capacity_category(self, data: CapacityCategory) -> CapacityCategory:
         """Create or replace a capacity category.
@@ -1051,27 +710,12 @@ class AsyncOFSMetadata:
         :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(data.label)
-        url = urljoin(
-            self.baseUrl,
+        return await self._put_item(
             f"/rest/ofscMetadata/v1/capacityCategories/{encoded_label}",
+            data,
+            CapacityCategory,
+            f"Failed to create/replace capacity category '{data.label}'",
         )
-
-        try:
-            response = await self._client.put(
-                url,
-                headers=self.headers,
-                json=data.model_dump(exclude_none=True, mode="json"),
-            )
-            response.raise_for_status()
-            result = response.json()
-            if "links" in result:
-                del result["links"]
-            return CapacityCategory.model_validate(result)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to create/replace capacity category '{data.label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def delete_capacity_category(self, label: str) -> None:
         """Delete a capacity category.
@@ -1084,20 +728,11 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        encoded_label = quote_plus(label)
-        url = urljoin(
-            self.baseUrl,
-            f"/rest/ofscMetadata/v1/capacityCategories/{encoded_label}",
+        return await self._delete_item(
+            "/rest/ofscMetadata/v1/capacityCategories/{label}",
+            label,
+            f"Failed to delete capacity category '{label}'",
         )
-
-        try:
-            response = await self._client.delete(url, headers=self.headers)
-            response.raise_for_status()
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to delete capacity category '{label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     # endregion
 
@@ -1117,21 +752,13 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/forms")
-        params = {"offset": offset, "limit": limit}
-
-        try:
-            response = await self._client.get(url, headers=self.headers, params=params)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data and not hasattr(FormListResponse, "links"):
-                del data["links"]
-            return FormListResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get forms")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_paginated_list(
+            "/rest/ofscMetadata/v1/forms",
+            FormListResponse,
+            "Failed to get forms",
+            offset,
+            limit,
+        )
 
     async def get_form(self, label: str) -> Form:
         """Get a single form by label.
@@ -1146,21 +773,12 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        encoded_label = quote_plus(label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/forms/{encoded_label}")
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data and not hasattr(Form, "links"):
-                del data["links"]
-            return Form.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get form '{label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_single_item(
+            "/rest/ofscMetadata/v1/forms/{label}",
+            label,
+            Form,
+            f"Failed to get form '{label}'",
+        )
 
     async def create_or_replace_form(self, data: Form) -> Form:
         """Create or replace a form.
@@ -1176,24 +794,12 @@ class AsyncOFSMetadata:
         :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(data.label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/forms/{encoded_label}")
-
-        try:
-            response = await self._client.put(
-                url,
-                headers=self.headers,
-                json=data.model_dump(exclude_none=True, mode="json"),
-            )
-            response.raise_for_status()
-            result = response.json()
-            if "links" in result:
-                del result["links"]
-            return Form.model_validate(result)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to create/replace form '{data.label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._put_item(
+            f"/rest/ofscMetadata/v1/forms/{encoded_label}",
+            data,
+            Form,
+            f"Failed to create/replace form '{data.label}'",
+        )
 
     async def delete_form(self, label: str) -> None:
         """Delete a form.
@@ -1206,17 +812,11 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        encoded_label = quote_plus(label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/forms/{encoded_label}")
-
-        try:
-            response = await self._client.delete(url, headers=self.headers)
-            response.raise_for_status()
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to delete form '{label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._delete_item(
+            "/rest/ofscMetadata/v1/forms/{label}",
+            label,
+            f"Failed to delete form '{label}'",
+        )
 
     # endregion
 
@@ -1236,23 +836,13 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/inventoryTypes")
-        params = {"offset": offset, "limit": limit}
-
-        try:
-            response = await self._client.get(url, headers=self.headers, params=params)
-            response.raise_for_status()
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(InventoryTypeListResponse, "links"):
-                del data["links"]
-
-            return InventoryTypeListResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get inventory types")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_paginated_list(
+            "/rest/ofscMetadata/v1/inventoryTypes",
+            InventoryTypeListResponse,
+            "Failed to get inventory types",
+            offset,
+            limit,
+        )
 
     async def get_inventory_type(self, label: str) -> InventoryType:
         """Get a single inventory type by label.
@@ -1267,23 +857,12 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        encoded_label = quote_plus(label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/inventoryTypes/{encoded_label}")
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(InventoryType, "links"):
-                del data["links"]
-
-            return InventoryType.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get inventory type '{label}'")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_single_item(
+            "/rest/ofscMetadata/v1/inventoryTypes/{label}",
+            label,
+            InventoryType,
+            f"Failed to get inventory type '{label}'",
+        )
 
     async def create_or_replace_inventory_type(self, data: InventoryType) -> InventoryType:
         """Create or replace an inventory type.
@@ -1299,24 +878,12 @@ class AsyncOFSMetadata:
         :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(data.label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/inventoryTypes/{encoded_label}")
-
-        try:
-            response = await self._client.put(
-                url,
-                headers=self.headers,
-                json=data.model_dump(exclude_none=True, mode="json"),
-            )
-            response.raise_for_status()
-            result = response.json()
-            if "links" in result:
-                del result["links"]
-            return InventoryType.model_validate(result)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to create/replace inventory type '{data.label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._put_item(
+            f"/rest/ofscMetadata/v1/inventoryTypes/{encoded_label}",
+            data,
+            InventoryType,
+            f"Failed to create/replace inventory type '{data.label}'",
+        )
 
     # endregion
 
@@ -1336,26 +903,16 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/languages")
-        params = {"offset": offset, "limit": limit}
-
-        try:
-            response = await self._client.get(url, headers=self.headers, params=params)
-            response.raise_for_status()
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(LanguageListResponse, "links"):
-                del data["links"]
-
-            return LanguageListResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get languages")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_paginated_list(
+            "/rest/ofscMetadata/v1/languages",
+            LanguageListResponse,
+            "Failed to get languages",
+            offset,
+            limit,
+        )
 
     async def get_language(self, label: str) -> Language:
-        raise NotImplementedError("Async method not yet implemented")
+        raise NotImplementedError(f"Async get_language({label!r}) not yet implemented")
 
     # endregion
 
@@ -1375,21 +932,13 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/linkTemplates")
-        params = {"offset": offset, "limit": limit}
-
-        try:
-            response = await self._client.get(url, headers=self.headers, params=params)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data and not hasattr(LinkTemplateListResponse, "links"):
-                del data["links"]
-            return LinkTemplateListResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get link templates")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_paginated_list(
+            "/rest/ofscMetadata/v1/linkTemplates",
+            LinkTemplateListResponse,
+            "Failed to get link templates",
+            offset,
+            limit,
+        )
 
     async def get_link_template(self, label: str) -> LinkTemplate:
         """Get a single link template by label.
@@ -1404,21 +953,12 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        encoded_label = quote_plus(label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/linkTemplates/{encoded_label}")
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data and not hasattr(LinkTemplate, "links"):
-                del data["links"]
-            return LinkTemplate.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get link template '{label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_single_item(
+            "/rest/ofscMetadata/v1/linkTemplates/{label}",
+            label,
+            LinkTemplate,
+            f"Failed to get link template '{label}'",
+        )
 
     async def create_link_template(self, data: LinkTemplate) -> LinkTemplate:
         """Create a new link template.
@@ -1434,24 +974,12 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/linkTemplates")
-
-        try:
-            response = await self._client.post(
-                url,
-                headers=self.headers,
-                content=data.model_dump_json(exclude_none=True),
-            )
-            response.raise_for_status()
-            result = response.json()
-            if "links" in result:
-                del result["links"]
-            return LinkTemplate.model_validate(result)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to create link template")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._post_item(
+            "/rest/ofscMetadata/v1/linkTemplates",
+            data,
+            LinkTemplate,
+            "Failed to create link template",
+        )
 
     async def update_link_template(self, data: LinkTemplate) -> LinkTemplate:
         """Update a link template (partial update).
@@ -1468,24 +996,12 @@ class AsyncOFSMetadata:
         :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(data.label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/linkTemplates/{encoded_label}")
-
-        try:
-            response = await self._client.patch(
-                url,
-                headers=self.headers,
-                json=data.model_dump(exclude_none=True, mode="json"),
-            )
-            response.raise_for_status()
-            result = response.json()
-            if "links" in result:
-                del result["links"]
-            return LinkTemplate.model_validate(result)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to update link template '{data.label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._patch_item(
+            f"/rest/ofscMetadata/v1/linkTemplates/{encoded_label}",
+            data,
+            LinkTemplate,
+            f"Failed to update link template '{data.label}'",
+        )
 
     # endregion
 
@@ -1505,21 +1021,13 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/mapLayers")
-        params = {"offset": offset, "limit": limit}
-
-        try:
-            response = await self._client.get(url, headers=self.headers, params=params)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data and not hasattr(MapLayerListResponse, "links"):
-                del data["links"]
-            return MapLayerListResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get map layers")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_paginated_list(
+            "/rest/ofscMetadata/v1/mapLayers",
+            MapLayerListResponse,
+            "Failed to get map layers",
+            offset,
+            limit,
+        )
 
     async def get_map_layer(self, label: str) -> MapLayer:
         """Get a single map layer by label.
@@ -1534,21 +1042,12 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        encoded_label = quote_plus(label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/mapLayers/{encoded_label}")
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data and not hasattr(MapLayer, "links"):
-                del data["links"]
-            return MapLayer.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get map layer '{label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_single_item(
+            "/rest/ofscMetadata/v1/mapLayers/{label}",
+            label,
+            MapLayer,
+            f"Failed to get map layer '{label}'",
+        )
 
     async def create_or_replace_map_layer(self, data: MapLayer) -> MapLayer:
         """Create or replace a map layer.
@@ -1564,24 +1063,12 @@ class AsyncOFSMetadata:
         :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(data.label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/mapLayers/{encoded_label}")
-
-        try:
-            response = await self._client.put(
-                url,
-                headers=self.headers,
-                json=data.model_dump(exclude_none=True, mode="json"),
-            )
-            response.raise_for_status()
-            result = response.json()
-            if "links" in result:
-                del result["links"]
-            return MapLayer.model_validate(result)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to create/replace map layer '{data.label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._put_item(
+            f"/rest/ofscMetadata/v1/mapLayers/{encoded_label}",
+            data,
+            MapLayer,
+            f"Failed to create/replace map layer '{data.label}'",
+        )
 
     async def create_map_layer(self, data: MapLayer) -> MapLayer:
         """Create a new map layer.
@@ -1597,24 +1084,12 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/mapLayers")
-
-        try:
-            response = await self._client.post(
-                url,
-                headers=self.headers,
-                json=data.model_dump(exclude_none=True, mode="json"),
-            )
-            response.raise_for_status()
-            result = response.json()
-            if "links" in result:
-                del result["links"]
-            return MapLayer.model_validate(result)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to create map layer")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._post_item(
+            "/rest/ofscMetadata/v1/mapLayers",
+            data,
+            MapLayer,
+            "Failed to create map layer",
+        )
 
     async def populate_map_layers(self, data: bytes | Path) -> None:
         """Populate map layers from a file upload.
@@ -1670,9 +1145,7 @@ class AsyncOFSMetadata:
         try:
             response = await self._client.get(url, headers=self.headers)
             response.raise_for_status()
-            data = response.json()
-            if "links" in data:
-                del data["links"]
+            data = self._clean_response(response.json())
             return PopulateStatusResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(
@@ -1701,23 +1174,13 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/nonWorkingReasons")
-        params = {"offset": offset, "limit": limit}
-
-        try:
-            response = await self._client.get(url, headers=self.headers, params=params)
-            response.raise_for_status()
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(NonWorkingReasonListResponse, "links"):
-                del data["links"]
-
-            return NonWorkingReasonListResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get non-working reasons")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_paginated_list(
+            "/rest/ofscMetadata/v1/nonWorkingReasons",
+            NonWorkingReasonListResponse,
+            "Failed to get non-working reasons",
+            offset,
+            limit,
+        )
 
     async def get_non_working_reason(self, label: str) -> NonWorkingReason:
         """Get a single non-working reason by label.
@@ -1732,7 +1195,7 @@ class AsyncOFSMetadata:
         :raises NotImplementedError: This operation is not supported by the API
         """
         raise NotImplementedError(
-            "Oracle Field Service API does not support retrieving individual non-working reasons by label. "
+            f"Oracle Field Service API does not support retrieving individual non-working reasons by label ({label!r}). "
             "Use get_non_working_reasons() and filter the results instead."
         )
 
@@ -1750,20 +1213,11 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/organizations")
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data and not hasattr(OrganizationListResponse, "links"):
-                del data["links"]
-            return OrganizationListResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get organizations")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_all_items(
+            "/rest/ofscMetadata/v1/organizations",
+            OrganizationListResponse,
+            "Failed to get organizations",
+        )
 
     async def get_organization(self, label: str) -> Organization:
         """Get a single organization by label.
@@ -1778,21 +1232,12 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        encoded_label = quote_plus(label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/organizations/{encoded_label}")
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data and not hasattr(Organization, "links"):
-                del data["links"]
-            return Organization.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get organization '{label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_single_item(
+            "/rest/ofscMetadata/v1/organizations/{label}",
+            label,
+            Organization,
+            f"Failed to get organization '{label}'",
+        )
 
     # endregion
 
@@ -1903,23 +1348,13 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/properties")
-        params = {"offset": offset, "limit": limit}
-
-        try:
-            response = await self._client.get(url, headers=self.headers, params=params)
-            response.raise_for_status()
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(PropertyListResponse, "links"):
-                del data["links"]
-
-            return PropertyListResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get properties")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_paginated_list(
+            "/rest/ofscMetadata/v1/properties",
+            PropertyListResponse,
+            "Failed to get properties",
+            offset,
+            limit,
+        )
 
     async def get_property(self, label: str) -> Property:
         """Get a single property by label.
@@ -1934,22 +1369,12 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/properties/{label}")
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(Property, "links"):
-                del data["links"]
-
-            return Property.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get property '{label}'")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_single_item(
+            "/rest/ofscMetadata/v1/properties/{label}",
+            label,
+            Property,
+            f"Failed to get property '{label}'",
+        )
 
     async def create_or_replace_property(self, property: Property) -> Property:
         """Create or replace a property.
@@ -1964,26 +1389,13 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/properties/{property.label}")
-
-        try:
-            response = await self._client.put(
-                url,
-                headers=self.headers,
-                content=property.model_dump_json(exclude_none=True).encode("utf-8"),
-            )
-            response.raise_for_status()
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(Property, "links"):
-                del data["links"]
-
-            return Property.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to create or replace property '{property.label}'")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        encoded_label = quote_plus(property.label)
+        return await self._put_item(
+            f"/rest/ofscMetadata/v1/properties/{encoded_label}",
+            property,
+            Property,
+            f"Failed to create or replace property '{property.label}'",
+        )
 
     async def update_property(self, property: Property) -> Property:
         """Update a property (partial update).
@@ -1999,24 +1411,13 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/properties/{property.label}")
-
-        try:
-            response = await self._client.patch(
-                url,
-                headers=self.headers,
-                content=property.model_dump_json(exclude_none=True).encode("utf-8"),
-            )
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data and not hasattr(Property, "links"):
-                del data["links"]
-            return Property.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to update property '{property.label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        encoded_label = quote_plus(property.label)
+        return await self._patch_item(
+            f"/rest/ofscMetadata/v1/properties/{encoded_label}",
+            property,
+            Property,
+            f"Failed to update property '{property.label}'",
+        )
 
     async def get_enumeration_values(self, label: str, offset: int = 0, limit: int = 100) -> EnumerationValueList:
         """Get enumeration values for a property.
@@ -2035,23 +1436,13 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/properties/{label}/enumerationList")
-        params = {"offset": offset, "limit": limit}
-
-        try:
-            response = await self._client.get(url, headers=self.headers, params=params)
-            response.raise_for_status()
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(EnumerationValueList, "links"):
-                del data["links"]
-
-            return EnumerationValueList.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get enumeration values for property '{label}'")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_paginated_list(
+            f"/rest/ofscMetadata/v1/properties/{label}/enumerationList",
+            EnumerationValueList,
+            f"Failed to get enumeration values for property '{label}'",
+            offset,
+            limit,
+        )
 
     async def create_or_update_enumeration_value(self, label: str, value: Tuple[EnumerationValue, ...]) -> EnumerationValueList:
         """Create or update enumeration values for a property.
@@ -2078,11 +1469,7 @@ class AsyncOFSMetadata:
         try:
             response = await self._client.put(url, headers=self.headers, json=data)
             response.raise_for_status()
-            response_data = response.json()
-            # Remove links if not in model
-            if "links" in response_data and not hasattr(EnumerationValueList, "links"):
-                del response_data["links"]
-
+            response_data = self._clean_response(response.json())
             return EnumerationValueList.model_validate(response_data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(
@@ -2107,22 +1494,11 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/resourceTypes")
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(ResourceTypeListResponse, "links"):
-                del data["links"]
-
-            return ResourceTypeListResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get resource types")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_all_items(
+            "/rest/ofscMetadata/v1/resourceTypes",
+            ResourceTypeListResponse,
+            "Failed to get resource types",
+        )
 
     # endregion
 
@@ -2142,23 +1518,13 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/routingProfiles")
-        params = {"offset": offset, "limit": limit}
-
-        try:
-            response = await self._client.get(url, headers=self.headers, params=params)
-            response.raise_for_status()
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(RoutingProfileList, "links"):
-                del data["links"]
-
-            return RoutingProfileList.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get routing profiles")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_paginated_list(
+            "/rest/ofscMetadata/v1/routingProfiles",
+            RoutingProfileList,
+            "Failed to get routing profiles",
+            offset,
+            limit,
+        )
 
     async def get_routing_profile_plans(self, profile_label: str, offset: int = 0, limit: int = 100) -> RoutingPlanList:
         """Get all routing plans for a routing profile.
@@ -2178,23 +1544,13 @@ class AsyncOFSMetadata:
         :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(profile_label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/routingProfiles/{encoded_label}/plans")
-        params = {"offset": offset, "limit": limit}
-
-        try:
-            response = await self._client.get(url, headers=self.headers, params=params)
-            response.raise_for_status()
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(RoutingPlanList, "links"):
-                del data["links"]
-
-            return RoutingPlanList.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get routing plans for profile '{profile_label}'")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_paginated_list(
+            f"/rest/ofscMetadata/v1/routingProfiles/{encoded_label}/plans",
+            RoutingPlanList,
+            f"Failed to get routing plans for profile '{profile_label}'",
+            offset,
+            limit,
+        )
 
     async def export_routing_plan(self, profile_label: str, plan_label: str) -> RoutingPlanData:
         """Export a routing plan.
@@ -2226,11 +1582,7 @@ class AsyncOFSMetadata:
             response = await self._client.get(url, headers=headers)
             response.raise_for_status()
             # Response is JSON in bytes, need to parse it
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(RoutingPlanData, "links"):
-                del data["links"]
-
+            data = self._clean_response(response.json())
             return RoutingPlanData.model_validate(data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(
@@ -2417,21 +1769,13 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/shifts")
-        params = {"offset": offset, "limit": limit}
-
-        try:
-            response = await self._client.get(url, headers=self.headers, params=params)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data and not hasattr(ShiftListResponse, "links"):
-                del data["links"]
-            return ShiftListResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get shifts")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_paginated_list(
+            "/rest/ofscMetadata/v1/shifts",
+            ShiftListResponse,
+            "Failed to get shifts",
+            offset,
+            limit,
+        )
 
     async def get_shift(self, label: str) -> Shift:
         """Get a single shift by label.
@@ -2446,21 +1790,12 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        encoded_label = quote_plus(label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/shifts/{encoded_label}")
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data and not hasattr(Shift, "links"):
-                del data["links"]
-            return Shift.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get shift '{label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_single_item(
+            "/rest/ofscMetadata/v1/shifts/{label}",
+            label,
+            Shift,
+            f"Failed to get shift '{label}'",
+        )
 
     async def create_or_replace_shift(self, data: Shift | ShiftUpdate) -> Shift:
         """Create or replace a shift.
@@ -2485,9 +1820,7 @@ class AsyncOFSMetadata:
                 json=data.model_dump(exclude_none=True, mode="json"),
             )
             response.raise_for_status()
-            result = response.json()
-            if "links" in result:
-                del result["links"]
+            result = self._clean_response(response.json())
             return Shift.model_validate(result)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(e, f"Failed to create/replace shift '{data.label}'")
@@ -2506,17 +1839,11 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        encoded_label = quote_plus(label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/shifts/{encoded_label}")
-
-        try:
-            response = await self._client.delete(url, headers=self.headers)
-            response.raise_for_status()
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to delete shift '{label}'")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._delete_item(
+            "/rest/ofscMetadata/v1/shifts/{label}",
+            label,
+            f"Failed to delete shift '{label}'",
+        )
 
     # endregion
 
@@ -2536,23 +1863,13 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/timeSlots")
-        params = {"offset": offset, "limit": limit}
-
-        try:
-            response = await self._client.get(url, headers=self.headers, params=params)
-            response.raise_for_status()
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(TimeSlotListResponse, "links"):
-                del data["links"]
-
-            return TimeSlotListResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get time slots")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_paginated_list(
+            "/rest/ofscMetadata/v1/timeSlots",
+            TimeSlotListResponse,
+            "Failed to get time slots",
+            offset,
+            limit,
+        )
 
     async def get_time_slot(self, label: str) -> TimeSlot:
         """Get a single time slot by label.
@@ -2569,7 +1886,7 @@ class AsyncOFSMetadata:
         :raises NotImplementedError: This operation is not supported by the Oracle API
         """
         raise NotImplementedError(
-            "Oracle Field Service API does not support retrieving individual time slots by label. "
+            f"Oracle Field Service API does not support retrieving individual time slots by label ({label!r}). "
             "Use get_time_slots() and filter the results instead."
         )
 
@@ -2591,21 +1908,13 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkills")
-        params = {"offset": offset, "limit": limit}
-
-        try:
-            response = await self._client.get(url, headers=self.headers, params=params)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data:
-                del data["links"]
-            return WorkskillListResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get work skills")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_paginated_list(
+            "/rest/ofscMetadata/v1/workSkills",
+            WorkskillListResponse,
+            "Failed to get work skills",
+            offset,
+            limit,
+        )
 
     async def get_workskill(self, label: str) -> Workskill:
         """Get a single work skill by label.
@@ -2620,21 +1929,12 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        encoded_label = quote_plus(label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{encoded_label}")
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data:
-                del data["links"]
-            return Workskill.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get work skill '{label}'")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_single_item(
+            "/rest/ofscMetadata/v1/workSkills/{label}",
+            label,
+            Workskill,
+            f"Failed to get work skill '{label}'",
+        )
 
     async def create_or_update_workskill(self, skill: Workskill) -> Workskill:
         """Create or update a work skill.
@@ -2650,24 +1950,12 @@ class AsyncOFSMetadata:
         :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(skill.label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{encoded_label}")
-
-        try:
-            response = await self._client.put(
-                url,
-                headers=self.headers,
-                json=skill.model_dump(exclude_none=True, mode="json"),
-            )
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data:
-                del data["links"]
-            return Workskill.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to create/update work skill '{skill.label}'")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._put_item(
+            f"/rest/ofscMetadata/v1/workSkills/{encoded_label}",
+            skill,
+            Workskill,
+            f"Failed to create/update work skill '{skill.label}'",
+        )
 
     async def delete_workskill(self, label: str) -> None:
         """Delete a work skill.
@@ -2680,17 +1968,11 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        encoded_label = quote_plus(label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkills/{encoded_label}")
-
-        try:
-            response = await self._client.delete(url, headers=self.headers)
-            response.raise_for_status()
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to delete work skill '{label}'")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._delete_item(
+            "/rest/ofscMetadata/v1/workSkills/{label}",
+            label,
+            f"Failed to delete work skill '{label}'",
+        )
 
     async def get_workskill_conditions(self) -> WorkskillConditionList:
         """Get all work skill conditions.
@@ -2756,20 +2038,11 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workSkillGroups")
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data:
-                del data["links"]
-            return WorkskillGroupListResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get work skill groups")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_all_items(
+            "/rest/ofscMetadata/v1/workSkillGroups",
+            WorkskillGroupListResponse,
+            "Failed to get work skill groups",
+        )
 
     async def get_workskill_group(self, label: str) -> WorkskillGroup:
         """Get a single work skill group by label.
@@ -2784,21 +2057,12 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        encoded_label = quote_plus(label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillGroups/{encoded_label}")
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data:
-                del data["links"]
-            return WorkskillGroup.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get work skill group '{label}'")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_single_item(
+            "/rest/ofscMetadata/v1/workSkillGroups/{label}",
+            label,
+            WorkskillGroup,
+            f"Failed to get work skill group '{label}'",
+        )
 
     async def create_or_update_workskill_group(self, data: WorkskillGroup) -> WorkskillGroup:
         """Create or update a work skill group.
@@ -2814,24 +2078,12 @@ class AsyncOFSMetadata:
         :raises OFSCNetworkError: For network/transport errors
         """
         encoded_label = quote_plus(data.label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillGroups/{encoded_label}")
-
-        try:
-            response = await self._client.put(
-                url,
-                headers=self.headers,
-                json=data.model_dump(exclude_none=True, mode="json"),
-            )
-            response.raise_for_status()
-            response_data = response.json()
-            if "links" in response_data:
-                del response_data["links"]
-            return WorkskillGroup.model_validate(response_data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to create/update work skill group '{data.label}'")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._put_item(
+            f"/rest/ofscMetadata/v1/workSkillGroups/{encoded_label}",
+            data,
+            WorkskillGroup,
+            f"Failed to create/update work skill group '{data.label}'",
+        )
 
     async def delete_workskill_group(self, label: str) -> None:
         """Delete a work skill group.
@@ -2844,17 +2096,11 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        encoded_label = quote_plus(label)
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workSkillGroups/{encoded_label}")
-
-        try:
-            response = await self._client.delete(url, headers=self.headers)
-            response.raise_for_status()
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to delete work skill group '{label}'")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._delete_item(
+            "/rest/ofscMetadata/v1/workSkillGroups/{label}",
+            label,
+            f"Failed to delete work skill group '{label}'",
+        )
 
     # endregion
 
@@ -2874,23 +2120,13 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workZones")
-        params = {"offset": offset, "limit": limit}
-
-        try:
-            response = await self._client.get(url, headers=self.headers, params=params)
-            response.raise_for_status()
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(WorkzoneListResponse, "links"):
-                del data["links"]
-
-            return WorkzoneListResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get workzones")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_paginated_list(
+            "/rest/ofscMetadata/v1/workZones",
+            WorkzoneListResponse,
+            "Failed to get workzones",
+            offset,
+            limit,
+        )
 
     async def get_workzone(self, label: str) -> Workzone:
         """Get a single workzone by label.
@@ -2905,22 +2141,12 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, f"/rest/ofscMetadata/v1/workZones/{label}")
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(Workzone, "links"):
-                del data["links"]
-
-            return Workzone.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to get workzone '{label}'")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_single_item(
+            "/rest/ofscMetadata/v1/workZones/{label}",
+            label,
+            Workzone,
+            f"Failed to get workzone '{label}'",
+        )
 
     async def create_workzone(self, workzone: Workzone) -> Workzone:
         """Create a new workzone.
@@ -2936,26 +2162,12 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workZones")
-
-        try:
-            response = await self._client.post(
-                url,
-                headers=self.headers,
-                content=workzone.model_dump_json(exclude_none=True),
-            )
-            response.raise_for_status()
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(Workzone, "links"):
-                del data["links"]
-
-            return Workzone.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, f"Failed to create workzone '{workzone.workZoneLabel}'")
-            raise  # This will never execute, but satisfies type checker
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._post_item(
+            "/rest/ofscMetadata/v1/workZones",
+            workzone,
+            Workzone,
+            f"Failed to create workzone '{workzone.workZoneLabel}'",
+        )
 
     async def replace_workzone(self, workzone: Workzone, auto_resolve_conflicts: bool = False) -> Workzone | None:
         """Replace an existing workzone.
@@ -2996,16 +2208,12 @@ class AsyncOFSMetadata:
             if response.status_code == 204:
                 return None
 
-            data = response.json()
-            # Remove links if not in model
-            if "links" in data and not hasattr(Workzone, "links"):
-                del data["links"]
-
+            data = self._clean_response(response.json())
             return Workzone.model_validate(data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(e, f"Failed to replace workzone '{workzone.workZoneLabel}'")
             raise  # This will never execute, but satisfies type checker
-        except OFSCNetworkError as e:
+        except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def replace_workzones(self, data: list[Workzone]) -> WorkzoneListResponse:
@@ -3029,9 +2237,7 @@ class AsyncOFSMetadata:
         try:
             response = await self._client.put(url, headers=self.headers, json=body)
             response.raise_for_status()
-            response_data = response.json()
-            if "links" in response_data:
-                del response_data["links"]
+            response_data = self._clean_response(response.json())
             return WorkzoneListResponse.model_validate(response_data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(e, "Failed to replace workzones")
@@ -3058,9 +2264,7 @@ class AsyncOFSMetadata:
         try:
             response = await self._client.patch(url, headers=self.headers, json=body)
             response.raise_for_status()
-            response_data = response.json()
-            if "links" in response_data:
-                del response_data["links"]
+            response_data = self._clean_response(response.json())
             return WorkzoneListResponse.model_validate(response_data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(e, "Failed to update workzones")
@@ -3122,9 +2326,7 @@ class AsyncOFSMetadata:
         try:
             response = await self._client.get(url, headers=self.headers)
             response.raise_for_status()
-            data = response.json()
-            if "links" in data:
-                del data["links"]
+            data = self._clean_response(response.json())
             return PopulateStatusResponse.model_validate(data)
         except httpx.HTTPStatusError as e:
             self._handle_http_error(
@@ -3145,19 +2347,10 @@ class AsyncOFSMetadata:
         :raises OFSCApiError: For other API errors
         :raises OFSCNetworkError: For network/transport errors
         """
-        url = urljoin(self.baseUrl, "/rest/ofscMetadata/v1/workZoneKey")
-
-        try:
-            response = await self._client.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            if "links" in data:
-                del data["links"]
-            return WorkZoneKeyResponse.model_validate(data)
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to get workzone key")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._get_all_items(
+            "/rest/ofscMetadata/v1/workZoneKey",
+            WorkZoneKeyResponse,
+            "Failed to get workzone key",
+        )
 
     # endregion

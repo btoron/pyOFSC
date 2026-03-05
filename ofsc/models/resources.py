@@ -36,6 +36,8 @@ class Resource(BaseModel):
 class ResourceCreate(BaseModel):
     """Resource creation model enforcing required fields."""
 
+    model_config = ConfigDict(extra="allow")
+
     parentResourceId: str
     resourceType: str
     name: str

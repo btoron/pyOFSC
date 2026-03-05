@@ -224,6 +224,56 @@ class TestUserCreateModel:
         assert body["name"] == "Test User"
 
 
+class TestUserCreateExtraFields:
+    """Tests that extra/custom fields (e.g. XA_*) are preserved through UserCreate."""
+
+    def test_user_create_extra_fields_preserved_in_dump(self):
+        """UserCreate.model_validate() with XA_* fields should include them in model_dump."""
+        data = {
+            "name": "Test User",
+            "userType": "technician",
+            "language": "en",
+            "timeZone": "US/Eastern",
+            "resources": ["BUCKET"],
+            "password": "ClaudeTest1!",
+            "XA_EMPLOYEE_ID": "EMP-001",
+            "XA_REGION": "WEST",
+        }
+        uc = UserCreate.model_validate(data)
+        dumped = uc.model_dump(exclude_none=True)
+        assert dumped["XA_EMPLOYEE_ID"] == "EMP-001"
+        assert dumped["XA_REGION"] == "WEST"
+
+    def test_user_create_extra_fields_not_dropped(self):
+        """UserCreate constructed directly with XA_* kwargs should preserve them."""
+        uc = UserCreate(
+            name="Test User",
+            userType="technician",
+            language="en",
+            timeZone="US/Eastern",
+            resources=["BUCKET"],
+            password="ClaudeTest1!",
+            XA_MY_PROP="hello",
+        )
+        dumped = uc.model_dump(exclude_none=True)
+        assert dumped["XA_MY_PROP"] == "hello"
+
+    def test_user_extra_fields_preserved_in_dump(self):
+        """User read model with extra fields should preserve them in model_dump."""
+        data = {
+            "login": "jsmith",
+            "name": "John Smith",
+            "userType": "technician",
+            "language": "en",
+            "timeZone": "US/Eastern",
+            "resources": ["BUCKET"],
+            "XA_EMPLOYEE_ID": "EMP-999",
+        }
+        user = User.model_validate(data)
+        dumped = user.model_dump(exclude_none=True)
+        assert dumped["XA_EMPLOYEE_ID"] == "EMP-999"
+
+
 class TestAsyncGetUsers:
     """Model validation tests for get_users (mocked)."""
 
