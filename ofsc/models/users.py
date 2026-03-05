@@ -38,6 +38,8 @@ class User(BaseModel):
 class UserCreate(BaseModel):
     """User creation model enforcing required fields."""
 
+    model_config = ConfigDict(extra="allow")
+
     name: str
     userType: str
     language: str
