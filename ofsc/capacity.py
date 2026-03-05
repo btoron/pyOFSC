@@ -30,7 +30,7 @@ def _convert_model_to_api_params(model: BaseModel) -> dict:
     params = model.model_dump(exclude_none=True)
 
     # Use inspection to get field type annotations
-    model_fields = model.model_fields
+    model_fields = type(model).model_fields
 
     # Detect CsvList fields and convert them
     for field_name, field_info in model_fields.items():
