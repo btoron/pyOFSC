@@ -1,5 +1,6 @@
 """Async version of the OFSC client using httpx.AsyncClient."""
 
+import logging
 from typing import Optional
 
 import httpx
@@ -22,6 +23,8 @@ from .core import AsyncOFSCore
 from .metadata import AsyncOFSMetadata
 from .oauth import AsyncOFSOauth2
 from .statistics import AsyncOFSStatistics
+
+logger = logging.getLogger(__name__)
 
 __all__ = [
     "AsyncOFSC",
@@ -79,7 +82,9 @@ class AsyncOFSC:
         access_token: Optional[str] = None,
         enable_auto_raise: bool = True,
         enable_auto_model: bool = True,
+        enable_logging: bool = False,
     ):
+        self._enable_logging = enable_logging
         self._config = OFSConfig(
             baseURL=baseUrl,
             clientID=clientID,
@@ -100,7 +105,29 @@ class AsyncOFSC:
 
     async def __aenter__(self) -> "AsyncOFSC":
         """Enter async context manager - create shared httpx.AsyncClient."""
-        self._client = httpx.AsyncClient(http2=True)
+
+        async def log_request(request: httpx.Request) -> None:
+            logger.debug("Request: %s %s", request.method, request.url)
+
+        async def log_response(response: httpx.Response) -> None:
+            request = response.request
+            logger.debug("Response: %s %s %s", request.method, request.url, response.status_code)
+            if response.status_code >= 400:
+                logger.warning(
+                    "HTTP error: %s %s %s",
+                    request.method,
+                    request.url,
+                    response.status_code,
+                )
+
+        event_hooks: dict[str, list] = {}
+        if self._enable_logging:
+            event_hooks = {
+                "request": [log_request],
+                "response": [log_response],
+            }
+
+        self._client = httpx.AsyncClient(http2=True, event_hooks=event_hooks)
         self._core = AsyncOFSCore(config=self._config, client=self._client)
         self._metadata = AsyncOFSMetadata(config=self._config, client=self._client)
         self._capacity = AsyncOFSCapacity(config=self._config, client=self._client)

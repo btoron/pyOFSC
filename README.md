@@ -1,37 +1,20 @@
-## OFSC
+## pyOFSC
 
-A simple Python wrapper for Oracle OFS REST API
+**Oracle Fusion Field Service** (formerly Oracle Field Service Cloud, formerly ETAdirect) is a cloud-based field service management platform for scheduling, dispatching, and managing mobile workforces.
+
+**pyOFSC** is a Python wrapper for its REST API, providing both synchronous and asynchronous clients with Pydantic model-based validation. See the [official Oracle Fusion Field Service documentation](https://docs.oracle.com/en/cloud/saas/field-service/index.html) for API details.
 
 ## Async Client
 
 Starting with version 2.19, pyOFSC includes an async client (`AsyncOFSC`) that provides asynchronous API access using `httpx` and Python's `async`/`await` patterns.
 
-**Implementation Status**: The async client is being implemented progressively. Currently available async methods are marked with `[Sync & Async]` tags throughout this documentation.
+**Implementation Status**: The async client is being implemented progressively. Currently available async methods are marked with `[Sync & Async]` tags in [docs/ENDPOINTS.md](docs/ENDPOINTS.md).
 
 ### Usage Example
 ```python
 from ofsc.async_client import AsyncOFSC
-
-async with AsyncOFSC(
-    clientID="your_client_id",
-    secret="your_secret",
-    companyName="your_company"
-) as client:
-    # Get workzones asynchronously
-    workzones = await client.metadata.get_workzones(offset=0, limit=100)
-
-    # Get specific workzone
-    workzone = await client.metadata.get_workzone("ATLANTA")
-
-    # Create a new workzone
-    from ofsc.models import Workzone
-    new_zone = Workzone(
-        workZoneLabel="NEW_ZONE",
-        workZoneName="New Zone",
-        status="active",
-        travelArea="enterprise"
-    )
-    result = await client.metadata.create_workzone(new_zone)
+async with AsyncOFSC(clientID="...", secret="...", companyName="...") as client:
+    workzones = await client.metadata.get_workzones()
 ```
 
 ### Key Features
@@ -39,83 +22,27 @@ async with AsyncOFSC(
 - **Same Models**: Reuses all existing Pydantic models from the sync version
 - **Context Manager**: Must be used as an async context manager to properly manage HTTP client lifecycle
 - **Simplified API**: Async methods always return Pydantic models (no `response_type` parameter)
+- **Request/Response Logging**: Optional httpx event hooks for automatic API call tracing
 
-### Currently Implemented Async Methods
-- **Metadata / Workzones**: `get_workzones`, `get_workzone`, `create_workzone`, `replace_workzone`
+### Enabling Request/Response Logging
 
-More async methods will be added progressively. Check the `[Sync & Async]` tags in the function listings below to see which methods support async.
+Pass `enable_logging=True` to automatically log all HTTP requests and responses via Python's standard logging:
+
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
+async with AsyncOFSC(clientID="...", secret="...", companyName="...", enable_logging=True) as client:
+    workzones = await client.metadata.get_workzones()
+    # DEBUG: Request: GET https://company.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/workZones
+    # DEBUG: Response: GET https://company.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/workZones 200
+```
+
+Logs are emitted under the `ofsc.async_client` logger. HTTP errors (4xx/5xx) are also logged at WARNING level. Disabled by default with zero overhead.
 
 ## Models
 
-Starting with OFS 1.17 we added models for the most common entities and metadata. All models should be imported from `ofsc.models`. All existing create functions will be eventually transitioned to models.
-
-The models are based on the Pydantic BaseModel, so it is possible to build an entity using the `model_validate` static methods.
-
-### Core Models
-- **Activity**: Main activity entity with all properties
-- **Resource**: Resource entity (users, technicians, etc.)
-- **ResourceType**: Resource type definitions
-- **Location**: Geographic locations and resource locations
-- **AssignedLocation**: Location assignments for resources
-- **BaseUser**: User entity for resource management
-
-### Metadata Models
-- **ActivityTypeGroup**: Activity type group definitions
-- **ActivityType**: Activity type definitions with colors, features, and time slots
-- **CapacityArea**: Capacity area definitions with parent relationships
-- **CapacityCategory**: Capacity category definitions
-- **InventoryType**: Inventory type definitions
-- **Property**: Property definitions with validation and enumeration support
-- **EnumerationValue**: Enumeration values for properties
-- **RoutingProfile**: Routing profile definitions (groups of routing plans)
-- **RoutingPlan**: Routing plan definitions
-- **RoutingPlanData**: Complete routing plan export with configuration
-- **RoutingPlanConfig**: Detailed routing plan configuration with optimization parameters
-- **RoutingActivityGroup**: Activity group configuration within routing plan
-- **RoutingProviderGroup**: Provider group settings within activity group
-- **Workskill**: Work skill definitions
-- **WorkSkillCondition**: Work skill condition definitions
-- **WorkSkillGroup**: Work skill group definitions
-- **Workzone**: Work zone definitions with keys, shapes, and organization
-- **WorkzoneListResponse**: Paginated response for workzone lists
-
-### Organization & Application Models
-- **Application**: Application definitions with resource access
-- **Organization**: Organization entity definitions
-
-### Bulk Operations Models
-- **BulkUpdateRequest**: Request model for bulk activity updates
-- **BulkUpdateResponse**: Response model with results, errors, and warnings
-- **BulkUpdateActivityItem**: Individual activity item for bulk operations
-
-### Schedule & Calendar Models
-- **ResourceWorkScheduleItem**: Work schedule definitions for resources
-- **CalendarView**: Calendar view with shifts and time slots
-- **CalendarViewItem**: Individual calendar items with recurrence support
-- **Recurrence**: Recurrence pattern definitions
-
-### Daily Extract Models
-- **DailyExtractFolders**: Available extract date folders
-- **DailyExtractFiles**: Available files for a specific date
-- **DailyExtractItem**: Individual extract file information
-
-### Capacity Models
-- **CapacityRequest**: Request model for capacity queries with CsvList support for string arrays (areas, dates, categories)
-- **GetCapacityResponse**: Response model for capacity data
-- **GetQuotaRequest**: Request model for quota queries with automatic CsvList conversion for string arrays
-- **GetQuotaResponse**: Response model for quota data
-- **CapacityResponseItem**: Individual capacity response item by date
-- **CapacityAreaResponseItem**: Capacity area response with metrics and categories
-- **CapacityMetrics**: Capacity metrics with count and optional minutes arrays
-- **CapacityCategoryItem**: Capacity category items with calendar and available metrics
-- **QuotaAreaItem**: Quota area response with quota-specific fields (maxAvailable, used, bookedActivities, etc.)
-
-### Configuration & Utility Models
-- **OFSConfig**: Main configuration model for API connection
-- **OFSResponseList**: Generic paginated response wrapper
-- **CsvList**: Auxiliary model for comma-separated string lists with conversion methods
-- **Translation**: Multi-language translation support
-- **OFSAPIError**: Standardized API error responses
+All API entities use Pydantic v2 models. See `ofsc/models/` for available models.
 
 ## Testing
 
@@ -162,533 +89,29 @@ uv run pytest tests/async/test_async_workzones.py
 - `@pytest.mark.slow` - Slow-running tests
 - `@pytest.mark.integration` - Integration tests
 
-## Functions implemented
+## Implemented Functions
 
+**195 async endpoints** (80% coverage) and **89 sync endpoints** (37% coverage) across Core, Metadata, Capacity, Statistics, and Auth modules.
 
-
-### Core / Activities
-    get_activities(self, params, response_type=OBJ_RESPONSE)                              [Sync & Async]
-    get_activity(self, activity_id, response_type=OBJ_RESPONSE)                           [Sync & Async]
-    create_activity(self, activity: Activity)                                              [Async]
-    update_activity(self, activity_id, data, response_type=OBJ_RESPONSE)                  [Sync & Async]
-    delete_activity(self, activity_id)                                                     [Sync & Async]
-    move_activity(self, activity_id, data, response_type=OBJ_RESPONSE)
-    search_activities(self, params, response_type=OBJ_RESPONSE)
-    bulk_update(self, data: BulkUpdateRequest, response_type=OBJ_RESPONSE)
-    get_file_property(self, activityId, label, mediaType="application/octet-stream", response_type=OBJ_RESPONSE)  [Sync & Async]
-    set_file_property(self, activity_id, label, content, media_type, filename=None)       [Async]
-    delete_file_property(self, activity_id, label)                                        [Async]
-    get_customer_inventories(self, activity_id, offset=0, limit=100)                      [Async]
-    create_customer_inventory(self, activity_id, inventory: Inventory)                    [Async]
-    get_installed_inventories(self, activity_id, offset=0, limit=100)                     [Async]
-    get_deinstalled_inventories(self, activity_id, offset=0, limit=100)                   [Async]
-    get_linked_activities(self, activity_id)                                               [Async]
-    link_activities(self, activity_id, link: LinkedActivity)                               [Async]
-    unlink_activities(self, activity_id)                                                   [Async]
-    get_activity_link(self, activity_id, linked_activity_id, link_type)                   [Async]
-    set_activity_link(self, activity_id, linked_activity_id, link_type, data)             [Async]
-    delete_activity_link(self, activity_id, linked_activity_id, link_type)                [Async]
-    get_required_inventories(self, activity_id)                                            [Async]
-    set_required_inventories(self, activity_id, inventories: list[RequiredInventory])     [Async]
-    delete_required_inventories(self, activity_id)                                        [Async]
-    get_resource_preferences(self, activity_id)                                            [Async]
-    set_resource_preferences(self, activity_id, preferences: list[ResourcePreference])   [Async]
-    delete_resource_preferences(self, activity_id)                                        [Async]
-    get_capacity_categories(self, activity_id)                                             [Async]
-    get_submitted_forms(self, activity_id, offset=0, limit=100)                           [Async]
-    get_multiday_segments(self, activity_id)                                               [Async]
-    get_all_activities(self, root=None, date_from=date.today()-timedelta(days=7), date_to=date.today()+timedelta(days=7), activity_fields=["activityId", "activityType", "date", "resourceId", "status"], additional_fields=None, initial_offset=0, include_non_scheduled=False, limit=5000)
-
-
-### Core / Events
-    get_subscriptions(self, response_type=OBJ_RESPONSE)
-    create_subscription(self, data, response_type=OBJ_RESPONSE)
-    delete_subscription(self, subscription_id, response_type=OBJ_RESPONSE)
-    get_subscription_details(self, subscription_id, response_type=OBJ_RESPONSE)
-    get_events(self, params, response_type=OBJ_RESPONSE)
-
-### Core / Resources
-    get_resource(self, resource_id, inventories=False, workSkills=False, workZones=False, workSchedules=False, response_type=OBJ_RESPONSE)  [Sync & Async]
-    get_resources(self, fields=None, offset=0, limit=100, canBeTeamHolder=None, canParticipateInTeam=None, inventories=False, workSkills=False, workZones=False, workSchedules=False, response_type=OBJ_RESPONSE)  [Sync & Async]
-    create_resource(self, resourceId, data, response_type=OBJ_RESPONSE)  [Sync & Async]
-    create_resource_from_obj(self, resourceId, data, response_type=OBJ_RESPONSE)  [Sync & Async]
-    update_resource(self, resourceId, data: dict, identify_by_internal_id: bool = False, response_type=OBJ_RESPONSE)  [Sync & Async]
-    get_position_history(self, resource_id, date, response_type=OBJ_RESPONSE)  [Sync & Async]
-    get_resource_route(self, resource_id, date, activityFields=None, offset=0, limit=100, response_type=OBJ_RESPONSE)  [Sync & Async]
-    get_resource_descendants(self, resource_id, resourceFields=None, offset=0, limit=100, inventories=False, workSkills=False, workZones=False, workSchedules=False, response_type=OBJ_RESPONSE)  [Sync & Async]
-    get_resource_users(self, resource_id, response_type=OBJ_RESPONSE)  [Sync & Async]
-    set_resource_users(self, resource_id, users: tuple[str], response_type=OBJ_RESPONSE)  [Sync & Async]
-    delete_resource_users(self, resource_id, response_type=OBJ_RESPONSE)  [Sync & Async]
-    get_resource_workschedules(self, resource_id, actualDate: date, response_type=OBJ_RESPONSE)  [Sync & Async]
-    set_resource_workschedules(self, resource_id, data: ResourceWorkScheduleItem, response_type=OBJ_RESPONSE)  [Sync & Async]
-    get_resource_calendar(self, resource_id: str, dateFrom: date, dateTo: date, response_type=OBJ_RESPONSE)  [Sync & Async]
-    get_resource_inventories(self, resource_id, response_type=OBJ_RESPONSE)  [Sync & Async]
-    get_resource_assigned_locations(self, resource_id, response_type=OBJ_RESPONSE)
-    get_resource_workzones(self, resource_id, response_type=OBJ_RESPONSE)  [Sync & Async]
-    get_resource_workskills(self, resource_id, response_type=OBJ_RESPONSE)  [Sync & Async]
-    bulk_update_resource_workzones(self, data, response_type=OBJ_RESPONSE)  [Sync & Async]
-    bulk_update_resource_workskills(self, data, response_type=OBJ_RESPONSE)  [Sync & Async]
-    bulk_update_resource_workschedules(self, data, response_type=OBJ_RESPONSE)  [Sync & Async]
-    get_resource_locations(self, resource_id, response_type=OBJ_RESPONSE)  [Sync & Async]
-    create_resource_location(self, resource_id, location: Location, response_type=OBJ_RESPONSE)  [Sync & Async]
-    delete_resource_location(self, resource_id, location_id, response_type=OBJ_RESPONSE)  [Sync & Async]
-    get_assigned_locations(self, resource_id, dateFrom: date = date.today(), dateTo: date = date.today(), response_type=OBJ_RESPONSE)  [Sync & Async]
-    set_assigned_locations(self, resource_id: str, data: AssignedLocationsResponse, response_type=OBJ_RESPONSE)  [Sync & Async]
-    get_resource_assistants(self, resource_id)  [Async]
-    get_resource_children(self, resource_id, offset=0, limit=100)  [Async]
-    get_resource_location(self, resource_id, location_id)  [Async]
-    get_resource_plans(self, resource_id)  [Async]
-    get_calendars()  [Async]
-    create_resource_inventory(self, resource_id, inventory_data)  [Async]
-    install_resource_inventory(self, resource_id, inventory_id)  [Async]
-    set_resource_workskills(self, resource_id, workskills)  [Async]
-    delete_resource_workskill(self, resource_id, workskill)  [Async]
-    set_resource_workzones(self, resource_id, workzones)  [Async]
-    delete_resource_workzone(self, resource_id, workzone_item_id)  [Async]
-    delete_resource_workschedule(self, resource_id, schedule_item_id)  [Async]
-    update_resource_location(self, resource_id, location_id, data)  [Async]
-    get_resource_file_property(self, resource_id, property_label, media_type)  [Async]
-    set_resource_file_property(self, resource_id, property_label, content, filename, content_type)  [Async]
-    delete_resource_file_property(self, resource_id, property_label)  [Async]
-
-### Core / Inventories (Standalone)
-    create_inventory(self, data)  [Async]
-    get_inventory(self, inventory_id)  [Async]
-    update_inventory(self, inventory_id, data)  [Async]
-    delete_inventory(self, inventory_id)  [Async]
-    get_inventory_property(self, inventory_id, label)  [Async]
-    set_inventory_property(self, inventory_id, label, content, filename, content_type)  [Async]
-    delete_inventory_property(self, inventory_id, label)  [Async]
-    inventory_install(self, inventory_id, data=None)  [Async]
-    inventory_deinstall(self, inventory_id, data=None)  [Async]
-    inventory_undo_install(self, inventory_id, data=None)  [Async]
-    inventory_undo_deinstall(self, inventory_id, data=None)  [Async]
-
-### Core / Users
-    get_users(self, offset=0, limit=100, response_type=OBJ_RESPONSE)  [Sync & Async]
-    get_user(self, login, response_type=OBJ_RESPONSE)  [Sync & Async]
-    update_user(self, login, data, response_type=OBJ_RESPONSE)  [Sync & Async]
-    create_user(self, login, data, response_type=OBJ_RESPONSE)  [Sync & Async]
-    delete_user(self, login, response_type=OBJ_RESPONSE)  [Sync & Async]
-    get_user_property(self, login, property_label)  [Async]
-    set_user_property(self, login, property_label, content, filename, content_type)  [Async]
-    delete_user_property(self, login, property_label)  [Async]
-    get_user_collab_groups(self, login)  [Async]
-    set_user_collab_groups(self, login, groups)  [Async]
-    delete_user_collab_groups(self, login)  [Async]
-
-### Core / Daily Extract
-    get_daily_extract_dates(self, response_type=OBJ_RESPONSE)
-    get_daily_extract_files(self, date, response_type=OBJ_RESPONSE)
-    get_daily_extract_file(self, date, filename, response_type=FILE_RESPONSE)
-
-### Core / Helper Functions
-    get_all_properties(self, initial_offset=0, limit=100)
-
-### Metadata / Activity Type Groups
-    get_activity_type_groups (self, expand="parent", offset=0, limit=100, response_type=OBJ_RESPONSE)
-    get_activity_type_group (self,label, response_type=OBJ_RESPONSE)
-    create_or_replace_activity_type_group(self, data: ActivityTypeGroup)  [Async]
-
-### Metadata / Activity Types
-    get_activity_types(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
-    get_activity_type (self, label, response_type=OBJ_RESPONSE)
-    create_or_replace_activity_type(self, data: ActivityType)  [Async]
-
-### Metadata / Applications
-    get_applications(self, response_type=OBJ_RESPONSE)
-    get_application(self, label: str, response_type=OBJ_RESPONSE)
-    get_application_api_accesses(self, label: str, response_type=OBJ_RESPONSE)
-    get_application_api_access(self, label: str, accessId: str, response_type=OBJ_RESPONSE)
-    create_or_replace_application(self, data: Application)  [Async]
-    update_application_api_access(self, label: str, api_label: str, data: dict)  [Async]
-    generate_application_client_secret(self, label: str)  [Async]
-
-### Metadata / Capacity
-    get_capacity_areas(self, expandParent: bool = False, fields: list[str] = ["label"], activeOnly: bool = False, areasOnly: bool = False, response_type=OBJ_RESPONSE)
-    get_capacity_area(self, label: str, response_type=OBJ_RESPONSE)
-    get_capacity_area_capacity_categories(self, label: str)  [Async]
-    get_capacity_area_workzones(self, label: str)  [Async]
-    get_capacity_area_workzones_v1(self, label: str)  [Async]
-    get_capacity_area_time_slots(self, label: str)  [Async]
-    get_capacity_area_time_intervals(self, label: str)  [Async]
-    get_capacity_area_organizations(self, label: str)  [Async]
-    get_capacity_area_children(self, label: str, status=None, fields=None, expand=None, type=None)  [Async]
-    get_capacity_categories(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
-    get_capacity_category(self, label: str, response_type=OBJ_RESPONSE)
-    create_or_replace_capacity_category(self, data: CapacityCategory)  [Async]
-    delete_capacity_category(self, label: str)  [Async]
-
-### Metadata / Forms
-    get_forms(self, offset=0, limit=100)  [Async]
-    get_form(self, label: str)  [Async]
-    create_or_replace_form(self, data: Form)  [Async]
-    delete_form(self, label: str)  [Async]
-
-### Metadata / Inventory
-    get_inventory_types(self, response_type=OBJ_RESPONSE)
-    get_inventory_type(self, label: str, response_type=OBJ_RESPONSE)
-    create_or_replace_inventory_type(self, data: InventoryType)  [Async]
-
-### Metadata / Link Templates
-    get_link_templates(self, offset=0, limit=100)  [Async]
-    get_link_template(self, label: str)  [Async]
-    create_link_template(self, data: LinkTemplate)  [Async]
-    update_link_template(self, data: LinkTemplate)  [Async]
-
-### Metadata / Map Layers
-    get_map_layers(self, offset=0, limit=100)  [Async]
-    get_map_layer(self, label: str)  [Async]
-    create_or_replace_map_layer(self, data: MapLayer)  [Async]
-    create_map_layer(self, data: MapLayer)  [Async]
-    populate_map_layers(self, data: bytes | Path)  [Async]
-    get_populate_map_layers_status(self, download_id: int)  [Async]
-
-### Metadata / Plugins
-    import_plugin(self, plugin: str)
-    import_plugin_file(self, plugin: Path)
-    install_plugin(self, plugin_label: str)  [Async]
-
-### Metadata / Properties
-    get_properties(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
-    get_property(self, label: str, response_type=OBJ_RESPONSE)
-    create_or_replace_property(self, property: Property, response_type=OBJ_RESPONSE)
-    update_property(self, property: Property)  [Async]
-    get_enumeration_values(self, label: str, offset=0, limit=100, response_type=OBJ_RESPONSE)
-    create_or_update_enumeration_value(self, label: str, value: Tuple[EnumerationValue, ...], response_type=OBJ_RESPONSE)
-
-### Metadata / Resource Types
-    get_resource_types(self, response_type=OBJ_RESPONSE)
-
-### Metadata / Routing Profiles
-    get_routing_profiles(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
-    get_routing_profile_plans(self, profile_label: str, offset=0, limit=100, response_type=OBJ_RESPONSE)
-    export_routing_plan(self, profile_label: str, plan_label: str, response_type=OBJ_RESPONSE)
-    export_plan_file(self, profile_label: str, plan_label: str) -> bytes
-    import_routing_plan(self, profile_label: str, plan_data: bytes, response_type=OBJ_RESPONSE)
-    force_import_routing_plan(self, profile_label: str, plan_data: bytes, response_type=OBJ_RESPONSE)
-    start_routing_plan(self, profile_label: str, plan_label: str, resource_external_id: str, date: str, response_type=OBJ_RESPONSE)
-
-### Metadata / Shifts
-    get_shifts(self, offset=0, limit=100)  [Async]
-    get_shift(self, label: str)  [Async]
-    create_or_replace_shift(self, data: Shift)  [Async]
-    delete_shift(self, label: str)  [Async]
-
-### Metadata / Workskills
-    get_workskills (self, offset=0, limit=100, response_type=OBJ_RESPONSE)
-    get_workskill(self, label: str, response_type=OBJ_RESPONSE)
-    create_or_update_workskill(self, skill: Workskill, response_type=OBJ_RESPONSE)
-    delete_workskill(self, label: str, response_type=OBJ_RESPONSE)
-    get_workskill_conditions(self, response_type=OBJ_RESPONSE)
-    replace_workskill_conditions(self, data: WorskillConditionList, response_type=OBJ_RESPONSE)
-    get_workskill_groups(self, response_type=OBJ_RESPONSE)
-    get_workskill_group(self, label: str, response_type=OBJ_RESPONSE)
-    create_or_update_workskill_group(self, group: WorkSkillGroup, response_type=OBJ_RESPONSE)
-    delete_workskill_group(self, label: str, response_type=OBJ_RESPONSE)
-
-### Metadata / Workzones [Sync & Async]
-    get_workzones(self, offset=0, limit=100, response_type=OBJ_RESPONSE)
-    get_workzone(self, label: str, response_type=OBJ_RESPONSE)
-    create_workzone(self, workzone: Workzone, response_type=OBJ_RESPONSE)  # Async only
-    replace_workzone(self, workzone: Workzone, auto_resolve_conflicts: bool = False, response_type=OBJ_RESPONSE)
-    replace_workzones(self, data: list[Workzone])  [Async]
-    update_workzones(self, data: list[Workzone])  [Async]
-    populate_workzone_shapes(self, data: bytes | Path)  [Async]
-    get_populate_workzone_shapes_status(self, download_id: int)  [Async]
-    get_workzone_key(self)  [Async]
-
-### Metadata / Organizations
-    get_organizations(self, response_type=OBJ_RESPONSE)
-    get_organization(self, label: str, response_type=OBJ_RESPONSE)
-
-### Capacity / Available Capacity
-    getAvailableCapacity(self, dates, areas, categories=None, aggregateResults=None, availableTimeIntervals="all", calendarTimeIntervals="all", fields=None, response_type=OBJ_RESPONSE)   [Sync & Async]
-    get_available_capacity(self, dates, areas=None, categories=None, aggregateResults=None, availableTimeIntervals="all", calendarTimeIntervals="all", fields=None)   [Async]
-    getQuota(self, dates, areas=None, categories=None, aggregateResults=None, categoryLevel=None, intervalLevel=None, returnStatuses=None, timeSlotLevel=None, response_type=OBJ_RESPONSE)   [Sync & Async]
-    get_quota(self, dates, areas=None, categories=None, aggregateResults=None, categoryLevel=None, intervalLevel=None, returnStatuses=None, timeSlotLevel=None)   [Async]
-    update_quota(self, data)   [Async]
-    get_activity_booking_options(self, dates, areas=None, activityType=None, duration=None, ...)   [Async]
-    get_booking_closing_schedule(self, dates, areas=None)   [Async]
-    update_booking_closing_schedule(self, data)   [Async]
-    get_booking_statuses(self, dates, areas=None)   [Async]
-    update_booking_statuses(self, data)   [Async]
-    show_booking_grid(self, data)   [Async]
-    get_booking_fields_dependencies(self, areas=None)   [Async]
-
-### Statistics / Activity Duration Stats
-    get_activity_duration_stats(self, resource_id=None, include_children=None, akey=None, offset=0, limit=100)   [Async]
-    update_activity_duration_stats(self, data)   [Async]
-
-### Statistics / Activity Travel Stats
-    get_activity_travel_stats(self, region=None, tkey=None, fkey=None, key_id=None, offset=0, limit=100)   [Async]
-    update_activity_travel_stats(self, data)   [Async]
-
-### Statistics / Airline Distance Based Travel
-    get_airline_distance_based_travel(self, level=None, key=None, distance=None, key_id=None, offset=0, limit=100)   [Async]
-    update_airline_distance_based_travel(self, data)   [Async]
-
-### Auth / OAuth2
-    get_token(self, request: OFSOAuthRequest = OFSOAuthRequest())   [Async]
+See [docs/ENDPOINTS.md](docs/ENDPOINTS.md) for the full implementation status table.
 
 ## Usage Examples
 
-### Capacity API
+**Sync:**
 ```python
 from ofsc import OFSC
-from ofsc.models import CsvList
-
-# Initialize connection
-ofsc_instance = OFSC(
-    clientID="your_client_id",
-    secret="your_secret", 
-    companyName="your_company"
-)
-
-# Get capacity data with individual parameters
-response = ofsc_instance.capacity.getAvailableCapacity(
-    dates=["2025-06-25", "2025-06-26"],  # Required
-    areas=["Atlantic", "Pacific"],       # Required
-    availableTimeIntervals="all",        # Optional
-    calendarTimeIntervals="all"          # Optional
-)
-
-# Access response data
-for item in response.items:
-    print(f"Date: {item.date}")
-    for area in item.areas:
-        print(f"  Area: {area.label}")
-        print(f"  Calendar count: {area.calendar.count}")
-        if area.available:
-            print(f"  Available count: {area.available.count}")
-
-# Alternative input formats also work:
-# CSV string format
-response = ofsc_instance.capacity.getAvailableCapacity(
-    dates="2025-06-25,2025-06-26",
-    areas="Atlantic,Pacific",
-    categories="Install,Repair"
-)
-
-# CsvList format
-response = ofsc_instance.capacity.getAvailableCapacity(
-    dates=CsvList.from_list(["2025-06-25"]),
-    areas=CsvList.from_list(["Atlantic"]),
-    aggregateResults=True
-)
+instance = OFSC(clientID="...", secret="...", companyName="...")
+workzones = instance.metadata.get_workzones()
 ```
 
-### Quota API with CsvList
+**Async:**
 ```python
-from ofsc.models import GetQuotaRequest, CsvList
-
-# Create quota request with list[str] (automatically converted to CsvList)
-quota_request = GetQuotaRequest(
-    aggregateResults=True,
-    areas=["Atlantic", "Pacific"],  # list[str] - auto-converted
-    categories=["Install", "Repair"],  # list[str] - auto-converted
-    categoryLevel=True,
-    dates=["2025-06-25", "2025-06-26"],  # list[str] - auto-converted
-    intervalLevel=False,
-    returnStatuses=True,
-    timeSlotLevel=False
-)
-
-# Or with CsvList directly
-quota_request2 = GetQuotaRequest(
-    aggregateResults=False,
-    areas=CsvList.from_list(["Europe", "Asia"]),  # CsvList input
-    categories="Service,Support",  # CSV string - auto-converted
-    categoryLevel=False,
-    dates=["2025-06-27", "2025-06-28"],
-    intervalLevel=True,
-    returnStatuses=False,
-    timeSlotLevel=True
-)
-
-# Access as lists
-areas_list = quota_request.get_areas_list()  # ["Atlantic", "Pacific"]
-categories_list = quota_request.get_categories_list()  # ["Install", "Repair"]
+from ofsc.async_client import AsyncOFSC
+async with AsyncOFSC(clientID="...", secret="...", companyName="...") as client:
+    workzones = await client.metadata.get_workzones()
 ```
 
-### Quota API Function
-```python
-from ofsc import OFSC
-
-# Initialize connection
-ofsc_instance = OFSC(
-    clientID="your_client_id",
-    secret="your_secret", 
-    companyName="your_company"
-)
-
-# Simple quota request with individual parameters
-quota_response = ofsc_instance.capacity.getQuota(
-    dates=["2025-06-25", "2025-06-26"],  # Required
-    areas=["Atlantic", "Pacific"],       # Optional
-    aggregateResults=True,               # Optional
-    categoryLevel=False                  # Optional
-)
-
-# Minimal quota request (only required dates)
-minimal_quota = ofsc_instance.capacity.getQuota(
-    dates=["2025-06-27"]
-    # All other parameters default to None
-)
-
-# Mixed input types
-mixed_quota = ofsc_instance.capacity.getQuota(
-    dates="2025-06-28,2025-06-29",      # CSV string
-    areas=["Europe", "Asia"],            # List
-    categories="Install,Repair",         # CSV string
-    returnStatuses=True
-)
-```
-
-### Routing Profiles API
-```python
-from ofsc import OFSC
-from ofsc.common import FULL_RESPONSE
-
-# Initialize connection
-ofsc_instance = OFSC(
-    clientID="your_client_id",
-    secret="your_secret",
-    companyName="your_company"
-)
-
-# Get all routing profiles
-profiles = ofsc_instance.metadata.get_routing_profiles()
-for profile in profiles.items:
-    print(f"Profile: {profile.profileLabel}")
-
-# Get plans for a specific profile
-plans = ofsc_instance.metadata.get_routing_profile_plans(
-    profile_label="MaintenanceRoutingProfile"
-)
-for plan in plans.items:
-    print(f"Plan: {plan.planLabel}")
-
-# Export a routing plan (returns parsed JSON)
-plan_data = ofsc_instance.metadata.export_routing_plan(
-    profile_label="MaintenanceRoutingProfile",
-    plan_label="Optimization"
-)
-
-# Export a plan as raw bytes (ready for import)
-plan_bytes = ofsc_instance.metadata.export_plan_file(
-    profile_label="MaintenanceRoutingProfile",
-    plan_label="Optimization"
-)
-# plan_bytes contains raw data that can be imported
-
-# Import a routing plan (409 if plan already exists)
-response = ofsc_instance.metadata.import_routing_plan(
-    profile_label="TargetProfile",
-    plan_data=plan_bytes,
-    response_type=FULL_RESPONSE
-)
-if response.status_code == 409:
-    print("Plan already exists, use force_import to overwrite")
-
-# Force import (overwrite existing plan)
-response = ofsc_instance.metadata.force_import_routing_plan(
-    profile_label="MaintenanceRoutingProfile",
-    plan_data=plan_bytes,
-    response_type=FULL_RESPONSE
-)
-print(f"Import status: {response.status_code}")
-
-# Start a routing plan for a specific resource
-response = ofsc_instance.metadata.start_routing_plan(
-    profile_label="MaintenanceRoutingProfile",
-    plan_label="Optimization",
-    resource_external_id="TECH_001",
-    date="2025-10-25",
-    response_type=FULL_RESPONSE
-)
-print(f"Start status: {response.status_code}")
-
-# Complete workflow: Backup and restore a routing plan
-# 1. Export the plan
-backup_data = ofsc_instance.metadata.export_plan_file(
-    profile_label="MaintenanceRoutingProfile",
-    plan_label="Optimization"
-)
-
-# 2. Save to file (optional)
-with open("backup_optimization.dat", "wb") as f:
-    f.write(backup_data)
-
-# 3. Later, restore from backup
-with open("backup_optimization.dat", "rb") as f:
-    restore_data = f.read()
-
-response = ofsc_instance.metadata.force_import_routing_plan(
-    profile_label="MaintenanceRoutingProfile",
-    plan_data=restore_data,
-    response_type=FULL_RESPONSE
-)
-print(f"Restore completed: {response.status_code}")
-```
-
-### Workzones API
-```python
-from ofsc import OFSC
-from ofsc.models import Workzone
-
-# Initialize connection
-ofsc_instance = OFSC(
-    clientID="your_client_id",
-    secret="your_secret",
-    companyName="your_company"
-)
-
-# Get all workzones (returns WorkzoneListResponse)
-workzones = ofsc_instance.metadata.get_workzones(offset=0, limit=100)
-print(f"Total workzones: {workzones.totalResults}")
-
-for workzone in workzones.items:
-    print(f"Label: {workzone.workZoneLabel}, Name: {workzone.workZoneName}")
-    print(f"  Status: {workzone.status}, Travel Area: {workzone.travelArea}")
-    if workzone.keys:
-        print(f"  Keys: {', '.join(workzone.keys)}")
-    if workzone.shapes:
-        print(f"  Shapes: {', '.join(workzone.shapes)}")
-
-# Get a single workzone by label (returns Workzone)
-workzone = ofsc_instance.metadata.get_workzone("ATLANTA")
-print(f"Workzone: {workzone.workZoneName}")
-print(f"Status: {workzone.status}")
-
-# Replace/Update a workzone
-updated_workzone = Workzone(
-    workZoneLabel="ATLANTA",
-    workZoneName="Atlanta Metro Area",
-    status="active",
-    travelArea="sunrise_enterprise",
-    keys=["ATL", "ATLANTA"],
-    shapes=["12345", "67890"],
-    organization="SOUTH_REGION"
-)
-
-result = ofsc_instance.metadata.replace_workzone(
-    workzone=updated_workzone,
-    auto_resolve_conflicts=True  # Automatically resolve key conflicts with other zones
-)
-print(f"Updated workzone: {result.workZoneLabel}")
-
-# Using FULL_RESPONSE for raw API response
-from ofsc.common import FULL_RESPONSE
-
-response = ofsc_instance.metadata.get_workzone(
-    "ATLANTA",
-    response_type=FULL_RESPONSE
-)
-if response.status_code == 200:
-    data = response.json()
-    print(f"Raw workzone data: {data}")
-```
+See the [examples/](examples/) directory for comprehensive sync and async usage examples.
 
 ## Test History
 
@@ -700,65 +123,18 @@ OFS REST API Version | PyOFSC
 22B| 1.16, 1.17
 22D| 1.18
 24C| 2.0
-
-## Deprecation Warning
-
-Starting in OFSC 2.0  all functions are called using the API name (Core or Metadata). See the examples.
-
-Instead of
-
-    instance = OFSC(..)
-    list_of_activities = instance.get_activities(...)
-
-It will be required to use the right API module:
-
-    instance = OFSC(..)
-    list_of_activites = instance.core.get_activities(...)
-
-During the transition period a DeprecationWarning will be raised if the functions are used in the old way
-
-## What's new in OFSC 2.0
-
-- All metadata functions now use models, when available
-- All functions are now using the API name (Core or Metadata)
-- All functions return a python object by default. If there is an available model it will be used, otherwise a dict will be returned (see `response_type` parameter and `auto_model` parameter)
-- Errors during API calls can raise exceptions and will by default when returning an object (see `auto_raise` parameter)
-- OBJ_RESPONS and TEXT_RESPONSE are now deprecated. Use `response_type` parameter to control the response type
+25B| 2.12
+26A| 2.24.0
 
 ## Future Deprecation Notice - OFSC 3.0
 
-**Important**: Starting with OFSC 3.0, the synchronous client (`OFSC`) will be deprecated in favor of the async client (`AsyncOFSC`).
+**Important**: Starting with Oracle Fusion Field Service 3.0, the synchronous client (`OFSC`) will be deprecated in favor of the async client (`AsyncOFSC`).
 
 ### Migration Path
 - The async client (`AsyncOFSC`) is the recommended approach for all new development
 - OFSC 3.0 will provide a **compatibility wrapper** to allow existing synchronous code to continue working without modifications
 - The compatibility wrapper will internally use the async client with synchronous adapters
 - We recommend gradually migrating to the async client to take advantage of better performance and scalability
-
-### Migration Example
-**Current synchronous code:**
-```python
-from ofsc import OFSC
-
-instance = OFSC(
-    clientID="your_client_id",
-    secret="your_secret",
-    companyName="your_company"
-)
-workzones = instance.metadata.get_workzones(offset=0, limit=100)
-```
-
-**Migrated async code:**
-```python
-from ofsc.async_client import AsyncOFSC
-
-async with AsyncOFSC(
-    clientID="your_client_id",
-    secret="your_secret",
-    companyName="your_company"
-) as client:
-    workzones = await client.metadata.get_workzones(offset=0, limit=100)
-```
 
 ### Timeline
 - **OFSC 2.x**: Both sync and async clients fully supported

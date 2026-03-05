@@ -1,5 +1,8 @@
 """Tests for AsyncOFSC class."""
 
+import logging
+
+import httpx
 import pytest
 
 from ofsc.async_client import AsyncOFSC
@@ -138,6 +141,93 @@ class TestAsyncOFSCConfiguration:
         ) as client:
             assert "AsyncOFSC" in str(client)
             assert "mycompany" in str(client)
+
+
+class TestAsyncOFSCLogging:
+    """Test AsyncOFSC event hook logging."""
+
+    @pytest.mark.asyncio
+    async def test_logging_disabled_by_default(self):
+        """Test that logging is disabled by default."""
+        client = AsyncOFSC(
+            clientID="test_client",
+            companyName="test_company",
+            secret="test_secret",
+        )
+        assert client._enable_logging is False
+
+    @pytest.mark.asyncio
+    async def test_logging_enabled_creates_event_hooks(self):
+        """Test that enabling logging configures httpx event hooks."""
+        async with AsyncOFSC(
+            clientID="test_client",
+            companyName="test_company",
+            secret="test_secret",
+            enable_logging=True,
+        ) as client:
+            assert len(client._client.event_hooks["request"]) == 1
+            assert len(client._client.event_hooks["response"]) == 1
+
+    @pytest.mark.asyncio
+    async def test_logging_disabled_no_event_hooks(self):
+        """Test that disabling logging results in no custom event hooks."""
+        async with AsyncOFSC(
+            clientID="test_client",
+            companyName="test_company",
+            secret="test_secret",
+            enable_logging=False,
+        ) as client:
+            assert len(client._client.event_hooks["request"]) == 0
+            assert len(client._client.event_hooks["response"]) == 0
+
+    @pytest.mark.asyncio
+    async def test_request_hook_logs_at_debug(self, caplog):
+        """Test that request hook logs at DEBUG level."""
+        async with AsyncOFSC(
+            clientID="test_client",
+            companyName="test_company",
+            secret="test_secret",
+            enable_logging=True,
+        ) as client:
+            hook = client._client.event_hooks["request"][0]
+            request = client._client.build_request("GET", "https://example.com/test")
+            with caplog.at_level(logging.DEBUG, logger="ofsc.async_client"):
+                await hook(request)
+            assert "Request: GET https://example.com/test" in caplog.text
+
+    @pytest.mark.asyncio
+    async def test_response_hook_logs_at_debug(self, caplog):
+        """Test that response hook logs at DEBUG level for successful responses."""
+        async with AsyncOFSC(
+            clientID="test_client",
+            companyName="test_company",
+            secret="test_secret",
+            enable_logging=True,
+        ) as client:
+            hook = client._client.event_hooks["response"][0]
+            request = client._client.build_request("GET", "https://example.com/test")
+            response = httpx.Response(200, request=request)
+            with caplog.at_level(logging.DEBUG, logger="ofsc.async_client"):
+                await hook(response)
+            assert "Response: GET https://example.com/test 200" in caplog.text
+
+    @pytest.mark.asyncio
+    async def test_response_hook_warns_on_http_error(self, caplog):
+        """Test that response hook logs a WARNING for 4xx/5xx status codes."""
+        async with AsyncOFSC(
+            clientID="test_client",
+            companyName="test_company",
+            secret="test_secret",
+            enable_logging=True,
+        ) as client:
+            hook = client._client.event_hooks["response"][0]
+            request = client._client.build_request("GET", "https://example.com/test")
+            response = httpx.Response(404, request=request)
+            with caplog.at_level(logging.DEBUG, logger="ofsc.async_client"):
+                await hook(response)
+            assert "HTTP error: GET https://example.com/test 404" in caplog.text
+            warning_records = [r for r in caplog.records if r.levelno == logging.WARNING]
+            assert len(warning_records) == 1
 
 
 class TestAsyncOFSMetadataStubs:

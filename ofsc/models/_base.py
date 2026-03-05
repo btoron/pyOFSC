@@ -25,6 +25,8 @@ from typing_extensions import Annotated
 
 from ..common import FULL_RESPONSE, wrap_return
 
+logger = logging.getLogger(__name__)
+
 # region Generic Models
 
 T = TypeVar("T")
@@ -204,7 +206,7 @@ class OFSApi:
     @wrap_return(response_type=FULL_RESPONSE, expected=[200])
     def token(self, auth: OFSOAuthRequest = OFSOAuthRequest()) -> requests.Response:
         headers = {}
-        logging.info(f"Getting token with {auth.grant_type}")
+        logger.info(f"Getting token with {auth.grant_type}")
         if auth.grant_type == "client_credentials" or auth.grant_type == "urn:ietf:params:oauth:grant-type:jwt-bearer":
             headers["Authorization"] = "Basic " + self._config.basicAuthString.decode("utf-8")
         else:
@@ -232,7 +234,6 @@ class OFSApi:
         else:
             self._token = self.token().json()["access_token"]
             self._headers["Authorization"] = f"Bearer {self._token}"
-            print(f"Not implemented {self._token}")
         return self._headers
 
 
