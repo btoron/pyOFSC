@@ -1,6 +1,6 @@
 """Shared base class for all async OFSC API modules."""
 
-from typing import Type, TypeVar
+from typing import Type, TypeVar, Union
 from urllib.parse import quote_plus, urljoin
 
 import httpx
@@ -17,7 +17,7 @@ from ..exceptions import (
     OFSCServerError,
     OFSCValidationError,
 )
-from ..models import OFSConfig
+from ..models import CsvList, OFSConfig
 
 T = TypeVar("T")
 
@@ -151,6 +151,21 @@ class AsyncClientBase:
             ) from e
 
     # region Generic HTTP helpers
+
+    @staticmethod
+    def _to_csv_param(value: Union[CsvList, list[str], str]) -> str:
+        """Convert a list, CsvList, or plain string to a CSV string for API query params.
+
+        :param value: A CsvList model, a list of strings, or a plain string
+        :type value: Union[CsvList, list[str], str]
+        :return: Comma-separated string suitable for an API query parameter
+        :rtype: str
+        """
+        if isinstance(value, CsvList):
+            return value.value
+        if isinstance(value, list):
+            return ",".join(value)
+        return value
 
     def _clean_response(self, data: dict) -> dict:
         """Remove the 'links' key from an API response dict.
