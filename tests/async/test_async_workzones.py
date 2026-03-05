@@ -1,5 +1,6 @@
 """Async tests for workzone operations."""
 
+import inspect
 import time
 from unittest.mock import AsyncMock, Mock
 
@@ -409,3 +410,108 @@ class TestAsyncGetWorkzoneKey:
         assert elem.function is None
         assert elem.order is None
         assert elem.apiParameterName is None
+
+
+class TestAsyncGetAllWorkzones:
+    """Test async get_all_workzones generator method."""
+
+    def _make_workzones_response(self, labels: list[str], has_more: bool = False) -> dict:
+        """Build a mock workzones list response dict."""
+        return {
+            "totalResults": len(labels),
+            "hasMore": has_more,
+            "items": [
+                {
+                    "workZoneLabel": label,
+                    "workZoneName": f"Zone {label}",
+                    "status": "active",
+                    "travelArea": "test_area",
+                }
+                for label in labels
+            ],
+        }
+
+    @pytest.mark.asyncio
+    async def test_get_all_workzones_returns_async_generator(self, mock_instance: AsyncOFSC):
+        """Verify that get_all_workzones returns an async generator."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = self._make_workzones_response(["WZ_A", "WZ_B"])
+        mock_response.raise_for_status = Mock()
+
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+
+        result = mock_instance.metadata.get_all_workzones()
+        assert inspect.isasyncgen(result)
+
+        # Exhaust the generator to avoid resource warning
+        async for _ in result:
+            pass
+
+    @pytest.mark.asyncio
+    async def test_get_all_workzones_yields_workzone_instances(self, mock_instance: AsyncOFSC):
+        """Verify that each yielded item is a Workzone instance."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = self._make_workzones_response(["WZ_A", "WZ_B", "WZ_C"])
+        mock_response.raise_for_status = Mock()
+
+        mock_instance.metadata._client.get = AsyncMock(return_value=mock_response)
+
+        items = []
+        async for item in mock_instance.metadata.get_all_workzones():
+            items.append(item)
+
+        assert len(items) == 3
+        for item in items:
+            assert isinstance(item, Workzone)
+            assert hasattr(item, "workZoneLabel")
+            assert hasattr(item, "workZoneName")
+
+    @pytest.mark.asyncio
+    async def test_get_all_workzones_fetches_all(self, mock_instance: AsyncOFSC):
+        """Verify that pagination works: multiple pages are fetched until hasMore is False."""
+        page1_response = Mock()
+        page1_response.status_code = 200
+        page1_response.json.return_value = self._make_workzones_response(["WZ_1", "WZ_2"], has_more=True)
+        page1_response.raise_for_status = Mock()
+
+        page2_response = Mock()
+        page2_response.status_code = 200
+        page2_response.json.return_value = self._make_workzones_response(["WZ_3", "WZ_4"], has_more=False)
+        page2_response.raise_for_status = Mock()
+
+        mock_instance.metadata._client.get = AsyncMock(side_effect=[page1_response, page2_response])
+
+        collected = []
+        async for item in mock_instance.metadata.get_all_workzones(limit=2):
+            collected.append(item)
+
+        assert len(collected) == 4
+        labels = [wz.workZoneLabel for wz in collected]
+        assert labels == ["WZ_1", "WZ_2", "WZ_3", "WZ_4"]
+        # Verify the API was called twice (two pages)
+        assert mock_instance.metadata._client.get.call_count == 2
+
+    @pytest.mark.asyncio
+    async def test_get_all_workzones_unique_labels(self, mock_instance: AsyncOFSC):
+        """Verify no duplicate labels are yielded across pages."""
+        page1_response = Mock()
+        page1_response.status_code = 200
+        page1_response.json.return_value = self._make_workzones_response(["ZONE_A", "ZONE_B", "ZONE_C"], has_more=True)
+        page1_response.raise_for_status = Mock()
+
+        page2_response = Mock()
+        page2_response.status_code = 200
+        page2_response.json.return_value = self._make_workzones_response(["ZONE_D", "ZONE_E"], has_more=False)
+        page2_response.raise_for_status = Mock()
+
+        mock_instance.metadata._client.get = AsyncMock(side_effect=[page1_response, page2_response])
+
+        collected = []
+        async for item in mock_instance.metadata.get_all_workzones(limit=3):
+            collected.append(item)
+
+        labels = [wz.workZoneLabel for wz in collected]
+        assert len(labels) == len(set(labels)), "Duplicate labels found across pages"
+        assert set(labels) == {"ZONE_A", "ZONE_B", "ZONE_C", "ZONE_D", "ZONE_E"}
