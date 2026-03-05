@@ -1,5 +1,6 @@
 """Async resource methods mixin for OFSCore API."""
 
+from collections.abc import AsyncGenerator
 from datetime import date
 from typing import Any, Protocol
 from urllib.parse import quote_plus, urljoin
@@ -552,6 +553,56 @@ class AsyncOFSCoreResourcesMixin:
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def get_all_resources(
+        self: _CoreBaseProtocol,
+        limit: int = 100,
+        fields: list[str] | None = None,
+        expand_inventories: bool = False,
+        expand_workskills: bool = False,
+        expand_workzones: bool = False,
+        expand_workschedules: bool = False,
+    ) -> AsyncGenerator[Resource, None]:
+        """Async generator that yields all resources one by one, fetching pages on demand.
+
+        :param limit: Maximum number of resources to fetch per page (default 100)
+        :type limit: int
+        :param fields: List of fields to return
+        :type fields: list[str] | None
+        :param expand_inventories: Include resource inventories
+        :type expand_inventories: bool
+        :param expand_workskills: Include resource workskills
+        :type expand_workskills: bool
+        :param expand_workzones: Include resource workzones
+        :type expand_workzones: bool
+        :param expand_workschedules: Include resource workschedules
+        :type expand_workschedules: bool
+        :return: Async generator yielding individual Resource objects
+        :rtype: AsyncGenerator[Resource, None]
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
+        """
+        offset = 0
+        has_more = True
+
+        while has_more:
+            response = await self.get_resources(
+                offset=offset,
+                limit=limit,
+                fields=fields,
+                expand_inventories=expand_inventories,
+                expand_workskills=expand_workskills,
+                expand_workzones=expand_workzones,
+                expand_workschedules=expand_workschedules,
+            )
+            for resource in response.items:
+                yield resource
+            has_more = response.hasMore or False
+            offset += len(response.items)
+            if len(response.items) == 0:
+                break
 
     # region Write / Delete Operations
 
