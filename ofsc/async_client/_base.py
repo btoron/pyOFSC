@@ -1,0 +1,144 @@
+"""Shared base class for all async OFSC API modules."""
+
+import httpx
+
+from ..exceptions import (
+    OFSCApiError,
+    OFSCAuthenticationError,
+    OFSCAuthorizationError,
+    OFSCConflictError,
+    OFSCNotFoundError,
+    OFSCRateLimitError,
+    OFSCServerError,
+    OFSCValidationError,
+)
+from ..models import OFSConfig
+
+
+class AsyncClientBase:
+    """Base class for all async API modules.
+
+    Provides shared infrastructure: config access, URL construction,
+    auth headers, and HTTP error handling.
+    """
+
+    def __init__(self, config: OFSConfig, client: httpx.AsyncClient):
+        self._config = config
+        self._client = client
+
+    @property
+    def config(self) -> OFSConfig:
+        return self._config
+
+    @property
+    def baseUrl(self) -> str:
+        if self._config.baseURL is None:
+            raise ValueError("Base URL is not configured")
+        return self._config.baseURL
+
+    @property
+    def headers(self) -> dict:
+        """Build authorization headers."""
+        headers = {"Content-Type": "application/json;charset=UTF-8"}
+        if not self._config.useToken:
+            headers["Authorization"] = "Basic " + self._config.basicAuthString.decode("utf-8")
+        else:
+            if self._config.access_token is None:
+                raise ValueError("access_token required when useToken=True")
+            headers["Authorization"] = f"Bearer {self._config.access_token}"
+        return headers
+
+    def _parse_error_response(self, response: httpx.Response) -> dict:
+        """Parse OFSC error response format.
+
+        OFSC API returns errors in the format:
+        {
+            "type": "string",
+            "title": "string",
+            "detail": "string"
+        }
+
+        :param response: The httpx Response object
+        :type response: httpx.Response
+        :return: Error information with type, title, and detail keys
+        :rtype: dict
+        """
+        try:
+            error_data = response.json()
+            return {
+                "type": error_data.get("type", "about:blank"),
+                "title": error_data.get("title", ""),
+                "detail": error_data.get("detail", response.text),
+            }
+        except Exception:
+            return {
+                "type": "about:blank",
+                "title": f"HTTP {response.status_code}",
+                "detail": response.text,
+            }
+
+    def _handle_http_error(self, e: httpx.HTTPStatusError, context: str = "") -> None:
+        """Convert httpx exceptions to OFSC exceptions with error details.
+
+        :param e: The httpx HTTPStatusError exception
+        :type e: httpx.HTTPStatusError
+        :param context: Additional context for the error message
+        :type context: str
+        :raises OFSCAuthenticationError: For 401 errors
+        :raises OFSCAuthorizationError: For 403 errors
+        :raises OFSCNotFoundError: For 404 errors
+        :raises OFSCConflictError: For 409 errors
+        :raises OFSCRateLimitError: For 429 errors
+        :raises OFSCValidationError: For 400, 422 errors
+        :raises OFSCServerError: For 5xx errors
+        :raises OFSCApiError: For other HTTP errors
+        """
+        status = e.response.status_code
+        error_info = self._parse_error_response(e.response)
+
+        message = f"{context}: {error_info['detail']}" if context else error_info["detail"]
+
+        error_map = {
+            401: OFSCAuthenticationError,
+            403: OFSCAuthorizationError,
+            404: OFSCNotFoundError,
+            409: OFSCConflictError,
+            429: OFSCRateLimitError,
+        }
+
+        if status in error_map:
+            raise error_map[status](
+                message,
+                status_code=status,
+                response=e.response,
+                error_type=error_info["type"],
+                title=error_info["title"],
+                detail=error_info["detail"],
+            ) from e
+        elif 400 <= status < 500:
+            raise OFSCValidationError(
+                message,
+                status_code=status,
+                response=e.response,
+                error_type=error_info["type"],
+                title=error_info["title"],
+                detail=error_info["detail"],
+            ) from e
+        elif 500 <= status < 600:
+            raise OFSCServerError(
+                message,
+                status_code=status,
+                response=e.response,
+                error_type=error_info["type"],
+                title=error_info["title"],
+                detail=error_info["detail"],
+            ) from e
+        else:
+            raise OFSCApiError(
+                message,
+                status_code=status,
+                response=e.response,
+                error_type=error_info["type"],
+                title=error_info["title"],
+                detail=error_info["detail"],
+            ) from e
