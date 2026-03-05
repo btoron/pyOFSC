@@ -22,6 +22,23 @@ async with AsyncOFSC(clientID="...", secret="...", companyName="...") as client:
 - **Same Models**: Reuses all existing Pydantic models from the sync version
 - **Context Manager**: Must be used as an async context manager to properly manage HTTP client lifecycle
 - **Simplified API**: Async methods always return Pydantic models (no `response_type` parameter)
+- **Request/Response Logging**: Optional httpx event hooks for automatic API call tracing
+
+### Enabling Request/Response Logging
+
+Pass `enable_logging=True` to automatically log all HTTP requests and responses via Python's standard logging:
+
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
+async with AsyncOFSC(clientID="...", secret="...", companyName="...", enable_logging=True) as client:
+    workzones = await client.metadata.get_workzones()
+    # DEBUG: Request: GET https://company.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/workZones
+    # DEBUG: Response: GET https://company.fs.ocs.oraclecloud.com/rest/ofscMetadata/v1/workZones 200
+```
+
+Logs are emitted under the `ofsc.async_client` logger. HTTP errors (4xx/5xx) are also logged at WARNING level. Disabled by default with zero overhead.
 
 ## Models
 
