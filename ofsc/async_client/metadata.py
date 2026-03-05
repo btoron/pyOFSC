@@ -1,5 +1,6 @@
 """Async version of OFSMetadata API module."""
 
+from collections.abc import AsyncGenerator
 from pathlib import Path
 from typing import Tuple
 from urllib.parse import quote_plus, urljoin
@@ -2147,6 +2148,30 @@ class AsyncOFSMetadata(AsyncClientBase):
             Workzone,
             f"Failed to get workzone '{label}'",
         )
+
+    async def get_all_workzones(self, limit: int = 100) -> AsyncGenerator[Workzone, None]:
+        """Async generator that yields all workzones one by one, fetching pages on demand.
+
+        :param limit: Maximum number of workzones to fetch per page (default 100)
+        :type limit: int
+        :return: Async generator yielding individual Workzone objects
+        :rtype: AsyncGenerator[Workzone, None]
+        :raises OFSCAuthenticationError: If authentication fails (401)
+        :raises OFSCAuthorizationError: If authorization fails (403)
+        :raises OFSCApiError: For other API errors
+        :raises OFSCNetworkError: For network/transport errors
+        """
+        offset = 0
+        has_more = True
+
+        while has_more:
+            response = await self.get_workzones(offset=offset, limit=limit)
+            for workzone in response.items:
+                yield workzone
+            has_more = response.hasMore or False
+            offset += len(response.items)
+            if len(response.items) == 0:
+                break
 
     async def create_workzone(self, workzone: Workzone) -> Workzone:
         """Create a new workzone.

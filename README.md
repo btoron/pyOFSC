@@ -23,6 +23,7 @@ async with AsyncOFSC(clientID="...", secret="...", companyName="...") as client:
 - **Context Manager**: Must be used as an async context manager to properly manage HTTP client lifecycle
 - **Simplified API**: Async methods always return Pydantic models (no `response_type` parameter)
 - **Request/Response Logging**: Optional httpx event hooks for automatic API call tracing
+- **Async Generators**: Lazy pagination helpers that yield individual items across all pages (e.g. `get_all_workzones`) `[Async]`
 
 ### Enabling Request/Response Logging
 
