@@ -1,8 +1,10 @@
 """Tests for async resource GET operations."""
 
+import inspect
 import json
 from datetime import date
 from pathlib import Path
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
@@ -423,4 +425,139 @@ class TestAsyncResourceSavedResponses:
         response = CalendarsListResponse.model_validate(saved_data["response_data"])
 
         assert isinstance(response, CalendarsListResponse)
-        assert hasattr(response, "items")
+
+
+# ===================================================================
+# GET ALL RESOURCES (ASYNC GENERATOR)
+# ===================================================================
+
+
+class TestAsyncGetAllResources:
+    """Test async get_all_resources generator method."""
+
+    def _make_resources_response(self, resource_ids: list[str], has_more: bool = False) -> dict:
+        """Build a mock resource list response dict."""
+        return {
+            "totalResults": len(resource_ids),
+            "hasMore": has_more,
+            "items": [
+                {
+                    "resourceId": rid,
+                    "name": f"Resource {rid}",
+                    "resourceType": "technician",
+                    "language": "en",
+                    "timeZone": "UTC",
+                }
+                for rid in resource_ids
+            ],
+        }
+
+    @pytest.mark.asyncio
+    async def test_get_all_resources_returns_async_generator(self, mock_instance: AsyncOFSC):
+        """Verify that get_all_resources returns an async generator."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = self._make_resources_response(["R1", "R2"])
+        mock_response.raise_for_status = Mock()
+
+        mock_instance.core._client.get = AsyncMock(return_value=mock_response)
+
+        result = mock_instance.core.get_all_resources()
+        assert inspect.isasyncgen(result)
+
+        # Exhaust the generator to avoid resource warning
+        async for _ in result:
+            pass
+
+    @pytest.mark.asyncio
+    async def test_get_all_resources_yields_resource_instances(self, mock_instance: AsyncOFSC):
+        """Verify that each yielded item is a Resource instance."""
+        from ofsc.models import Resource
+
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = self._make_resources_response(["R1", "R2", "R3"])
+        mock_response.raise_for_status = Mock()
+
+        mock_instance.core._client.get = AsyncMock(return_value=mock_response)
+
+        items = []
+        async for item in mock_instance.core.get_all_resources():
+            items.append(item)
+
+        assert len(items) == 3
+        for item in items:
+            assert isinstance(item, Resource)
+            assert hasattr(item, "resourceId")
+            assert hasattr(item, "name")
+
+    @pytest.mark.asyncio
+    async def test_get_all_resources_fetches_all_pages(self, mock_instance: AsyncOFSC):
+        """Verify that pagination works: multiple pages are fetched until hasMore is False."""
+        page1_response = Mock()
+        page1_response.status_code = 200
+        page1_response.json.return_value = self._make_resources_response(["R1", "R2"], has_more=True)
+        page1_response.raise_for_status = Mock()
+
+        page2_response = Mock()
+        page2_response.status_code = 200
+        page2_response.json.return_value = self._make_resources_response(["R3", "R4"], has_more=False)
+        page2_response.raise_for_status = Mock()
+
+        mock_instance.core._client.get = AsyncMock(side_effect=[page1_response, page2_response])
+
+        collected = []
+        async for item in mock_instance.core.get_all_resources(limit=2):
+            collected.append(item)
+
+        assert len(collected) == 4
+        resource_ids = [r.resourceId for r in collected]
+        assert resource_ids == ["R1", "R2", "R3", "R4"]
+        # Verify the API was called twice (two pages)
+        assert mock_instance.core._client.get.call_count == 2
+
+    @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_get_all_resources_matches_manual_pagination(self, async_instance: AsyncOFSC):
+        """Verify get_all_resources yields same unique resources as manual get_resources pagination."""
+        # Manual pagination
+        manual_ids = set()
+        offset = 0
+        while True:
+            page = await async_instance.core.get_resources(offset=offset, limit=10)
+            for r in page.items:
+                manual_ids.add(r.resourceId)
+            if not page.hasMore:
+                break
+            offset += 10
+
+        # Generator
+        generator_ids = set()
+        async for resource in async_instance.core.get_all_resources(limit=10):
+            generator_ids.add(resource.resourceId)
+
+        assert len(manual_ids) > 0, "No resources found in test environment"
+        assert manual_ids == generator_ids
+
+    @pytest.mark.asyncio
+    async def test_get_all_resources_unique_resource_ids(self, mock_instance: AsyncOFSC):
+        """Verify no duplicate resourceIds are yielded across pages."""
+        page1_response = Mock()
+        page1_response.status_code = 200
+        page1_response.json.return_value = self._make_resources_response(["RA", "RB", "RC"], has_more=True)
+        page1_response.raise_for_status = Mock()
+
+        page2_response = Mock()
+        page2_response.status_code = 200
+        page2_response.json.return_value = self._make_resources_response(["RD", "RE"], has_more=False)
+        page2_response.raise_for_status = Mock()
+
+        mock_instance.core._client.get = AsyncMock(side_effect=[page1_response, page2_response])
+
+        collected = []
+        async for item in mock_instance.core.get_all_resources(limit=3):
+            collected.append(item)
+
+        resource_ids = [r.resourceId for r in collected]
+        assert len(resource_ids) == len(set(resource_ids)), "Duplicate resourceIds found across pages"
+        assert set(resource_ids) == {"RA", "RB", "RC", "RD", "RE"}

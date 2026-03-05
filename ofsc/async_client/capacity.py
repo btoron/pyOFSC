@@ -24,7 +24,6 @@ from ..models import (
     ShowBookingGridRequest,
     ShowBookingGridResponse,
 )
-from ..capacity import _convert_model_to_api_params
 
 
 class AsyncOFSCapacity(AsyncClientBase):
@@ -71,7 +70,20 @@ class AsyncOFSCapacity(AsyncClientBase):
             calendarTimeIntervals=calendarTimeIntervals,
             fields=fields,
         )
-        params = _convert_model_to_api_params(capacity_request)
+        params: dict = {
+            "dates": self._to_csv_param(capacity_request.dates),
+            "availableTimeIntervals": capacity_request.availableTimeIntervals,
+            "calendarTimeIntervals": capacity_request.calendarTimeIntervals,
+        }
+        if capacity_request.areas is not None:
+            params["areas"] = self._to_csv_param(capacity_request.areas)
+        if capacity_request.categories is not None:
+            params["categories"] = self._to_csv_param(capacity_request.categories)
+        if capacity_request.aggregateResults is not None:
+            params["aggregateResults"] = str(capacity_request.aggregateResults).lower()
+        if capacity_request.fields is not None:
+            params["fields"] = self._to_csv_param(capacity_request.fields)
+
         url = urljoin(self.baseUrl, "/rest/ofscCapacity/v1/capacity")
         try:
             response = await self._client.get(url, headers=self.headers, params=params)
@@ -132,7 +144,22 @@ class AsyncOFSCapacity(AsyncClientBase):
             returnStatuses=returnStatuses,
             timeSlotLevel=timeSlotLevel,
         )
-        params = _convert_model_to_api_params(quota_request)
+        params: dict = {"dates": self._to_csv_param(quota_request.dates)}
+        if quota_request.areas is not None:
+            params["areas"] = self._to_csv_param(quota_request.areas)
+        if quota_request.categories is not None:
+            params["categories"] = self._to_csv_param(quota_request.categories)
+        if quota_request.aggregateResults is not None:
+            params["aggregateResults"] = str(quota_request.aggregateResults).lower()
+        if quota_request.categoryLevel is not None:
+            params["categoryLevel"] = str(quota_request.categoryLevel).lower()
+        if quota_request.intervalLevel is not None:
+            params["intervalLevel"] = str(quota_request.intervalLevel).lower()
+        if quota_request.returnStatuses is not None:
+            params["returnStatuses"] = str(quota_request.returnStatuses).lower()
+        if quota_request.timeSlotLevel is not None:
+            params["timeSlotLevel"] = str(quota_request.timeSlotLevel).lower()
+
         url = urljoin(self.baseUrl, "/rest/ofscCapacity/v2/quota")
         try:
             response = await self._client.get(url, headers=self.headers, params=params)
@@ -165,16 +192,12 @@ class AsyncOFSCapacity(AsyncClientBase):
         """
         if isinstance(data, dict):
             data = QuotaUpdateRequest.model_validate(data)
-        url = urljoin(self.baseUrl, "/rest/ofscCapacity/v2/quota")
-        try:
-            response = await self._client.patch(url, headers=self.headers, json=data.model_dump(exclude_none=True))
-            response.raise_for_status()
-            return QuotaUpdateResponse.model_validate(response.json())
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to update quota")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._patch_item(
+            "/rest/ofscCapacity/v2/quota",
+            data,
+            QuotaUpdateResponse,
+            "Failed to update quota",
+        )
 
     # Deprecated camelCase alias
     getQuota = get_quota
@@ -232,23 +255,19 @@ class AsyncOFSCapacity(AsyncClientBase):
             OFSCApiError: For other API errors
             OFSCNetworkError: For network/transport errors
         """
-        params: dict = {}
-        if isinstance(dates, list):
-            params["dates"] = ",".join(dates)
-        else:
-            params["dates"] = dates
+        params: dict = {"dates": self._to_csv_param(dates)}
         if areas is not None:
-            params["areas"] = ",".join(areas) if isinstance(areas, list) else areas
+            params["areas"] = self._to_csv_param(areas)
         if activityType is not None:
             params["activityType"] = activityType
         if duration is not None:
             params["duration"] = duration
         if workSkills is not None:
-            params["workSkills"] = ",".join(workSkills) if isinstance(workSkills, list) else workSkills
+            params["workSkills"] = self._to_csv_param(workSkills)
         if timeSlots is not None:
-            params["timeSlots"] = ",".join(timeSlots) if isinstance(timeSlots, list) else timeSlots
+            params["timeSlots"] = self._to_csv_param(timeSlots)
         if categories is not None:
-            params["categories"] = ",".join(categories) if isinstance(categories, list) else categories
+            params["categories"] = self._to_csv_param(categories)
         if languageCode is not None:
             params["languageCode"] = languageCode
         if timeZone is not None:
@@ -302,8 +321,7 @@ class AsyncOFSCapacity(AsyncClientBase):
             OFSCApiError: For other API errors
             OFSCNetworkError: For network/transport errors
         """
-        params: dict = {}
-        params["areas"] = ",".join(areas) if isinstance(areas, list) else areas
+        params: dict = {"areas": self._to_csv_param(areas)}
 
         url = urljoin(self.baseUrl, "/rest/ofscCapacity/v1/bookingClosingSchedule")
         try:
@@ -337,16 +355,12 @@ class AsyncOFSCapacity(AsyncClientBase):
         """
         if isinstance(data, dict):
             data = BookingClosingScheduleUpdateRequest.model_validate(data)
-        url = urljoin(self.baseUrl, "/rest/ofscCapacity/v1/bookingClosingSchedule")
-        try:
-            response = await self._client.patch(url, headers=self.headers, json=data.model_dump(exclude_none=True))
-            response.raise_for_status()
-            return BookingClosingScheduleResponse.model_validate(response.json())
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to update booking closing schedule")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._patch_item(
+            "/rest/ofscCapacity/v1/bookingClosingSchedule",
+            data,
+            BookingClosingScheduleResponse,
+            "Failed to update booking closing schedule",
+        )
 
     # endregion
 
@@ -372,10 +386,9 @@ class AsyncOFSCapacity(AsyncClientBase):
             OFSCApiError: For other API errors
             OFSCNetworkError: For network/transport errors
         """
-        params: dict = {}
-        params["dates"] = ",".join(dates) if isinstance(dates, list) else dates
+        params: dict = {"dates": self._to_csv_param(dates)}
         if areas is not None:
-            params["areas"] = ",".join(areas) if isinstance(areas, list) else areas
+            params["areas"] = self._to_csv_param(areas)
 
         url = urljoin(self.baseUrl, "/rest/ofscCapacity/v1/bookingStatuses")
         try:
@@ -409,16 +422,12 @@ class AsyncOFSCapacity(AsyncClientBase):
         """
         if isinstance(data, dict):
             data = BookingStatusesUpdateRequest.model_validate(data)
-        url = urljoin(self.baseUrl, "/rest/ofscCapacity/v1/bookingStatuses")
-        try:
-            response = await self._client.patch(url, headers=self.headers, json=data.model_dump(exclude_none=True))
-            response.raise_for_status()
-            return BookingStatusesResponse.model_validate(response.json())
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to update booking statuses")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._patch_item(
+            "/rest/ofscCapacity/v1/bookingStatuses",
+            data,
+            BookingStatusesResponse,
+            "Failed to update booking statuses",
+        )
 
     # endregion
 
@@ -445,16 +454,12 @@ class AsyncOFSCapacity(AsyncClientBase):
         """
         if isinstance(data, dict):
             data = ShowBookingGridRequest.model_validate(data)
-        url = urljoin(self.baseUrl, "/rest/ofscCapacity/v1/showBookingGrid")
-        try:
-            response = await self._client.post(url, headers=self.headers, json=data.model_dump(exclude_none=True))
-            response.raise_for_status()
-            return ShowBookingGridResponse.model_validate(response.json())
-        except httpx.HTTPStatusError as e:
-            self._handle_http_error(e, "Failed to show booking grid")
-            raise
-        except httpx.TransportError as e:
-            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+        return await self._post_item(
+            "/rest/ofscCapacity/v1/showBookingGrid",
+            data,
+            ShowBookingGridResponse,
+            "Failed to show booking grid",
+        )
 
     # endregion
 
@@ -480,7 +485,7 @@ class AsyncOFSCapacity(AsyncClientBase):
         """
         params: dict = {}
         if areas is not None:
-            params["areas"] = ",".join(areas) if isinstance(areas, list) else areas
+            params["areas"] = self._to_csv_param(areas)
 
         url = urljoin(self.baseUrl, "/rest/ofscCapacity/v1/bookingFieldsDependencies")
         try:
