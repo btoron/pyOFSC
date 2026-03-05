@@ -517,6 +517,29 @@ class TestAsyncGetAllResources:
         assert mock_instance.core._client.get.call_count == 2
 
     @pytest.mark.asyncio
+    @pytest.mark.uses_real_data
+    async def test_get_all_resources_matches_manual_pagination(self, async_instance: AsyncOFSC):
+        """Verify get_all_resources yields same unique resources as manual get_resources pagination."""
+        # Manual pagination
+        manual_ids = set()
+        offset = 0
+        while True:
+            page = await async_instance.core.get_resources(offset=offset, limit=10)
+            for r in page.items:
+                manual_ids.add(r.resourceId)
+            if not page.hasMore:
+                break
+            offset += 10
+
+        # Generator
+        generator_ids = set()
+        async for resource in async_instance.core.get_all_resources(limit=10):
+            generator_ids.add(resource.resourceId)
+
+        assert len(manual_ids) > 0, "No resources found in test environment"
+        assert manual_ids == generator_ids
+
+    @pytest.mark.asyncio
     async def test_get_all_resources_unique_resource_ids(self, mock_instance: AsyncOFSC):
         """Verify no duplicate resourceIds are yielded across pages."""
         page1_response = Mock()
