@@ -178,4 +178,4 @@ tests/saved_responses
 plans
 tmp
 docs/qa.md
-tests/audit_results
+tests/**/audit_results
