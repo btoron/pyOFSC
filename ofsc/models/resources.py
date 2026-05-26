@@ -94,14 +94,14 @@ class Recurrence(BaseModel):
     weekDays: Optional[list[str]] = None
 
     @model_validator(mode="after")
-    def check_week_days(cls, values):
-        if values.recurrenceType == RecurrenceType.weekly and not values.weekDays:
+    def check_week_days(self):
+        if self.recurrenceType == RecurrenceType.weekly and not self.weekDays:
             raise ValueError("weekDays is required for weekly recurrence")
-        if values.recurrenceType == RecurrenceType.yearly and not values.dayFrom:
+        if self.recurrenceType == RecurrenceType.yearly and not self.dayFrom:
             raise ValueError("dayFrom is required for yearly recurrence")
-        if values.recurrenceType == RecurrenceType.yearly and not values.dayTo:
+        if self.recurrenceType == RecurrenceType.yearly and not self.dayTo:
             raise ValueError("dayTo is required for yearly recurrence")
-        return values
+        return self
 
 
 class CalendarViewItemRecordType(str, Enum):
