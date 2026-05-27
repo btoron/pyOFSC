@@ -18,6 +18,7 @@ from ..exceptions import (
     OFSCValidationError,
 )
 from ..models import OFSConfig
+from ._http_config import HTTPClientConfig
 from .capacity import AsyncOFSCapacity
 from .core import AsyncOFSCore
 from .metadata import AsyncOFSMetadata
@@ -28,6 +29,7 @@ logger = logging.getLogger(__name__)
 
 __all__ = [
     "AsyncOFSC",
+    "HTTPClientConfig",
     "OFSAPIException",
     "OFSCApiError",
     "OFSCAuthenticationError",
@@ -83,8 +85,10 @@ class AsyncOFSC:
         enable_auto_raise: bool = True,
         enable_auto_model: bool = True,
         enable_logging: bool = False,
+        http_config: Optional[HTTPClientConfig] = None,
     ):
         self._enable_logging = enable_logging
+        self._http_config = http_config or HTTPClientConfig()
         self._config = OFSConfig(
             baseURL=baseUrl,
             clientID=clientID,
@@ -102,6 +106,40 @@ class AsyncOFSC:
         self._capacity: Optional[AsyncOFSCapacity] = None
         self._oauth: Optional[AsyncOFSOauth2] = None
         self._statistics: Optional[AsyncOFSStatistics] = None
+
+    def _build_client_kwargs(self, event_hooks: dict[str, list]) -> dict:
+        """Translate the library-neutral HTTPClientConfig into httpx kwargs.
+
+        Kept private so callers cannot rely on httpx-specific keys.
+        """
+        cfg = self._http_config
+        kwargs: dict = {
+            "http2": cfg.http2,
+            "event_hooks": event_hooks,
+            "follow_redirects": cfg.follow_redirects,
+            "trust_env": cfg.trust_env,
+            "verify": cfg.verify_ssl,
+        }
+        if cfg.max_concurrency is not None:
+            kwargs["limits"] = httpx.Limits(
+                max_connections=cfg.max_concurrency,
+                max_keepalive_connections=cfg.max_concurrency,
+            )
+        if cfg.timeout is not None:
+            kwargs["timeout"] = httpx.Timeout(cfg.timeout)
+        if cfg.proxy is not None:
+            kwargs["proxy"] = cfg.proxy
+        if cfg.max_retries > 0:
+            # When a custom transport is supplied, httpx ignores client-level
+            # verify/http2 — they must be set on the transport instead.
+            kwargs.pop("verify", None)
+            kwargs.pop("http2", None)
+            kwargs["transport"] = httpx.AsyncHTTPTransport(
+                retries=cfg.max_retries,
+                verify=cfg.verify_ssl,
+                http2=cfg.http2,
+            )
+        return kwargs
 
     async def __aenter__(self) -> "AsyncOFSC":
         """Enter async context manager - create shared httpx.AsyncClient."""
@@ -127,7 +165,7 @@ class AsyncOFSC:
                 "response": [log_response],
             }
 
-        self._client = httpx.AsyncClient(http2=True, event_hooks=event_hooks)
+        self._client = httpx.AsyncClient(**self._build_client_kwargs(event_hooks))
         self._core = AsyncOFSCore(config=self._config, client=self._client)
         self._metadata = AsyncOFSMetadata(config=self._config, client=self._client)
         self._capacity = AsyncOFSCapacity(config=self._config, client=self._client)
