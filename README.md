@@ -41,6 +41,28 @@ async with AsyncOFSC(clientID="...", secret="...", companyName="...", enable_log
 
 Logs are emitted under the `ofsc.async_client` logger. HTTP errors (4xx/5xx) are also logged at WARNING level. Disabled by default with zero overhead.
 
+### HTTP Transport Configuration
+
+Pass an `HTTPClientConfig` to tune transport behavior — most commonly to cap concurrency against the OFSC tenant, but also to set timeouts, retries, a proxy, and other knobs. All fields are optional; defaults preserve historical behavior. The surface is library-neutral (only scalars) so the underlying HTTP library can change without breaking your code.
+
+```python
+from ofsc.async_client import AsyncOFSC, HTTPClientConfig
+
+async with AsyncOFSC(
+    clientID="...",
+    secret="...",
+    companyName="...",
+    http_config=HTTPClientConfig(
+        max_concurrency=20,   # cap in-flight connections to the tenant
+        timeout=30.0,         # seconds, per request
+        max_retries=2,        # connection-level retries
+    ),
+) as client:
+    workzones = await client.metadata.get_workzones()
+```
+
+Available fields: `max_concurrency`, `timeout`, `max_retries`, `proxy`, `verify_ssl`, `http2`, `follow_redirects`, `trust_env`.
+
 ## Models
 
 All API entities use Pydantic v2 models. See `ofsc/models/` for available models.
