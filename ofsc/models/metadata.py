@@ -829,6 +829,8 @@ class Property(BaseModel):
     @field_validator("gui")
     @classmethod
     def gui_match(cls, v):
+        if v is None:
+            return v
         if v not in [
             "text",
             "checkbox",
