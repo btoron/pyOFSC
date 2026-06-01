@@ -543,7 +543,7 @@ class InventoryType(BaseModel):
     quantityPrecision: Optional[int] = 0
     unitOfMeasurement: Optional[str] = None
     links: Optional[list[Link]] = None
-    model_config = ConfigDict(extra="ignore", populate_by_name=True)
+    model_config = ConfigDict(extra="ignore", validate_by_name=True, validate_by_alias=True)
 
 
 class InventoryTypeList(RootModel[list[InventoryType]]):
