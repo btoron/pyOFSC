@@ -38,6 +38,20 @@ def test_get_properties(instance, demo_data):
     assert response["items"][0]["label"] == "ITEM_NUMBER"
 
 
+def test_property_accepts_explicit_null_gui():
+    property_obj = Property.model_validate(
+        {
+            "label": "foo",
+            "name": "Foo",
+            "type": "string",
+            "gui": None,
+            "translations": [{"language": "en", "name": "Foo"}],
+        }
+    )
+
+    assert property_obj.gui is None
+
+
 @pytest.mark.serial
 @pytest.mark.uses_real_data
 def test_create_replace_property(instance: OFSC, faker):
