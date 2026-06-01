@@ -475,16 +475,34 @@ class ItemList(RootModel[list[Item]]):
         return self.root[item]
 
 
+class CapacityCategoryWorkSkill(BaseModel):
+    # extra="allow" preserves audit fields (created_by, creation_date,
+    # last_updated_by, last_update_date, last_update_login) and any future fields.
+    model_config = ConfigDict(extra="allow")
+    label: str
+    ratio: Optional[int] = None
+    startDate: Optional[str] = None
+    end_date: Optional[str] = None
+
+
+class CapacityCategoryWorkSkillGroup(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    label: str
+    startDate: Optional[str] = None
+    end_date: Optional[str] = None
+    links: Optional[list[Link]] = None
+
+
 class CapacityCategory(BaseModel):
+    model_config = ConfigDict(extra="allow")
     label: str
     name: str
     timeSlots: Optional[ItemList] = None
     translations: Annotated[Optional[TranslationList], Field(alias="translations")] = None
-    workSkillGroups: Optional[ItemList] = None
-    workSkills: Optional[ItemList] = None
+    workSkillGroups: Optional[list[CapacityCategoryWorkSkillGroup]] = None
+    workSkills: Optional[list[CapacityCategoryWorkSkill]] = None
     active: bool
     links: Optional[list[Link]] = None
-    model_config = ConfigDict(extra="ignore")
 
 
 class CapacityCategoryListResponse(OFSResponseList[CapacityCategory]):
@@ -543,7 +561,7 @@ class InventoryType(BaseModel):
     quantityPrecision: Optional[int] = 0
     unitOfMeasurement: Optional[str] = None
     links: Optional[list[Link]] = None
-    model_config = ConfigDict(extra="ignore", populate_by_name=True)
+    model_config = ConfigDict(extra="ignore", validate_by_name=True, validate_by_alias=True)
 
 
 class InventoryTypeList(RootModel[list[InventoryType]]):
