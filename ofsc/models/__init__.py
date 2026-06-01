@@ -112,6 +112,8 @@ from .metadata import (
     CapacityAreaWorkZonesV1Response as CapacityAreaWorkZonesV1Response,
     CapacityCategory as CapacityCategory,
     CapacityCategoryListResponse as CapacityCategoryListResponse,
+    CapacityCategoryWorkSkill as CapacityCategoryWorkSkill,
+    CapacityCategoryWorkSkillGroup as CapacityCategoryWorkSkillGroup,
     Condition as Condition,
     EnumerationValue as EnumerationValue,
     EnumerationValueList as EnumerationValueList,
