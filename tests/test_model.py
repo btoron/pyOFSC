@@ -404,8 +404,14 @@ def test_capacity_category_model_list():
         assert item.translations == TranslationList.model_validate(capacityCategoryList["items"][idx]["translations"])
         expected_links = [Link.model_validate(link) for link in capacityCategoryList["items"][idx]["links"]]
         assert item.links == expected_links
-        # assert item.workSkills == capacityCategoryList["items"][idx]["workSkills"]
-        assert item.workSkillGroups == ItemList.model_validate(capacityCategoryList["items"][idx]["workSkillGroups"])
+        # workSkills now preserves ratio/startDate, previously dropped (see #175)
+        expected_ws = capacityCategoryList["items"][idx]["workSkills"]
+        assert len(item.workSkills) == len(expected_ws)
+        for ws_obj, ws_data in zip(item.workSkills, expected_ws):
+            assert ws_obj.label == ws_data["label"]
+            assert ws_obj.ratio == ws_data.get("ratio")
+            assert ws_obj.startDate == ws_data.get("startDate")
+        assert item.workSkillGroups == capacityCategoryList["items"][idx]["workSkillGroups"]
 
 
 # endregion
