@@ -325,7 +325,7 @@ class BulkUpdateError(BaseModel):
 
 class BulkUpdateWarning(BaseModel):
     code: Optional[int] = None
-    message: Optional[int] = None
+    message: Optional[str] = None
 
 
 class BulkUpdateResult(BaseModel):
