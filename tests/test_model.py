@@ -8,6 +8,7 @@ from ofsc.common import OBJ_RESPONSE
 from ofsc.models import (
     ActivityType,
     ActivityTypeGroup,
+    BulkUpdateResponse,
     CapacityArea,
     CapacityAreaListResponse,
     CapacityCategoryListResponse,
@@ -23,6 +24,26 @@ from ofsc.models import (
     WorkskillList,
     WorkskillListResponse,
 )
+
+
+def test_bulk_update_response_accepts_string_warning_message():
+    raw = {
+        "results": [
+            {
+                "activityKeys": {"activityId": 4225, "apptNumber": "0010a000019oDas"},
+                "operationsPerformed": ["updateProperties", "updatePosition"],
+                "warnings": [
+                    {"code": 1, "message": "Activity moved to a non-scheduled bucket"},
+                ],
+            },
+        ],
+    }
+
+    response = BulkUpdateResponse.model_validate(raw)
+
+    warning = response.results[0].warnings[0]
+    assert warning.code == 1
+    assert warning.message == "Activity moved to a non-scheduled bucket"
 
 
 def test_translation_model_base():
