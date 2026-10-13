@@ -136,6 +136,29 @@ async with AsyncOFSC(clientID="...", secret="...", companyName="...") as client:
 
 See the [examples/](examples/) directory for comprehensive sync and async usage examples.
 
+### Streaming Daily Extract Downloads
+
+The synchronous client can download large extracts without buffering the full
+successful response in memory. Use the response as a context manager and choose
+the chunk size through Requests' `iter_content` method:
+
+```python
+with instance.core.get_daily_extract_file_stream(
+    date="2026-01-15", filename="extract.zip", timeout=(5, 60)
+) as stream:
+    with open("extract.zip", "wb") as destination:
+        for chunk in stream.iter_content(chunk_size=8192):
+            if chunk:
+                destination.write(chunk)
+```
+
+The response closes on context exit, including after an early break or an
+exception. The optional timeout specifies connect and read timeouts; omitting
+it preserves Requests' default. With the default `auto_raise=True`, OFSC JSON
+errors raise `OFSAPIException`, and other unsuccessful responses raise
+`requests.HTTPError`. If `auto_raise=False`, check `stream.status_code` before
+writing the body. `get_daily_extract_file` continues to return buffered bytes.
+
 ## Test History
 
 OFS REST API Version | PyOFSC
