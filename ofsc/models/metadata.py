@@ -496,7 +496,7 @@ class CapacityCategoryWorkSkillGroup(BaseModel):
 class CapacityCategory(BaseModel):
     model_config = ConfigDict(extra="allow")
     label: str
-    name: str
+    name: Optional[str] = None
     timeSlots: Optional[ItemList] = None
     translations: Annotated[Optional[TranslationList], Field(alias="translations")] = None
     workSkillGroups: Optional[list[CapacityCategoryWorkSkillGroup]] = None
