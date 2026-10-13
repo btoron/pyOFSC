@@ -114,9 +114,30 @@ uv run pytest tests/async/test_async_workzones.py
 
 ## Implemented Functions
 
-**195 async endpoints** (80% coverage) and **89 sync endpoints** (37% coverage) across Core, Metadata, Capacity, Statistics, and Auth modules.
+**197 async endpoints** (81% coverage) and **89 sync endpoints** (37% coverage) across Core, Metadata, Capacity, Statistics, and Auth modules.
 
 See [docs/ENDPOINTS.md](docs/ENDPOINTS.md) for the full implementation status table.
+
+### Async core operations
+
+- `core.search_activities(params)` returns an `ActivityListResponse` and accepts
+  the [search API's query parameters](https://docs.oracle.com/en/cloud/saas/field-service/cxfsc/op-rest-ofsccore-v1-activities-custom-actions-search-get.html),
+  including `searchInField`, `searchForValue`, date filters, offset and limit.
+- `core.move_activity(activity_id, data)` sends the action object and returns
+  `None` for a successful [204 move response](https://docs.oracle.com/en/cloud/saas/field-service/cxfsc/op-rest-ofsccore-v1-activities-activityid-custom-actions-move-post.html).
+- `core.bulk_update(BulkUpdateRequest(...))` returns a `BulkUpdateResponse`.
+  Explicit nulls are preserved, including `activityId=None` for creation; unset
+  optional fields are omitted. Inspect each result's errors, operations and
+  warnings: [bulk updates](https://docs.oracle.com/en/cloud/saas/field-service/cxfsc/op-rest-ofsccore-v1-activities-custom-actions-bulkupdate-post.html)
+  can partially fail within a successful HTTP response.
+
+`core.get_all_activities(...)` and `core.get_all_properties(...)` collect all
+pages into typed `OFSResponseList` containers. Activity dates default to seven
+days before/after the current day; provide both bounds for another range.
+`activity_fields` and `additional_fields` control which fields are fetched.
+Offsets advance by the number of returned items, and an empty page claiming
+more data raises `OFSCApiError`. Both helpers hold the complete result in memory;
+use `core.get_activities` or `metadata.get_properties` for individual pages.
 
 ## Usage Examples
 
