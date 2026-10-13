@@ -16,6 +16,7 @@ from ...models import (
     ActivityListResponse,
     MultidaySegmentListResponse,
     BulkUpdateRequest,
+    BulkUpdateResponse,
     CreateSubscriptionRequest,
     DailyExtractFiles,
     DailyExtractFolders,
@@ -196,14 +197,62 @@ class _AsyncOFSCoreBase(AsyncClientBase):
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def search_activities(self, params: dict):
-        raise NotImplementedError("Async method not yet implemented")
+    async def search_activities(self, params: dict) -> ActivityListResponse:
+        """Search activities using the API's search query parameters.
 
-    async def move_activity(self, activity_id: int, data):
-        raise NotImplementedError("Async method not yet implemented")
+        Unlike get_activities, this endpoint accepts searchInField and
+        searchForValue. Date filters, offset and limit can be supplied in params.
+        Oracle caps a search at 1000 matching records; refine the criteria for
+        larger result sets. Returns a typed activity list and uses the standard
+        typed HTTP and network exceptions.
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/activities/custom-actions/search")
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            return ActivityListResponse.model_validate(self._clean_response(response.json()))
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to search activities")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def bulk_update(self, data: BulkUpdateRequest):
-        raise NotImplementedError("Async method not yet implemented")
+    async def move_activity(self, activity_id: int, data: dict) -> None:
+        """Move an activity by date, resource and/or position in the route.
+
+        Supply setDate, setResource and/or setPositionInRoute in data. Explicit
+        null values are preserved (setDate.date=null makes it non-scheduled).
+        A successful move returns 204 with no body, so the result is None.
+        HTTP and transport failures use the standard typed exceptions.
+        """
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/activities/{activity_id}/custom-actions/move")
+        try:
+            response = await self._client.post(url, headers=self.headers, json=data)
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, f"Failed to move activity {activity_id}")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def bulk_update(self, data: BulkUpdateRequest) -> BulkUpdateResponse:
+        """Create/update activities and return each item's typed operation result.
+
+        Explicit nulls are sent, including activityId=None for creating an
+        activity. Unset optional fields are omitted to avoid clearing them.
+        A 200 response can contain per-item failures; inspect results for errors,
+        operationsFailed and warnings. HTTP/transport errors use typed exceptions.
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/activities/custom-actions/bulkUpdate")
+        try:
+            response = await self._client.post(url, headers=self.headers, content=data.model_dump_json(by_alias=True, exclude_unset=True))
+            response.raise_for_status()
+            return BulkUpdateResponse.model_validate(self._clean_response(response.json()))
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to bulk update activities")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def get_capacity_categories(self, activity_id: int) -> ActivityCapacityCategoriesResponse:
         """Get capacity categories for an activity.
@@ -1216,17 +1265,31 @@ class _AsyncOFSCoreBase(AsyncClientBase):
         self,
         *,
         root: Optional[str] = None,
-        date_from: date = None,
-        date_to: date = None,
+        date_from: Optional[date] = None,
+        date_to: Optional[date] = None,
         activity_fields: Optional[list[str]] = None,
         additional_fields: Optional[list[str]] = None,
         initial_offset: int = 0,
         include_non_scheduled: bool = False,
         limit: int = 5000,
     ) -> OFSResponseList[Activity]:
-        raise NotImplementedError("Async method not yet implemented")
+        """Not yet implemented; page with core.get_activities instead.
+
+        Tracked at https://github.com/btoron/pyOFSC/issues/151.
+        """
+        raise NotImplementedError(
+            "core.get_all_activities is not implemented. Use core.get_activities(params, offset, limit) to page results. "
+            "Track progress: https://github.com/btoron/pyOFSC/issues/151"
+        )
 
     async def get_all_properties(self, initial_offset: int = 0, limit: int = 100):
-        raise NotImplementedError("Async method not yet implemented")
+        """Not yet implemented; properties belong to the metadata API.
+
+        Tracked at https://github.com/btoron/pyOFSC/issues/151.
+        """
+        raise NotImplementedError(
+            "core.get_all_properties is not implemented. Use metadata.get_properties(offset, limit) to page results. "
+            "Track progress: https://github.com/btoron/pyOFSC/issues/151"
+        )
 
     # endregion
