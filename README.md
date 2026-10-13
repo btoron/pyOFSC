@@ -131,9 +131,13 @@ See [docs/ENDPOINTS.md](docs/ENDPOINTS.md) for the full implementation status ta
   warnings: [bulk updates](https://docs.oracle.com/en/cloud/saas/field-service/cxfsc/op-rest-ofsccore-v1-activities-custom-actions-bulkupdate-post.html)
   can partially fail within a successful HTTP response.
 
-The async `core.get_all_activities` and `core.get_all_properties` helpers remain
-unimplemented and are tracked in [#151](https://github.com/btoron/pyOFSC/issues/151).
-Page with `core.get_activities` or `metadata.get_properties` respectively.
+`core.get_all_activities(...)` and `core.get_all_properties(...)` collect all
+pages into typed `OFSResponseList` containers. Activity dates default to seven
+days before/after the current day; provide both bounds for another range.
+`activity_fields` and `additional_fields` control which fields are fetched.
+Offsets advance by the number of returned items, and an empty page claiming
+more data raises `OFSCApiError`. Both helpers hold the complete result in memory;
+use `core.get_activities` or `metadata.get_properties` for individual pages.
 
 ## Usage Examples
 

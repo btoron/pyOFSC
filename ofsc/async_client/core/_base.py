@@ -1,12 +1,13 @@
 """Base class for AsyncOFSCore - contains all non-user methods."""
 
-from datetime import date
-from typing import Optional
+from datetime import date, timedelta
+from typing import Awaitable, Callable, Optional, TypeVar
 from urllib.parse import urljoin
 
 import httpx
 
 from ...exceptions import (
+    OFSCApiError,
     OFSCNetworkError,
 )
 from .._base import AsyncClientBase
@@ -27,6 +28,8 @@ from ...models import (
     LinkedActivitiesResponse,
     LinkedActivity,
     OFSResponseList,
+    Property,
+    PropertyListResponse,
     RequiredInventoriesResponse,
     RequiredInventory,
     ResourcePreference,
@@ -35,6 +38,24 @@ from ...models import (
     Subscription,
     SubscriptionListResponse,
 )
+
+
+T = TypeVar("T")
+
+
+async def _collect_pages(fetch_page: Callable[[int], Awaitable[OFSResponseList[T]]], initial_offset: int, limit: int) -> list[T]:
+    if initial_offset < 0 or limit <= 0:
+        raise ValueError("initial_offset must be non-negative and limit must be positive")
+    items: list[T] = []
+    offset = initial_offset
+    while True:
+        page = await fetch_page(offset)
+        items.extend(page.items)
+        if not page.hasMore:
+            return items
+        if not page.items:
+            raise OFSCApiError(f"Pagination returned an empty page with hasMore=true at offset {offset}")
+        offset += len(page.items)
 
 
 class _AsyncOFSCoreBase(AsyncClientBase):
@@ -1273,23 +1294,42 @@ class _AsyncOFSCoreBase(AsyncClientBase):
         include_non_scheduled: bool = False,
         limit: int = 5000,
     ) -> OFSResponseList[Activity]:
-        """Not yet implemented; page with core.get_activities instead.
+        """Collect all activity pages into a typed list.
 
-        Tracked at https://github.com/btoron/pyOFSC/issues/151.
+        The root defaults to config.root. Supply both date bounds or omit both
+        for a window of seven days before/after today, evaluated at call time.
+        Additional fields are appended without changing caller-owned lists.
+        All results are held in memory; use get_activities for individual pages.
         """
-        raise NotImplementedError(
-            "core.get_all_activities is not implemented. Use core.get_activities(params, offset, limit) to page results. "
-            "Track progress: https://github.com/btoron/pyOFSC/issues/151"
+        if date_from is None and date_to is None:
+            today = date.today()
+            date_from, date_to = today - timedelta(days=7), today + timedelta(days=7)
+        selected_root = self.config.root if root is None else root
+        fields = activity_fields if activity_fields is not None else ["activityId", "activityType", "date", "resourceId", "status"]
+        params = GetActivitiesParams(
+            resources=[selected_root] if selected_root else None,
+            includeChildren="all",
+            dateFrom=date_from,
+            dateTo=date_to,
+            fields=list(dict.fromkeys([*fields, *(additional_fields or [])])),
+            includeNonScheduled=include_non_scheduled,
         )
 
-    async def get_all_properties(self, initial_offset: int = 0, limit: int = 100):
-        """Not yet implemented; properties belong to the metadata API.
+        async def fetch_page(offset: int) -> ActivityListResponse:
+            return await self.get_activities(params, offset=offset, limit=limit)
 
-        Tracked at https://github.com/btoron/pyOFSC/issues/151.
+        return OFSResponseList[Activity](items=await _collect_pages(fetch_page, initial_offset, limit))
+
+    async def get_all_properties(self, initial_offset: int = 0, limit: int = 100) -> OFSResponseList[Property]:
+        """Collect all property pages from the metadata API into a typed list.
+
+        Retains the legacy core helper's location; individual pages are also
+        available through metadata.get_properties. All results are held in memory.
         """
-        raise NotImplementedError(
-            "core.get_all_properties is not implemented. Use metadata.get_properties(offset, limit) to page results. "
-            "Track progress: https://github.com/btoron/pyOFSC/issues/151"
-        )
+
+        async def fetch_page(offset: int) -> PropertyListResponse:
+            return await self._get_paginated_list("/rest/ofscMetadata/v1/properties", PropertyListResponse, "Failed to get properties", offset, limit)
+
+        return OFSResponseList[Property](items=await _collect_pages(fetch_page, initial_offset, limit))
 
     # endregion
