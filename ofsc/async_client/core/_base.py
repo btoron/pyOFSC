@@ -1,5 +1,7 @@
 """Base class for AsyncOFSCore - contains all non-user methods."""
 
+from collections.abc import AsyncIterator
+from contextlib import AsyncExitStack, asynccontextmanager
 from datetime import date
 from typing import Optional
 from urllib.parse import urljoin
@@ -1082,6 +1084,57 @@ class _AsyncOFSCoreBase(AsyncClientBase):
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    @asynccontextmanager
+    async def get_daily_extract_file_stream(self, date: str, filename: str, chunk_size: int = 8192) -> AsyncIterator[AsyncIterator[bytes]]:
+        """Stream a daily extract without buffering its successful response.
+
+        Use ``async with`` and iterate the yielded byte stream inside that
+        context. The response closes on completion, early exit, errors, or
+        cancellation; the shared HTTP client stays open for other API calls.
+
+        Args:
+            date: Date string in YYYY-MM-DD format.
+            filename: Name of the file to download.
+            chunk_size: Positive maximum size of each yielded chunk in bytes.
+
+        Yields:
+            AsyncIterator[bytes]: File chunks, with a possibly shorter last chunk.
+
+        Raises:
+            ValueError: If chunk_size is not positive.
+            OFSCApiError: Typed API errors, as with get_daily_extract_file.
+            OFSCNetworkError: For connection errors or interrupted download reads.
+        """
+        if chunk_size <= 0:
+            raise ValueError("chunk_size must be positive")
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/folders/dailyExtract/folders/{date}/files/{filename}")
+        headers = {**self.headers, "Accept": "application/octet-stream"}
+
+        async with AsyncExitStack() as stack:
+            try:
+                response = await stack.enter_async_context(self._client.stream("GET", url, headers=headers))
+                try:
+                    response.raise_for_status()
+                except httpx.HTTPStatusError as e:
+                    # Only error bodies are read eagerly, so the shared error
+                    # handler can preserve OFSC's title, detail, and error type.
+                    await response.aread()
+                    self._handle_http_error(e, f"Failed to get daily extract file '{filename}' for date '{date}'")
+                    raise
+            except httpx.TransportError as e:
+                raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+            async def chunks() -> AsyncIterator[bytes]:
+                try:
+                    async for chunk in response.aiter_bytes(chunk_size):
+                        yield chunk
+                except httpx.TransportError as e:
+                    raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+            # Translate errors from download I/O, while preserving exceptions
+            # raised by the caller (for example, while uploading a chunk).
+            yield chunks()
 
     # endregion
 
