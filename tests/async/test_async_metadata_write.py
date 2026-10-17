@@ -342,15 +342,21 @@ class TestCreateOrReplaceInventoryType:
         """Test that create_or_replace_inventory_type returns InventoryType."""
         mock_response = _mock_response(
             200,
-            {"label": "CABLE", "active": True, "nonSerialized": False},
+            {"label": "CABLE", "active": True, "nonSerialized": True, "modelProperty": "model_code"},
         )
         mock_instance.metadata._client.put = AsyncMock(return_value=mock_response)
 
-        data = InventoryType(label="CABLE", active=True)
+        data = InventoryType(label="CABLE", active=True, non_serialized=True, model_property="model_code")
         result = await mock_instance.metadata.create_or_replace_inventory_type(data)
 
         assert isinstance(result, InventoryType)
         assert result.label == "CABLE"
+        assert result.non_serialized is True
+        body = mock_instance.metadata._client.put.call_args.kwargs["json"]
+        assert body["nonSerialized"] is True
+        assert body["modelProperty"] == "model_code"
+        assert "non_serialized" not in body
+        assert "model_property" not in body
         call_url = mock_instance.metadata._client.put.call_args[0][0]
         assert "inventoryTypes/CABLE" in call_url
 
