@@ -1,5 +1,7 @@
 import json
 import logging
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import date, timedelta
 from typing import Optional
 from urllib.parse import urljoin
@@ -7,6 +9,7 @@ from urllib.parse import urljoin
 import requests
 
 from .common import FILE_RESPONSE, FULL_RESPONSE, OBJ_RESPONSE, wrap_return
+from .exceptions import OFSAPIException
 from .models import (
     Activity,
     AssignedLocationsResponse,
@@ -532,6 +535,38 @@ class OFSCore(OFSApi):
         )
         response = requests.get(url, headers=headers)
         return response
+
+    @contextmanager
+    def get_daily_extract_file_stream(
+        self, date: str, filename: str, *, timeout: float | tuple[float, float] | None = None
+    ) -> Iterator[requests.Response]:
+        """Open an extract response without buffering its successful body.
+
+        Use ``with`` and consume ``response.iter_content(chunk_size=8192)``.
+        The response closes when the context exits, including after partial reads
+        or exceptions. ``timeout`` uses Requests' connect/read timeout semantics.
+        With ``auto_raise=False``, inspect the response status before saving it.
+        """
+        headers = {**self.headers, "Accept": "application/octet-stream"}
+        url = urljoin(
+            self.baseUrl,
+            f"/rest/ofscCore/v1/folders/dailyExtract/folders/{date}/files/{filename}",
+        )
+        with requests.get(url, headers=headers, stream=True, timeout=timeout) as response:
+            if self.config.auto_raise and response.status_code != 200:
+                if 400 <= response.status_code < 600:
+                    try:
+                        error = response.json()
+                    except ValueError:
+                        error = None
+                    if isinstance(error, dict):
+                        raise OFSAPIException(**{**error, "status": response.status_code})
+                    response.raise_for_status()
+                raise requests.HTTPError(
+                    f"Unexpected daily extract response status {response.status_code}; expected 200",
+                    response=response,
+                )
+            yield response
 
     # endregion
     # region 202202 Helper functions
