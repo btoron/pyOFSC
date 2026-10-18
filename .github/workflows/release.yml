@@ -5,8 +5,7 @@ on:
     types: [closed]
 
 permissions:
-  contents: write
-  id-token: write
+  contents: read
 
 jobs:
   release:
@@ -16,10 +15,13 @@ jobs:
        contains(github.event.pull_request.labels.*.name, 'release:minor') ||
        contains(github.event.pull_request.labels.*.name, 'release:major'))
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
     environment:
       name: pypi
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
 
@@ -43,7 +45,7 @@ jobs:
           fi
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4.2.0
 
       - name: Set up Python
         run: uv python install 3.14
