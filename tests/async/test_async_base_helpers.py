@@ -1,5 +1,6 @@
 """Unit tests for AsyncClientBase helper methods."""
 
+import json
 from unittest.mock import AsyncMock, Mock
 
 import httpx
@@ -12,7 +13,7 @@ from ofsc.exceptions import (
     OFSCAuthenticationError,
     OFSCValidationError,
 )
-from ofsc.models import Workzone, WorkzoneListResponse
+from ofsc.models import InventoryType, Workzone, WorkzoneListResponse
 
 # Complete Workzone dict that satisfies all required fields
 _WORKZONE_DATA = {
@@ -301,6 +302,34 @@ class TestGetAllItems:
 # ---------------------------------------------------------------------------
 # _put_item
 # ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("helper,method", [("_put_item", "put"), ("_post_item", "post"), ("_patch_item", "patch")])
+@pytest.mark.parametrize("non_serialized", [False, True])
+@pytest.mark.parametrize("model_property", [None, "model_code"])
+async def test_write_helpers_use_api_aliases(
+    mock_instance: AsyncOFSC, helper: str, method: str, non_serialized: bool, model_property: str | None
+) -> None:
+    """HTTP bodies use API names, retain false/zero, and omit absent optional fields."""
+    data = InventoryType.model_validate({"label": "CABLE", "active": True, "nonSerialized": non_serialized, "modelProperty": model_property})
+    request = AsyncMock(return_value=_make_response(json_data={"label": "CABLE", "nonSerialized": non_serialized}))
+    setattr(mock_instance.metadata._client, method, request)
+
+    result = await getattr(mock_instance.metadata, helper)("/rest/ofscMetadata/v1/inventoryTypes/CABLE", data, InventoryType, "test context")
+
+    kwargs = request.call_args.kwargs
+    body = kwargs["json"] if "json" in kwargs else json.loads(kwargs["content"])
+    assert body["nonSerialized"] is non_serialized
+    assert body["quantityPrecision"] == 0
+    assert "non_serialized" not in body
+    assert "model_property" not in body
+    if model_property is None:
+        assert "modelProperty" not in body
+    else:
+        assert body["modelProperty"] == model_property
+    assert "translations" not in body
+    assert result.non_serialized is non_serialized
 
 
 class TestPutItem:
