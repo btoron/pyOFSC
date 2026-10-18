@@ -335,7 +335,7 @@ class AsyncClientBase:
             response = await self._client.put(
                 url,
                 headers=self.headers,
-                json=data.model_dump(exclude_none=True, mode="json"),
+                json=data.model_dump(exclude_none=True, mode="json", by_alias=True),
             )
             response.raise_for_status()
             result = self._clean_response(response.json())
@@ -378,7 +378,7 @@ class AsyncClientBase:
             response = await self._client.post(
                 url,
                 headers=self.headers,
-                content=data.model_dump_json(exclude_none=True),
+                content=data.model_dump_json(exclude_none=True, by_alias=True),
             )
             response.raise_for_status()
             result = self._clean_response(response.json())
@@ -421,7 +421,7 @@ class AsyncClientBase:
             response = await self._client.patch(
                 url,
                 headers=self.headers,
-                content=data.model_dump_json(exclude_none=True).encode("utf-8"),
+                content=data.model_dump_json(exclude_none=True, by_alias=True).encode("utf-8"),
             )
             response.raise_for_status()
             result = self._clean_response(response.json())
