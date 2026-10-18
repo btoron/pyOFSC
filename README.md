@@ -25,6 +25,25 @@ async with AsyncOFSC(clientID="...", secret="...", companyName="...") as client:
 - **Request/Response Logging**: Optional httpx event hooks for automatic API call tracing
 - **Async Generators**: Lazy pagination helpers that yield individual items across all pages (e.g. `get_all_workzones`, `get_all_resources`) `[Async]`
 
+### Streaming Daily Extract Downloads
+
+Download large extracts incrementally with `core.get_daily_extract_file_stream`:
+
+```python
+async with AsyncOFSC(clientID="...", secret="...", companyName="...") as client:
+    async with client.core.get_daily_extract_file_stream(
+        date="2024-01-15", filename="extract.zip", chunk_size=8192
+    ) as stream:
+        with open("extract.zip", "wb") as output:
+            async for chunk in stream:
+                output.write(chunk)
+```
+
+The async context keeps the response open while chunks are consumed and closes it
+on completion, early exit, errors, or cancellation. `chunk_size` must be positive.
+Successful downloads are not buffered in full; HTTP error bodies are read to
+preserve the same typed API exceptions as the buffered download method.
+
 ### Enabling Request/Response Logging
 
 Pass `enable_logging=True` to automatically log all HTTP requests and responses via Python's standard logging:
@@ -114,9 +133,30 @@ uv run pytest tests/async/test_async_workzones.py
 
 ## Implemented Functions
 
-**195 async endpoints** (80% coverage) and **89 sync endpoints** (37% coverage) across Core, Metadata, Capacity, Statistics, and Auth modules.
+**197 async endpoints** (81% coverage) and **89 sync endpoints** (37% coverage) across Core, Metadata, Capacity, Statistics, and Auth modules.
 
 See [docs/ENDPOINTS.md](docs/ENDPOINTS.md) for the full implementation status table.
+
+### Async core operations
+
+- `core.search_activities(params)` returns an `ActivityListResponse` and accepts
+  the [search API's query parameters](https://docs.oracle.com/en/cloud/saas/field-service/cxfsc/op-rest-ofsccore-v1-activities-custom-actions-search-get.html),
+  including `searchInField`, `searchForValue`, date filters, offset and limit.
+- `core.move_activity(activity_id, data)` sends the action object and returns
+  `None` for a successful [204 move response](https://docs.oracle.com/en/cloud/saas/field-service/cxfsc/op-rest-ofsccore-v1-activities-activityid-custom-actions-move-post.html).
+- `core.bulk_update(BulkUpdateRequest(...))` returns a `BulkUpdateResponse`.
+  Explicit nulls are preserved, including `activityId=None` for creation; unset
+  optional fields are omitted. Inspect each result's errors, operations and
+  warnings: [bulk updates](https://docs.oracle.com/en/cloud/saas/field-service/cxfsc/op-rest-ofsccore-v1-activities-custom-actions-bulkupdate-post.html)
+  can partially fail within a successful HTTP response.
+
+`core.get_all_activities(...)` and `core.get_all_properties(...)` collect all
+pages into typed `OFSResponseList` containers. Activity dates default to seven
+days before/after the current day; provide both bounds for another range.
+`activity_fields` and `additional_fields` control which fields are fetched.
+Offsets advance by the number of returned items, and an empty page claiming
+more data raises `OFSCApiError`. Both helpers hold the complete result in memory;
+use `core.get_activities` or `metadata.get_properties` for individual pages.
 
 ## Usage Examples
 
@@ -135,6 +175,29 @@ async with AsyncOFSC(clientID="...", secret="...", companyName="...") as client:
 ```
 
 See the [examples/](examples/) directory for comprehensive sync and async usage examples.
+
+### Streaming Daily Extract Downloads
+
+The synchronous client can download large extracts without buffering the full
+successful response in memory. Use the response as a context manager and choose
+the chunk size through Requests' `iter_content` method:
+
+```python
+with instance.core.get_daily_extract_file_stream(
+    date="2026-01-15", filename="extract.zip", timeout=(5, 60)
+) as stream:
+    with open("extract.zip", "wb") as destination:
+        for chunk in stream.iter_content(chunk_size=8192):
+            if chunk:
+                destination.write(chunk)
+```
+
+The response closes on context exit, including after an early break or an
+exception. The optional timeout specifies connect and read timeouts; omitting
+it preserves Requests' default. With the default `auto_raise=True`, OFSC JSON
+errors raise `OFSAPIException`, and other unsuccessful responses raise
+`requests.HTTPError`. If `auto_raise=False`, check `stream.status_code` before
+writing the body. `get_daily_extract_file` continues to return buffered bytes.
 
 ## Test History
 
