@@ -220,7 +220,6 @@ class OFSApi:
     def call(self, *, method: str, partialUrl: str, additionalHeaders: dict = {}, **kwargs) -> requests.Response:
         headers = self.headers | additionalHeaders
         url = urljoin(self.baseUrl, partialUrl)
-        headers = self.headers
         response = requests.request(method, url, headers=headers, **kwargs)
         return response
 
