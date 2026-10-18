@@ -123,10 +123,13 @@ Enhancement suggestions are tracked as [GitHub issues](/issues).
 
 Before opening a pull request, contributors should ensure:
 
-- all commits are signed
+- every commit has a cryptographic signature (GPG, SSH, or S/MIME) that GitHub verifies as **Verified**
 - the branch history remains linear (no merge commits in feature branches)
 - the branch is rebased when needed to preserve a clean, reviewable history
 
+Configure commit signing by following GitHub's [guide to signing commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).
+A `Signed-off-by` line is a DCO attestation, not a cryptographic signature, and does not satisfy this requirement.
+After pushing, check the commits on GitHub and confirm each displays the **Verified** badge.
 
 ### Improving The Documentation
 
@@ -134,7 +137,7 @@ Before opening a pull request, contributors should ensure:
 ## Styleguides
 ### Commit Messages
 
-All commits must be signed and should preserve a linear project history. Rebase or squash before opening a pull request if your branch contains merge commits or otherwise introduces non-linear history.
+All commits must have a cryptographic signature verified by GitHub; a `Signed-off-by` line alone does not count. See [commit-signing setup](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits). Commits should preserve a linear project history. Rebase or squash before opening a pull request if your branch contains merge commits or otherwise introduces non-linear history.
 
 
 ## Join The Project Team
