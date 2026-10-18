@@ -2,13 +2,14 @@
 
 from collections.abc import AsyncIterator
 from contextlib import AsyncExitStack, asynccontextmanager
-from datetime import date
-from typing import Optional
+from datetime import date, timedelta
+from typing import Awaitable, Callable, Optional, TypeVar
 from urllib.parse import urljoin
 
 import httpx
 
 from ...exceptions import (
+    OFSCApiError,
     OFSCNetworkError,
 )
 from .._base import AsyncClientBase
@@ -18,6 +19,7 @@ from ...models import (
     ActivityListResponse,
     MultidaySegmentListResponse,
     BulkUpdateRequest,
+    BulkUpdateResponse,
     CreateSubscriptionRequest,
     DailyExtractFiles,
     DailyExtractFolders,
@@ -28,6 +30,8 @@ from ...models import (
     LinkedActivitiesResponse,
     LinkedActivity,
     OFSResponseList,
+    Property,
+    PropertyListResponse,
     RequiredInventoriesResponse,
     RequiredInventory,
     ResourcePreference,
@@ -36,6 +40,24 @@ from ...models import (
     Subscription,
     SubscriptionListResponse,
 )
+
+
+T = TypeVar("T")
+
+
+async def _collect_pages(fetch_page: Callable[[int], Awaitable[OFSResponseList[T]]], initial_offset: int, limit: int) -> list[T]:
+    if initial_offset < 0 or limit <= 0:
+        raise ValueError("initial_offset must be non-negative and limit must be positive")
+    items: list[T] = []
+    offset = initial_offset
+    while True:
+        page = await fetch_page(offset)
+        items.extend(page.items)
+        if not page.hasMore:
+            return items
+        if not page.items:
+            raise OFSCApiError(f"Pagination returned an empty page with hasMore=true at offset {offset}")
+        offset += len(page.items)
 
 
 class _AsyncOFSCoreBase(AsyncClientBase):
@@ -198,14 +220,62 @@ class _AsyncOFSCoreBase(AsyncClientBase):
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def search_activities(self, params: dict):
-        raise NotImplementedError("Async method not yet implemented")
+    async def search_activities(self, params: dict) -> ActivityListResponse:
+        """Search activities using the API's search query parameters.
 
-    async def move_activity(self, activity_id: int, data):
-        raise NotImplementedError("Async method not yet implemented")
+        Unlike get_activities, this endpoint accepts searchInField and
+        searchForValue. Date filters, offset and limit can be supplied in params.
+        Oracle caps a search at 1000 matching records; refine the criteria for
+        larger result sets. Returns a typed activity list and uses the standard
+        typed HTTP and network exceptions.
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/activities/custom-actions/search")
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            return ActivityListResponse.model_validate(self._clean_response(response.json()))
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to search activities")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
-    async def bulk_update(self, data: BulkUpdateRequest):
-        raise NotImplementedError("Async method not yet implemented")
+    async def move_activity(self, activity_id: int, data: dict) -> None:
+        """Move an activity by date, resource and/or position in the route.
+
+        Supply setDate, setResource and/or setPositionInRoute in data. Explicit
+        null values are preserved (setDate.date=null makes it non-scheduled).
+        A successful move returns 204 with no body, so the result is None.
+        HTTP and transport failures use the standard typed exceptions.
+        """
+        url = urljoin(self.baseUrl, f"/rest/ofscCore/v1/activities/{activity_id}/custom-actions/move")
+        try:
+            response = await self._client.post(url, headers=self.headers, json=data)
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, f"Failed to move activity {activity_id}")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def bulk_update(self, data: BulkUpdateRequest) -> BulkUpdateResponse:
+        """Create/update activities and return each item's typed operation result.
+
+        Explicit nulls are sent, including activityId=None for creating an
+        activity. Unset optional fields are omitted to avoid clearing them.
+        A 200 response can contain per-item failures; inspect results for errors,
+        operationsFailed and warnings. HTTP/transport errors use typed exceptions.
+        """
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/activities/custom-actions/bulkUpdate")
+        try:
+            response = await self._client.post(url, headers=self.headers, content=data.model_dump_json(by_alias=True, exclude_unset=True))
+            response.raise_for_status()
+            return BulkUpdateResponse.model_validate(self._clean_response(response.json()))
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, "Failed to bulk update activities")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
 
     async def get_capacity_categories(self, activity_id: int) -> ActivityCapacityCategoriesResponse:
         """Get capacity categories for an activity.
@@ -1269,17 +1339,50 @@ class _AsyncOFSCoreBase(AsyncClientBase):
         self,
         *,
         root: Optional[str] = None,
-        date_from: date = None,
-        date_to: date = None,
+        date_from: Optional[date] = None,
+        date_to: Optional[date] = None,
         activity_fields: Optional[list[str]] = None,
         additional_fields: Optional[list[str]] = None,
         initial_offset: int = 0,
         include_non_scheduled: bool = False,
         limit: int = 5000,
     ) -> OFSResponseList[Activity]:
-        raise NotImplementedError("Async method not yet implemented")
+        """Collect all activity pages into a typed list.
 
-    async def get_all_properties(self, initial_offset: int = 0, limit: int = 100):
-        raise NotImplementedError("Async method not yet implemented")
+        The root defaults to config.root. Supply both date bounds or omit both
+        for a window of seven days before/after today, evaluated at call time.
+        Additional fields are appended without changing caller-owned lists.
+        All results are held in memory; use get_activities for individual pages.
+        """
+        if date_from is None and date_to is None:
+            today = date.today()
+            date_from, date_to = today - timedelta(days=7), today + timedelta(days=7)
+        selected_root = self.config.root if root is None else root
+        fields = activity_fields if activity_fields is not None else ["activityId", "activityType", "date", "resourceId", "status"]
+        params = GetActivitiesParams(
+            resources=[selected_root] if selected_root else None,
+            includeChildren="all",
+            dateFrom=date_from,
+            dateTo=date_to,
+            fields=list(dict.fromkeys([*fields, *(additional_fields or [])])),
+            includeNonScheduled=include_non_scheduled,
+        )
+
+        async def fetch_page(offset: int) -> ActivityListResponse:
+            return await self.get_activities(params, offset=offset, limit=limit)
+
+        return OFSResponseList[Activity](items=await _collect_pages(fetch_page, initial_offset, limit))
+
+    async def get_all_properties(self, initial_offset: int = 0, limit: int = 100) -> OFSResponseList[Property]:
+        """Collect all property pages from the metadata API into a typed list.
+
+        Retains the legacy core helper's location; individual pages are also
+        available through metadata.get_properties. All results are held in memory.
+        """
+
+        async def fetch_page(offset: int) -> PropertyListResponse:
+            return await self._get_paginated_list("/rest/ofscMetadata/v1/properties", PropertyListResponse, "Failed to get properties", offset, limit)
+
+        return OFSResponseList[Property](items=await _collect_pages(fetch_page, initial_offset, limit))
 
     # endregion
