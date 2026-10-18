@@ -25,6 +25,25 @@ async with AsyncOFSC(clientID="...", secret="...", companyName="...") as client:
 - **Request/Response Logging**: Optional httpx event hooks for automatic API call tracing
 - **Async Generators**: Lazy pagination helpers that yield individual items across all pages (e.g. `get_all_workzones`, `get_all_resources`) `[Async]`
 
+### Streaming Daily Extract Downloads
+
+Download large extracts incrementally with `core.get_daily_extract_file_stream`:
+
+```python
+async with AsyncOFSC(clientID="...", secret="...", companyName="...") as client:
+    async with client.core.get_daily_extract_file_stream(
+        date="2024-01-15", filename="extract.zip", chunk_size=8192
+    ) as stream:
+        with open("extract.zip", "wb") as output:
+            async for chunk in stream:
+                output.write(chunk)
+```
+
+The async context keeps the response open while chunks are consumed and closes it
+on completion, early exit, errors, or cancellation. `chunk_size` must be positive.
+Successful downloads are not buffered in full; HTTP error bodies are read to
+preserve the same typed API exceptions as the buffered download method.
+
 ### Enabling Request/Response Logging
 
 Pass `enable_logging=True` to automatically log all HTTP requests and responses via Python's standard logging:
