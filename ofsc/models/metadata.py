@@ -97,9 +97,11 @@ class ActivityType(BaseModel):
     colors: Optional[ActivityTypeColors] = None
     defaultDuration: int
     features: Optional[ActivityTypeFeatures] = None
-    groupLabel: Optional[str]
+    # OFSC lists an activity type with no name when it has no translation in
+    # the default language (#208); the group label may be absent the same way.
+    groupLabel: Optional[str] = None
     label: str
-    name: str
+    name: Optional[str] = None
     segmentMaxDuration: Optional[int] = None
     segmentMinDuration: Optional[int] = None
     timeSlots: Optional[list[ActivityTypeTimeSlots]] = None
