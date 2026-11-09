@@ -124,6 +124,8 @@ from .metadata import (
     InventoryType as InventoryType,
     InventoryTypeList as InventoryTypeList,
     InventoryTypeListResponse as InventoryTypeListResponse,
+    InventoryTypeTranslation as InventoryTypeTranslation,
+    InventoryTypeTranslationList as InventoryTypeTranslationList,
     Item as Item,
     ItemList as ItemList,
     Language as Language,
