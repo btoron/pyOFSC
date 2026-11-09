@@ -551,10 +551,34 @@ class FormListResponse(OFSResponseList[Form]):
 # region Metadata / Inventory Types
 
 
+class InventoryTypeTranslation(Translation):
+    """A translation of an inventory type, which OFSC gives its own unit of measure.
+
+    OFSC requires ``unitOfMeasurement`` inside each translation of a
+    non-serialized inventory type: setting only the top-level field returns
+    400 ``Field 'unitOfMeasurement' must be set`` (#211). It lives here rather
+    than on the shared ``Translation`` so other entities' write bodies, some of
+    which are dumped without ``exclude_none``, do not gain the key.
+    """
+
+    unitOfMeasurement: Optional[str] = None
+
+
+class InventoryTypeTranslationList(RootModel[list[InventoryTypeTranslation]]):
+    def __iter__(self):  # type: ignore[override]
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+    def map(self):
+        return {translation.language: translation for translation in self.root}
+
+
 class InventoryType(BaseModel):
     label: str
     name: Optional[str] = None
-    translations: Annotated[Optional[TranslationList], Field(alias="translations")] = None
+    translations: Annotated[Optional[InventoryTypeTranslationList], Field(alias="translations")] = None
     active: bool = True
     model_property: Optional[str] = Field(default=None, alias="modelProperty")
     non_serialized: bool = Field(default=False, alias="nonSerialized")
