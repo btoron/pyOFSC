@@ -223,6 +223,11 @@ from .inventories import (
     RequiredInventory as RequiredInventory,
 )
 
+from .service_requests import (
+    ServiceRequest as ServiceRequest,
+    ServiceRequestCreate as ServiceRequestCreate,
+)
+
 from .statistics import (
     ActivityDurationStat as ActivityDurationStat,
     ActivityDurationStatsList as ActivityDurationStatsList,

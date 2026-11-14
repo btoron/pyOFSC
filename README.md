@@ -133,7 +133,7 @@ uv run pytest tests/async/test_async_workzones.py
 
 ## Implemented Functions
 
-**208 async endpoints** (86% coverage) and **89 sync endpoints** (37% coverage) across Core, Metadata, Capacity, Statistics, and Auth modules.
+**220 async endpoints** (91% coverage) and **89 sync endpoints** (37% coverage) across Core, Metadata, Capacity, Statistics, and Auth modules.
 
 See [docs/ENDPOINTS.md](docs/ENDPOINTS.md) for the full implementation status table.
 
@@ -169,6 +169,11 @@ See [docs/ENDPOINTS.md](docs/ENDPOINTS.md) for the full implementation status ta
   `core.get_last_known_positions(resources=[...], offset=)`;
   `core.get_resources_in_area(lat=, lng=, radius=, time_diff=, offset=, limit=)`.
   Each returns a typed response model (e.g. `ResourcesInAreaResponse`).
+- Service requests: `core.create_service_request(ServiceRequestCreate(activityId=...))`
+  (or a dict; exactly one of `activityId`, `resourceId`, `inventoryId`; custom
+  properties allowed) and `core.get_service_request(request_id)` return a
+  `ServiceRequest`; `core.get_service_request_property(request_id, label)` returns the
+  raw file content as `bytes`.
 
 `core.get_all_activities(...)` and `core.get_all_properties(...)` collect all
 pages into typed `OFSResponseList` containers. Activity dates default to seven
