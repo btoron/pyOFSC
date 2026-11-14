@@ -89,7 +89,8 @@ class WeekDay(str, Enum):
 class Recurrence(BaseModel):
     dayFrom: Optional[date] = None
     dayTo: Optional[date] = None
-    recurEvery: int = Field(ge=1, le=255)
+    # OFS omits recurEvery for "everyday" recurrences (#218)
+    recurEvery: Optional[int] = Field(default=None, ge=1, le=255)
     recurrenceType: RecurrenceType
     weekDays: Optional[list[str]] = None
 
