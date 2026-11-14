@@ -9,6 +9,10 @@ Releases before 2.28.0 are not listed here; see the
 
 ## [Unreleased]
 
+### Added
+
+- Added the activity custom actions to the async client — `start_prework`, `reopen_activity`, `delay_activity`, `cancel_activity`, `start_activity`, `enroute_activity`, `stop_travel`, `suspend_activity`, `complete_activity` and `notdone_activity`, each returning the updated `Activity` — plus `where_is_my_tech` (#123)
+
 ## [2.28.0] - 2026-11-13
 
 ### Fixed
