@@ -1,7 +1,7 @@
 # OFSC API Endpoints Reference
 
-**Version:** 2.26.2
-**Last Updated:** 2026-10-13
+**Version:** 2.28.0
+**Last Updated:** 2026-11-13
 
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints and their implementation status in pyOFSC.
 
@@ -149,18 +149,18 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |CO013U|`/rest/ofscCore/v1/activities/{activityId}/linkedActivities/{linkedActivityId}/linkTypes/{linkType}`                     |core         |PUT   |async |
 |CO014G|`/rest/ofscCore/v1/activities/custom-actions/search`                                                                     |core         |GET   |both  |
 |CO015P|`/rest/ofscCore/v1/activities/custom-actions/bulkUpdate`                                                                 |core         |POST  |both  |
-|CO016P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/startPrework`                                                  |core         |POST  |-     |
-|CO017P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/reopen`                                                        |core         |POST  |-     |
-|CO018P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/delay`                                                         |core         |POST  |-     |
-|CO019P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/cancel`                                                        |core         |POST  |-     |
-|CO020P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/start`                                                         |core         |POST  |-     |
-|CO021P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/enroute`                                                       |core         |POST  |-     |
-|CO022P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/stopTravel`                                                    |core         |POST  |-     |
-|CO023P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/suspend`                                                       |core         |POST  |-     |
+|CO016P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/startPrework`                                                  |core         |POST  |async |
+|CO017P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/reopen`                                                        |core         |POST  |async |
+|CO018P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/delay`                                                         |core         |POST  |async |
+|CO019P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/cancel`                                                        |core         |POST  |async |
+|CO020P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/start`                                                         |core         |POST  |async |
+|CO021P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/enroute`                                                       |core         |POST  |async |
+|CO022P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/stopTravel`                                                    |core         |POST  |async |
+|CO023P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/suspend`                                                       |core         |POST  |async |
 |CO024P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/move`                                                          |core         |POST  |both  |
-|CO025P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/complete`                                                      |core         |POST  |-     |
-|CO026P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/notDone`                                                       |core         |POST  |-     |
-|CO027G|`/rest/ofscCore/v1/whereIsMyTech`                                                                                        |core         |GET   |-     |
+|CO025P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/complete`                                                      |core         |POST  |async |
+|CO026P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/notDone`                                                       |core         |POST  |async |
+|CO027G|`/rest/ofscCore/v1/whereIsMyTech`                                                                                        |core         |GET   |async |
 |CO028G|`/rest/ofscCore/v1/folders/dailyExtract/folders`                                                                         |core         |GET   |both  |
 |CO029G|`/rest/ofscCore/v1/folders/dailyExtract/folders/{dailyExtractDate}/files`                                                |core         |GET   |both  |
 |CO030G|`/rest/ofscCore/v1/folders/dailyExtract/folders/{dailyExtractDate}/files/{dailyExtractFilename}`                         |core         |GET   |both  |
@@ -221,21 +221,21 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |CO063G|`/rest/ofscCore/v1/resources/{resourceId}/plans`                                                                         |core         |GET   |async |
 |CO063D|`/rest/ofscCore/v1/resources/{resourceId}/plans`                                                                         |core         |DELETE|-     |
 |CO064G|`/rest/ofscCore/v1/resources/{resourceId}/routes/{date}`                                                                 |core         |GET   |both  |
-|CO065P|`/rest/ofscCore/v1/resources/{resourceId}/routes/{date}/custom-actions/activate`                                         |core         |POST  |-     |
-|CO066P|`/rest/ofscCore/v1/resources/{resourceId}/routes/{date}/custom-actions/deactivate`                                       |core         |POST  |-     |
-|CO067G|`/rest/ofscCore/v1/resources/{resourceId}/findNearbyActivities`                                                          |core         |GET   |-     |
+|CO065P|`/rest/ofscCore/v1/resources/{resourceId}/routes/{date}/custom-actions/activate`                                         |core         |POST  |async |
+|CO066P|`/rest/ofscCore/v1/resources/{resourceId}/routes/{date}/custom-actions/deactivate`                                       |core         |POST  |async |
+|CO067G|`/rest/ofscCore/v1/resources/{resourceId}/findNearbyActivities`                                                          |core         |GET   |async |
 |CO068P|`/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkSchedules`                                                     |core         |POST  |both  |
 |CO069P|`/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkSkills`                                                        |core         |POST  |both  |
 |CO070P|`/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkZones`                                                         |core         |POST  |both  |
-|CO071P|`/rest/ofscCore/v1/resources/custom-actions/bulkUpdateInventories`                                                       |core         |POST  |-     |
-|CO072P|`/rest/ofscCore/v1/resources/custom-actions/findMatchingResources`                                                       |core         |POST  |-     |
-|CO073P|`/rest/ofscCore/v1/resources/custom-actions/findResourcesForUrgentAssignment`                                            |core         |POST  |-     |
-|CO074P|`/rest/ofscCore/v1/resources/custom-actions/setPositions`                                                                |core         |POST  |-     |
-|CO075G|`/rest/ofscCore/v1/resources/custom-actions/lastKnownPositions`                                                          |core         |GET   |-     |
-|CO076G|`/rest/ofscCore/v1/resources/custom-actions/resourcesInArea`                                                             |core         |GET   |-     |
-|CO077G|`/rest/ofscCore/v1/serviceRequests/{requestId}`                                                                          |core         |GET   |-     |
-|CO078P|`/rest/ofscCore/v1/serviceRequests`                                                                                      |core         |POST  |-     |
-|CO079G|`/rest/ofscCore/v1/serviceRequests/{requestId}/{propertyLabel}`                                                          |core         |GET   |-     |
+|CO071P|`/rest/ofscCore/v1/resources/custom-actions/bulkUpdateInventories`                                                       |core         |POST  |async |
+|CO072P|`/rest/ofscCore/v1/resources/custom-actions/findMatchingResources`                                                       |core         |POST  |async |
+|CO073P|`/rest/ofscCore/v1/resources/custom-actions/findResourcesForUrgentAssignment`                                            |core         |POST  |async |
+|CO074P|`/rest/ofscCore/v1/resources/custom-actions/setPositions`                                                                |core         |POST  |async |
+|CO075G|`/rest/ofscCore/v1/resources/custom-actions/lastKnownPositions`                                                          |core         |GET   |async |
+|CO076G|`/rest/ofscCore/v1/resources/custom-actions/resourcesInArea`                                                             |core         |GET   |async |
+|CO077G|`/rest/ofscCore/v1/serviceRequests/{requestId}`                                                                          |core         |GET   |async |
+|CO078P|`/rest/ofscCore/v1/serviceRequests`                                                                                      |core         |POST  |async |
+|CO079G|`/rest/ofscCore/v1/serviceRequests/{requestId}/{propertyLabel}`                                                          |core         |GET   |async |
 |CO080G|`/rest/ofscCore/v1/users`                                                                                                |core         |GET   |both  |
 |CO081G|`/rest/ofscCore/v1/users/{login}`                                                                                        |core         |GET   |both  |
 |CO081U|`/rest/ofscCore/v1/users/{login}`                                                                                        |core         |PUT   |both  |
@@ -267,11 +267,11 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 ## Implementation Summary
 
 - **Sync only**: 1 endpoints
-- **Async only**: 109 endpoints
+- **Async only**: 132 endpoints
 - **Both**: 88 endpoints
-- **Not implemented**: 45 endpoints
+- **Not implemented**: 22 endpoints
 - **Total sync**: 89 endpoints
-- **Total async**: 197 endpoints
+- **Total async**: 220 endpoints
 
 ## Implementation Statistics by Module and Method
 
@@ -293,13 +293,13 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |   Module    |        GET        |Write (POST/PUT/PATCH)|     DELETE      |       Total       |
 |-------------|-------------------|----------------------|-----------------|-------------------|
 |metadata     |51/51 (100.0%)     |28/30 (93.3%)         |5/5 (100.0%)     |84/86 (97.7%)      |
-|core         |45/51 (88.2%)      |33/56 (58.9%)         |18/20 (90.0%)    |96/127 (75.6%)     |
+|core         |51/51 (100.0%)     |50/56 (89.3%)         |18/20 (90.0%)    |119/127 (93.7%)    |
 |capacity     |6/7 (85.7%)        |4/5 (80.0%)           |0/0 (0%)         |10/12 (83.3%)      |
 |statistics   |3/3 (100.0%)       |3/3 (100.0%)          |0/0 (0%)         |6/6 (100.0%)       |
 |partscatalog |0/0 (0%)           |0/2 (0.0%)            |0/1 (0.0%)       |0/3 (0.0%)         |
 |collaboration|0/3 (0.0%)         |0/4 (0.0%)            |0/0 (0%)         |0/7 (0.0%)         |
 |auth         |0/0 (0%)           |1/2 (50.0%)           |0/0 (0%)         |1/2 (50.0%)        |
-|**Total**    |**105/115 (91.3%)**|**69/102 (67.6%)**    |**23/26 (88.5%)**|**197/243 (81.1%)**|
+|**Total**    |**111/115 (96.5%)**|**86/102 (84.3%)**    |**23/26 (88.5%)**|**220/243 (90.5%)**|
 
 ## Endpoint ID Reference
 

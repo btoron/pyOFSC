@@ -15,6 +15,7 @@ from ...exceptions import (
 from .._base import AsyncClientBase
 from ...models import (
     Activity,
+    ActivityActionRequest,
     ActivityCapacityCategoriesResponse,
     ActivityListResponse,
     MultidaySegmentListResponse,
@@ -23,6 +24,7 @@ from ...models import (
     CreateSubscriptionRequest,
     DailyExtractFiles,
     DailyExtractFolders,
+    DelayActivityRequest,
     EventListResponse,
     GetActivitiesParams,
     Inventory,
@@ -32,13 +34,16 @@ from ...models import (
     OFSResponseList,
     Property,
     PropertyListResponse,
+    ReopenActivityRequest,
     RequiredInventoriesResponse,
     RequiredInventory,
     ResourcePreference,
     ResourcePreferencesResponse,
+    StartPreworkRequest,
     SubmittedFormsResponse,
     Subscription,
     SubscriptionListResponse,
+    WhereIsMyTechResponse,
 )
 
 
@@ -254,6 +259,117 @@ class _AsyncOFSCoreBase(AsyncClientBase):
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
             self._handle_http_error(e, f"Failed to move activity {activity_id}")
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def _post_activity_action(self, path: str, data, *, error: str) -> Activity:
+        """POST a custom action on an activity and return the updated Activity.
+
+        ``data`` may be a Pydantic model (serialised with exclude_none), a dict
+        (sent as-is) or None (no body).
+        """
+        url = urljoin(self.baseUrl, path)
+        kwargs: dict = {}
+        if data is not None:
+            kwargs["json"] = data.model_dump(exclude_none=True) if hasattr(data, "model_dump") else data
+        try:
+            response = await self._client.post(url, headers=self.headers, **kwargs)
+            response.raise_for_status()
+            return Activity.model_validate(response.json())
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, error)
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def start_prework(self, activity_id: int, data: StartPreworkRequest | dict | None = None) -> Activity:
+        """Start prework on an activity (CO016P). Body: optional time and properties."""
+        return await self._post_activity_action(
+            f"/rest/ofscCore/v1/activities/{activity_id}/custom-actions/startPrework",
+            data,
+            error=f"Failed to start prework for activity {activity_id}",
+        )
+
+    async def reopen_activity(self, activity_id: int, data: ReopenActivityRequest | dict) -> Activity:
+        """Reopen a completed/notdone activity (CO017P). Body requires setPositionInRoute."""
+        return await self._post_activity_action(
+            f"/rest/ofscCore/v1/activities/{activity_id}/custom-actions/reopen", data, error=f"Failed to reopen activity {activity_id}"
+        )
+
+    async def delay_activity(self, activity_id: int, data: DelayActivityRequest | dict | None = None) -> Activity:
+        """Delay an activity (CO018P). Body: delayMinutes or delayUntilTime."""
+        return await self._post_activity_action(
+            f"/rest/ofscCore/v1/activities/{activity_id}/custom-actions/delay", data, error=f"Failed to delay activity {activity_id}"
+        )
+
+    async def cancel_activity(self, activity_id: int, data: ActivityActionRequest | dict | None = None) -> Activity:
+        """Cancel an activity (CO019P)."""
+        return await self._post_activity_action(
+            f"/rest/ofscCore/v1/activities/{activity_id}/custom-actions/cancel", data, error=f"Failed to cancel activity {activity_id}"
+        )
+
+    async def start_activity(self, activity_id: int, data: ActivityActionRequest | dict | None = None) -> Activity:
+        """Start an activity (CO020P)."""
+        return await self._post_activity_action(
+            f"/rest/ofscCore/v1/activities/{activity_id}/custom-actions/start", data, error=f"Failed to start activity {activity_id}"
+        )
+
+    async def enroute_activity(self, activity_id: int) -> Activity:
+        """Mark an activity as en route (CO021P). Swagger defines no request body."""
+        return await self._post_activity_action(
+            f"/rest/ofscCore/v1/activities/{activity_id}/custom-actions/enroute", None, error=f"Failed to set en route activity {activity_id}"
+        )
+
+    async def stop_travel(self, activity_id: int) -> Activity:
+        """Stop travel for an activity (CO022P). Swagger defines no request body."""
+        return await self._post_activity_action(
+            f"/rest/ofscCore/v1/activities/{activity_id}/custom-actions/stopTravel", None, error=f"Failed to stop travel for activity {activity_id}"
+        )
+
+    async def suspend_activity(self, activity_id: int, data: ActivityActionRequest | dict | None = None) -> Activity:
+        """Suspend an activity (CO023P)."""
+        return await self._post_activity_action(
+            f"/rest/ofscCore/v1/activities/{activity_id}/custom-actions/suspend", data, error=f"Failed to suspend activity {activity_id}"
+        )
+
+    async def complete_activity(self, activity_id: int, data: ActivityActionRequest | dict | None = None) -> Activity:
+        """Complete an activity (CO025P)."""
+        return await self._post_activity_action(
+            f"/rest/ofscCore/v1/activities/{activity_id}/custom-actions/complete", data, error=f"Failed to complete activity {activity_id}"
+        )
+
+    async def notdone_activity(self, activity_id: int, data: ActivityActionRequest | dict | None = None) -> Activity:
+        """Mark an activity as not done (CO026P)."""
+        return await self._post_activity_action(
+            f"/rest/ofscCore/v1/activities/{activity_id}/custom-actions/notDone", data, error=f"Failed to mark not done activity {activity_id}"
+        )
+
+    async def where_is_my_tech(
+        self,
+        activity_id: int,
+        include_avatar_image_data: bool | None = None,
+        resource_fields: list[str] | None = None,
+        activity_fields: list[str] | None = None,
+        hide_resource_location_time: int | None = None,
+    ) -> WhereIsMyTechResponse:
+        """Get technician and activity status for an activity (CO027G)."""
+        url = urljoin(self.baseUrl, "/rest/ofscCore/v1/whereIsMyTech")
+        params: dict = {"activityId": activity_id}
+        if include_avatar_image_data is not None:
+            params["includeAvatarImageData"] = "true" if include_avatar_image_data else "false"
+        if resource_fields:
+            params["resourceFields"] = ",".join(resource_fields)
+        if activity_fields:
+            params["activityFields"] = ",".join(activity_fields)
+        if hide_resource_location_time is not None:
+            params["hideResourceLocationTime"] = hide_resource_location_time
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            return WhereIsMyTechResponse.model_validate(response.json())
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, f"Failed to get technician location for activity {activity_id}")
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e

@@ -4,3 +4,9 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    groups:
+      # CodeQL refuses to run when its init and analyze steps use different
+      # versions, so they must always be bumped together in one PR.
+      codeql-action:
+        patterns:
+          - "github/codeql-action*"

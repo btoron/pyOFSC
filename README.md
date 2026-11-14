@@ -133,7 +133,7 @@ uv run pytest tests/async/test_async_workzones.py
 
 ## Implemented Functions
 
-**197 async endpoints** (81% coverage) and **89 sync endpoints** (37% coverage) across Core, Metadata, Capacity, Statistics, and Auth modules.
+**220 async endpoints** (91% coverage) and **89 sync endpoints** (37% coverage) across Core, Metadata, Capacity, Statistics, and Auth modules.
 
 See [docs/ENDPOINTS.md](docs/ENDPOINTS.md) for the full implementation status table.
 
@@ -144,11 +144,36 @@ See [docs/ENDPOINTS.md](docs/ENDPOINTS.md) for the full implementation status ta
   including `searchInField`, `searchForValue`, date filters, offset and limit.
 - `core.move_activity(activity_id, data)` sends the action object and returns
   `None` for a successful [204 move response](https://docs.oracle.com/en/cloud/saas/field-service/cxfsc/op-rest-ofsccore-v1-activities-activityid-custom-actions-move-post.html).
+- Activity custom actions return the updated `Activity`: `core.start_prework`,
+  `reopen_activity`, `delay_activity`, `cancel_activity`, `start_activity`,
+  `suspend_activity`, `complete_activity` and `notdone_activity` take an optional
+  body (a request model such as `ActivityActionRequest`, `DelayActivityRequest`,
+  `StartPreworkRequest`, or a plain dict; `reopen_activity` requires
+  `setPositionInRoute`). `core.enroute_activity(id)` and `core.stop_travel(id)`
+  take no body.
+- `core.where_is_my_tech(activity_id, include_avatar_image_data=None, resource_fields=None, activity_fields=None, hide_resource_location_time=None)`
+  returns a `WhereIsMyTechResponse` with status, technician, coordinates and activity details.
 - `core.bulk_update(BulkUpdateRequest(...))` returns a `BulkUpdateResponse`.
   Explicit nulls are preserved, including `activityId=None` for creation; unset
   optional fields are omitted. Inspect each result's errors, operations and
   warnings: [bulk updates](https://docs.oracle.com/en/cloud/saas/field-service/cxfsc/op-rest-ofsccore-v1-activities-custom-actions-bulkupdate-post.html)
   can partially fail within a successful HTTP response.
+- Resource custom actions (keyword args are snake_case versions of the API
+  parameters; route dates accept `datetime.date` or `YYYY-MM-DD` strings):
+  `core.activate_route(resource_id, date, time=None)` and
+  `core.deactivate_route(...)` return `None`;
+  `core.find_nearby_activities(resource_id, latitude=, longitude=, fields=, limit=)`;
+  `core.bulk_update_resource_inventories(data=)`, `core.find_matching_resources(data=)`
+  and `core.find_urgent_resources(data=)` take the request body as a dict;
+  `core.set_positions([ResourcePosition(...)])`;
+  `core.get_last_known_positions(resources=[...], offset=)`;
+  `core.get_resources_in_area(lat=, lng=, radius=, time_diff=, offset=, limit=)`.
+  Each returns a typed response model (e.g. `ResourcesInAreaResponse`).
+- Service requests: `core.create_service_request(ServiceRequestCreate(activityId=...))`
+  (or a dict; exactly one of `activityId`, `resourceId`, `inventoryId`; custom
+  properties allowed) and `core.get_service_request(request_id)` return a
+  `ServiceRequest`; `core.get_service_request_property(request_id, label)` returns the
+  raw file content as `bytes`.
 
 `core.get_all_activities(...)` and `core.get_all_properties(...)` collect all
 pages into typed `OFSResponseList` containers. Activity dates default to seven

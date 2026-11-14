@@ -89,7 +89,8 @@ class WeekDay(str, Enum):
 class Recurrence(BaseModel):
     dayFrom: Optional[date] = None
     dayTo: Optional[date] = None
-    recurEvery: int = Field(ge=1, le=255)
+    # OFS omits recurEvery for "everyday" recurrences (#218)
+    recurEvery: Optional[int] = Field(default=None, ge=1, le=255)
     recurrenceType: RecurrenceType
     weekDays: Optional[list[str]] = None
 
@@ -329,3 +330,130 @@ class CalendarsListResponse(OFSResponseList[Calendar]):
     """List of calendars."""
 
     pass
+
+
+class ResourcePosition(BaseModel):
+    """A position reported for a resource (setPositions request item)."""
+
+    resourceId: str
+    time: str
+    lat: float
+    lng: float
+    alt: Optional[int] = None
+    dir: Optional[float] = None
+    spd: Optional[float] = None
+    acc: Optional[int] = None
+
+
+class SetPositionsError(BaseModel):
+    itemIndex: Optional[int] = None
+    message: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class SetPositionsResponse(BaseModel):
+    """Summary of a setPositions call."""
+
+    itemsProcessed: Optional[int] = None
+    itemsFailed: Optional[int] = None
+    errors: Optional[list[SetPositionsError]] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class LastKnownPosition(BaseModel):
+    resourceId: Optional[str] = None
+    time: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+    errorMessage: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class LastKnownPositionsResponse(BaseModel):
+    items: list[LastKnownPosition] = Field(default_factory=list)
+    totalResults: Optional[int] = None
+    offset: Optional[int] = None
+    hasMore: Optional[bool] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourceInArea(BaseModel):
+    """A resource found by getResourcesInArea; fields vary so extras are kept."""
+
+    resourceId: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class ResourcesInAreaResponse(BaseModel):
+    items: list[ResourceInArea] = Field(default_factory=list)
+    totalResults: Optional[int] = None
+    offset: Optional[int] = None
+    limit: Optional[int] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class NearbyActivitiesCoordinates(BaseModel):
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+
+class FindNearbyActivitiesResponse(BaseModel):
+    """Activities near a resource; each item is a raw activity record."""
+
+    items: list[dict] = Field(default_factory=list)
+    coordinates: Optional[NearbyActivitiesCoordinates] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class BulkUpdateResourceInventoriesResult(BaseModel):
+    resourceId: Optional[str] = None
+    created: Optional[int] = None
+    updated: Optional[int] = None
+    deleted: Optional[int] = None
+    errors: Optional[list[dict]] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class BulkUpdateResourceInventoriesResponse(BaseModel):
+    created: Optional[int] = None
+    updated: Optional[int] = None
+    deleted: Optional[int] = None
+    itemsFailed: Optional[int] = None
+    results: list[BulkUpdateResourceInventoriesResult] = Field(default_factory=list)
+    model_config = ConfigDict(extra="allow")
+
+
+class MatchingResource(BaseModel):
+    """Resource match from findMatchingResources."""
+
+    resource: Optional[dict] = None
+    fitness: Optional[dict] = None
+    estimatedCompleteDate: Optional[str] = None
+    schedule: Optional[dict] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class FindMatchingResourcesResponse(BaseModel):
+    totalResults: Optional[int] = None
+    offset: Optional[int] = None
+    limit: Optional[int] = None
+    actualAtTime: Optional[str] = None
+    items: list[MatchingResource] = Field(default_factory=list)
+    model_config = ConfigDict(extra="allow")
+
+
+class UrgentAssignmentResource(BaseModel):
+    """Resource match from findResourcesForUrgentAssignment."""
+
+    nearestRoutingBucket: Optional[str] = None
+    startTime: Optional[str] = None
+    estimatedAvailability: Optional[str] = None
+    longitude: Optional[str] = None
+    latitude: Optional[str] = None
+    resourceDetails: Optional[dict] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class FindUrgentResourcesResponse(BaseModel):
+    items: list[UrgentAssignmentResource] = Field(default_factory=list)
+    model_config = ConfigDict(extra="allow")

@@ -12,8 +12,13 @@ from .._protocols import _CoreBaseProtocol as _SharedCoreProtocol
 from ...models import Inventory, InventoryListResponse
 from ...models.resources import (
     AssignedLocationsResponse,
+    BulkUpdateResourceInventoriesResponse,
     CalendarView,
     CalendarsListResponse,
+    FindMatchingResourcesResponse,
+    FindNearbyActivitiesResponse,
+    FindUrgentResourcesResponse,
+    LastKnownPositionsResponse,
     Location,
     LocationListResponse,
     PositionHistoryResponse,
@@ -22,6 +27,7 @@ from ...models.resources import (
     ResourceCreate,
     ResourceListResponse,
     ResourcePlansResponse,
+    ResourcePosition,
     ResourceRouteResponse,
     ResourceUsersListResponse,
     ResourceWorkScheduleItem,
@@ -30,6 +36,8 @@ from ...models.resources import (
     ResourceWorkskillListResponse,
     ResourceWorkzoneAssignment,
     ResourceWorkzoneListResponse,
+    ResourcesInAreaResponse,
+    SetPositionsResponse,
 )
 
 
@@ -43,6 +51,10 @@ class _CoreBaseProtocol(_SharedCoreProtocol, Protocol):
         workzones: bool,
         workschedules: bool,
     ) -> str | None: ...
+
+    async def _post_resource_action(self, path: str, data: Any, response_model: Any, *, error: str) -> Any: ...
+
+    async def _get_resource_query(self, path: str, params: dict, response_model: Any, *, error: str) -> Any: ...
 
 
 class AsyncOFSCoreResourcesMixin:
@@ -908,6 +920,163 @@ class AsyncOFSCoreResourcesMixin:
             raise
         except httpx.TransportError as e:
             raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def _post_resource_action(self: _CoreBaseProtocol, path: str, data: Any, response_model: Any, *, error: str) -> Any:
+        """POST a resource custom action; return ``response_model`` or None when it is falsy (204)."""
+        url = urljoin(self.baseUrl, path)
+        kwargs: dict = {}
+        if data is not None:
+            kwargs["json"] = data.model_dump(exclude_none=True) if hasattr(data, "model_dump") else data
+        try:
+            response = await self._client.post(url, headers=self.headers, **kwargs)
+            response.raise_for_status()
+            if response_model is None:
+                return None
+            return response_model.model_validate(response.json())
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, error)
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def _get_resource_query(self: _CoreBaseProtocol, path: str, params: dict, response_model: Any, *, error: str) -> Any:
+        """GET a resource query endpoint and validate the JSON body."""
+        url = urljoin(self.baseUrl, path)
+        try:
+            response = await self._client.get(url, headers=self.headers, params=params)
+            response.raise_for_status()
+            return response_model.model_validate(response.json())
+        except httpx.HTTPStatusError as e:
+            self._handle_http_error(e, error)
+            raise
+        except httpx.TransportError as e:
+            raise OFSCNetworkError(f"Network error: {str(e)}") from e
+
+    async def activate_route(self: _CoreBaseProtocol, resource_id: str, route_date: "date | str", *, time: str | None = None) -> None:
+        """Activate a resource route (CO065P). ``time`` is 'YYYY-MM-DD HH:MM:SS' in the resource time zone."""
+        day = route_date if isinstance(route_date, str) else route_date.isoformat()
+        return await self._post_resource_action(
+            f"/rest/ofscCore/v1/resources/{resource_id}/routes/{day}/custom-actions/activate",
+            {"time": time} if time else None,
+            None,
+            error=f"Failed to activate route for resource '{resource_id}' on {day}",
+        )
+
+    async def deactivate_route(self: _CoreBaseProtocol, resource_id: str, route_date: "date | str", *, time: str | None = None) -> None:
+        """Deactivate a resource route (CO066P). ``time`` is 'YYYY-MM-DD HH:MM:SS' in the resource time zone."""
+        day = route_date if isinstance(route_date, str) else route_date.isoformat()
+        return await self._post_resource_action(
+            f"/rest/ofscCore/v1/resources/{resource_id}/routes/{day}/custom-actions/deactivate",
+            {"time": time} if time else None,
+            None,
+            error=f"Failed to deactivate route for resource '{resource_id}' on {day}",
+        )
+
+    async def find_nearby_activities(
+        self: _CoreBaseProtocol,
+        resource_id: str,
+        *,
+        latitude: float | None = None,
+        longitude: float | None = None,
+        fields: list[str] | None = None,
+        limit: int | None = None,
+    ) -> FindNearbyActivitiesResponse:
+        """Find activities near a resource or given coordinates (CO067G)."""
+        params: dict = {}
+        if latitude is not None:
+            params["latitude"] = latitude
+        if longitude is not None:
+            params["longitude"] = longitude
+        if fields:
+            params["fields"] = ",".join(fields)
+        if limit is not None:
+            params["limit"] = limit
+        return await self._get_resource_query(
+            f"/rest/ofscCore/v1/resources/{resource_id}/findNearbyActivities",
+            params,
+            FindNearbyActivitiesResponse,
+            error=f"Failed to find nearby activities for resource '{resource_id}'",
+        )
+
+    async def bulk_update_resource_inventories(self: _CoreBaseProtocol, *, data: dict) -> BulkUpdateResourceInventoriesResponse:
+        """Bulk update inventories of multiple resources (CO071P). Body: {"resources": [...]}."""
+        return await self._post_resource_action(
+            "/rest/ofscCore/v1/resources/custom-actions/bulkUpdateInventories",
+            data,
+            BulkUpdateResourceInventoriesResponse,
+            error="Failed to bulk update resource inventories",
+        )
+
+    async def find_matching_resources(self: _CoreBaseProtocol, *, data: dict) -> FindMatchingResourcesResponse:
+        """Find resources matching an activity (CO072P)."""
+        return await self._post_resource_action(
+            "/rest/ofscCore/v1/resources/custom-actions/findMatchingResources",
+            data,
+            FindMatchingResourcesResponse,
+            error="Failed to find matching resources",
+        )
+
+    async def find_urgent_resources(self: _CoreBaseProtocol, *, data: dict) -> FindUrgentResourcesResponse:
+        """Find resources for urgent assignment (CO073P). Body requires ``activity``."""
+        return await self._post_resource_action(
+            "/rest/ofscCore/v1/resources/custom-actions/findResourcesForUrgentAssignment",
+            data,
+            FindUrgentResourcesResponse,
+            error="Failed to find resources for urgent assignment",
+        )
+
+    async def set_positions(self: _CoreBaseProtocol, items: "list[ResourcePosition | dict]") -> SetPositionsResponse:
+        """Set positions for one or more resources (CO074P, max 300 items)."""
+        payload = {"items": [i.model_dump(exclude_none=True) if isinstance(i, ResourcePosition) else i for i in items]}
+        return await self._post_resource_action(
+            "/rest/ofscCore/v1/resources/custom-actions/setPositions",
+            payload,
+            SetPositionsResponse,
+            error="Failed to set resource positions",
+        )
+
+    async def get_last_known_positions(
+        self: _CoreBaseProtocol, *, resources: list[str] | None = None, offset: int | None = None
+    ) -> LastKnownPositionsResponse:
+        """Get last known positions of resources (CO075G)."""
+        params: dict = {}
+        if resources:
+            params["resources"] = ",".join(resources)
+        if offset is not None:
+            params["offset"] = offset
+        return await self._get_resource_query(
+            "/rest/ofscCore/v1/resources/custom-actions/lastKnownPositions",
+            params,
+            LastKnownPositionsResponse,
+            error="Failed to get last known positions",
+        )
+
+    async def get_resources_in_area(
+        self: _CoreBaseProtocol,
+        *,
+        lat: float,
+        lng: float,
+        radius: float | None = None,
+        time_diff: float | None = None,
+        offset: int | None = None,
+        limit: int | None = None,
+    ) -> ResourcesInAreaResponse:
+        """Get resources in a circular area (CO076G). Radius in meters, time_diff in minutes."""
+        params: dict = {"lat": lat, "lng": lng}
+        if radius is not None:
+            params["radius"] = radius
+        if time_diff is not None:
+            params["timeDiff"] = time_diff
+        if offset is not None:
+            params["offset"] = offset
+        if limit is not None:
+            params["limit"] = limit
+        return await self._get_resource_query(
+            "/rest/ofscCore/v1/resources/custom-actions/resourcesInArea",
+            params,
+            ResourcesInAreaResponse,
+            error="Failed to get resources in area",
+        )
 
     async def create_resource_location(self: _CoreBaseProtocol, resource_id: str, *, location: "Location | dict") -> Location:
         """Create a new location for a resource (POST — returns 201).

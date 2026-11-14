@@ -5,6 +5,7 @@ from pydantic import (
     AnyHttpUrl,
     BaseModel,
     ConfigDict,
+    Field,
     model_validator,
 )
 
@@ -37,30 +38,42 @@ from .resources import (
     AssignedLocation as AssignedLocation,
     AssignedLocationsResponse as AssignedLocationsResponse,
     BaseUser as BaseUser,
+    BulkUpdateResourceInventoriesResponse as BulkUpdateResourceInventoriesResponse,
+    BulkUpdateResourceInventoriesResult as BulkUpdateResourceInventoriesResult,
     Calendar as Calendar,
+    CalendarsListResponse as CalendarsListResponse,
     CalendarView as CalendarView,
     CalendarViewItem as CalendarViewItem,
     CalendarViewItemRecordType as CalendarViewItemRecordType,
     CalendarViewList as CalendarViewList,
     CalendarViewShift as CalendarViewShift,
-    CalendarsListResponse as CalendarsListResponse,
+    FindMatchingResourcesResponse as FindMatchingResourcesResponse,
+    FindNearbyActivitiesResponse as FindNearbyActivitiesResponse,
+    FindUrgentResourcesResponse as FindUrgentResourcesResponse,
+    LastKnownPosition as LastKnownPosition,
+    LastKnownPositionsResponse as LastKnownPositionsResponse,
     Location as Location,
     LocationList as LocationList,
     LocationListResponse as LocationListResponse,
+    MatchingResource as MatchingResource,
+    NearbyActivitiesCoordinates as NearbyActivitiesCoordinates,
     PositionHistoryItem as PositionHistoryItem,
     PositionHistoryResponse as PositionHistoryResponse,
     Recurrence as Recurrence,
     RecurrenceType as RecurrenceType,
     Resource as Resource,
-    ResourceCreate as ResourceCreate,
     ResourceAssistant as ResourceAssistant,
     ResourceAssistantsResponse as ResourceAssistantsResponse,
+    ResourceCreate as ResourceCreate,
+    ResourceInArea as ResourceInArea,
     ResourceList as ResourceList,
     ResourceListResponse as ResourceListResponse,
     ResourcePlan as ResourcePlan,
     ResourcePlansResponse as ResourcePlansResponse,
+    ResourcePosition as ResourcePosition,
     ResourceRouteActivity as ResourceRouteActivity,
     ResourceRouteResponse as ResourceRouteResponse,
+    ResourcesInAreaResponse as ResourcesInAreaResponse,
     ResourceUsersListResponse as ResourceUsersListResponse,
     ResourceWorkScheduleItem as ResourceWorkScheduleItem,
     ResourceWorkScheduleResponse as ResourceWorkScheduleResponse,
@@ -69,6 +82,9 @@ from .resources import (
     ResourceWorkskillListResponse as ResourceWorkskillListResponse,
     ResourceWorkzoneAssignment as ResourceWorkzoneAssignment,
     ResourceWorkzoneListResponse as ResourceWorkzoneListResponse,
+    SetPositionsError as SetPositionsError,
+    SetPositionsResponse as SetPositionsResponse,
+    UrgentAssignmentResource as UrgentAssignmentResource,
     WeekDay as WeekDay,
 )
 
@@ -207,6 +223,11 @@ from .inventories import (
     RequiredInventory as RequiredInventory,
 )
 
+from .service_requests import (
+    ServiceRequest as ServiceRequest,
+    ServiceRequestCreate as ServiceRequestCreate,
+)
+
 from .statistics import (
     ActivityDurationStat as ActivityDurationStat,
     ActivityDurationStatsList as ActivityDurationStatsList,
@@ -340,6 +361,72 @@ class BulkUpdateResult(BaseModel):
 
 class BulkUpdateResponse(BaseModel):
     results: Optional[list[BulkUpdateResult]] = None
+
+
+# Core / Activities - Custom action request bodies and whereIsMyTech
+
+
+class ActivityActionRequest(BaseModel):
+    """Body for cancel/start/suspend/complete/notDone custom actions (all fields optional)."""
+
+    time: Optional[str] = None
+    multidayTimeToComplete: Optional[int] = Field(default=None, ge=0)
+    multidayActivityStatus: Optional[Literal["cancelled", "completed", "notdone"]] = None
+
+
+class StartPreworkRequest(BaseModel):
+    time: Optional[str] = None
+    properties: Optional[dict] = None
+
+
+class DelayActivityRequest(BaseModel):
+    """Specify either delayMinutes or delayUntilTime, not both."""
+
+    delayMinutes: Optional[int] = None
+    delayUntilTime: Optional[str] = None
+
+
+class SetPositionInRoute(BaseModel):
+    position: Literal["first", "last", "notOrdered", "byServiceWindow", "afterActivity"]
+    activityId: Optional[int] = None
+
+
+class ReopenActivityRequest(BaseModel):
+    setPositionInRoute: SetPositionInRoute
+
+
+class WhereIsMyTechAvatar(BaseModel):
+    imageData: Optional[str] = None
+    filename: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class WhereIsMyTechResource(BaseModel):
+    name: Optional[str] = None
+    avatar: Optional[WhereIsMyTechAvatar] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class WhereIsMyTechCoordinates(BaseModel):
+    time: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+
+class WhereIsMyTechActivity(BaseModel):
+    activityId: Optional[int] = None
+    startTime: Optional[str] = None
+    timeZoneDiff: Optional[int] = None
+    timeZoneIANA: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class WhereIsMyTechResponse(BaseModel):
+    status: Optional[str] = None
+    resourceDetails: Optional[WhereIsMyTechResource] = None
+    coordinates: Optional[WhereIsMyTechCoordinates] = None
+    activityDetails: Optional[WhereIsMyTechActivity] = None
+    model_config = ConfigDict(extra="allow")
 
 
 # Core / Activities - List Responses and Nested Models
