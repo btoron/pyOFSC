@@ -180,3 +180,5 @@ tmp
 docs/qa.md
 tests/**/audit_results
 docs/patterns
+# Claude Code local commands, skills and settings
+.claude/
