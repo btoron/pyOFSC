@@ -1,7 +1,7 @@
 # OFSC API Endpoints Reference
 
-**Version:** 2.26.2
-**Last Updated:** 2026-10-13
+**Version:** 2.28.0
+**Last Updated:** 2026-11-13
 
 This document provides a comprehensive reference of all Oracle Field Service Cloud (OFSC) API endpoints and their implementation status in pyOFSC.
 
@@ -149,18 +149,18 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |CO013U|`/rest/ofscCore/v1/activities/{activityId}/linkedActivities/{linkedActivityId}/linkTypes/{linkType}`                     |core         |PUT   |async |
 |CO014G|`/rest/ofscCore/v1/activities/custom-actions/search`                                                                     |core         |GET   |both  |
 |CO015P|`/rest/ofscCore/v1/activities/custom-actions/bulkUpdate`                                                                 |core         |POST  |both  |
-|CO016P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/startPrework`                                                  |core         |POST  |-     |
-|CO017P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/reopen`                                                        |core         |POST  |-     |
-|CO018P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/delay`                                                         |core         |POST  |-     |
-|CO019P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/cancel`                                                        |core         |POST  |-     |
-|CO020P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/start`                                                         |core         |POST  |-     |
-|CO021P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/enroute`                                                       |core         |POST  |-     |
-|CO022P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/stopTravel`                                                    |core         |POST  |-     |
-|CO023P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/suspend`                                                       |core         |POST  |-     |
+|CO016P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/startPrework`                                                  |core         |POST  |async |
+|CO017P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/reopen`                                                        |core         |POST  |async |
+|CO018P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/delay`                                                         |core         |POST  |async |
+|CO019P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/cancel`                                                        |core         |POST  |async |
+|CO020P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/start`                                                         |core         |POST  |async |
+|CO021P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/enroute`                                                       |core         |POST  |async |
+|CO022P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/stopTravel`                                                    |core         |POST  |async |
+|CO023P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/suspend`                                                       |core         |POST  |async |
 |CO024P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/move`                                                          |core         |POST  |both  |
-|CO025P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/complete`                                                      |core         |POST  |-     |
-|CO026P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/notDone`                                                       |core         |POST  |-     |
-|CO027G|`/rest/ofscCore/v1/whereIsMyTech`                                                                                        |core         |GET   |-     |
+|CO025P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/complete`                                                      |core         |POST  |async |
+|CO026P|`/rest/ofscCore/v1/activities/{activityId}/custom-actions/notDone`                                                       |core         |POST  |async |
+|CO027G|`/rest/ofscCore/v1/whereIsMyTech`                                                                                        |core         |GET   |async |
 |CO028G|`/rest/ofscCore/v1/folders/dailyExtract/folders`                                                                         |core         |GET   |both  |
 |CO029G|`/rest/ofscCore/v1/folders/dailyExtract/folders/{dailyExtractDate}/files`                                                |core         |GET   |both  |
 |CO030G|`/rest/ofscCore/v1/folders/dailyExtract/folders/{dailyExtractDate}/files/{dailyExtractFilename}`                         |core         |GET   |both  |
@@ -267,11 +267,11 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 ## Implementation Summary
 
 - **Sync only**: 1 endpoints
-- **Async only**: 109 endpoints
+- **Async only**: 120 endpoints
 - **Both**: 88 endpoints
-- **Not implemented**: 45 endpoints
+- **Not implemented**: 34 endpoints
 - **Total sync**: 89 endpoints
-- **Total async**: 197 endpoints
+- **Total async**: 208 endpoints
 
 ## Implementation Statistics by Module and Method
 
@@ -293,13 +293,13 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |   Module    |        GET        |Write (POST/PUT/PATCH)|     DELETE      |       Total       |
 |-------------|-------------------|----------------------|-----------------|-------------------|
 |metadata     |51/51 (100.0%)     |28/30 (93.3%)         |5/5 (100.0%)     |84/86 (97.7%)      |
-|core         |45/51 (88.2%)      |33/56 (58.9%)         |18/20 (90.0%)    |96/127 (75.6%)     |
+|core         |46/51 (90.2%)      |43/56 (76.8%)         |18/20 (90.0%)    |107/127 (84.3%)    |
 |capacity     |6/7 (85.7%)        |4/5 (80.0%)           |0/0 (0%)         |10/12 (83.3%)      |
 |statistics   |3/3 (100.0%)       |3/3 (100.0%)          |0/0 (0%)         |6/6 (100.0%)       |
 |partscatalog |0/0 (0%)           |0/2 (0.0%)            |0/1 (0.0%)       |0/3 (0.0%)         |
 |collaboration|0/3 (0.0%)         |0/4 (0.0%)            |0/0 (0%)         |0/7 (0.0%)         |
 |auth         |0/0 (0%)           |1/2 (50.0%)           |0/0 (0%)         |1/2 (50.0%)        |
-|**Total**    |**105/115 (91.3%)**|**69/102 (67.6%)**    |**23/26 (88.5%)**|**197/243 (81.1%)**|
+|**Total**    |**106/115 (92.2%)**|**79/102 (77.5%)**    |**23/26 (88.5%)**|**208/243 (85.6%)**|
 
 ## Endpoint ID Reference
 

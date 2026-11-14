@@ -43,6 +43,7 @@ HELPER_METHOD_MAP = {
     "_post_item": "POST",
     "_patch_item": "PATCH",
     "_delete_item": "DELETE",
+    "_post_activity_action": "POST",
 }
 
 

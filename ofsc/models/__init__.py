@@ -5,6 +5,7 @@ from pydantic import (
     AnyHttpUrl,
     BaseModel,
     ConfigDict,
+    Field,
     model_validator,
 )
 
@@ -340,6 +341,72 @@ class BulkUpdateResult(BaseModel):
 
 class BulkUpdateResponse(BaseModel):
     results: Optional[list[BulkUpdateResult]] = None
+
+
+# Core / Activities - Custom action request bodies and whereIsMyTech
+
+
+class ActivityActionRequest(BaseModel):
+    """Body for cancel/start/suspend/complete/notDone custom actions (all fields optional)."""
+
+    time: Optional[str] = None
+    multidayTimeToComplete: Optional[int] = Field(default=None, ge=0)
+    multidayActivityStatus: Optional[Literal["cancelled", "completed", "notdone"]] = None
+
+
+class StartPreworkRequest(BaseModel):
+    time: Optional[str] = None
+    properties: Optional[dict] = None
+
+
+class DelayActivityRequest(BaseModel):
+    """Specify either delayMinutes or delayUntilTime, not both."""
+
+    delayMinutes: Optional[int] = None
+    delayUntilTime: Optional[str] = None
+
+
+class SetPositionInRoute(BaseModel):
+    position: Literal["first", "last", "notOrdered", "byServiceWindow", "afterActivity"]
+    activityId: Optional[int] = None
+
+
+class ReopenActivityRequest(BaseModel):
+    setPositionInRoute: SetPositionInRoute
+
+
+class WhereIsMyTechAvatar(BaseModel):
+    imageData: Optional[str] = None
+    filename: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class WhereIsMyTechResource(BaseModel):
+    name: Optional[str] = None
+    avatar: Optional[WhereIsMyTechAvatar] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class WhereIsMyTechCoordinates(BaseModel):
+    time: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+
+class WhereIsMyTechActivity(BaseModel):
+    activityId: Optional[int] = None
+    startTime: Optional[str] = None
+    timeZoneDiff: Optional[int] = None
+    timeZoneIANA: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
+
+
+class WhereIsMyTechResponse(BaseModel):
+    status: Optional[str] = None
+    resourceDetails: Optional[WhereIsMyTechResource] = None
+    coordinates: Optional[WhereIsMyTechCoordinates] = None
+    activityDetails: Optional[WhereIsMyTechActivity] = None
+    model_config = ConfigDict(extra="allow")
 
 
 # Core / Activities - List Responses and Nested Models

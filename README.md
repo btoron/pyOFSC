@@ -133,7 +133,7 @@ uv run pytest tests/async/test_async_workzones.py
 
 ## Implemented Functions
 
-**197 async endpoints** (81% coverage) and **89 sync endpoints** (37% coverage) across Core, Metadata, Capacity, Statistics, and Auth modules.
+**208 async endpoints** (86% coverage) and **89 sync endpoints** (37% coverage) across Core, Metadata, Capacity, Statistics, and Auth modules.
 
 See [docs/ENDPOINTS.md](docs/ENDPOINTS.md) for the full implementation status table.
 
@@ -144,6 +144,15 @@ See [docs/ENDPOINTS.md](docs/ENDPOINTS.md) for the full implementation status ta
   including `searchInField`, `searchForValue`, date filters, offset and limit.
 - `core.move_activity(activity_id, data)` sends the action object and returns
   `None` for a successful [204 move response](https://docs.oracle.com/en/cloud/saas/field-service/cxfsc/op-rest-ofsccore-v1-activities-activityid-custom-actions-move-post.html).
+- Activity custom actions return the updated `Activity`: `core.start_prework`,
+  `reopen_activity`, `delay_activity`, `cancel_activity`, `start_activity`,
+  `suspend_activity`, `complete_activity` and `notdone_activity` take an optional
+  body (a request model such as `ActivityActionRequest`, `DelayActivityRequest`,
+  `StartPreworkRequest`, or a plain dict; `reopen_activity` requires
+  `setPositionInRoute`). `core.enroute_activity(id)` and `core.stop_travel(id)`
+  take no body.
+- `core.where_is_my_tech(activity_id, include_avatar_image_data=None, resource_fields=None, activity_fields=None, hide_resource_location_time=None)`
+  returns a `WhereIsMyTechResponse` with status, technician, coordinates and activity details.
 - `core.bulk_update(BulkUpdateRequest(...))` returns a `BulkUpdateResponse`.
   Explicit nulls are preserved, including `activityId=None` for creation; unset
   optional fields are omitted. Inspect each result's errors, operations and
