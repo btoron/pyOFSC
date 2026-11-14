@@ -221,18 +221,18 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |CO063G|`/rest/ofscCore/v1/resources/{resourceId}/plans`                                                                         |core         |GET   |async |
 |CO063D|`/rest/ofscCore/v1/resources/{resourceId}/plans`                                                                         |core         |DELETE|-     |
 |CO064G|`/rest/ofscCore/v1/resources/{resourceId}/routes/{date}`                                                                 |core         |GET   |both  |
-|CO065P|`/rest/ofscCore/v1/resources/{resourceId}/routes/{date}/custom-actions/activate`                                         |core         |POST  |-     |
-|CO066P|`/rest/ofscCore/v1/resources/{resourceId}/routes/{date}/custom-actions/deactivate`                                       |core         |POST  |-     |
-|CO067G|`/rest/ofscCore/v1/resources/{resourceId}/findNearbyActivities`                                                          |core         |GET   |-     |
+|CO065P|`/rest/ofscCore/v1/resources/{resourceId}/routes/{date}/custom-actions/activate`                                         |core         |POST  |async |
+|CO066P|`/rest/ofscCore/v1/resources/{resourceId}/routes/{date}/custom-actions/deactivate`                                       |core         |POST  |async |
+|CO067G|`/rest/ofscCore/v1/resources/{resourceId}/findNearbyActivities`                                                          |core         |GET   |async |
 |CO068P|`/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkSchedules`                                                     |core         |POST  |both  |
 |CO069P|`/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkSkills`                                                        |core         |POST  |both  |
 |CO070P|`/rest/ofscCore/v1/resources/custom-actions/bulkUpdateWorkZones`                                                         |core         |POST  |both  |
-|CO071P|`/rest/ofscCore/v1/resources/custom-actions/bulkUpdateInventories`                                                       |core         |POST  |-     |
-|CO072P|`/rest/ofscCore/v1/resources/custom-actions/findMatchingResources`                                                       |core         |POST  |-     |
-|CO073P|`/rest/ofscCore/v1/resources/custom-actions/findResourcesForUrgentAssignment`                                            |core         |POST  |-     |
-|CO074P|`/rest/ofscCore/v1/resources/custom-actions/setPositions`                                                                |core         |POST  |-     |
-|CO075G|`/rest/ofscCore/v1/resources/custom-actions/lastKnownPositions`                                                          |core         |GET   |-     |
-|CO076G|`/rest/ofscCore/v1/resources/custom-actions/resourcesInArea`                                                             |core         |GET   |-     |
+|CO071P|`/rest/ofscCore/v1/resources/custom-actions/bulkUpdateInventories`                                                       |core         |POST  |async |
+|CO072P|`/rest/ofscCore/v1/resources/custom-actions/findMatchingResources`                                                       |core         |POST  |async |
+|CO073P|`/rest/ofscCore/v1/resources/custom-actions/findResourcesForUrgentAssignment`                                            |core         |POST  |async |
+|CO074P|`/rest/ofscCore/v1/resources/custom-actions/setPositions`                                                                |core         |POST  |async |
+|CO075G|`/rest/ofscCore/v1/resources/custom-actions/lastKnownPositions`                                                          |core         |GET   |async |
+|CO076G|`/rest/ofscCore/v1/resources/custom-actions/resourcesInArea`                                                             |core         |GET   |async |
 |CO077G|`/rest/ofscCore/v1/serviceRequests/{requestId}`                                                                          |core         |GET   |-     |
 |CO078P|`/rest/ofscCore/v1/serviceRequests`                                                                                      |core         |POST  |-     |
 |CO079G|`/rest/ofscCore/v1/serviceRequests/{requestId}/{propertyLabel}`                                                          |core         |GET   |-     |
@@ -267,11 +267,11 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 ## Implementation Summary
 
 - **Sync only**: 1 endpoints
-- **Async only**: 120 endpoints
+- **Async only**: 129 endpoints
 - **Both**: 88 endpoints
-- **Not implemented**: 34 endpoints
+- **Not implemented**: 25 endpoints
 - **Total sync**: 89 endpoints
-- **Total async**: 208 endpoints
+- **Total async**: 217 endpoints
 
 ## Implementation Statistics by Module and Method
 
@@ -293,13 +293,13 @@ This document provides a comprehensive reference of all Oracle Field Service Clo
 |   Module    |        GET        |Write (POST/PUT/PATCH)|     DELETE      |       Total       |
 |-------------|-------------------|----------------------|-----------------|-------------------|
 |metadata     |51/51 (100.0%)     |28/30 (93.3%)         |5/5 (100.0%)     |84/86 (97.7%)      |
-|core         |46/51 (90.2%)      |43/56 (76.8%)         |18/20 (90.0%)    |107/127 (84.3%)    |
+|core         |49/51 (96.1%)      |49/56 (87.5%)         |18/20 (90.0%)    |116/127 (91.3%)    |
 |capacity     |6/7 (85.7%)        |4/5 (80.0%)           |0/0 (0%)         |10/12 (83.3%)      |
 |statistics   |3/3 (100.0%)       |3/3 (100.0%)          |0/0 (0%)         |6/6 (100.0%)       |
 |partscatalog |0/0 (0%)           |0/2 (0.0%)            |0/1 (0.0%)       |0/3 (0.0%)         |
 |collaboration|0/3 (0.0%)         |0/4 (0.0%)            |0/0 (0%)         |0/7 (0.0%)         |
 |auth         |0/0 (0%)           |1/2 (50.0%)           |0/0 (0%)         |1/2 (50.0%)        |
-|**Total**    |**106/115 (92.2%)**|**79/102 (77.5%)**    |**23/26 (88.5%)**|**208/243 (85.6%)**|
+|**Total**    |**109/115 (94.8%)**|**85/102 (83.3%)**    |**23/26 (88.5%)**|**217/243 (89.3%)**|
 
 ## Endpoint ID Reference
 

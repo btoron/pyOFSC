@@ -158,6 +158,17 @@ See [docs/ENDPOINTS.md](docs/ENDPOINTS.md) for the full implementation status ta
   optional fields are omitted. Inspect each result's errors, operations and
   warnings: [bulk updates](https://docs.oracle.com/en/cloud/saas/field-service/cxfsc/op-rest-ofsccore-v1-activities-custom-actions-bulkupdate-post.html)
   can partially fail within a successful HTTP response.
+- Resource custom actions (keyword args are snake_case versions of the API
+  parameters; route dates accept `datetime.date` or `YYYY-MM-DD` strings):
+  `core.activate_route(resource_id, date, time=None)` and
+  `core.deactivate_route(...)` return `None`;
+  `core.find_nearby_activities(resource_id, latitude=, longitude=, fields=, limit=)`;
+  `core.bulk_update_resource_inventories(data=)`, `core.find_matching_resources(data=)`
+  and `core.find_urgent_resources(data=)` take the request body as a dict;
+  `core.set_positions([ResourcePosition(...)])`;
+  `core.get_last_known_positions(resources=[...], offset=)`;
+  `core.get_resources_in_area(lat=, lng=, radius=, time_diff=, offset=, limit=)`.
+  Each returns a typed response model (e.g. `ResourcesInAreaResponse`).
 
 `core.get_all_activities(...)` and `core.get_all_properties(...)` collect all
 pages into typed `OFSResponseList` containers. Activity dates default to seven

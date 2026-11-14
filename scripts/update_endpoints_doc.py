@@ -44,6 +44,8 @@ HELPER_METHOD_MAP = {
     "_patch_item": "PATCH",
     "_delete_item": "DELETE",
     "_post_activity_action": "POST",
+    "_post_resource_action": "POST",
+    "_get_resource_query": "GET",
 }
 
 
