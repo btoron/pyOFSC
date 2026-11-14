@@ -9,13 +9,13 @@ Releases before 2.28.0 are not listed here; see the
 
 ## [Unreleased]
 
+## [2.28.0] - 2026-11-13
+
 ### Added
 
 - Added the activity custom actions to the async client — `start_prework`, `reopen_activity`, `delay_activity`, `cancel_activity`, `start_activity`, `enroute_activity`, `stop_travel`, `suspend_activity`, `complete_activity` and `notdone_activity`, each returning the updated `Activity` — plus `where_is_my_tech` (#123)
 - Added the resource custom actions to the async client — `activate_route`, `deactivate_route`, `find_nearby_activities`, `bulk_update_resource_inventories`, `find_matching_resources`, `find_urgent_resources`, `set_positions`, `get_last_known_positions` and `get_resources_in_area` (#119)
 - Added service requests to the async client — `create_service_request`, `get_service_request` and `get_service_request_property` (#127)
-
-## [2.28.0] - 2026-11-13
 
 ### Fixed
 
